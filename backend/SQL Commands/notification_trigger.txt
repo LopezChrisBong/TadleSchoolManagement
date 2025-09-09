@@ -1,0 +1,50 @@
+DELIMITER $$
+
+CREATE TRIGGER trg_after_insert_grade
+AFTER INSERT ON student_quarter_final_grade
+FOR EACH ROW
+BEGIN
+    DECLARE v_student_name VARCHAR(255);
+    DECLARE v_remarks VARCHAR(50);
+
+    -- Determine remarks based on transmuted grade
+    IF NEW.transmuted_grade >= 80 THEN
+        SET v_remarks = 'Passing Grade';
+    ELSEIF NEW.transmuted_grade >= 75 AND NEW.transmuted_grade < 80 THEN
+        SET v_remarks = 'At-Risk to Fail';
+    ELSE
+        SET v_remarks = 'Fail to Pass';
+    END IF;
+
+    -- Get student name (assuming you have a students table)
+    SELECT CONCAT(fname, ' ', LEFT(mname,1), '. ', lname)
+    INTO v_student_name
+    FROM enroll_student
+    WHERE id = NEW.studentID
+    LIMIT 1;
+
+    -- Insert notifications for all parents linked to the student
+    INSERT INTO notification (
+        studentID,
+        student_name,
+        parentID,
+        transmuted_grade,
+        school_yearID,
+        route,
+        `read`,
+        remarks
+    )
+    SELECT
+        NEW.studentID,
+        v_student_name,
+        pr.parentID,
+        NEW.transmuted_grade,
+        NEW.school_yearID,
+        '/parent-children',
+        FALSE,
+        v_remarks
+    FROM parent_record pr
+    WHERE pr.studentID = NEW.studentID;
+END$$
+
+DELIMITER ;

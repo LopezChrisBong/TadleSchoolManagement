@@ -1,0 +1,70 @@
+
+DELIMITER $$
+
+CREATE TRIGGER trg_after_insert_at_risk
+AFTER INSERT ON student_quarter_final_grade
+FOR EACH ROW
+BEGIN
+    DECLARE v_student_name VARCHAR(255);
+    DECLARE v_remarks VARCHAR(255);
+    DECLARE v_subject_title VARCHAR(255);
+
+    -- Only proceed if grade is below 80
+    IF NEW.transmuted_grade < 80 THEN
+
+        -- Get student full name from enroll_student
+        SELECT CONCAT(es.fname, ' ', es.lname)
+        INTO v_student_name
+        FROM enroll_student es
+        WHERE es.id = NEW.studentID
+        LIMIT 1;
+        
+		-- Get subject title 
+        SELECT sj.subject_title
+        INTO v_subject_title
+        FROM subject sj
+        WHERE sj.id = NEW.subjectID
+        LIMIT 1;
+
+
+        -- Build remarks message
+        SET v_remarks = CONCAT(
+            'Failed to meet the passing grade of 80; the student got ',
+            NEW.transmuted_grade
+        );
+
+        -- Insert notification for the teacher of the student's room
+        INSERT INTO at_risk_student_notification (
+            studentID,
+            student_name,
+            teacherID,
+            transmuted_grade,
+            school_yearID,
+            grade_level,
+            room_name,
+            route,
+            `read`,
+            remarks,
+            subject_title
+        )
+        SELECT
+            NEW.studentID,
+            v_student_name,
+            NEW.teacherID,
+            NEW.transmuted_grade,
+            NEW.school_yearID,
+            rs.grade_level,
+            rs.room_section, -- mapped to room_name
+            '/advisory-rooms',
+            FALSE,
+            v_remarks,
+            v_subject_title
+            
+        FROM rooms_section rs
+        WHERE rs.id = NEW.roomID
+          AND rs.teacherId IS NOT NULL; -- only if room has an assigned teacher
+
+    END IF;
+END$$
+
+DELIMITER ;

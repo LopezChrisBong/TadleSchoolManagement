@@ -1,0 +1,138 @@
+CREATE DEFINER=`root`@`localhost` PROCEDURE `getquarterlygrades_mapeh`(
+    IN p_roomID INT,
+    IN p_schoolYearID INT,
+    IN p_quarter VARCHAR(50),
+    IN p_semester VARCHAR(50),
+    IN p_subjectID INT  -- should be MAPEH subject id (6)
+)
+BEGIN
+    -- We compute per-subject first in a derived table
+    SELECT * 
+    FROM (
+        SELECT 
+            es.id AS studentID,
+            es.lrnNo AS studentLRN,
+            CONCAT(es.lname, ', ', es.fname, ' ', IFNULL(es.mname,''), ' ', IFNULL(es.suffix,'')) AS name,
+            CASE sg.sub_subject
+                WHEN 1 THEN 'Music'
+                WHEN 2 THEN 'Arts'
+                WHEN 3 THEN 'Physical Education'
+                WHEN 4 THEN 'Health'
+                ELSE 'Unknown'
+            END AS subject_title,
+
+            -- Written Work
+            SUM(CASE WHEN sg.type = 1 THEN sg.quarterScore ELSE 0 END) AS ww_score,
+            SUM(CASE WHEN sg.type = 1 THEN sg.highest_posible_score ELSE 0 END) AS ww_highest,
+            ROUND(
+                (SUM(CASE WHEN sg.type = 1 THEN sg.quarterScore ELSE 0 END) /
+                 NULLIF(SUM(CASE WHEN sg.type = 1 THEN sg.highest_posible_score ELSE 0 END),0)) * 100, 2
+            ) AS ww_percentage,
+            ROUND(
+                ( (SUM(CASE WHEN sg.type = 1 THEN sg.quarterScore ELSE 0 END) /
+                  NULLIF(SUM(CASE WHEN sg.type = 1 THEN sg.highest_posible_score ELSE 0 END),0)) * 100 )
+                  * (s.writen_works / 100), 2
+            ) AS ww_weighted,
+
+            -- Performance Task
+            SUM(CASE WHEN sg.type = 2 THEN sg.quarterScore ELSE 0 END) AS pt_score,
+            SUM(CASE WHEN sg.type = 2 THEN sg.highest_posible_score ELSE 0 END) AS pt_highest,
+            ROUND(
+                (SUM(CASE WHEN sg.type = 2 THEN sg.quarterScore ELSE 0 END) /
+                 NULLIF(SUM(CASE WHEN sg.type = 2 THEN sg.highest_posible_score ELSE 0 END),0)) * 100, 2
+            ) AS pt_percentage,
+            ROUND(
+                ( (SUM(CASE WHEN sg.type = 2 THEN sg.quarterScore ELSE 0 END) /
+                  NULLIF(SUM(CASE WHEN sg.type = 2 THEN sg.highest_posible_score ELSE 0 END),0)) * 100 )
+                  * (s.performance_task / 100), 2
+            ) AS pt_weighted,
+
+            -- Quarterly Assessment
+            SUM(CASE WHEN sg.type = 3 THEN sg.quarterScore ELSE 0 END) AS qa_score,
+            SUM(CASE WHEN sg.type = 3 THEN sg.highest_posible_score ELSE 0 END) AS qa_highest,
+            ROUND(
+                (SUM(CASE WHEN sg.type = 3 THEN sg.quarterScore ELSE 0 END) /
+                 NULLIF(SUM(CASE WHEN sg.type = 3 THEN sg.highest_posible_score ELSE 0 END),0)) * 100, 2
+            ) AS qa_percentage,
+            ROUND(
+                ( (SUM(CASE WHEN sg.type = 3 THEN sg.quarterScore ELSE 0 END) /
+                  NULLIF(SUM(CASE WHEN sg.type = 3 THEN sg.highest_posible_score ELSE 0 END),0)) * 100 )
+                  * (s.quarter_assessment / 100), 2
+            ) AS qa_weighted,
+
+            -- Initial Grade
+            ROUND(
+                COALESCE(
+                    ( (SUM(CASE WHEN sg.type = 1 THEN sg.quarterScore ELSE 0 END) /
+                       NULLIF(SUM(CASE WHEN sg.type = 1 THEN sg.highest_posible_score ELSE 0 END),0)) * 100 )
+                       * (s.writen_works / 100), 0
+                ) +
+                COALESCE(
+                    ( (SUM(CASE WHEN sg.type = 2 THEN sg.quarterScore ELSE 0 END) /
+                       NULLIF(SUM(CASE WHEN sg.type = 2 THEN sg.highest_posible_score ELSE 0 END),0)) * 100 )
+                       * (s.performance_task / 100), 0
+                ) +
+                COALESCE(
+                    ( (SUM(CASE WHEN sg.type = 3 THEN sg.quarterScore ELSE 0 END) /
+                       NULLIF(SUM(CASE WHEN sg.type = 3 THEN sg.highest_posible_score ELSE 0 END),0)) * 100 )
+                       * (s.quarter_assessment / 100), 0
+                )
+            , 2) AS initial_grade
+        FROM student_grade sg
+        JOIN enroll_student es ON es.id = sg.studentID
+        JOIN subject s ON s.id = sg.subjectID
+        WHERE sg.roomID = p_roomID
+          AND sg.school_yearID = p_schoolYearID
+          AND lower(sg.quarter) = lower(p_quarter)
+          AND lower(sg.semester) = lower(p_semester)
+          AND sg.subjectID = p_subjectID  -- only MAPEH
+        GROUP BY es.id, sg.sub_subject
+    ) AS sub_grades
+
+    UNION ALL
+
+    -- Now compute overall MAPEH row safely
+    SELECT 
+        sg.studentID,
+        sg.studentLRN,
+        sg.name,
+        'MAPEH' AS subject_title,
+        NULL,NULL,NULL,NULL,  -- ww
+        NULL,NULL,NULL,NULL,  -- pt
+        NULL,NULL,NULL,NULL,  -- qa
+        ROUND(AVG(sg.initial_grade),2) AS initial_grade
+    FROM (
+        SELECT 
+            es.id AS studentID,
+            es.lrnNo AS studentLRN,
+            CONCAT(es.lname, ', ', es.fname, ' ', IFNULL(es.mname,''), ' ', IFNULL(es.suffix,'')) AS name,
+            sg.sub_subject,
+            ROUND(
+                COALESCE(
+                    ( (SUM(CASE WHEN sg.type = 1 THEN sg.quarterScore ELSE 0 END) /
+                       NULLIF(SUM(CASE WHEN sg.type = 1 THEN sg.highest_posible_score ELSE 0 END),0)) * 100 )
+                       * (s.writen_works / 100), 0
+                ) +
+                COALESCE(
+                    ( (SUM(CASE WHEN sg.type = 2 THEN sg.quarterScore ELSE 0 END) /
+                       NULLIF(SUM(CASE WHEN sg.type = 2 THEN sg.highest_posible_score ELSE 0 END),0)) * 100 )
+                       * (s.performance_task / 100), 0
+                ) +
+                COALESCE(
+                    ( (SUM(CASE WHEN sg.type = 3 THEN sg.quarterScore ELSE 0 END) /
+                       NULLIF(SUM(CASE WHEN sg.type = 3 THEN sg.highest_posible_score ELSE 0 END),0)) * 100 )
+                       * (s.quarter_assessment / 100), 0
+                )
+            , 2) AS initial_grade
+        FROM student_grade sg
+        JOIN enroll_student es ON es.id = sg.studentID
+        JOIN subject s ON s.id = sg.subjectID
+        WHERE sg.roomID = p_roomID
+          AND sg.school_yearID = p_schoolYearID
+          AND lower(sg.quarter) = lower(p_quarter)
+          AND lower(sg.semester) = lower(p_semester)
+          AND sg.subjectID = p_subjectID
+        GROUP BY es.id, sg.sub_subject
+    ) sg
+    GROUP BY sg.studentID;
+END

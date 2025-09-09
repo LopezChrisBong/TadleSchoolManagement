@@ -1,0 +1,205 @@
+<html lang='en'>
+
+  <head>
+    <meta charset='UTF-8' />
+    <meta http-equiv='X-UA-Compatible' content='IE=edge' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Document</title>
+    <style>
+      /**body { font-family: 'Liberation Sans'; }*/ .container{ width: 100%;
+      margin: 0 auto; } .header { position: fixed; top: 0px; left: 0px; right:
+      0px; height: 100px; } .footer { position: fixed; bottom: 0px; left: 0px;
+      right: 0px; height: 120px; } body { font-family: 'Arial' } table{ width:
+      100%; } table,th, td { page-break-inside: auto; } .strong { font-weight:
+      bold; } .bordered { border: 1px solid black; } .font-10 { font-size: 10px;
+      } .font-12 { font-size: 12px; } .font-14 {font-size: 14px; } .font-16 {
+      font-size: 16px; } .font-18 { font-size:18px; }.font-24 { font-size:24px;
+      } .extra-spacing-tr { height: 20px; } .header { height: 60px; } tr
+      {page-break-inside: avoid; page-break-after: auto; } thead {
+      display:table-header-group; } tfoot { display: table-footer-group; }
+      .to_title{ margin-top: 0px;}.to_title_div{ text-align: center; }
+      .to_content{page-break-inside: auto; margin-top: 120px; margin-left: 40px;
+      margin-right: 40px; } .to_number{margin-right: 100px;} .employee_table{
+      }.recommending_approval{ display: flex; justify-content: space-between; }
+      .underline{ border-bottom:1px solid black } #eval_table tr td, #eval_table
+      tr th{ padding: 8px; } #eval_table{ page-break-after: always; } #f_table
+      th,#f_table td,#eval_table th,#eval_table td{ border: 1px solid black; }
+      #f_table,#eval_table,   
+      #mySched {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed; /* force equal spacing */
+  }
+  #mySched th, #mySched td {
+    border: 1px solid #000;
+    text-align: center;
+    font-size: 12px;
+    padding: 2px;
+    word-wrap: break-word;
+  }
+    </style>
+  </head>
+
+  <body>
+    {{#each this}}
+
+      <div class='container'>
+        <div class='header'>
+            <div style="display: flex;justify-content:center; align-content:center">
+            <img
+            src='data:image/png;base64, {{header_img}}'
+            width='6%'
+            alt=''
+            />
+            <div style="margin-left: 40px;">
+                <div class="strong font-18" style="display: flex;justify-content:center; align-content:center">School Form 2 (SF2) Daily Attendance Report of Learners</div>
+                <div class="font-10" style="display: flex;justify-content:center; align-content:center">(This replaces Form 1, Form 2 & STS Form 4 - Absenteeism and Dropout Profile)</div>
+            </div>
+            </div>
+       
+
+        </div>
+        <div class='footer'>
+
+          {{!-- <img
+            style='position:fixed; bottom:0; left:0;right:0;'
+            src='data:image/png;base64, {{footer_img}}'
+            width='100%'
+            alt=''
+          /> --}}
+        </div>
+
+        
+          <div style='width: 100%;'>
+            <table
+              style='margin:0 auto; width: 100%; page-break-inside:auto; table-layout:fixed'
+            >
+              {{! // Add this css to make main table fixed, child tables will still scroll }}
+              <thead>
+                <tr>
+                  <td colspan='2'>
+                    <div style='height: 80px;'></div>
+                  </td>
+                </tr>
+              </thead>
+              <tfoot>
+                <tr>
+                  <td colspan='2'>
+                    <div style='height: 80px;'></div>
+
+                  </td>
+                </tr>
+              </tfoot>
+        
+              <tbody class=""> 
+                <tr>
+                    <td colspan="">
+                        <tr class="strong" >
+                        <td class="font-12">School ID:&nbsp;316401</td>
+                        <td class="font-12">School Year:&nbsp;{{schoolYear.school_year}}</td>
+                        <td class="font-12">Report for the Month of:&nbsp;{{month}}</td>
+                        </tr>
+                        <tr class="strong" >
+                        <td class="font-12">Name of School:&nbsp;SOUTHERN DAVAO NATIONAL HIGH SCHOOL</td>
+                        <td class="font-12">Grade Level:&nbsp;{{teacherData.grade_level}}</td>
+                        <td class="font-12">Section:&nbsp;{{teacherData.room_section}}</td>
+                        </tr>
+                    </td>
+                </tr>
+               
+
+                <tr>
+                  <td colspan='3'>
+                   <table id="mySched" style="width:100%">
+                <thead>
+                  {{#if rawData.headers}}
+                <tr>
+                    {{#each rawData.headers}}
+                    {{#ifCond this.type "fixed"}}
+                        {{#ifCond this.label "Learner's Name"}}
+                        <th rowspan="2" class="font-12" align="center" style="width:10%">{{this.label}}</th>
+                        {{else ifCond this.label "Absent"}}
+                        <th rowspan="2" class="font-12" align="center" style="width:7%">{{this.label}}</th>
+                        {{else ifCond this.label "Tardy"}}
+                        <th rowspan="2" class="font-12" align="center" style="width:7%">{{this.label}}</th>
+                        {{else}}
+                        <th rowspan="2" class="font-12" align="center">{{this.label}}</th>
+                        {{/ifCond}}
+                    {{/ifCond}}
+
+                    {{#ifCond this.type "month"}}
+                        <th colspan="{{this.days.length}}" class="font-12" align="center">
+                        {{this.month}}
+                        </th>
+                    {{/ifCond}}
+                    {{/each}}
+                    
+                    <td rowspan="2" style="width: 12%;">Remarks</td>
+                </tr>
+                {{else}}
+                <tr>
+                <th colspan="4">No attendance have been found on this month!</th>
+                </tr>
+                {{/if}}
+                <tr>
+                    {{#each rawData.headers}}
+                    {{#ifCond this.type "month"}}
+                        {{#each this.days}}
+                        <th class="font-12" align="center">{{this}}</th>
+                        {{/each}}
+                    {{/ifCond}}
+                    {{/each}}
+                </tr>
+                </thead>
+                <tbody>
+                  {{#if updatedRow}}
+                    {{#each updatedRow}}
+                    <tr>
+                        {{#each this}}
+                        <td class="font-12">{{this}}</td>
+                        {{/each}}
+                        <td></td>
+                    </tr>
+                    {{/each}}
+                    {{else}}
+                    <td colspan="4" style="padding: 20px;" class=" strong font-18">No data found, Please select another month to query!</td>
+                    {{/if}}
+                </tbody>
+                </table>
+                </tr>
+                <tr>
+                  <td colspan="">
+                    <table id="mySched" style="font-size:8px; width:35%; margin-top:10px">
+                    <tr> 
+                          <td>
+                          Legends
+                          </td>
+                          <td>Description</td>
+                      </tr>
+                      <tr>
+                        <td>✖</td>
+                        <td>Absent</td>
+                      </tr>
+                      <tr>
+                        <td>✔</td>
+                        <td>Present</td>
+                      </tr>
+                      <tr>
+                        <td>▨</td>
+                        <td>Excuse</td>
+                      </tr>
+                      <tr>
+                        <td>◻</td>
+                        <td>Late</td>
+                    </tr>
+                    </table>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+      </div>
+    {{/each}}
+  </body>
+
+</html>
