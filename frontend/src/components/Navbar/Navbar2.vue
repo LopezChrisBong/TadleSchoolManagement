@@ -452,26 +452,39 @@
       <v-container fluid class="pa-6">
         <v-card rounded="xl" elevation="1">
           <!-- Header -->
-          <v-card-title class="d-flex align-center justify-space-between">
-            <div>
-              <div class="text-h6 font-weight-bold">
-                {{ $route.meta.title }}
-              </div>
-              <!-- <div class="text-caption text-grey">Academic overview</div> -->
-            </div>
-
-            <v-autocomplete
-              v-model="selectedFilter"
-              label="School Year"
-              item-title="school_year"
-              item-value="id"
-              :items="filterYears"
-              density="compact"
-              variant="outlined"
-              hide-details
-              style="max-width: 220px"
-              @update:modelValue="changeFilter"
-            />
+          <v-card-title
+            class="d-flex align-center justify-space-between"
+            v-if="$route.meta.title != 'My Profile'"
+          >
+            <v-row>
+              <v-col cols="12" md="6">
+                <div class="text-h6 font-weight-bold">
+                  {{ $route.meta.title }}
+                </div>
+                <!-- <div class="text-caption text-grey">Academic overview</div> --></v-col
+              >
+              <v-col
+                cols="12"
+                md="6"
+                :class="
+                  $vuetify.display.smAndDown
+                    ? 'd-flex justify-center align-center'
+                    : 'd-flex justify-end'
+                "
+              >
+                <v-autocomplete
+                  v-model="selectedFilter"
+                  label="School Year"
+                  item-title="school_year"
+                  item-value="id"
+                  :items="filterYears"
+                  density="compact"
+                  variant="outlined"
+                  hide-details
+                  style="max-width: 220px"
+                  @update:modelValue="changeFilter"
+              /></v-col>
+            </v-row>
           </v-card-title>
 
           <v-divider />

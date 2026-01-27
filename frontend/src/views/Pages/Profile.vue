@@ -58,6 +58,8 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     label="First Name"
+                    variant="outlined"
+                    density="compact"
                     v-model="data.fname"
                     :readonly="readonly"
                     :rules="[formRules.required]"
@@ -67,6 +69,8 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     label="Middle Name"
+                    variant="outlined"
+                    density="compact"
                     v-model="data.mname"
                     :readonly="readonly"
                   />
@@ -75,6 +79,8 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     label="Last Name"
+                    variant="outlined"
+                    density="compact"
                     v-model="data.lname"
                     :readonly="readonly"
                     :rules="[formRules.required]"
@@ -84,6 +90,8 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     label="Suffix"
+                    variant="outlined"
+                    density="compact"
                     v-model="data.suffix"
                     :readonly="readonly"
                   />
@@ -92,6 +100,8 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     label="Sex"
+                    variant="outlined"
+                    density="compact"
                     v-model="data.sex"
                     :readonly="readonly"
                   />
@@ -100,6 +110,8 @@
                 <v-col cols="12" md="6">
                   <v-text-field
                     label="Mobile Number"
+                    variant="outlined"
+                    density="compact"
                     v-model="data.mobile_no"
                     :readonly="readonly"
                     type="number"
