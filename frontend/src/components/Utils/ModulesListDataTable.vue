@@ -18,7 +18,7 @@
           color="primary"
         />
         <v-btn
-          color="primary"
+          color="pink"
           class="white--text"
           @click="addnew()"
           prepend-icon="mdi-plus-box-outline"
@@ -44,7 +44,7 @@
         @pagination="pagination"
       >
         <template v-slot:[`item.icon`]="{ item }">
-          <v-icon color="primary">{{ item.icon }}</v-icon>
+          <v-icon color="pink">{{ item.icon }}</v-icon>
         </template>
 
         <template v-slot:[`item.actions`]="{ item }">
@@ -219,7 +219,7 @@ export default {
           this.fadeAwayMessage.show = true;
           this.itemData = null;
           this.initialize();
-        }
+        },
       );
     },
   },

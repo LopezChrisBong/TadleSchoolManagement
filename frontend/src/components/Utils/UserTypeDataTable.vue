@@ -33,7 +33,7 @@
         />
       </v-col>
     </v-row>
-    <v-card class="ma-5 dt-container" elevation="0" outlined>
+    <v-card class="ma-5 dt-container" elevation="1">
       <v-data-table
         :headers="headers"
         :items="data"
@@ -211,7 +211,7 @@ export default {
           this.fadeAwayMessage.show = true;
           this.itemData = null;
           this.initialize();
-        }
+        },
       );
     },
   },

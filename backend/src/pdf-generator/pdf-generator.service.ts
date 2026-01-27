@@ -348,7 +348,7 @@ export class PdfGeneratorService {
         bitmap = fs.readFileSync(file);
       } else {
         bitmap = fs.readFileSync(
-          join(process.cwd(), '/../upload_img/img_avatar.png'),
+          join(process.cwd(), process.env.FILE_PATH+'upload_img/img_avatar.png'),
         );
       }
     } else if (type == 'headerfooter') {
@@ -410,8 +410,8 @@ export class PdfGeneratorService {
     let teacherName = mySched[0].name
 
 
-    let headerImg = join(process.cwd(), '/static/img/header.png');
-    let footerImg = join(process.cwd(), '/static/img/footer.png');
+    let headerImg = join(process.cwd(), process.env.FILE_PATH+'static/img/header.png');
+    let footerImg = join(process.cwd(), process.env.FILE_PATH+'static/img/footer.png');
     // let headerImg = join(process.cwd(), '/../static/img/header.png');
     // let footerImg = join(process.cwd(), '/../static/img/footer.png');
 
@@ -692,9 +692,9 @@ export class PdfGeneratorService {
 
         juniorHigh = arrs["Junior High"].subjects;
             }
+ 
 
-
-            let studentData = {}
+            let studentData = {} 
             if(arrs["Junior High"]){
               junior = true
               studentData = {juniorHigh:juniorHigh}
@@ -705,8 +705,8 @@ export class PdfGeneratorService {
             console.log(studentData)
 
             
-    let headerImg = join(process.cwd(), '/static/img/header.png');
-    let footerImg = join(process.cwd(), '/static/img/footer.png');
+    let headerImg = join(process.cwd(), process.env.FILE_PATH+'static/img/header.png');
+    let footerImg = join(process.cwd(), process.env.FILE_PATH+'static/img/footer.png');
     // let headerImg = join(process.cwd(), '/../static/img/header.png');
     // let footerImg = join(process.cwd(), '/../static/img/footer.png');
     const data = [
@@ -810,8 +810,8 @@ export class PdfGeneratorService {
 
               // console.log(schoolYear.school_year)
 
-            let headerImg = join(process.cwd(), '/static/img/header.png');
-            let footerImg = join(process.cwd(), '/static/img/footer.png');
+            let headerImg = join(process.cwd(), process.env.FILE_PATH+'static/img/header.png');
+            let footerImg = join(process.cwd(), process.env.FILE_PATH+'static/img/footer.png');
 
       const data = [
       {
@@ -962,8 +962,8 @@ async getAllUnderLoadFaculty(filter:number){
             }
             // console.log(newLoader)
 
-        let headerImg = join(process.cwd(), '/static/img/header.png');
-        let footerImg = join(process.cwd(), '/static/img/footer.png');
+        let headerImg = join(process.cwd(), process.env.FILE_PATH+'static/img/header.png');
+        let footerImg = join(process.cwd(), process.env.FILE_PATH+'static/img/footer.png');
         const data = [
         {
         header_img: this.base64_encode(headerImg, 'headerfooter'),
@@ -1124,7 +1124,7 @@ async getSchoolForm2(school_yearID:number, roomID:number,subjectID:number, atten
 
 
 
-        let headerImg = join(process.cwd(), '/static/img/edukasyon.png');
+        let headerImg = join(process.cwd(), process.env.FILE_PATH+'static/img/edukasyon.png');
         // let footerImg = join(process.cwd(), '/static/img/footer.png');
         const data = [
         {
@@ -1340,7 +1340,7 @@ async getSchoolForm10(school_yearID:number, teacherID:number){
         let curDate = new Date
 
             
-        let headerImg = join(process.cwd(), '/static/img/header.png');
+        let headerImg = join(process.cwd(), process.env.FILE_PATH+'static/img/header.png');
         // let footerImg = join(process.cwd(), '/static/img/deped.png');
 
 

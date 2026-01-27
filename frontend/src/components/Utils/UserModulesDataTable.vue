@@ -15,10 +15,10 @@
           hide-details
           clearable
           class="mr-2"
-          color="primary"
+          color="pink"
         />
         <v-btn
-          color="primary"
+          color="pink"
           class="white--text"
           @click="addnew"
           prepend-icon="mdi-plus-box-outline"
@@ -224,7 +224,7 @@ export default {
           this.fadeAwayMessage.show = true;
           this.itemData = null;
           this.initialize();
-        }
+        },
       );
     },
   },

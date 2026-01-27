@@ -7,4 +7,7 @@ export class CreateAddStrandDto {
 
     @ApiProperty()
     trackId:string;
+
+    @ApiProperty()
+    arvhieve:boolean;
 }

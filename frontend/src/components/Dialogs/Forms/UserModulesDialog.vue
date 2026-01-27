@@ -24,8 +24,8 @@
                 <v-text-field
                   v-model="description"
                   :rules="[formRules.required]"
-                  dense
-                  outlined
+                  variant="outlined"
+                  density="comfortable"
                   required
                   label="Description"
                   class="rounded-lg"
@@ -37,7 +37,7 @@
                   <!-- Main Modules -->
                   <v-col cols="4" class="px-2">
                     <div class="div_drag_head text-center">
-                      <h4 class="my-2 white--text">Main modules</h4>
+                      <h4 class="my-2 text-white">Main modules</h4>
                     </div>
                     <draggable
                       class="draggable-list div_drag_foot py-2"
@@ -63,7 +63,7 @@
                   <!-- Sub Modules -->
                   <v-col cols="4" class="px-2">
                     <div class="div_drag_head text-center">
-                      <h4 class="my-2 white--text">Sub-modules</h4>
+                      <h4 class="my-2 text-white">Sub-modules</h4>
                     </div>
                     <draggable
                       class="draggable-list div_drag_foot py-2"
@@ -90,7 +90,7 @@
                   <!-- All Modules -->
                   <v-col cols="4" class="px-2">
                     <div class="div_drag_head text-center">
-                      <h4 class="my-2 white--text">All modules</h4>
+                      <h4 class="my-2 text-white">All modules</h4>
                     </div>
                     <draggable
                       class="draggable-list div_drag_foot py-2"
@@ -122,14 +122,15 @@
 
           <v-card-actions class="py-2 pr-4">
             <v-spacer></v-spacer>
-            <v-btn color="red" outlined @click="closeD()">
+            <v-btn color="red" variant="outlined" @click="closeD()">
               <v-icon>mdi-close-circle-outline</v-icon>
               Cancel
             </v-btn>
             <v-btn
               v-if="action == 'Add'"
               color="pink"
-              class="white--text"
+              variant="flat"
+              class="text-white"
               @click="save()"
             >
               <v-icon>mdi-check-circle</v-icon>
@@ -139,7 +140,8 @@
             <v-btn
               v-if="action == 'Update'"
               color="pink"
-              class="white--text"
+              variant="flat"
+              class="text-white"
               @click="update()"
             >
               <v-icon>mdi-check-circle</v-icon>
@@ -276,7 +278,7 @@ export default {
             // console.log(res.data);
             this.moduleslist = res.data;
           }
-        }
+        },
       );
     },
     closeD() {
@@ -336,7 +338,7 @@ export default {
               this.$refs.PositionFormref.reset();
               this.closeD();
             }
-          }
+          },
         );
       }
     },

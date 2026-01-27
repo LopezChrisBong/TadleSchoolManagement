@@ -59,7 +59,7 @@
                 </v-btn> -->
       </v-col>
     </v-row>
-    <v-card class="ma-5 dt-container" elevation="0" outlined>
+    <v-card class="ma-5 dt-container" elevation="1">
       <v-data-table
         :items="data"
         :class="isMobile"
@@ -111,37 +111,68 @@
       </v-data-table>
     </v-card>
 
-    <v-dialog v-model="printDialog" persistent max-width="550">
-      <v-card color="white">
-        <div class="pa-4 #3a3b3a--text">
-          <div class="text-h6 mb-1">Please select faculty to print!</div>
-          <div class="text-body-1 mb-1 mt-5">
-            <v-autocomplete
-              v-model="teacher"
-              :rules="[formRules.required]"
-              dense
-              outlined
-              class="rounded-lg"
-              item-title="name"
-              item-value="id"
-              label="Teacher to assign"
-              color="#93CB5B"
-              :items="TeachersList"
-            >
-            </v-autocomplete>
-          </div>
-        </div>
+    <v-dialog
+      v-model="printDialog"
+      persistent
+      max-width="520"
+      transition="dialog-bottom-transition"
+    >
+      <v-card rounded="xl" elevation="8">
+        <!-- HEADER -->
+        <v-card-title class="px-4 py-3">
+          <div class="d-flex align-center justify-space-between w-100">
+            <div>
+              <div class="text-h6 font-weight-bold">Select Faculty</div>
+              <div class="text-caption text-grey">
+                Choose a faculty member to print the schedule
+              </div>
+            </div>
 
-        <!-- <v-card-title class="text-h5">
-                    Are you sure you want to proceed?
-                  </v-card-title> -->
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="red" outlined @click="printDialog = false">
-            Close
+            <v-btn
+              icon
+              variant="text"
+              density="comfortable"
+              @click="printDialog = false"
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </div>
+        </v-card-title>
+
+        <v-divider />
+
+        <!-- CONTENT -->
+        <v-card-text class="px-4 pt-4">
+          <v-autocomplete
+            v-model="teacher"
+            :rules="[formRules.required]"
+            :items="TeachersList"
+            item-title="name"
+            item-value="id"
+            label="Faculty"
+            variant="outlined"
+            density="comfortable"
+            prepend-inner-icon="mdi-account-tie"
+            clearable
+          />
+        </v-card-text>
+
+        <!-- ACTIONS -->
+        <v-card-actions class="px-4 pb-4">
+          <v-spacer />
+
+          <v-btn variant="outlined" color="red" @click="printDialog = false">
+            Cancel
           </v-btn>
-          <v-btn color="#147452" class="white--text" @click="printMySched()">
-            Confirm
+
+          <v-btn
+            color="pink"
+            variant="flat"
+            prepend-icon="mdi-printer"
+            :disabled="!teacher"
+            @click="printMySched()"
+          >
+            Confirm & Print
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -362,7 +393,7 @@ export default {
             this.data = res.data;
             this.loading = false;
           }
-        }
+        },
       );
     },
     underLoad() {
@@ -373,7 +404,7 @@ export default {
           "/pdf-generator/getAllUnderLoadFaculty/" +
           filter +
           "",
-        "_blank"
+        "_blank",
       );
     },
     changeTab(tab) {
@@ -401,7 +432,7 @@ export default {
     getRoleTeachers() {
       this.axiosCall(
         "/user-details/getAllVerifiedUser/TeachingRoleSched",
-        "GET"
+        "GET",
       ).then((res) => {
         console.log("Teacher Role", res.data);
         this.TeachersList = res.data;
@@ -425,7 +456,7 @@ export default {
             "/" +
             filter +
             "",
-          "_blank" // <- This is what makes it open in a new window.
+          "_blank", // <- This is what makes it open in a new window.
         );
       }
     },

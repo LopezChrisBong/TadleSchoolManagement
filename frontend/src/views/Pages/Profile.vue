@@ -1,405 +1,197 @@
 <template>
-  <div class="mx-2">
-    <v-card class="mt-2 pt-2 pb-8">
-      <v-row style="border-radius: 10px" class="elevation-4 mx-6 mt-6">
-        <!-- <v-card class="card-style rounded-xl"> -->
-        <v-col cols="12" md="12" v-if="readonly == false">
-          <v-img align="center">
-            <v-row align="center" class="fill-height">
-              <v-col align-self="start" cols="12">
-                <v-avatar
-                  class="mt-1 mb-1"
-                  size="185"
-                  style="border: 2px solid; border-color: #a9a9a9"
-                >
-                  <v-img
-                    :src="!isSelecting ? data.profile_img : previewImg"
-                  ></v-img>
+  <div class="px-4">
+    <v-card class="rounded-xl elevation-3 overflow-hidden">
+      <!-- PROFILE HEADER -->
+      <div class="profile-header pa-6 text-center">
+        <v-avatar size="160" class="profile-avatar">
+          <v-img :src="!isSelecting ? data.profile_img : previewImg" />
+          <v-btn
+            v-if="!readonly"
+            size="small"
+            icon
+            color="primary"
+            class="avatar-edit-btn"
+            @click="handleFileImport()"
+          >
+            <v-icon>mdi-camera</v-icon>
+          </v-btn>
+        </v-avatar>
 
+        <div class="mt-4 font-weight-bold text-h6">
+          {{
+            data.mname
+              ? data.suffix
+                ? `${data.fname} ${data.mname[0]}. ${data.lname} ${data.suffix}`
+                : `${data.fname} ${data.lname}`
+              : `${data.fname} ${data.lname}`
+          }}
+        </div>
+        <div class="text-caption text-grey">
+          <!-- {{ $store.state.user.usertype.description }} -->
+        </div>
+
+        <v-file-input
+          id="fileUpload"
+          class="d-none"
+          hide-input
+          accept="image/png, image/jpeg"
+          @change="onFileChanged()"
+        />
+      </div>
+
+      <!-- TABS -->
+      <v-tabs v-model="tab" grow color="primary" class="px-4">
+        <v-tab v-for="item in items" :key="item">
+          {{ item }}
+        </v-tab>
+      </v-tabs>
+
+      <v-divider />
+
+      <!-- TAB CONTENT -->
+      <v-tabs-items v-model="tab">
+        <!-- PERSONAL INFO -->
+        <v-tab-item>
+          <v-container class="py-6">
+            <v-form ref="personalInfo">
+              <v-row dense>
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    label="First Name"
+                    v-model="data.fname"
+                    :readonly="readonly"
+                    :rules="[formRules.required]"
+                  />
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    label="Middle Name"
+                    v-model="data.mname"
+                    :readonly="readonly"
+                  />
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    label="Last Name"
+                    v-model="data.lname"
+                    :readonly="readonly"
+                    :rules="[formRules.required]"
+                  />
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    label="Suffix"
+                    v-model="data.suffix"
+                    :readonly="readonly"
+                  />
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    label="Sex"
+                    v-model="data.sex"
+                    :readonly="readonly"
+                  />
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-text-field
+                    label="Mobile Number"
+                    v-model="data.mobile_no"
+                    :readonly="readonly"
+                    type="number"
+                  />
+                </v-col>
+
+                <!-- <v-col cols="12">
+                  <v-autocomplete
+                    label="Education Position"
+                    v-model="data.education"
+                    :items="educationList"
+                    :readonly="readonly"
+                  />
+                </v-col> -->
+              </v-row>
+            </v-form>
+
+            <!-- ACTIONS -->
+            <v-row class="mt-6" dense>
+              <template v-if="readonly">
+                <v-col v-if="userRole != 3" cols="12" sm="auto">
                   <v-btn
-                    variant="outlined"
-                    v-if="!readonly"
-                    color="#dc0b70"
-                    style="border-radius: 100%"
-                    height="40px"
-                    width="40px"
-                    dark
-                    x-small
-                    absolute
-                    bottom
-                    right
-                    @click="handleFileImport()"
+                    block
+                    variant="tonal"
+                    color="pink"
+                    @click="
+                      addGrade_Subject(data);
+                      toAdd = 1;
+                    "
                   >
-                    <v-icon> mdi-image-edit-outline</v-icon>
+                    Subjects
                   </v-btn>
-                </v-avatar>
-                <v-file-input
-                  @change="onFileChanged()"
-                  id="fileUpload"
-                  hide-input
-                  accept="image/png, image/jpeg, image/jpg"
-                  class="d-none"
-                ></v-file-input>
+                </v-col>
 
-                <v-divider class="ml-5 mr-5"></v-divider>
-                <span>
-                  <v-list-item>
-                    <v-list-item-content>
-                      <v-list-item-title class="text-body-2 font-weight-bold">
-                        {{
-                          data.mname
-                            ? data.suffix
-                              ? data.fname +
-                                " " +
-                                data.mname[0] +
-                                ". " +
-                                data.lname +
-                                " " +
-                                data.suffix
-                              : data.fname + " " + data.lname
-                            : data.fname + " " + data.lname
-                        }}
-                      </v-list-item-title>
-                      <v-list-item-subtitle class="text-caption">{{
-                        $store.state.user.usertype.description
-                      }}</v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
-                </span>
-              </v-col>
-            </v-row>
-          </v-img>
-        </v-col>
-        <v-col
-          cols="12"
-          md="12"
-          style="border-left: 1px solid; border-color: #e8dfdf"
-        >
-          <div>
-            <v-tabs
-              v-model="tab"
-              color="#dc0b70"
-              show-arrows
-              grow
-              background-color="transparent"
-            >
-              <v-tab v-for="item in items" :key="item">
-                {{ item }}
-              </v-tab>
-            </v-tabs>
-            <v-divider class="ml-2 mr-2"></v-divider>
-          </div>
-          <v-tabs-items v-model="tab">
-            <v-tab-item>
-              <v-container class="mt-10">
-                <v-form ref="personalInfo" @submit.prevent>
-                  <v-row class="ml-2 mr-2 mt-1">
-                    <v-col cols="6" md="6">
-                      <v-text-field
-                        :rules="[formRules.required]"
-                        v-model="data.fname"
-                        :readonly="readonly"
-                        dense
-                        required
-                        label="First Name"
-                        color="#dc0b70"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="6" md="6">
-                      <v-text-field
-                        v-model="data.mname"
-                        :readonly="readonly"
-                        dense
-                        required
-                        label="Middle Name"
-                        color="#dc0b70"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="6" md="6">
-                      <v-text-field
-                        v-model="data.lname"
-                        :rules="[formRules.required]"
-                        :readonly="readonly"
-                        dense
-                        label="Last Name"
-                        required
-                        color="#dc0b70"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="6" md="6">
-                      <v-text-field
-                        v-model="data.suffix"
-                        :readonly="readonly"
-                        label="Suffix"
-                        dense
-                        color="#dc0b70"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="6" md="6">
-                      <v-text-field
-                        v-model="data.sex"
-                        :readonly="readonly"
-                        label="Sex"
-                        dense
-                        color="#dc0b70"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="6" md="6">
-                      <v-text-field
-                        v-model="data.mobile_no"
-                        :readonly="readonly"
-                        label="Mobile Number"
-                        dense
-                        color="#dc0b70"
-                        type="number"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12">
-                      <v-autocomplete
-                        v-model="data.education"
-                        :items="educationList"
-                        :readonly="readonly"
-                        label="Education Position"
-                        dense
-                        class="rounded-lg"
-                        color="#93CB5B"
-                      ></v-autocomplete>
-                    </v-col>
-                    <!-- <v-col cols="6" sm="6" v-if="readonly == false">
-                      <v-menu
-                        ref="menu"
-                        :close-on-content-click="false"
-                        v-model:some-prop="data.hired"
-                        transition="scale-transition"
-                        offset-y
-                        min-width="auto"
-                        :readonly="readonly"
-                      >
-                        <template v-slot:activator="{ on, attrs }">
-                          <v-text-field
-                            dense
-                            v-model="data.hired"
-                            :readonly="readonly"
-                            chips
-                            small-chips
-                            color="#dc0b70"
-                            label="Date Hired"
-                            v-bind="attrs"
-                            v-on="on"
-                          ></v-text-field>
-                        </template>
-                        <v-date-picker
-                          color="#dc0b70"
-                          v-model="data.hired"
-                          no-title
-                          scrollable
-                          :readonly="readonly"
-                        >
-                          <v-spacer></v-spacer>
-
-                          <v-btn
-                            text
-                            color="#dc0b70"
-                            @click="$refs.menu.save(data.hired)"
-                          >
-                            OK
-                          </v-btn>
-                        </v-date-picker>
-                      </v-menu>
-                    </v-col> -->
-                  </v-row>
-                </v-form>
-                <v-card-actions v-if="readonly == true" class="pa-5">
-                  <v-spacer></v-spacer>
-                  <v-row align="center" :justify="isSmAndUp ? 'center' : 'end'">
-                    <v-col cols="auto" v-if="userRole != 3">
-                      <v-btn
-                        size="large"
-                        color="#dc0b70"
-                        class="white--text mx-2"
-                        @click="
-                          addGrade_Subject(data);
-                          toAdd = 1;
-                        "
-                      >
-                        Subjects
-                      </v-btn>
-                      <v-btn
-                        size="large"
-                        color="#dc0b70"
-                        class="white--text bg-lighter-green-2"
-                        @click="
-                          addGrade_Subject(data);
-                          toAdd = 2;
-                        "
-                      >
-                        Grade Level
-                      </v-btn>
-                    </v-col>
-                    <!-- <v-col cols="auto">
-                      <v-btn
-                        size="x-small"
-                        color="#dc0b70"
-                        class="white--text"
-                        @click="addGradeLevel(data)"
-                      >
-                        Grade
-                      </v-btn>
-                    </v-col> -->
-
-                    <v-col cols="auto"
-                      ><v-btn
-                        color="#dc0b70"
-                        class="white--text"
-                        @click="readonly = false"
-                      >
-                        Edit
-                      </v-btn>
-                    </v-col>
-                  </v-row>
-                </v-card-actions>
-
-                <v-card-actions v-if="readonly == false" class="pa-5">
-                  <v-spacer></v-spacer>
+                <v-col v-if="userRole != 3" cols="12" sm="auto">
                   <v-btn
-                    color="red"
-                    outlined
+                    block
+                    variant="tonal"
+                    color="pink"
+                    @click="
+                      addGrade_Subject(data);
+                      toAdd = 2;
+                    "
+                  >
+                    Grade Level
+                  </v-btn>
+                </v-col>
+
+                <v-col cols="12" sm="auto">
+                  <v-btn block color="pink" @click="readonly = false">
+                    Edit Profile
+                  </v-btn>
+                </v-col>
+              </template>
+
+              <template v-else>
+                <v-col cols="12" sm="auto">
+                  <v-btn
+                    block
+                    variant="outlined"
+                    color="error"
                     @click="
                       readonly = true;
                       isSelecting = false;
                       selectFile = null;
                     "
                   >
-                    <v-icon>mdi-close-circle-outline</v-icon>
                     Cancel
                   </v-btn>
-                  <v-btn
-                    color="#dc0b70"
-                    class="white--text"
-                    @click="updateProfile()"
-                  >
-                    <v-icon>mdi-check-circle</v-icon>
-                    Save
+                </v-col>
+
+                <v-col cols="12" sm="auto">
+                  <v-btn block color="pink" @click="updateProfile">
+                    Save Changes
                   </v-btn>
-                </v-card-actions>
-              </v-container>
-            </v-tab-item>
-            <v-tab-item class="d-none">
-              <v-container class="mt-10">
-                <v-form ref="loginInfo" @submit.prevent>
-                  <v-row class="ml-2 mr-2 mt-1">
-                    <v-col cols="12">
-                      <v-text-field
-                        placeholder="************"
-                        class="font-size-14"
-                        color="#93CB5B"
-                        dense
-                        :disabled="credentialReadonly"
-                        v-model="oldPass"
-                        :append-icon="showOldPass ? 'mdi-eye' : 'mdi-eye-off'"
-                        :rules="[formRules.required]"
-                        :type="showOldPass ? 'text' : 'password'"
-                        name="input-10-1"
-                        label="Old Password"
-                        @click:append="showOldPass = !showOldPass"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12">
-                      <v-text-field
-                        placeholder="************"
-                        class="font-size-14"
-                        color="#93CB5B"
-                        dense
-                        :disabled="credentialReadonly"
-                        v-model="password"
-                        :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
-                        :rules="[formRules.required, formRules.password]"
-                        :type="show1 ? 'text' : 'password'"
-                        name="input-10-1"
-                        label="New Password"
-                        @click:append="show1 = !show1"
-                      ></v-text-field>
-                    </v-col>
-                    <v-col cols="12">
-                      <v-text-field
-                        placeholder="************"
-                        class="font-size-14"
-                        color="#93CB5B"
-                        :disabled="credentialReadonly"
-                        dense
-                        v-model="confirmPassword"
-                        :append-icon="show2 ? 'mdi-eye' : 'mdi-eye-off'"
-                        :rules="[
-                          formRules.required,
-                          formRules.confirmPassword(confirmPassword, password),
-                        ]"
-                        :type="show2 ? 'text' : 'password'"
-                        name="input-10-1"
-                        label="Confirm Password"
-                        @click:append="show2 = !show2"
-                      ></v-text-field>
-                    </v-col>
-                  </v-row>
-                  <v-card-actions
-                    v-if="credentialReadonly == true"
-                    class="pa-5"
-                  >
-                    <v-spacer></v-spacer>
-                    <v-btn
-                      color="#dc0b70"
-                      class="white--text"
-                      @click="credentialReadonly = false"
-                    >
-                      <v-icon>mdi-pencil</v-icon>
-                      Edit
-                    </v-btn>
-                  </v-card-actions>
-                  <v-card-actions
-                    v-if="credentialReadonly == false"
-                    class="pa-5"
-                  >
-                    <v-spacer></v-spacer>
-                    <v-btn
-                      color="red"
-                      outlined
-                      @click="credentialReadonly = true"
-                    >
-                      <v-icon>mdi-close-circle-outline</v-icon>
-                      Cancel
-                    </v-btn>
-                    <v-btn
-                      color="#dc0b70"
-                      class="white--text"
-                      @click="updateCredential()"
-                    >
-                      <v-icon>mdi-check-circle</v-icon>
-                      Save
-                    </v-btn>
-                  </v-card-actions>
-                </v-form>
-              </v-container>
-            </v-tab-item>
-          </v-tabs-items>
-        </v-col>
-        <!-- </v-card> -->
-      </v-row>
-      <TeacherSubjectAddingDialog
-        :data="taggingData"
-        :action="action"
-        :filter="filter"
-        :toAdd="toAdd"
-      />
+                </v-col>
+              </template>
+            </v-row>
+          </v-container>
+        </v-tab-item>
+      </v-tabs-items>
     </v-card>
-    <fade-away-message-component
-      displayType="variation2"
-      v-model="fadeAwayMessage.show"
-      :message="fadeAwayMessage.message"
-      :header="fadeAwayMessage.header"
-      :top="fadeAwayMessage.top"
-      :type="fadeAwayMessage.type"
-    ></fade-away-message-component>
+
+    <TeacherSubjectAddingDialog
+      :data="taggingData"
+      :action="action"
+      :filter="filter"
+      :toAdd="toAdd"
+    />
   </div>
 </template>
+
 <script>
 import eventBus from "@/eventBus";
 import TeacherSubjectAddingDialog from "../../components/Dialogs/Forms/TeacherSubjectAddingDialog.vue";
@@ -501,8 +293,6 @@ export default {
           this.data.mname = res.data.mname;
           this.data.lname = res.data.lname;
           this.data.suffix = res.data.suffix;
-          this.data.hired = res.data.hired;
-          this.data.education = res.data.education;
           this.data.sex = res.data.sex;
           this.data.status = res.data.status;
           this.data.mobile_no = res.data.mobile_no;
@@ -561,7 +351,7 @@ export default {
                       this.fadeAwayMessage.show = true;
                       this.readonly = true;
                     }
-                  }
+                  },
                 );
               } else {
                 this.initialize();
@@ -575,7 +365,7 @@ export default {
               this.fadeAwayMessage.show = true;
               this.readonly = true;
             }
-          }
+          },
         );
       }
     },
@@ -608,13 +398,20 @@ export default {
 };
 </script>
 <style scoped>
-.profile-row {
-  border-radius: 15px !important;
+.profile-header {
+  background: linear-gradient(135deg, #dc0b70, #f06292);
+  color: white;
 }
-.profile-left-panel {
-  background-color: #f1f7ff;
+
+.profile-avatar {
+  position: relative;
+  margin: auto;
 }
-.profile-right-panel {
-  background-color: #ffffff;
+
+.avatar-edit-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  margin-bottom: 20px;
 }
 </style>

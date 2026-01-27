@@ -91,7 +91,7 @@
 
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn color="red" outlined @click="closeD()">
+            <v-btn color="red" variant="outlined" @click="closeD()">
               <v-icon>mdi-close-circle-outline</v-icon>
               Close
             </v-btn>
@@ -148,8 +148,8 @@ export default {
         { length: lastDay },
         (_, i) =>
           `${year}-${String(month + 1).padStart(2, "0")}-${String(
-            i + 1
-          ).padStart(2, "0")}`
+            i + 1,
+          ).padStart(2, "0")}`,
       );
     },
     headers() {
@@ -166,10 +166,10 @@ export default {
     tableData() {
       return this.studentAttendance.map((row) => {
         const totalAbsent = Object.keys(row).filter(
-          (key) => this.daysInMonth.includes(key) && row[key] === "0"
+          (key) => this.daysInMonth.includes(key) && row[key] === "0",
         ).length;
         const totalTardy = Object.keys(row).filter(
-          (key) => this.daysInMonth.includes(key) && row[key] === "2"
+          (key) => this.daysInMonth.includes(key) && row[key] === "2",
         ).length;
 
         return {
@@ -212,7 +212,7 @@ export default {
           this.data.id +
           "/" +
           this.filter,
-        "GET"
+        "GET",
       ).then((res) => {
         console.log(res.data);
         if (res.data) {
@@ -229,14 +229,14 @@ export default {
       this.currentDate = new Date(
         this.currentDate.getFullYear(),
         this.currentDate.getMonth() - 1,
-        1
+        1,
       );
     },
     nextMonth() {
       this.currentDate = new Date(
         this.currentDate.getFullYear(),
         this.currentDate.getMonth() + 1,
-        1
+        1,
       );
     },
   },

@@ -43,6 +43,13 @@ export class AuthController {
     return this.authService.create(registerUser);
   }
 
+  @ApiBearerAuth()
+  @UsePipes(ValidationPipe)
+  @Post('addUserByAdmin')
+  addUserByAdmin(@Body() registerUser: RegisterUserDto) {
+    return this.authService.addUserByAdmin(registerUser);
+  }
+
   // @Get('sendMail')
   // sendMail() {
   //   return this.authService.sendMail();
@@ -58,6 +65,14 @@ export class AuthController {
   @Post('changePassIDCred/:id')
   changePassID(@Param('id') id: number, @Body() changPassDto: ChangePasswordDto) {
     return this.authService.changePassID(id, changPassDto);
+  }
+
+
+  // @UseGuards(JWTAuthGuard)
+  // @ApiBearerAuth()
+  @Post('changeAssignedModule/Role/:id')
+  changeAssignedModule(@Param('id') id: string, @Body() changPassDto: ChangePasswordDto) {
+    return this.authService.changeAssignedModule(+id, changPassDto);
   }
 
   @Get('checkEmailIfExist/:email')

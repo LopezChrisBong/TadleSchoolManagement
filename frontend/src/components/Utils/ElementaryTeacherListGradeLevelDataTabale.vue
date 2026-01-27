@@ -47,7 +47,7 @@
           </v-btn> -->
       </v-col>
     </v-row>
-    <v-card class="ma-5 dt-container" elevation="0" outlined>
+    <v-card class="ma-5 dt-container" elevation="1">
       <v-data-table
         :headers="headers"
         :items="filteredItems"
@@ -362,7 +362,7 @@ export default {
     deleteItem() {
       this.axiosCall(
         "/enroll-student/deleteAvailabilitySchedule" + this.deleteData.availId,
-        "DELETE"
+        "DELETE",
       ).then((res) => {
         if (res.data.status == 200) {
           this.dialog = false;

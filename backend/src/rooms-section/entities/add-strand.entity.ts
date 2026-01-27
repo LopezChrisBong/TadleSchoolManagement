@@ -34,6 +34,10 @@ export class AddStrand {
       )
       trackId:string
 
+
+      @Column({ type:'boolean', default:false})
+      arvhieve:boolean
+
       
       @CreateDateColumn({
         nullable: false,

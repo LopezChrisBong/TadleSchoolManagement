@@ -1,46 +1,53 @@
 <template>
   <div>
-    <v-dialog v-model="dialog" persistent eager scrollable max-width="900px">
+    <v-dialog v-model="dialog" persistent eager scrollable max-width="350px">
       <v-form ref="AddSubjectDialog" @submit.prevent>
-        <v-card>
-          <v-card-title class="d-flex dialog-header">
-            <span>{{ action }} Track</span>
-            <v-spacer></v-spacer>
+        <v-card rounded="xl">
+          <!-- Header -->
+          <v-card-title class="d-flex align-center justify-space-between">
+            <div>
+              <div class="text-h6 font-weight-bold">{{ action }} Track</div>
+              <!-- <div class="text-caption text-grey">
+                Assign modules and permissions
+              </div> -->
+            </div>
+
             <v-btn
               icon="mdi-close"
               variant="text"
-              color="white"
-              @click="closeD()"
-            >
-            </v-btn>
+              color="grey"
+              @click="closeD"
+            />
           </v-card-title>
 
-          <v-card-text style="max-height: 700px" class="my-4">
-            <v-container>
-              <v-row>
-                <v-col cols="12" md="12">
-                  <v-text-field
-                    style="border: 1px solid gray; border-radius: 4px"
-                    class="px-2"
-                    v-model="track_name"
-                    label="Track Name"
-                    hide-details
-                    required
-                  ></v-text-field>
-                </v-col>
-              </v-row>
-            </v-container>
+          <v-divider />
+          <v-divider></v-divider>
+          <v-card-text style="max-height: 700px">
+            <v-row>
+              <v-col cols="12" md="12">
+                <v-text-field
+                  variant="outlined"
+                  density="compact"
+                  class="px-2"
+                  v-model="track_name"
+                  label="Track Name"
+                  hide-details
+                  required
+                ></v-text-field>
+              </v-col>
+            </v-row>
           </v-card-text>
           <v-divider></v-divider>
 
           <v-card-actions class="pa-5">
             <v-spacer></v-spacer>
-            <v-btn color="red" outlined @click="closeD()">
+            <v-btn color="red" variant="outlined" @click="closeD()">
               <v-icon>mdi-close-circle-outline</v-icon>
               Cancel
             </v-btn>
             <v-btn
-              color="#e35e93"
+              color="pink"
+              variant="flat"
               class="white--text"
               v-if="action == 'Add'"
               @click="checkConflict('ADD')"
@@ -49,7 +56,8 @@
               Add
             </v-btn>
             <v-btn
-              color="#e35e93"
+              color="pink"
+              variant="flat"
               class="white--text"
               v-if="action == 'Update'"
               @click="checkConflict('UPDATE')"
@@ -206,7 +214,7 @@ export default {
                 this.fadeAwayMessage.header = "System Message";
                 this.fadeAwayMessage.message = res.data.msg;
               }
-            }
+            },
           );
         }
       } else if (type == "UPDATE") {
@@ -224,7 +232,7 @@ export default {
           this.axiosCall(
             "/rooms-section/updateTrack/" + this.updateID,
             "PATCH",
-            data
+            data,
           ).then((res) => {
             console.log(res.data);
             if (res.data.status == 201) {
@@ -232,7 +240,7 @@ export default {
               this.fadeAwayMessage.show = true;
               this.fadeAwayMessage.type = "success";
               this.fadeAwayMessage.header = "System Message";
-              this.fadeAwayMessage.message = "Successfully updated subject!";
+              this.fadeAwayMessage.message = "Successfully updated!!";
 
               // location.reload();
             } else if (res.data.status == 400) {

@@ -17,7 +17,13 @@ export class RegisterUserDto {
     suffix: string;
 
     @ApiProperty()
+    user_roleID:number
+
+    @ApiProperty()
     positionID: string;
+
+    @ApiProperty()
+    assignedModuleID:number;
 
     @ApiProperty()
     instituteID: string;
@@ -28,13 +34,18 @@ export class RegisterUserDto {
     @ApiProperty()
     status: number;
 
+     @ApiProperty()
+    isValidated: boolean;
+
+     @ApiProperty()
+    subModules: string;
+
+
     @ApiProperty()
     officeID: string;
 
     @ApiProperty()
     designationID: string;
-
-
 
     @ApiProperty()
     @IsEmail()

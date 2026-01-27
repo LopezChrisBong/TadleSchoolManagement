@@ -1,190 +1,221 @@
 <template>
-  <v-container fluid>
-    <!-- Header with Tabs & Search -->
-    <v-row class="align-center mb-4 mt-2 flex-items">
-      <v-col cols="12" md="4" class="flex-items" style="overflow: auto">
-        <v-tab
-          v-for="tab in tabList"
-          :key="tab.id"
-          :value="tab.id"
-          @click="changeTab(tab)"
-          :class="[
-            ' pa-3 mx-3 transition-all',
-            tab.active ? 'bg-pink-lighten-1 text-white' : 'bg-grey-lighten-4',
-          ]"
-          rounded="lg"
-          >{{ tab.name }}</v-tab
-        >
-      </v-col>
+  <v-container fluid class="pa-6">
+    <!-- Top Section -->
+    <v-card rounded="xl" elevation="1" class="mb-6">
+      <v-card-text>
+        <v-row align="center" dense>
+          <!-- Tabs -->
+          <v-col cols="12" md="6" class="d-flex flex-wrap ga-2">
+            <v-btn
+              v-for="tab in tabList"
+              :key="tab.id"
+              size="small"
+              rounded="lg"
+              :color="tab.active ? 'pink' : 'grey'"
+              :variant="tab.active ? 'flat' : 'tonal'"
+              @click="changeTab(tab)"
+            >
+              {{ tab.name }}
+            </v-btn>
+          </v-col>
 
-      <v-col cols="12" md="6" offset-md="2" class="d-flex">
-        <v-text-field
-          v-model="search"
-          label="Search"
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          density="compact"
-          hide-details
-          clearable
-          class="mr-2"
-          color="primary"
-        />
-        <v-btn
-          class="me-2"
-          prepend-icon="mdi-plus"
-          rounded="lg"
-          :color="$vuetify.theme.themes.light.submitBtns"
-          text="Add"
-          border
-          @click="add()"
-        ></v-btn>
-      </v-col>
-    </v-row>
+          <!-- Search & Action -->
+          <v-col cols="12" md="6" class="d-flex justify-end ga-3">
+            <v-text-field
+              v-model="search"
+              placeholder="Search users..."
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              density="compact"
+              hide-details
+              clearable
+              max-width="260"
+            />
+            <v-btn
+              prepend-icon="mdi-plus"
+              rounded="lg"
+              color="pink"
+              @click="add"
+            >
+              Add Account
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
 
     <!-- Data Table -->
-    <v-card class="elevation-1">
+    <v-card rounded="xl" elevation="1">
       <v-data-table
-        :items="data"
-        :class="isMobile"
         :headers="headers"
+        :items="data"
         :search="search"
         :items-per-page="10"
         :loading="loading"
-        loading-text="Loading users..."
-        class="rounded"
-        dense
+        loading-text="Loading accounts..."
+        class="text-body-2"
       >
         <template v-slot:[`item.fname`]="{ item }">
-          {{ item.fname }} {{ item.lname }}
+          <div class="font-weight-medium">
+            {{ item.fname }} {{ item.lname }}
+          </div>
         </template>
 
         <template v-slot:[`item.actions`]="{ item }">
-          <v-btn
-            size="small"
-            color="primary"
-            variant="outlined"
-            @click="tab == 1 ? editItem(item) : viewItem(item)"
-            block
-            class="my-1"
-          >
-            <v-icon start size="18">{{
-              tab === 1 ? "mdi-check" : "mdi-eye"
-            }}</v-icon>
-            {{ tab === 1 ? "Verify" : "View" }}
-          </v-btn>
-          <v-btn
-            v-if="tab === 1"
-            size="small"
-            color="error"
-            class="my-1"
-            variant="outlined"
-            block
-            @click="deleteItem(item)"
-          >
-            <v-icon start size="18">mdi-delete</v-icon>
-            Delete
-          </v-btn>
+          <div class="d-flex">
+            <v-btn
+              size="small"
+              variant="tonal"
+              color="primary"
+              class="me-2"
+              @click="tab === 1 ? editItem(item) : viewItem(item)"
+            >
+              <v-icon start size="16">{{
+                tab === 1 ? "mdi-check" : "mdi-eye"
+              }}</v-icon>
+              {{ tab === 1 ? "Verify" : "View" }}
+            </v-btn>
+
+            <v-btn
+              v-if="tab === 1"
+              size="small"
+              variant="tonal"
+              color="error"
+              @click="deleteItem(item)"
+            >
+              <v-icon start size="16">mdi-delete</v-icon>
+              Delete
+            </v-btn>
+          </div>
         </template>
 
         <template #no-data>
-          <v-alert type="info" border="start" color="white">
-            No users found.
-          </v-alert>
+          <v-empty-state
+            icon="mdi-account-off"
+            title="No users found"
+            text="Try adjusting your search or filters"
+          />
         </template>
       </v-data-table>
     </v-card>
 
-    <!-- Verification Dialog -->
+    <!-- Dialogs -->
     <AccountVerificationDialog :data="updateData" :action="action" />
     <AddAccountDialog :data="addData" :action="action" />
 
-    <!-- Delete Confirmation Dialog -->
-    <v-dialog v-model="dialogConfirmDelete" max-width="500">
-      <v-card>
-        <v-card-title class="text-h6">Confirm Deletion</v-card-title>
+    <!-- Delete Confirmation -->
+    <v-dialog v-model="dialogConfirmDelete" max-width="420">
+      <v-card rounded="xl">
+        <v-card-title class="font-weight-bold">Confirm Deletion</v-card-title>
         <v-card-text>
-          Are you sure you want to delete this account?
+          This action cannot be undone. Are you sure you want to delete this
+          account?
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="dialogConfirmDelete = false"
             >Cancel</v-btn
           >
-          <v-btn color="error" class="white--text" @click="confirmDelete">
-            Confirm
+          <v-btn color="error" variant="flat" @click="confirmDelete"
+            >Delete</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- View Options Dialog -->
+    <v-dialog v-model="dialog" max-width="560" persistent>
+      <v-card rounded="xl" elevation="2">
+        <!-- Header -->
+        <v-card-title class="d-flex align-center justify-space-between">
+          <div>
+            <div class="text-h6 font-weight-bold">View Details</div>
+            <div class="text-caption text-grey">
+              Choose what you want to manage
+            </div>
+          </div>
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            color="grey"
+            @click="dialog = false"
+          />
+        </v-card-title>
+
+        <v-divider />
+
+        <!-- Content -->
+        <v-card-text class="pa-6">
+          <v-row dense>
+            <!-- Module -->
+            <v-col cols="12" md="4">
+              <v-card
+                class="action-card"
+                rounded="lg"
+                elevation="1"
+                @click="editItem(dataEdit)"
+              >
+                <v-card-text class="text-center">
+                  <v-icon size="56" color="primary"
+                    >mdi-file-cog-outline</v-icon
+                  >
+                  <div class="mt-3 font-weight-medium">Module</div>
+                  <div class="text-caption text-grey">
+                    System access & roles
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+
+            <!-- Personal Info -->
+            <v-col cols="12" md="4">
+              <v-card
+                class="action-card"
+                rounded="lg"
+                elevation="1"
+                @click="personalInfo(dataEdit)"
+              >
+                <v-card-text class="text-center">
+                  <v-icon size="56" color="success"
+                    >mdi-account-box-outline</v-icon
+                  >
+                  <div class="mt-3 font-weight-medium">Personal Info</div>
+                  <div class="text-caption text-grey">Profile & details</div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+
+            <!-- Credentials -->
+            <v-col cols="12" md="4">
+              <v-card
+                class="action-card"
+                rounded="lg"
+                elevation="1"
+                @click="credentials(dataEdit)"
+              >
+                <v-card-text class="text-center">
+                  <v-icon size="56" color="warning">mdi-file-sign</v-icon>
+                  <div class="mt-3 font-weight-medium">Credentials</div>
+                  <div class="text-caption text-grey">
+                    Certificates & licenses
+                  </div>
+                </v-card-text>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-card-text>
+
+        <!-- Footer -->
+        <v-card-actions class="px-6 pb-6">
+          <v-spacer />
+          <v-btn variant="outlined" color="grey" @click="dialog = false">
+            Close
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <!-- view dialog -->
-    <v-dialog v-model="dialog" max-width="500px">
-      <v-card>
-        <v-card-title>
-          <div class="d-flex justify-space-between">
-            <span class="headline">View</span>
-            <v-btn
-              variant="text"
-              icon="mdi-close"
-              density="compact"
-              color="red"
-              @click="dialog = false"
-            ></v-btn>
-          </div>
-        </v-card-title>
-        <v-card-text>
-          <v-row>
-            <v-col cols="12" md="4">
-              <v-btn
-                text
-                style="width: 100%; height: auto"
-                @click="editItem(dataEdit)"
-              >
-                <div class="d-flex justify-center align-center">
-                  <div>
-                    <v-icon size="90">mdi-file-cog-outline</v-icon><br />Module
-                  </div>
-                </div>
-              </v-btn>
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-btn
-                text
-                style="width: 100%; height: auto"
-                @click="personalInfo(dataEdit)"
-              >
-                <div class="d-flex justify-center align-center">
-                  <div>
-                    <v-icon size="90">mdi-file-image-plus-outline</v-icon
-                    ><br />Personal Info
-                  </div>
-                </div>
-              </v-btn>
-            </v-col>
-            <v-col cols="12" md="4">
-              <v-btn
-                text
-                style="width: 100%; height: auto"
-                @click="credentials(dataEdit)"
-              >
-                <div class="d-flex justify-center align-center">
-                  <div>
-                    <v-icon size="90">mdi-file-sign</v-icon><br />Credentials
-                  </div>
-                </div>
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-card-text>
-        <!-- <v-card-actions>
-          <v-spacer />
-          <v-btn color="red" outlined class="mt-4" @click="dialog = false">
-            Cancel
-          </v-btn>
-        </v-card-actions> -->
-      </v-card>
-    </v-dialog>
-    <!-- Toast Message -->
+    <!-- Toast -->
     <fade-away-message-component
       displayType="variation2"
       v-model="fadeAwayMessage.show"
@@ -196,7 +227,7 @@
   </v-container>
 </template>
 
-<script>
+<script lang="js">
 import eventBus from "@/eventBus";
 import AccountVerificationDialog from "../../components/Dialogs/Forms/AccountVerificationDialog.vue";
 import AddAccountDialog from "../../components/Dialogs/Forms/AddAccountDialog.vue";
@@ -400,19 +431,33 @@ export default {
           this.fadeAwayMessage.type = "success";
           this.fadeAwayMessage.header = "System Message";
           this.fadeAwayMessage.message = "Account deleted successfully!";
+          this.dialogConfirmDelete =false
           this.initialize();
-        }
+        },
       );
     },
   },
 };
 </script>
 <style scoped>
-/* .v-tab {
-  color: rgb(0, 133, 82) !important;
+.action-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
-.v-tab--active {
-  color: rgb(255, 255, 255) !important;
-  background-color: blue !important;
-} */
+.action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+}
+</style>
+
+<style scoped>
+.action-card {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
 </style>

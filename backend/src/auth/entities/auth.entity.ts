@@ -57,11 +57,17 @@ export class Users {
   })
   otp: string;
 
-  @Column({ type: 'tinyint', default: true })
+  @Column({ type: 'tinyint', default: false })
   isValidated: boolean;
 
   @Column({ type: 'tinyint', default: false })
   isAdminApproved: boolean;
+
+  @Column({
+  nullable: true,
+  type: 'longtext',
+  })
+  subModules: string;
 
   @CreateDateColumn({
     nullable: false,

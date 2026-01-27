@@ -2,18 +2,27 @@
   <div>
     <v-dialog v-model="dialog" eager scrollable max-width="600px">
       <v-form ref="UserVerifyFormref" @submit.prevent>
-        <v-card>
-          <v-card-title dark class="d-flex dialog-header pt-5 pb-5 pl-6">
-            <span>{{ action == "Verify" ? "Enroll" : action }} Student</span>
-            <v-spacer></v-spacer>
+        <v-card rounded="xl" elevation="2">
+          <!-- Header -->
+          <v-card-title class="d-flex align-center justify-space-between">
+            <div>
+              <div class="text-h6 font-weight-bold">
+                {{ action == "Verify" ? "Enroll" : action }} Student
+              </div>
+              <!-- <div class="text-caption text-grey">
+                Assign modules and permissions
+              </div> -->
+            </div>
+
             <v-btn
               icon="mdi-close"
               variant="text"
-              color="white"
-              @click="closeD()"
-            >
-            </v-btn>
+              color="grey"
+              @click="closeD"
+            />
           </v-card-title>
+
+          <v-divider />
 
           <v-card-text style="max-height: 700px" class="my-4">
             <v-container>
@@ -28,9 +37,9 @@
                     picture
                   </v-btn>
                   <v-file-input
-                    outlined
+                    variant="outlined"
                     v-model="picture"
-                    dense
+                    density="comfortable"
                     class="rounded-lg"
                     :class="edit ? '' : 'd-none'"
                     label="2x2 Picture"
@@ -50,9 +59,9 @@
                     Student Card
                   </v-btn>
                   <v-file-input
-                    outlined
+                    variant="outlined"
                     v-model="schoolCard"
-                    dense
+                    density="comfortable"
                     class="rounded-lg"
                     :class="edit ? '' : 'd-none'"
                     label="Student Card"
@@ -73,9 +82,9 @@
                     Birth Certificate / PSA
                   </v-btn>
                   <v-file-input
-                    outlined
+                    variant="outlined"
                     v-model="birthPSA"
-                    dense
+                    density="comfortable"
                     class="rounded-lg"
                     :class="edit ? '' : 'd-none'"
                     label="Birth Certificate / PSA"
@@ -95,9 +104,9 @@
                     Good Moral
                   </v-btn>
                   <v-file-input
-                    outlined
+                    variant="outlined"
                     v-model="goodMoral"
-                    dense
+                    density="comfortable"
                     class="rounded-lg"
                     :class="edit ? '' : 'd-none'"
                     label="Good Moral"
@@ -112,7 +121,8 @@
                   <v-autocomplete
                     v-model="verifyModel.schoo_yearId"
                     :rules="action == 'Update' ? [formRules.required] : []"
-                    dense
+                    variant="outlined"
+                    density="comfortable"
                     class="rounded-lg"
                     item-title="school_year"
                     item-value="id"
@@ -123,11 +133,12 @@
                   >
                   </v-autocomplete>
                 </v-col>
-                <v-col cols="12" v-if="action == 'Update'">
+                <!-- <v-col cols="12" v-if="action == 'Update'">
                   <v-autocomplete
                     v-model="seniorJunior"
                     :rules="action == 'Update' ? [formRules.required] : []"
-                    dense
+                    variant="outlined"
+                    density="comfortable"
                     class="rounded-lg"
                     label="School Year"
                     color="#93CB5B"
@@ -140,7 +151,8 @@
                   <v-autocomplete
                     v-model="verifyModel.grade_level"
                     :rules="action == 'Update' ? [formRules.required] : []"
-                    dense
+                    variant="outlined"
+                    density="comfortable"
                     class="rounded-lg"
                     :class="edit ? 'd-none' : ''"
                     item-title="description"
@@ -158,7 +170,7 @@
                     "
                   >
                   </v-autocomplete>
-                </v-col>
+                </v-col> -->
               </v-row>
             </v-container>
           </v-card-text>
@@ -168,7 +180,7 @@
             <v-spacer></v-spacer>
             <v-btn
               color="red"
-              outlined
+              variant="outlined"
               @click="closeD()"
               :class="edit ? 'd-none' : ''"
             >
@@ -178,7 +190,7 @@
 
             <v-btn
               color="red"
-              outlined
+              variant="outlined"
               @click="edit = false"
               :class="edit ? '' : 'd-none'"
             >
@@ -190,6 +202,7 @@
               v-if="action == 'Update'"
               :color="$vuetify.theme.themes.light.submitBtns"
               class="white--text"
+              variant="flat"
               @click="edit = true"
               :class="edit ? 'd-none' : ''"
             >
@@ -199,6 +212,7 @@
             <v-btn
               :color="$vuetify.theme.themes.light.submitBtns"
               class="white--text"
+              variant="flat"
               :class="edit ? 'd-none' : ''"
               @click="accept()"
             >
@@ -209,6 +223,7 @@
             <v-btn
               :color="$vuetify.theme.themes.light.submitBtns"
               :class="edit ? '' : 'd-none'"
+              variant="flat"
               class="white--text"
               @click="updateWithFile()"
             >
@@ -344,11 +359,11 @@ export default {
       } else {
         this.arrayFileIndex.splice(
           this.arrayFileIndex.indexOf(this.changeGoodMoral),
-          1
+          1,
         );
         this.deleteFileArray.splice(
           this.deleteFileArray.indexOf(this.goodMoralOldValue),
-          1
+          1,
         );
         console.log("deleteFileArray", this.deleteFileArray);
       }
@@ -383,11 +398,11 @@ export default {
       } else {
         this.arrayFileIndex.splice(
           this.arrayFileIndex.indexOf(this.changepicture),
-          1
+          1,
         );
         this.deleteFileArray.splice(
           this.deleteFileArray.indexOf(this.pictureOldValue),
-          1
+          1,
         );
         console.log("deleteFileArray", this.deleteFileArray);
       }
@@ -422,11 +437,11 @@ export default {
       } else {
         this.arrayFileIndex.splice(
           this.arrayFileIndex.indexOf(this.changeschoolCard),
-          1
+          1,
         );
         this.deleteFileArray.splice(
           this.deleteFileArray.indexOf(this.schoolCardOldValue),
-          1
+          1,
         );
         console.log("deleteFileArray", this.deleteFileArray);
       }
@@ -461,11 +476,11 @@ export default {
       } else {
         this.arrayFileIndex.splice(
           this.arrayFileIndex.indexOf(this.changebirthPSA),
-          1
+          1,
         );
         this.deleteFileArray.splice(
           this.deleteFileArray.indexOf(this.birthPSAOldValue),
-          1
+          1,
         );
         console.log("deleteFileArray", this.deleteFileArray);
       }
@@ -523,7 +538,7 @@ export default {
         this.axiosCall(
           "/enroll-student/updateEnrolledStudent",
           "POST",
-          data
+          data,
         ).then((res) => {
           if (res.data.status == 200) {
             this.dialog = false;
@@ -618,7 +633,7 @@ export default {
                   this.axiosCall(
                     "/enroll-student/getArrayFile/",
                     "POST",
-                    items
+                    items,
                   ).then((res) => {
                     console.log(res.data);
                     this.dialog = false;
@@ -642,7 +657,7 @@ export default {
             this.fadeAwayMessage.header = "System Message";
             this.fadeAwayMessage.message = res.data.msg;
           }
-        }
+        },
       );
     },
 
@@ -689,7 +704,7 @@ export default {
             "/enroll-student/view/studentFile/" +
             this.picture +
             "",
-          "_blank" // <- This is what makes it open in a new window.
+          "_blank", // <- This is what makes it open in a new window.
         );
       }
     },
@@ -709,7 +724,7 @@ export default {
             "/enroll-student/view/studentFile/" +
             this.goodMoral +
             "",
-          "_blank" // <- This is what makes it open in a new window.
+          "_blank", // <- This is what makes it open in a new window.
         );
       }
     },
@@ -729,7 +744,7 @@ export default {
             "/enroll-student/view/studentFile/" +
             this.schoolCard +
             "",
-          "_blank" // <- This is what makes it open in a new window.
+          "_blank", // <- This is what makes it open in a new window.
         );
       }
     },
@@ -748,7 +763,7 @@ export default {
             "/enroll-student/view/studentFile/" +
             this.birthPSA +
             "",
-          "_blank" // <- This is what makes it open in a new window.
+          "_blank", // <- This is what makes it open in a new window.
         );
       }
     },

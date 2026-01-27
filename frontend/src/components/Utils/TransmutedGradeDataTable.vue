@@ -26,7 +26,7 @@
         </v-btn>
       </v-col>
     </v-row>
-    <v-card class="ma-5 dt-container" elevation="0" outlined>
+    <v-card class="ma-5 dt-container" elevation="1">
       <v-data-table
         :headers="headers"
         :items="data"
@@ -200,7 +200,7 @@ export default {
       this.loading = true;
       this.axiosCall(
         "/rooms-section/getTransmutedGrade/grades/data",
-        "GET"
+        "GET",
       ).then((res) => {
         if (res) {
           this.data = res.data;

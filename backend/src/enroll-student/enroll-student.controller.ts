@@ -35,6 +35,7 @@ import { join } from 'path';
 import * as fs from 'fs';
 import { CreateStudentValuesDto } from './dto/create-student-values.dto';
 import { UpdateStudentValuesDto } from './dto/update-student-values.dto';
+import { CreateImportStudentDto } from './dto/create-import-student.dto';
 
 @Controller('enroll-student')
 export class EnrollStudentController {
@@ -45,6 +46,14 @@ export class EnrollStudentController {
   @Post()
   create(@Body() createEnrollStudentDto: CreateEnrollStudentDto) {
     return this.enrollStudentService.create(createEnrollStudentDto);
+  }
+
+  
+  @UseGuards(JWTAuthGuard)
+  @ApiBearerAuth()
+  @Post('importStudent')
+  importStudent(@Body() createImportStudentDto: CreateImportStudentDto) {
+    return this.enrollStudentService.importStudent(createImportStudentDto);
   }
 
     @Post('studentValues')
@@ -252,7 +261,7 @@ export class EnrollStudentController {
     }
 
     const file = createReadStream(
-      join(process.cwd(), '/student_file/'+data),
+      join(process.cwd(), process.env.FILE_PATH+'student_file/'+data),
       // join(process.cwd(), '/../student_file/' + data),
     );
     res.set({

@@ -83,7 +83,12 @@ export class RoomsSectionController {
   }
 
   
-  @Get(':gradeLevel')
+  @Get('getMyAdvisorySection/:facultyID')
+  getMyAdvisorySection(@Param('facultyID') facultyID: string) {
+    return this.roomsSectionService.getMyAdvisorySection(+facultyID,);
+  }
+
+    @Get(':gradeLevel')
   findAll(@Param('gradeLevel') gradeLevel: string) {
     return this.roomsSectionService.findAll(gradeLevel);
   }
@@ -94,7 +99,6 @@ export class RoomsSectionController {
   }
 
   @Get('getAllGradeByQuarter/:quarter/:semester/:roomID/:subjectID/:type/:getAllGradeByQuarter/:sub_subject')
-
   getAllGradeByQuarter(@Param('quarter') quarter: string,@Param('semester') semester: string,
   @Param('roomID') roomID: string,@Param('subjectID') subjectID: string,@Param('type') type: string,
   @Param('getAllGradeByQuarter') getAllGradeByQuarter: string, 
@@ -202,6 +206,11 @@ export class RoomsSectionController {
   @Patch('updateStrand/:id')
   updateStrand(@Param('id') id: string, @Body() updateAddStrandDto: UpdateAddStrandDto) {
     return this.roomsSectionService.updateStrand(+id, updateAddStrandDto);
+  }
+
+    @Patch('archieveStrand/:id')
+  archieveStrand(@Param('id') id: string) {
+    return this.roomsSectionService.archieveStrand(+id);
   }
 
     @Patch('updateTransmutedGrade/:id')

@@ -183,7 +183,7 @@ export default {
               this.fadeAwayMessage.type = "error";
               this.fadeAwayMessage.header = res.data.msg;
             }
-          }
+          },
         );
       }
     },

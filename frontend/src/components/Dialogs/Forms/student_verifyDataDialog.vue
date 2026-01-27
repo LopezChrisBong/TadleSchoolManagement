@@ -822,26 +822,28 @@
     </v-card>
 
     <AccountVerificationDialog :data="updateData" :action="action" />
-    <!-- saving confirmation -->
-    <v-dialog v-model="confirmDialog" persistent max-width="390">
-      <v-card color="white">
-        <div class="pa-4 #3a3b3a--text">
-          <div class="text-overline mb-1">WARNING!</div>
-          <div class="text-body-1 mb-1" v-if="confirmAction == 'SAVE'">
-            <p style="text-align: justify">
-              Are you sure you wish to save your changes?
-            </p>
-          </div>
-        </div>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="red" outlined @click="confirmDialog = false">
-            Close
+    <!-- Save Confirmation -->
+    <v-dialog v-model="confirmDialog" persistent max-width="420">
+      <v-card rounded="lg" elevation="8">
+        <v-card-title class="d-flex align-center text-warning">
+          <v-icon class="me-2">mdi-alert-circle</v-icon>
+          Confirmation
+        </v-card-title>
+
+        <v-divider />
+
+        <v-card-text class="text-body-1">
+          Are you sure you want to <strong>save</strong> your changes?
+        </v-card-text>
+
+        <v-card-actions class="justify-end">
+          <v-btn variant="outlined" color="grey" @click="confirmDialog = false">
+            Cancel
           </v-btn>
+
           <v-btn
-            v-if="confirmAction == 'SAVE'"
-            color="green"
-            class="white--text"
+            v-if="confirmAction === 'SAVE'"
+            color="success"
             @click="saveUpdate()"
           >
             Confirm
@@ -850,26 +852,31 @@
       </v-card>
     </v-dialog>
 
-    <!-- saving confirmation -->
-    <v-dialog v-model="deleteConfirmDialog" persistent max-width="300">
-      <v-card>
-        <v-card-title class="text-h6 red white--text"> Warning! </v-card-title>
-        <div class="pa-4 #3a3b3a--text">
-          <div class="text-body-1 mb-1">
-            <p style="text-align: justify">
-              <v-icon class="mt-n2" color="white">mdi-alert</v-icon> &nbsp; Are
-              you sure you want to <b>REMOVE</b> this data?
-            </p>
-          </div>
-        </div>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="red" outlined @click="deleteConfirmDialog = false">
-            Close
+    <!-- Delete Confirmation -->
+    <v-dialog v-model="deleteConfirmDialog" persistent max-width="420">
+      <v-card rounded="lg" elevation="8">
+        <v-card-title class="d-flex align-center text-error">
+          <v-icon class="me-2">mdi-alert</v-icon>
+          Delete Confirmation
+        </v-card-title>
+
+        <v-divider />
+
+        <v-card-text class="text-body-1">
+          This action cannot be undone.<br />
+          Are you sure you want to <strong>remove</strong> this data?
+        </v-card-text>
+
+        <v-card-actions class="justify-end">
+          <v-btn
+            variant="outlined"
+            color="grey"
+            @click="deleteConfirmDialog = false"
+          >
+            Cancel
           </v-btn>
-          <v-btn color="green" class="white--text" @click="proceedRemove()">
-            Confirm
-          </v-btn>
+
+          <v-btn color="error" @click="proceedRemove()"> Delete </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -1082,7 +1089,7 @@ export default {
             console.log("All Strand", res.data);
             this.strandList = res.data;
           }
-        }
+        },
       );
     },
     getCountry() {
@@ -1097,7 +1104,7 @@ export default {
             process.env.VUE_APP_SERVER +
               "/pdf-generator/generateMyPDS/" +
               res.data +
-              "/true"
+              "/true",
           );
         });
       } else {
@@ -1106,7 +1113,7 @@ export default {
             process.env.VUE_APP_SERVER +
               "/pdf-generator/generateMyPDS/" +
               res.data +
-              "/false"
+              "/false",
           );
         });
       }
@@ -1211,7 +1218,7 @@ export default {
             this.trackList = res.data;
             this.loading = false;
           }
-        }
+        },
       );
     },
   },

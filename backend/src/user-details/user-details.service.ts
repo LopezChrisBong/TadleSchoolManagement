@@ -61,8 +61,8 @@ export class UserDetailsService {
         'UD.status as status',
       ])
       .leftJoinAndMapOne('UD.user', Users, 'user', 'UD.userID = user.id')
-      .where('user.isValidated = 1')
-      .andWhere('user.id != 2') //security user ID
+      // .where('user.isValidated = 1')
+      .where('user.id != 2') //security user ID
       .andWhere('user.isAdminApproved = 0')
       .getRawMany();
     return data;
@@ -79,8 +79,8 @@ export class UserDetailsService {
         'UD.status as status',
       ])
       .leftJoinAndMapOne('UD.user', Users, 'user', 'UD.userID = user.id')
-      .where('user.isValidated = 1')
-      .andWhere('user.id != 2') //security user ID
+      // .where('user.isValidated = 1')
+      .where('user.id != 2') //security user ID
       .andWhere('user.isAdminApproved = 0')
       // .andWhere('UD.status = "'+user[0].status+'"')
       .getRawMany();
@@ -142,8 +142,8 @@ export class UserDetailsService {
         'user.email as email',
       ])
       .leftJoinAndMapOne('UD.user', Users, 'user', 'UD.userID = user.id')
-      .where('user.isValidated = 1')
-      .andWhere('user.id != 2') //security user ID
+      // .where('user.isValidated = 1')
+      .where('user.id != 2') //security user ID
       .andWhere('user.isAdminApproved = 1')
       .getRawMany();
     return data;
@@ -161,8 +161,8 @@ export class UserDetailsService {
         'user.email as email',
       ])
       .leftJoinAndMapOne('UD.user', Users, 'user', 'UD.userID = user.id')
-      .where('user.isValidated = 1')
-      .andWhere('user.id != 2') //security user ID
+      // .where('user.isValidated = 1')
+      .where('user.id != 2') //security user ID
       .andWhere('user.isAdminApproved = 1')
       // .andWhere('UD.status = "'+user[0].status+'"')
       .getRawMany();
@@ -196,24 +196,17 @@ async updateUserInfo(userID:number,data:string,updateUserDetailDto:UpdateUserDet
    
     let conflict = grade == 'Grade 1'? 1 : grade == 'Grade 2'? 2 : grade == 'Grade 3'? 3 :grade == 'Grade 4'? 4 :grade == 'Grade 5'? 5 :grade == 'Grade 6'? 6 :grade == 'Grade 7'? 7 :grade == 'Grade 8'? 8 :grade == 'Grade 9'? 9 :grade == 'Grade 10'? 10 :grade == 'Grade 11'? 11 : 12
     
-    // console.log('grade',conflict)
-
-
     const user = await this.dataSource.query(
       'SELECT * FROM user_detail where id ="'+curr_user.userdetail.id+'"',
     );
-
-    console.log(user[0].id)
 
     const count = await this.dataSource.query(
       'SELECT COUNT(*) as count FROM teacher_grade_level where grade_level ="'+conflict+'"',
     );
 
-  
-
     if(count[0].count == 0){
       console.log('Wala dria')
-    let data = await this.dataSource.manager
+      let data = await this.dataSource.manager
       .createQueryBuilder(UserDetail, 'UD')
       .select([
         "IF (!ISNULL(UD.mname) AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ',SUBSTRING(UD.mname, 1, 1) ,'. ',UD.lname) ,concat(UD.fname, ' ', UD.lname)) as name",
@@ -223,9 +216,8 @@ async updateUserInfo(userID:number,data:string,updateUserDetailDto:UpdateUserDet
         'UD.lname as lname',
       ])
       .leftJoin( Users, 'user', 'UD.userID = user.id')
-      .where('user.isValidated = 1')
-      .andWhere('user.id != 2') //security user ID
-      .andWhere('user.isAdminApproved = 1')
+      // .where('user.isValidated = 1')
+      .where('user.isAdminApproved = 1')
       .andWhere('user.user_roleID = 2')
       // .andWhere('UD.status = "'+user[0].status+'"')
       .getRawMany();
@@ -233,7 +225,7 @@ async updateUserInfo(userID:number,data:string,updateUserDetailDto:UpdateUserDet
     }
      console.log('Naa dria')
 
-        let data = await this.dataSource.manager
+      let data = await this.dataSource.manager
       .createQueryBuilder(UserDetail, 'UD')
       .select([
         "IF (!ISNULL(UD.mname) AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ',SUBSTRING(UD.mname, 1, 1) ,'. ',UD.lname) ,concat(UD.fname, ' ', UD.lname)) as name",
@@ -244,14 +236,77 @@ async updateUserInfo(userID:number,data:string,updateUserDetailDto:UpdateUserDet
       ])
       .leftJoinAndMapOne('UD.user', Users, 'user', 'UD.userID = user.id')
       .leftJoinAndMapOne('UD.user', TeacherGradeLevel, 'tg', 'UD.id = tg.teachersId')
-      .where('user.isValidated = 1')
-      .andWhere('user.id != 2') //security user ID
-      .andWhere('tg.grade_level = '+conflict+'') //security user ID
+      .leftJoinAndMapOne('UD.user', RoomsSection, 'rs', 'UD.id = rs.teacherId')
+      // .where('user.isValidated = 1')
+      .where('tg.grade_level = '+conflict+'') 
       .andWhere('user.isAdminApproved = 1')
       .andWhere('user.user_roleID = 2')
       .getRawMany();
-    return data;
+      return data;
 
+  }
+
+  async getAdvisoryNotAssigned(grade:string){
+     let conflict = grade == 'Grade 1'? 1 : grade == 'Grade 2'? 2 : grade == 'Grade 3'? 3 :grade == 'Grade 4'? 4 :grade == 'Grade 5'? 5 :grade == 'Grade 6'? 6 :grade == 'Grade 7'? 7 :grade == 'Grade 8'? 8 :grade == 'Grade 9'? 9 :grade == 'Grade 10'? 10 :grade == 'Grade 11'? 11 : 12
+    
+
+    const count = await this.dataSource.query(
+      'SELECT COUNT(*) as count FROM teacher_grade_level where grade_level ="'+conflict+'"',
+    );
+    console.log(count)
+
+    if(count[0].count == 0){
+      console.log('Wala dria')
+      let data = await this.dataSource.manager
+      .createQueryBuilder(UserDetail, 'UD')
+      .select([
+        "IF (!ISNULL(UD.mname) AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ',SUBSTRING(UD.mname, 1, 1) ,'. ',UD.lname) ,concat(UD.fname, ' ', UD.lname)) as name",
+        'UD.id as id',
+        'UD.fname as fname',
+        'UD.mname as mname',
+        'UD.lname as lname',
+      ])
+      .leftJoin( Users, 'user', 'UD.userID = user.id')
+      // .where('user.isValidated = 1')
+      .where('user.isAdminApproved = 1')
+      .andWhere('user.user_roleID = 2')
+      .andWhere(`
+          NOT EXISTS (
+            SELECT 1
+            FROM rooms_section rs
+            WHERE rs.teacherId = UD.id
+          )
+        `)
+      .getRawMany();
+    return data;
+    }
+     console.log('Naa dria')
+
+      let data = await this.dataSource.manager
+      .createQueryBuilder(UserDetail, 'UD')
+      .select([
+        "IF (!ISNULL(UD.mname) AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ',SUBSTRING(UD.mname, 1, 1) ,'. ',UD.lname) ,concat(UD.fname, ' ', UD.lname)) as name",
+        'UD.id as id',
+        'UD.fname as fname',
+        'UD.mname as mname',
+        'UD.lname as lname',
+      ])
+      .leftJoinAndMapOne('UD.user', Users, 'user', 'UD.userID = user.id')
+      .leftJoinAndMapOne('UD.user', TeacherGradeLevel, 'tg', 'UD.id = tg.teachersId')
+      .leftJoinAndMapOne('UD.user', RoomsSection, 'rs', 'UD.id = rs.teacherId')
+      // .where('user.isValidated = 1')
+      .where('tg.grade_level = '+conflict+'') 
+      .andWhere('user.isAdminApproved = 1')
+      .andWhere('user.user_roleID = 2')
+      .andWhere(`
+          NOT EXISTS (
+            SELECT 1
+            FROM rooms_section rs
+            WHERE rs.teacherId = UD.id
+          )
+        `)
+      .getRawMany();
+      return data;
   }
 
   async TeachingRoleAdvisory(id:number, grade:string, curr_user:any) {
@@ -284,8 +339,8 @@ async updateUserInfo(userID:number,data:string,updateUserDetailDto:UpdateUserDet
         'UD.lname as lname',
       ])
       .leftJoinAndMapOne('UD.user', Users, 'user', 'UD.userID = user.id')
-      .where('user.isValidated = 1')
-      .andWhere('user.isAdminApproved = 1')
+      // .where('user.isValidated = 1')
+      .where('user.isAdminApproved = 1')
       .andWhere('user.user_roleID = 2')
       .andWhere('UD.id = "'+id+'"')
       .andWhere('UD.status = "'+user[0].status+'"')
@@ -299,9 +354,6 @@ async updateUserInfo(userID:number,data:string,updateUserDetailDto:UpdateUserDet
 
 
   async TeachingRoleSched(curr_user:any) {
-
-
-
     const user = await this.dataSource.query(
       'SELECT * FROM user_detail where id ="'+curr_user.userdetail.id+'"',
     );
@@ -317,8 +369,8 @@ async updateUserInfo(userID:number,data:string,updateUserDetailDto:UpdateUserDet
         'UD.lname as lname',
       ])
       .leftJoin( Users, 'user', 'UD.userID = user.id')
-      .where('user.isValidated = 1')
-      .andWhere('user.id != 2') //security user ID
+      // .where('user.isValidated = 1')
+      .where('user.id != 2') //security user ID
       .andWhere('user.isAdminApproved = 1')
       .andWhere('user.user_roleID = 2')
       // .andWhere('UD.status = "'+user[0].status+'"')
@@ -328,7 +380,7 @@ async updateUserInfo(userID:number,data:string,updateUserDetailDto:UpdateUserDet
   }
 
   async updateVerifiedUser(updateVU: UpdateVerifiedUser) {
-    
+      console.log(updateVU)
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
@@ -344,6 +396,8 @@ async updateUserInfo(userID:number,data:string,updateUserDetailDto:UpdateUserDet
           usertypeID: updateVU.usertypeID,
           user_roleID: updateVU.user_roleID == null ? 3 : updateVU.user_roleID,
           assignedModuleID: updateVU.assignedModuleID,
+          subModules:updateVU.subModules,
+          isValidated:updateVU.isValidated
         });
 
         await queryRunner.manager.update(UserDetail, updateVU.id, {
@@ -401,8 +455,6 @@ async updateUserInfo(userID:number,data:string,updateUserDetailDto:UpdateUserDet
         'ud.mname as mname',
         'ud.lname as lname',
         'ud.suffix as suffix',
-        'ud.hired as hired',
-        'ud.education as education',
         'ud.sex as sex',
         'ud.mobile_no as mobile_no',
         'ud.profile_img as profile_img',
@@ -450,8 +502,6 @@ async updateUserInfo(userID:number,data:string,updateUserDetailDto:UpdateUserDet
         suffix: updateUserDetailDto.suffix,
         sex: updateUserDetailDto.sex,
         mobile_no: updateUserDetailDto.mobile_no,
-        hired: updateUserDetailDto.hired,
-        education: updateUserDetailDto.education,
       });
 
       if (upd.affected == 1) {
@@ -480,7 +530,7 @@ async updateUserInfo(userID:number,data:string,updateUserDetailDto:UpdateUserDet
       .leftJoin(Users, 'u', 'u.id = ud.userID')
       // .where('e.isActive = :isActive', { is: true })
       .andWhere("u.user_roleID = 1")
-      .andWhere('u.isValidated = 1')
+      // .andWhere('u.isValidated = 1')
       .andWhere('u.isAdminApproved = 1')
       .andWhere('ud.id != 2') //security userID
       .getCount();
@@ -492,7 +542,7 @@ async updateUserInfo(userID:number,data:string,updateUserDetailDto:UpdateUserDet
       .leftJoin(Users, 'u', 'u.id = ud.userID')
       // .where('e.isActive = :isActive', { isActive: true })
       .andWhere("u.user_roleID = 2")
-      .andWhere('u.isValidated = 1')
+      // .andWhere('u.isValidated = 1')
       .andWhere('u.isAdminApproved = 1')
       .andWhere('ud.id != 2') //security userID
       .getCount();
@@ -513,7 +563,7 @@ async updateUserInfo(userID:number,data:string,updateUserDetailDto:UpdateUserDet
       .leftJoin(Users, 'u', 'u.id = ud.userID')
       // .where('e.isActive = :isActive', { isActive: true })
       .andWhere("ud.sex = 'Male'")
-      .andWhere('u.isValidated = 1')
+      // .andWhere('u.isValidated = 1')
       .andWhere('u.isAdminApproved = 1')
       .andWhere('ud.id != 2') //security userID
       .getCount();
@@ -523,7 +573,7 @@ async updateUserInfo(userID:number,data:string,updateUserDetailDto:UpdateUserDet
       .leftJoin(Users, 'u', 'u.id = ud.userID')
       // .where('e.isActive = :isActive', { isActive: true })
       .andWhere("ud.sex = 'Female'")
-      .andWhere('u.isValidated = 1')
+      // .andWhere('u.isValidated = 1')
       .andWhere('u.isAdminApproved = 1')
       .andWhere('ud.id != 2') //security userID
       .getCount();
@@ -537,29 +587,38 @@ async updateUserInfo(userID:number,data:string,updateUserDetailDto:UpdateUserDet
     };
   }
 
-  async remove(id: number) {
-    const queryRunner = this.dataSource.createQueryRunner();
-    await queryRunner.connect();
+async remove(id: number) {
+  const queryRunner = this.dataSource.createQueryRunner();
+  await queryRunner.connect();
 
-    try {
+  try {
+    await queryRunner.startTransaction();
 
-      const toReturn = await queryRunner.query(
-        'DELETE users , user_detail  FROM users  INNER JOIN user_detail  WHERE users.id= user_detail.userID and user_detail.id = "'+id+'"',
-      );
-      await queryRunner.commitTransaction();
-      return {
-        
-        msg: 'Deleted successfully'+ toReturn +'!',
-        status: HttpStatus.OK,
-      };
-    } catch (error) {
-      await queryRunner.rollbackTransaction();
-      return {
-        msg: 'Deletion failed',
-        status: HttpStatus.BAD_REQUEST,
-      };
-    }
+    const toReturn = await queryRunner.query(
+      `DELETE users, user_detail 
+       FROM users 
+       INNER JOIN user_detail 
+       ON users.id = user_detail.userID 
+       WHERE user_detail.id = ?`,
+      [id]
+    );
+    await queryRunner.commitTransaction();
+
+    return {
+      msg: 'Deleted successfully!',
+      status: HttpStatus.OK,
+    };
+  } catch (error) {
+    await queryRunner.rollbackTransaction();
+    return {
+      msg: 'Deletion failed: ' + error.message,
+      status: HttpStatus.BAD_REQUEST,
+    };
+  } finally {
+    await queryRunner.release();
   }
+}
+
 
 
 

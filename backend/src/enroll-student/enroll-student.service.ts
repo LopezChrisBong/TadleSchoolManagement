@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreateEnrollStudentDto } from './dto/create-enroll-student.dto';
 import { UpdateEnrollStudentDto } from './dto/update-enroll-student.dto';
-import { Availability, EnrollStudent, RoomsSection, StudentList, StudentQuarterFinalGrade, StudentValues, Subject, UserDetail } from 'src/entities';
+import { Availability, EnrollStudent, RoomsSection, StudentList, StudentQuarterFinalGrade, StudentValues, Subject, UserDetail, Users } from 'src/entities';
 import { Brackets, DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateAvailabilityDto } from './dto/create-availability.dto';
@@ -11,6 +11,7 @@ import { SchoolYear } from './entities/scholl-year.entity';
 import { UpdateSchoolYearDto } from './dto/update-school-year.dto';
 import { CreateStudentValuesDto } from './dto/create-student-values.dto';
 import {UpdateStudentValuesDto} from './dto/update-student-values.dto'
+import { CreateImportStudentDto } from './dto/create-import-student.dto';
 
 @Injectable()
 export class EnrollStudentService {
@@ -21,6 +22,8 @@ export class EnrollStudentService {
     private readonly availabilityRepository: Repository<Availability>,
     @InjectRepository(SchoolYear)
     private readonly schooyearRepository: Repository<SchoolYear>,
+    @InjectRepository(StudentList)
+    private readonly studentListRepository: Repository<StudentList>,
     private dataSource: DataSource,
   ) {}
   
@@ -40,6 +43,93 @@ export class EnrollStudentService {
     };
   }
   }
+
+  async importStudent(createImportStudentDto: CreateImportStudentDto) {
+      const queryRunner = this.dataSource.createQueryRunner();
+      await queryRunner.connect();
+      await queryRunner.startTransaction();
+        try {
+          let newStudent = JSON.parse(createImportStudentDto.data)
+         
+          for (let i = 0; i < newStudent.length; i++) {
+            let LRN = newStudent[i].lrnNo.replace(/\s/g, '')
+            const studentExist = await this.enrollStudentRepository.findOneBy({ lrnNo: LRN });
+            if(!studentExist){
+              console.log('wala', newStudent[i].school_yearId);
+
+                const newUser = queryRunner.manager.create(EnrollStudent, {
+                fname:newStudent[i].fname, 
+                lname: newStudent[i].lname, 
+                mname: newStudent[i].mname, 
+                suffix: newStudent[i].suffix, 
+                bdate: newStudent[i].bdate, 
+                sex: newStudent[i].sex, 
+                seniorJunior: newStudent[i].seniorJunior, 
+                transfered: newStudent[i].transfered, 
+                isFilipino: newStudent[i].isFilipino, 
+                grade_level: newStudent[i].grade_level, 
+                mobile_no: newStudent[i].mobile_no, 
+                lrnNo: newStudent[i].lrnNo,
+                statusEnrolled:1,
+                school_yearId:newStudent[i].school_yearId
+            });
+
+              let addedStudent = await queryRunner.manager.save(newUser);
+
+              let addStudent = queryRunner.manager.create(StudentList, {
+                roomId:parseInt(newStudent[i].roomID),
+                studentId:addedStudent.id,
+                grade_level:newStudent[i].grade_level,
+                school_yearId:newStudent[i].school_yearId,
+              })
+              await queryRunner.manager.save(addStudent)
+
+              // await  queryRunner.manager.update(EnrollStudent, addStudent.id ,{
+              //   school_yearId:newStudent[i].school_yearId,
+              //   })
+            }else{ 
+              console.log('naa')
+                const studentInList = await this.studentListRepository.findOneBy({ studentId: studentExist.id, school_yearId:newStudent[i].school_yearId,grade_level: newStudent[i].grade_level});
+
+                
+                if(!studentInList){ 
+                      let addStudent = queryRunner.manager.create(StudentList, {
+                      roomId:parseInt(newStudent[i].roomID),
+                      studentId:studentExist.id,
+                      grade_level:newStudent[i].grade_level,
+                      school_yearId:newStudent[i].school_yearId,
+                    })
+                    await queryRunner.manager.save(addStudent)
+                  }
+                  await  queryRunner.manager.update(EnrollStudent, studentExist.id ,{
+                    school_yearId:newStudent[i].school_yearId,
+                    statusEnrolled:1,
+                    })
+           
+            }
+          }
+
+
+          await queryRunner.commitTransaction();
+          return {
+            status: HttpStatus.CREATED,
+            msg: 'Student list imported successfully!',
+          };
+          
+        } catch (err) {
+          await queryRunner.rollbackTransaction();
+          const toReturn = {
+            msg: err,
+            status: HttpStatus.BAD_REQUEST,
+          };
+          return toReturn;
+          // console.log(err)
+        } finally {
+          await queryRunner.release();
+        }
+  }
+
+  
 
   async studentValues(createStudentValuesDto: CreateStudentValuesDto) {
       // let data = createStudentValuesDto
@@ -99,37 +189,151 @@ export class EnrollStudentService {
 
 
 
-  async AddSchedule(createAvailabilityDto: CreateAvailabilityDto) {
+  // async AddSchedule(createAvailabilityDto: CreateAvailabilityDto) {
 
-    try {
-      const conflict = await this.checkConflict(createAvailabilityDto);
+  //   try {
+  //     const conflict = await this.checkConflict(createAvailabilityDto);
  
-      if (conflict) {
-        return {
-          msg: 'Conflict detected. Schedule cannot be added. Faculty may already have scheduled for this time!',
-          status: HttpStatus.BAD_REQUEST,
-          conflictDetails: conflict,
-        };
-      }
+  //     if (conflict) {
+  //       return {
+  //         msg: 'Conflict detected. Schedule cannot be added. Faculty may already have scheduled for this time!',
+  //         status: HttpStatus.BAD_REQUEST,
+  //         conflictDetails: conflict,
+  //       };
+  //     }
 
-      const newSchedule = this.availabilityRepository.create(createAvailabilityDto);
-      await this.availabilityRepository.save(newSchedule);
+  //     const newSchedule = this.availabilityRepository.create(createAvailabilityDto);
+  //     await this.availabilityRepository.save(newSchedule);
   
-      return {
-        msg: 'Schedule added successfully.',
-        status: HttpStatus.CREATED,
+  //     return {
+  //       msg: 'Schedule added successfully.',
+  //       status: HttpStatus.CREATED,
+  //     };
+  //   } catch (error) {
+  //     console.error('Error adding schedule:', error);
+  //     return {
+  //       msg: 'Failed to add schedule.',
+  //       status: HttpStatus.BAD_REQUEST,
+  //     };
+  //   }
+  //   // }
+  // }
+  
+async AddSchedule(createAvailabilityDto: CreateAvailabilityDto) {
+  const savedDays: string[] = [];
+  const skippedDays: string[] = [];
+
+  try {
+    for (const day of createAvailabilityDto.day) {
+      const data = {
+        teacherID: createAvailabilityDto.teacherID,
+        subjectId: createAvailabilityDto.subjectId,
+        roomId: createAvailabilityDto.roomId,
+        grade_level: createAvailabilityDto.grade_level,
+        day,
+        times_slot_from: createAvailabilityDto.times_slot_from,
+        times_slot_to: createAvailabilityDto.times_slot_to,
+        hours: createAvailabilityDto.hours,
+        school_yearId: createAvailabilityDto.school_yearId,
       };
-    } catch (error) {
-      console.error('Error adding schedule:', error);
+
+      const conflict = await this.newCheckConflict(JSON.stringify(data));
+
+      if (!conflict.conflict) {
+        const newSchedule = this.dataSource.manager.create(Availability, data);
+        await this.availabilityRepository.save(newSchedule);
+        savedDays.push(day);
+      } else {
+        skippedDays.push(day);
+      }
+    }
+
+    if (savedDays.length === 0) {
       return {
-        msg: 'Failed to add schedule.',
+        msg: `No schedules were added. All selected days have conflicts: ${skippedDays.join(', ')}`,
+        savedDays,
+        skippedDays,
         status: HttpStatus.BAD_REQUEST,
       };
     }
-    // }
-  }
-  
+    return {
+      msg: `Schedules added successfully for days: ${savedDays.join(', ')}` +
+           (skippedDays.length ? `. Skipped due to conflict: ${skippedDays.join(', ')}` : ''),
+      savedDays,
+      skippedDays,
+      status: HttpStatus.CREATED,
+    };
 
+  } catch (error) {
+    console.error('Error adding schedule:', error);
+    return {
+      msg: 'Failed to add schedule.',
+      status: HttpStatus.BAD_REQUEST,
+    };
+  }
+}
+
+
+async newCheckConflict(data: string) {
+  try {
+    const newData = JSON.parse(data);
+    console.log(newData)
+    const conflicts = await this.availabilityRepository
+      .createQueryBuilder('availability')
+      .select([
+        'availability.*',
+        'room.room_section as room_section',
+        'sub.subject_title as subject_title',
+      ])
+      .leftJoin(RoomsSection, 'room', 'room.id = availability.roomId')
+      .leftJoin(Subject, 'sub', 'sub.id = availability.subjectId')
+      .where('availability.day = :day', { day: newData.day })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where(
+            'availability.roomId = :roomId AND availability.subjectId = :subjectId',
+            { roomId: newData.roomId, subjectId: newData.subjectId }
+          );
+
+          qb.orWhere(
+            `availability.roomId = :roomId 
+             AND :from < availability.times_slot_to 
+             AND :to > availability.times_slot_from`,
+            {
+              roomId: newData.roomId,
+              from: newData.times_slot_from,
+              to: newData.times_slot_to,
+            }
+          );
+
+          qb.orWhere(
+            `availability.teacherID = :teacherID 
+             AND :from < availability.times_slot_to 
+             AND :to > availability.times_slot_from`,
+            {
+              teacherID: newData.teacherID,
+              from: newData.times_slot_from,
+              to: newData.times_slot_to,
+            }
+          );
+        })
+      )
+      .andWhere('availability.id != :id', { id: newData.availId || 0 })
+      .getRawMany();
+
+    const hasConflict = conflicts.length > 0;
+
+    return {
+      status: hasConflict ? 409 : 200,
+      message: hasConflict ? 'Schedule conflict detected.' : 'No conflicts.',
+      conflictData: conflicts,
+      conflict: hasConflict,
+    };
+  } catch (error) {
+    console.error('Error checking conflict:', error);
+    throw new Error('Error checking schedule conflict');
+  }
+}
 
   async checkConflict(data: CreateAvailabilityDto): Promise<any> {
     try {
@@ -796,6 +1000,9 @@ async updateSchoolYear(id: number,updateSchoolYearDto: UpdateSchoolYearDto) {
       school_year_to: updateSchoolYearDto.school_year_to,
       status: updateSchoolYearDto.status,
     });
+      if(updateSchoolYearDto.status == true){
+      await this.dataSource.manager.query(`UPDATE enroll_student SET statusEnrolled = 0`);
+      }
   return {
     msg: 'Activated successfully!',
     status: HttpStatus.OK,

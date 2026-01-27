@@ -5,7 +5,7 @@
         <v-col align="center" cols="12" md="6">
           <v-card max-width="600" class="rounded-card">
             <div style="margin: 0 auto; width: 25%" class="pa-2">
-              <v-img src="../../assets/img/limbaanlogo.png"></v-img>
+              <!-- <v-img src="../../assets/img/southern logo.jpg"></v-img> -->
             </div>
             <div class="justify-center pa-4">
               <h3 style="color: #e35e93; width: 100%" class="mb-1">

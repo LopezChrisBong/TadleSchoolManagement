@@ -2,78 +2,82 @@
   <div>
     <v-dialog v-model="dialog" persistent eager scrollable max-width="900px">
       <v-form ref="AddSubjectDialog" @submit.prevent>
-        <v-card>
-          <v-card-title class="d-flex dialog-header">
-            <span>{{ action }} Subject</span>
-            <v-spacer></v-spacer>
+        <v-card rounded="xl">
+          <!-- Header -->
+          <v-card-title class="d-flex align-center justify-space-between">
+            <div>
+              <div class="text-h6 font-weight-bold">{{ action }} Subject</div>
+              <!-- <div class="text-caption text-grey">
+                Assign modules and permissions
+              </div> -->
+            </div>
+
             <v-btn
               icon="mdi-close"
               variant="text"
-              color="white"
-              @click="closeD()"
-            >
-            </v-btn>
+              color="grey"
+              @click="closeD"
+            />
           </v-card-title>
-
+          <v-divider />
+          <v-divider></v-divider>
           <v-card-text style="max-height: 700px" class="my-4">
-            <v-container>
-              <v-row>
-                <v-col cols="12" :md="grade_level == 'Senior High' ? 4 : 6">
-                  <v-text-field
-                    v-model="subject_title"
-                    label="Subject Title"
-                    variant="outlined"
-                    density="compact"
-                    style="max-width: 300px"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" :md="grade_level == 'Senior High' ? 4 : 6">
-                  <v-autocomplete
-                    v-model="grade_level"
-                    :items="seniorJuniorList"
-                    label="Grade Level"
-                    variant="outlined"
-                    density="compact"
-                  ></v-autocomplete>
-                </v-col>
-                <v-col cols="12" md="4" v-if="grade_level == 'Senior High'">
-                  <v-autocomplete
-                    v-model="indicator"
-                    :items="indicatorList"
-                    label="Indicator"
-                    variant="outlined"
-                    density="compact"
-                  ></v-autocomplete>
-                </v-col>
-                <v-col cols="12" md="4">
-                  <v-text-field
-                    v-model="writenWorks"
-                    label="Written Works (30%)"
-                    type="number"
-                    variant="outlined"
-                    density="compact"
-                    class="mx-2"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" md="4">
-                  <v-text-field
-                    v-model="performanceTask"
-                    label="Performance Task 30%"
-                    variant="outlined"
-                    density="compact"
-                    type="number"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" md="4">
-                  <v-text-field
-                    v-model="quarterAssessment"
-                    label="Quarter Asserssment 40%"
-                    variant="outlined"
-                    density="compact"
-                    type="number"
-                  ></v-text-field>
-                </v-col>
-                <!-- <v-col cols="12">
+            <v-row>
+              <v-col cols="12" :md="grade_level == 'Senior High' ? 4 : 6">
+                <v-text-field
+                  v-model="subject_title"
+                  label="Subject Title"
+                  variant="outlined"
+                  density="compact"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" :md="grade_level == 'Senior High' ? 4 : 6">
+                <v-autocomplete
+                  v-model="grade_level"
+                  :items="seniorJuniorList"
+                  label="Grade Level"
+                  variant="outlined"
+                  density="compact"
+                ></v-autocomplete>
+              </v-col>
+              <v-col cols="12" md="4" v-if="grade_level == 'Senior High'">
+                <v-autocomplete
+                  v-model="indicator"
+                  :items="indicatorList"
+                  label="Indicator"
+                  variant="outlined"
+                  density="compact"
+                ></v-autocomplete>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="writenWorks"
+                  label="Written Works (30%)"
+                  type="number"
+                  variant="outlined"
+                  density="compact"
+                  class="mx-2"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="performanceTask"
+                  label="Performance Task 30%"
+                  variant="outlined"
+                  density="compact"
+                  type="number"
+                ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="4">
+                <v-text-field
+                  v-model="quarterAssessment"
+                  label="Quarter Asserssment 40%"
+                  variant="outlined"
+                  density="compact"
+                  type="number"
+                ></v-text-field>
+              </v-col>
+              <!-- <v-col cols="12">
                   <div>
                     <div>
                       <v-btn
@@ -132,19 +136,19 @@
                     </div>
                   </div>
                 </v-col> -->
-              </v-row>
-            </v-container>
+            </v-row>
           </v-card-text>
           <v-divider></v-divider>
 
           <v-card-actions class="pa-5">
             <v-spacer></v-spacer>
-            <v-btn color="red" outlined @click="closeD()">
+            <v-btn color="red" variant="outlined" @click="closeD()">
               <v-icon>mdi-close-circle-outline</v-icon>
               Cancel
             </v-btn>
             <v-btn
               color="#e35e93"
+              variant="flat"
               class="white--text"
               v-if="action == 'Add'"
               @click="checkConflict('ADD')"
@@ -154,6 +158,7 @@
             </v-btn>
             <v-btn
               color="#e35e93"
+              variant="flat"
               class="white--text"
               v-if="action == 'Update'"
               @click="checkConflict('UPDATE')"
@@ -381,7 +386,7 @@ export default {
                 this.fadeAwayMessage.show = true;
                 this.fadeAwayMessage.type = "success";
                 this.fadeAwayMessage.header = "System Message";
-                this.fadeAwayMessage.message = "Successfully updated subject!";
+                this.fadeAwayMessage.message = "Successfully updated!!";
 
                 // location.reload();
               } else if (res.data.status == 400) {
@@ -390,7 +395,7 @@ export default {
                 this.fadeAwayMessage.header = "System Message";
                 this.fadeAwayMessage.message = res.data.msg;
               }
-            }
+            },
           );
         }
       }

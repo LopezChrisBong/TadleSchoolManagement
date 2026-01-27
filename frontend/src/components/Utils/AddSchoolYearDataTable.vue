@@ -42,7 +42,7 @@
                   </v-btn> -->
       </v-col>
     </v-row>
-    <v-card class="ma-5 dt-container" elevation="0" outlined>
+    <v-card class="ma-5 dt-container" elevation="1">
       <v-data-table
         :headers="headers"
         :items="data"
@@ -60,6 +60,7 @@
         <template v-slot:[`item.action`]="{ item }">
           <div class="text-no-wrap" style="padding: 4px">
             <v-btn
+              v-if="item.status != 1"
               x-small
               color="pink"
               class="my-2 mx-2"
@@ -112,50 +113,6 @@
           </v-btn>
           <v-btn color="#147452" class="white--text" @click="deleteItem()">
             Confirm
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-
-    <v-dialog fullscreen scrollable persistent v-model="JobPostPrint">
-      <v-card>
-        <v-card-title dark class="dialog-header">
-          <span>Type of Report</span>
-          <v-spacer></v-spacer>
-          <v-btn icon dark @click="JobPostPrint = false">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-card-title>
-        <v-card-text>
-          <v-form ref="PrintFormref">
-            <v-row class="mt-4">
-              <v-col cols="1">
-                <v-autocomplete
-                  label="Year"
-                  v-model="selectedYear"
-                  :rules="[formRules.required]"
-                  dense
-                  class="rounded-lg"
-                  color="#93CB5B"
-                  :items="yearList"
-                >
-                </v-autocomplete>
-              </v-col>
-            </v-row>
-            <v-card-title> </v-card-title>
-            <!-- <v-data-table :headers="headers3" :items="printData">
-                      <template v-slot:[`item.birth`]="{ item }">
-                        {{ formatDate(item.birth) }}
-                      </template>
-                    </v-data-table> -->
-          </v-form>
-        </v-card-text>
-
-        <v-card-actions class="pa-5">
-          <v-spacer></v-spacer>
-          <v-btn color="red" outlined @click="JobPostPrint = false">
-            <v-icon>mdi-close-circle-outline</v-icon>
-            Cancel
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -265,7 +222,6 @@ export default {
     formdata: [],
     work_dates_menu: false,
     confirmDialog: false,
-    JobPostPrint: false,
     fadeAwayMessage: {
       show: false,
       type: "success",
@@ -349,9 +305,6 @@ export default {
       for (let i = curYear; i >= 2020; i--) {
         this.yearList.push(i);
       }
-    },
-    printJobApplicants() {
-      this.JobPostPrint = true;
     },
     pagination(data) {
       this.paginationData = data;

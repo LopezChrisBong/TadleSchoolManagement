@@ -10,9 +10,10 @@ import { UpdateStudentReportDiscipilinarydDto } from './dto/update-student-repor
 export class ParentRecordsService {
     constructor(private dataSource: DataSource,){}
 async  create(createParentRecordDto: CreateParentRecordDto) {
-
-  console.log(createParentRecordDto)
          try {
+          let exist = await this.dataSource.manager.findOneBy(ParentRecord,{studentID:createParentRecordDto.studentID})
+          if(!exist){
+            // console.log('wala')
            let data = this.dataSource.manager.create(ParentRecord,{
              studentID: createParentRecordDto.studentID,
              parentID:createParentRecordDto.parentID,
@@ -22,6 +23,13 @@ async  create(createParentRecordDto: CreateParentRecordDto) {
            return{
              msg:'Save successfully!', status:HttpStatus.CREATED
            }
+          }else{
+            //  console.log(exist)
+            return{
+             msg:'Student already assigned parent!', status:HttpStatus.BAD_REQUEST
+           }
+          }
+
          } catch (error) {
            return{
              msg:'Something went wrong!'+ error, status:HttpStatus.BAD_REQUEST
@@ -53,6 +61,48 @@ async  create(createParentRecordDto: CreateParentRecordDto) {
            }
          }
   }
+
+
+async searchStudentData(data: string) {
+  const query = this.dataSource.manager
+    .createQueryBuilder(EnrollStudent, 'ES')
+    .select([
+      'ES.id as id',
+      `
+      IF (
+        ES.mname IS NOT NULL 
+        AND LOWER(ES.mname) != 'n/a',
+        CONCAT(ES.fname, ' ', SUBSTRING(ES.mname, 1, 1), '. ', ES.lname),
+        CONCAT(ES.fname, ' ', ES.lname)
+      ) as name
+      `,
+    ])
+    .where(
+      new Brackets(qb => {
+        qb.where('ES.lrnNo LIKE  :data', { data })
+          .orWhere('ES.fname LIKE  :data', { data })
+          .orWhere('ES.mname LIKE  :data', { data })
+          .orWhere('ES.lname LIKE  :data', { data })
+          .orWhere(
+                    `
+                    CONCAT(
+                      ES.fname, ' ',
+                      IF(ES.mname IS NOT NULL AND LOWER(ES.mname) != 'n/a',
+                        CONCAT(SUBSTRING(ES.mname,1,1), '. '),
+                        ''
+                      ),
+                      ES.lname
+                    ) LIKE :data
+                    `,
+                    { data: `%${data}%` }
+                  );
+
+                }),
+              );
+
+  const newData = await query.getRawMany();
+  return newData;
+}
 
   async  findAll() {
       let data = await this.dataSource.manager
@@ -370,13 +420,15 @@ async  create(createParentRecordDto: CreateParentRecordDto) {
               // .andWhere('SQF.roomID = :roomID', { roomID })
               .andWhere('SQF.studentID = :studentID', { studentID })
               // .andWhere('ES.grade_level = :gradeLevel', { gradeLevel })
-              .andWhere('ES.statusEnrolled = 1');
+              // .andWhere('ES.statusEnrolled = 1');
             let newData = await query.getRawMany();
-            // console.log(newData)
-
-          let childGrade = await  this.transformChildrenGrade(newData,gradeLevel)
-          // console.log(JSON.stringify(childGrade))
-          return childGrade
+          
+              if(newData.length > 0){
+                let childGrade = await  this.transformChildrenGrade(newData,gradeLevel)
+                // console.log(JSON.stringify(childGrade))
+                return childGrade
+              }
+              return
  }
 
 //  async transformChildrenGrade(data:any,gradeLevel:string){

@@ -53,6 +53,17 @@ export class AssignedModulesService {
     return this.assmodRep.find();
   }
 
+  async getSpecificModules(){
+      let modules = await this.dataSource
+      .createQueryBuilder(AssignedModule, 'am')
+      .where('am.id != 1')
+      .andWhere('am.id != 4')
+      .andWhere('am.id != 22')
+      .getMany();
+      // console.log(modules)
+      return modules
+  }
+
   async getMyAssignedModules(user: any) {
     let us = await this.dataSource
       .createQueryBuilder(Users, 'us')

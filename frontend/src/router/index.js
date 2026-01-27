@@ -40,7 +40,7 @@ import TransmutedGrade from '../views/Pages/TransmutedGrade.vue';
 import FacultyList from '../views/Pages/FacultyList.vue';
 import StudentDiscipline from '../views/Pages/StudentDiscipline.vue';
 import ParentChildren from '../views/Pages/ParentChildren.vue';
-
+import AdvisoryProgramm from '../views/Pages/AdvisoryProgramm.vue';
 // Vue.use(VueRouter);
 
 const routes = [
@@ -114,7 +114,7 @@ const routes = [
       {
         path: "high-school-rooms",
         component: HighSchoolRooms,
-        meta: { title: "High School Rooms", authRequired: true },
+        meta: { title: "Classroom Schedules", authRequired: true },
       },
 
       {
@@ -368,13 +368,11 @@ const routes = [
         component: ParentChildren,
         meta: { title: "My Children Record", authRequired: true },
       },
-
-      
-      
-      
-      
-      
-
+      {
+        path: "advisory-programm",
+        component: AdvisoryProgramm,
+        meta: { title: "Class Schedules", authRequired: true },
+      },
     ],
   },
   //security

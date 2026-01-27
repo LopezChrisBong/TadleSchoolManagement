@@ -70,10 +70,10 @@ export class EnrollStudent {
         birth_place: string;
 
         
-  @Column({
-    nullable: true,
-    type: 'varchar',
-  })
+        @Column({
+          nullable: true,
+          type: 'varchar',
+        })
         sex: string;
 
         
@@ -437,10 +437,9 @@ export class EnrollStudent {
 
 
         @Column({
-          type: 'varchar',nullable: false
+          type: 'varchar',nullable: true
         })
-            school_yearId: string;
-
+        school_yearId: string;
 
           @Column({
             type: 'tinyint',

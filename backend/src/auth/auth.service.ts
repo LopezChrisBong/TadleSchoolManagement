@@ -39,8 +39,6 @@ export class AuthService {
   // }
 
   async create(registerUser: RegisterUserDto) {
-
-    console.log(registerUser)
     const queryRunner = this.dataSource.createQueryRunner();
 
     await queryRunner.connect();
@@ -56,6 +54,72 @@ export class AuthService {
         otp: hashOtp,
         usertypeID: 2,
         password: hashPassword(registerUser.password),
+        assignedModuleID: registerUser.assignedModuleID,
+        user_roleID: registerUser.user_roleID,
+      });
+     
+
+      const newUserSaved = await queryRunner.manager.save(newUser);
+      const newUserDetail = queryRunner.manager.create(UserDetail, {
+        fname: registerUser.fname,
+        mname: registerUser.mname,
+        lname: registerUser.lname,
+        suffix: registerUser.suffix,
+        userID: newUserSaved.id,
+        status: registerUser.status,
+      });
+      await queryRunner.manager.save(newUserDetail);
+
+      const name = registerUser.fname + ' ' + registerUser.lname;
+
+      const dataForEmail = {
+        name,
+        email: registerUser.email,
+        OTP: otp.toString(),
+      };
+      await this.mailService.sendOTP(dataForEmail);
+
+      await queryRunner.commitTransaction();
+
+      return {
+        status: HttpStatus.CREATED,
+        msg: 'User saved.',
+      };
+      
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      const toReturn = {
+        msg: err,
+        status: HttpStatus.BAD_REQUEST,
+      };
+      return toReturn;
+      // console.log(err)
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async addUserByAdmin(registerUser:RegisterUserDto){
+    console.log(registerUser)
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+     
+      const otp = Math.floor(100000 + Math.random() * 9000);
+      const hashOtp = hashPassword(otp.toString());
+
+      // CREATING NEW USER
+      const newUser = queryRunner.manager.create(Users, {
+        email: registerUser.email,
+        otp: hashOtp,
+        usertypeID: 2,
+        password: hashPassword(registerUser.password),
+        assignedModuleID: registerUser.assignedModuleID,
+        user_roleID: registerUser.user_roleID,
+        isValidated: registerUser.isValidated,
+        subModules: registerUser.subModules,
+        isAdminApproved: true
       });
      
 
@@ -69,7 +133,14 @@ export class AuthService {
         userID: newUserSaved.id,
         status: registerUser.status,
       });
-    await queryRunner.manager.save(newUserDetail);
+      await queryRunner.manager.save(newUserDetail);
+
+      const sendEmail = {
+        email:registerUser.email,
+        new_password:registerUser.password,
+      }
+
+      await this.mailService.sendTempPassword(sendEmail);
 
       await queryRunner.commitTransaction();
 
@@ -124,22 +195,9 @@ export class AuthService {
 
         const {
           bdate,
-          birth_place,
           sex,
-          email,
           civil_status,
-          height,
-          weight,
-          blood_type,
-          GSIS,
-          PAGIBIG,
-          PHILHEALTH,
-          SSS,
-          TIN,
-          agency_employee_num,
-          is_dual_citizen,
           citizenship,
-          citizenship_type,
           country,
           tel_no,
           mobile_no,
@@ -150,13 +208,6 @@ export class AuthService {
           residential_street,
           residential_subd,
           residential_zip,
-          permanent_brgy,
-          permanent_city,
-          permanent_house_no,
-          permanent_prov,
-          permanent_street,
-          permanent_subd,
-          permanent_zip,
           ...rest
         } = userdetail;
         const payload = { userdetail: rest };
@@ -193,11 +244,12 @@ export class AuthService {
 
   async confirmOTP(conOTP: ConfirmOTPDto) {
     const user = await this.usersRepository.findOneBy({ email: conOTP.email });
+
     try {
       const isMatch = comparePassword(conOTP.otp, user.otp);
       if (isMatch) {
         const toConfirm = await this.usersRepository.update(user.id, {
-          isValidated: true,
+          isAdminApproved: true,
         });
         if (toConfirm.affected == 1) {
           const dataForEmail = {
@@ -240,19 +292,46 @@ export class AuthService {
   
   
   async changePassID(id: number, changPassDto: ChangePasswordDto) {
-       console.log(id)
+       console.log(changPassDto)
     let user_details = await this.dataSource.query(
       'SELECT * FROM user_detail WHERE id = ' + id,
     );
     let activeUser = await this.dataSource.query(
       'SELECT * FROM users WHERE id = ' + user_details[0].userID,
     );
-    console.log(activeUser)
+    console.log(activeUser[0].email)
     try {
         let pass = hashPassword(changPassDto.new_password);
         await this.usersRepository.update(activeUser[0].id, { password: pass });
+
+      const sendEmail = {
+        email:activeUser[0].email,
+        new_password:changPassDto.new_password,
+      }
+
+      await this.mailService.sendTempPassword(sendEmail);
+      
         return {
           msg: 'New password saved.',
+          status: HttpStatus.OK,
+        };
+   
+    } catch (error) {
+      return {
+        msg: error,
+        status: HttpStatus.BAD_REQUEST,
+      };
+    }
+  }
+
+  async changeAssignedModule(id: number, changPassDto: ChangePasswordDto) {
+
+    console.log(id,changPassDto)
+    try {
+        await this.usersRepository.update(id, { assignedModuleID: changPassDto.assignedModuleID });
+
+        return {
+          msg: 'Successfully Change Role.',
           status: HttpStatus.OK,
         };
    

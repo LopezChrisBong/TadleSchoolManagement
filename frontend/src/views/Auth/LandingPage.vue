@@ -7,13 +7,13 @@
           <div class="text-h6 font-weight-bold">LOGO</div>
           <div class="text-subtitle-1 font-weight-bold">
             SOUTHERN
-            <v-btn
+            <!-- <v-btn
               variant="text"
               @click="enroll()"
               class="text-subtitle-1 font-weight-bold"
             >
               ENROLL</v-btn
-            >
+            > -->
           </div>
         </div>
       </v-container>

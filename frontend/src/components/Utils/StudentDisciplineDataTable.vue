@@ -2,22 +2,24 @@
   <v-container fluid>
     <!-- Header with Tabs & Search -->
     <v-row class="align-center mb-4 mt-2 flex-items">
-      <v-col cols="12" md="4" class="flex-items" style="overflow: auto">
-        <v-tab
-          v-for="tab in tabList"
-          :key="tab.id"
-          :value="tab.id"
-          @click="changeTab(tab)"
-          :class="[
-            ' pa-3 mx-3 transition-all',
-            tab.active ? 'bg-pink-lighten-1 text-white' : 'bg-grey-lighten-4',
-          ]"
-          rounded="lg"
-          >{{ tab.name }}</v-tab
+      <v-col cols="12" md="6" class="flex-items">
+        <v-tabs v-model="activeTab" show-arrows>
+          <v-tab
+            v-for="tab in tabList"
+            :key="tab.id"
+            :value="tab.id"
+            @click="changeTab(tab)"
+            :class="[
+              ' pa-3 mx-3 transition-all',
+              tab.active ? 'bg-pink-lighten-1 text-white' : 'bg-grey-lighten-4',
+            ]"
+            rounded="lg"
+            >{{ tab.name }}</v-tab
+          ></v-tabs
         >
       </v-col>
 
-      <v-col cols="12" md="6" offset-md="2" class="d-flex">
+      <v-col cols="12" md="4" offset-md="2" class="d-flex">
         <v-text-field
           v-model="search"
           label="Search"
@@ -104,8 +106,8 @@
               <v-autocomplete
                 v-model="studentReportData.report_type"
                 :rules="[formRules.required]"
-                dense
-                outlined
+                variant="outlined"
+                density="comfortable"
                 class="rounded-lg"
                 readonly
                 item-title="description"
@@ -278,7 +280,7 @@ export default {
             this.tab +
             "/" +
             this.userRoleID,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             // console.log(res.data);
@@ -299,7 +301,7 @@ export default {
             this.tab +
             "/" +
             this.userRoleID,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             // console.log(res.data);
@@ -319,7 +321,7 @@ export default {
             this.tab +
             "/" +
             this.userId,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             // console.log(res.data);
@@ -349,7 +351,7 @@ export default {
         "/parent-records/updateStudentReport/" +
           this.studentReportData.reportID,
         "PATCH",
-        data
+        data,
       ).then((res) => {
         console.log(res);
 
@@ -387,7 +389,7 @@ export default {
           this.fadeAwayMessage.header = "System Message";
           this.fadeAwayMessage.message = "Account deleted successfully!";
           this.initialize();
-        }
+        },
       );
     },
   },

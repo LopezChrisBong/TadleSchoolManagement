@@ -139,7 +139,13 @@
 
           <v-card-actions class="pa-5">
             <v-spacer></v-spacer>
-            <v-btn class="mx-2" x-small color="red" @click="closeD()">
+            <v-btn
+              class="mx-2"
+              x-small
+              variant="outlined"
+              color="red"
+              @click="closeD()"
+            >
               <v-icon>mdi-close-circle</v-icon>
               Close
             </v-btn>
@@ -147,6 +153,7 @@
               v-if="update"
               :color="$vuetify.theme.themes.light.submitBtns"
               class="white--text"
+              variant="flat"
               @click="updateAttendance()"
             >
               <v-icon>mdi-check-circle</v-icon>Update
@@ -154,6 +161,7 @@
             <v-btn
               v-if="edit"
               :color="$vuetify.theme.themes.light.submitBtns"
+              variant="flat"
               class="white--text"
               @click="saveAttendance()"
             >
@@ -177,7 +185,7 @@
 
           <v-btn
             color="teal darken-3"
-            outlined
+            variant="outlined"
             @click="dialogConfirmSave = false"
           >
             Cancel
@@ -185,6 +193,7 @@
 
           <v-btn
             :color="$vuetify.theme.themes.light.submitBtns"
+            variant="flat"
             class="white--text"
             @click="saveAttendanceData()"
           >
@@ -239,7 +248,7 @@
                   <!-- Slots for dynamic day columns -->
                   <template
                     v-for="header in headerSemester.filter(
-                      (h) => h.key !== 'student_name'
+                      (h) => h.key !== 'student_name',
                     )"
                     v-slot:[`item.${header.key}`]="{ item }"
                     :key="header.key"
@@ -371,14 +380,14 @@ export default {
       this.currentMonth = new Date(
         this.currentMonth.getFullYear(),
         this.currentMonth.getMonth() - 1,
-        1
+        1,
       );
     },
     nextMonth() {
       this.currentMonth = new Date(
         this.currentMonth.getFullYear(),
         this.currentMonth.getMonth() + 1,
-        1
+        1,
       );
     },
     getTaggedStudent() {
@@ -389,7 +398,7 @@ export default {
           this.filter +
           "/" +
           this.data.roomId,
-        "GET"
+        "GET",
       ).then((res) => {
         console.log("Data Students", res.data);
         if (res.data) {
@@ -437,7 +446,7 @@ export default {
             this.fadeAwayMessage.header = "System Message";
             this.fadeAwayMessage.message = res.data.msg;
           }
-        }
+        },
       );
     },
     updateAttendance() {
@@ -452,7 +461,7 @@ export default {
         "/rooms-section/updateAttendance/" +
           this.formatDate3(this.attendanceDate),
         "PATCH",
-        data
+        data,
       ).then((res) => {
         console.log(res.data);
         if (res.data.status == 200) {
@@ -501,7 +510,7 @@ export default {
           this.data.roomId +
           "/" +
           this.data.subjectId,
-        "GET"
+        "GET",
       ).then((res) => {
         console.log("Data Students", res.data);
 
@@ -531,7 +540,7 @@ export default {
           this.data.roomId +
           "/" +
           this.data.subjectId,
-        "GET"
+        "GET",
       ).then((res) => {
         let data = res.data;
         this.changeData(data);
@@ -560,9 +569,9 @@ export default {
       const dates = Array.from(
         new Set(
           rawData.flatMap((r) =>
-            Object.keys(r).filter((k) => k !== "student_name")
-          )
-        )
+            Object.keys(r).filter((k) => k !== "student_name"),
+          ),
+        ),
       );
       const grouped = {};
       rawData.forEach((row) => {

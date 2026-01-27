@@ -255,13 +255,14 @@
 
           <v-card-actions class="pa-5">
             <v-spacer></v-spacer>
-            <v-btn color="red" outlined @click="closeD()">
+            <v-btn color="red" variant="outlined" @click="closeD()">
               <v-icon>mdi-close-circle-outline</v-icon>
               Cancel
             </v-btn>
             <v-btn
               color="#e35e93"
               class="white--text"
+              variant="flat"
               v-if="edit"
               @click="checkConflict('ADD')"
             >
@@ -271,6 +272,7 @@
             <v-btn
               color="#e35e93"
               class="white--text"
+              variant="flat"
               v-if="!edit"
               @click="checkConflict('UPDATE')"
             >
@@ -610,7 +612,7 @@ export default {
           this.quarter +
           "/" +
           this.semester,
-        "GET"
+        "GET",
       ).then((res) => {
         if (res.data && Array.isArray(res.data) && res.data.length > 0) {
           console.log("Daaradawad", res.data[0].mb1_values);
@@ -638,7 +640,7 @@ export default {
           this.quarter +
           "/" +
           this.semester,
-        "GET"
+        "GET",
       ).then((res) => {
         if (res.data && Array.isArray(res.data) && res.data.length > 0) {
           this.updateID = res.data[0].id;
@@ -710,7 +712,7 @@ export default {
               this.fadeAwayMessage.header = "System Message";
               this.fadeAwayMessage.message = res.data.msg;
             }
-          }
+          },
         );
       } else if (type == "UPDATE") {
         // alert("UPDATED");
@@ -727,7 +729,7 @@ export default {
         this.axiosCall(
           "/enroll-student/updateStudentValues/" + this.updateID,
           "PATCH",
-          data
+          data,
         ).then((res) => {
           console.log(res.data);
           if (res.data.status == 200) {
@@ -735,7 +737,7 @@ export default {
             this.fadeAwayMessage.show = true;
             this.fadeAwayMessage.type = "success";
             this.fadeAwayMessage.header = "System Message";
-            this.fadeAwayMessage.message = "Successfully updated subject!";
+            this.fadeAwayMessage.message = "Successfully updated!!";
           } else if (res.data.status == 400) {
             this.fadeAwayMessage.show = true;
             this.fadeAwayMessage.type = "error";
@@ -750,7 +752,7 @@ export default {
       this.ViewAllValueDialog = true;
       this.axiosCall(
         "/enroll-student/getAllValuesData/" + this.filter + "/" + this.data.id,
-        "GET"
+        "GET",
       ).then((res) => {
         // if (res.data && Array.isArray(res.data) && res.data.length > 0) {
         console.log(res.data);

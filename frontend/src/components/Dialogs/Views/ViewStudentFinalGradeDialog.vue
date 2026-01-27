@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-dialog v-model="dialog" persistent eager scrollable fullscreen>
-      <v-form ref="AddSubjectDialog" @submit.prevent>
+      <v-form ref="StudentGrades" @submit.prevent>
         <v-card>
           <v-card-title
             class="d-flex dialog-header justify-center align-center"
@@ -217,7 +217,7 @@ export default {
             if (grades.length > 0) {
               const avg = grades.reduce((sum, g) => sum + g, 0) / grades.length;
               student[`${subject}_Final`] = Math.round(
-                parseFloat(avg.toFixed(2))
+                parseFloat(avg.toFixed(2)),
               );
               subjectFinals.push(avg);
             }
@@ -277,7 +277,7 @@ export default {
             title: "Status",
             key: "status",
             align: "center",
-          }
+          },
         );
       } else {
         subjectHeaders = Array.from(subjects).map((subject) => ({
@@ -305,7 +305,7 @@ export default {
           this.quarter +
           "/" +
           this.semester,
-        "GET"
+        "GET",
       ).then((res) => {
         // console.log(res.data);
         if (res.data) {
@@ -324,7 +324,7 @@ export default {
           this.quarter +
           "/" +
           this.semester,
-        "GET"
+        "GET",
       ).then((res) => {
         // console.log(res.data);
         if (res.data) {
@@ -347,7 +347,7 @@ export default {
           "/" +
           this.data.grade_level +
           "",
-        "_blank"
+        "_blank",
       );
     },
     closeD() {

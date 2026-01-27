@@ -74,7 +74,7 @@
         </v-btn>
       </v-col>
     </v-row>
-    <v-card class="ma-5 dt-container" elevation="0" outlined>
+    <v-card class="ma-5 dt-container" elevation="1">
       <v-data-table
         :headers="headers"
         :items="data"
@@ -398,7 +398,7 @@ export default {
             console.log("Love", res.data);
             res.data.forEach((element, i) => {
               res.data[i].room_section = this.toUpperCaseData(
-                element.room_section || ""
+                element.room_section || "",
               );
             });
             this.data = res.data;
@@ -413,7 +413,7 @@ export default {
             console.log("Love", res.data);
             res.data.forEach((element, i) => {
               res.data[i].room_section = this.toUpperCaseData(
-                element.room_section || ""
+                element.room_section || "",
               );
             });
             this.data = res.data;
@@ -428,7 +428,7 @@ export default {
             console.log("Love", res.data);
             res.data.forEach((element, i) => {
               res.data[i].room_section = this.toUpperCaseData(
-                element.room_section || ""
+                element.room_section || "",
               );
             });
             this.data = res.data;
@@ -443,7 +443,7 @@ export default {
             console.log("Love", res.data);
             res.data.forEach((element, i) => {
               res.data[i].room_section = this.toUpperCaseData(
-                element.room_section || ""
+                element.room_section || "",
               );
             });
             this.data = res.data;
@@ -458,7 +458,7 @@ export default {
             console.log("Love", res.data);
             res.data.forEach((element, i) => {
               res.data[i].room_section = this.toUpperCaseData(
-                element.room_section || ""
+                element.room_section || "",
               );
             });
             this.data = res.data;
@@ -473,7 +473,7 @@ export default {
             console.log("Love", res.data);
             res.data.forEach((element, i) => {
               res.data[i].room_section = this.toUpperCaseData(
-                element.room_section || ""
+                element.room_section || "",
               );
             });
             this.data = res.data;
@@ -489,7 +489,7 @@ export default {
           this.gradeName +
           "/" +
           filter,
-        "GET"
+        "GET",
       ).then((res) => {
         this.conflict = res.data[0].conflict;
 
@@ -515,7 +515,7 @@ export default {
           filter +
           "/" +
           this.strandId,
-        "GET"
+        "GET",
       ).then((res) => {
         console.log("conflict", res.data);
 
@@ -534,7 +534,7 @@ export default {
               filter +
               "/" +
               this.strandId,
-            "POST"
+            "POST",
           ).then((res) => {
             if (res) {
               if (res.data.status == 201) {
@@ -565,7 +565,7 @@ export default {
           this.gradeName +
           "/" +
           filter,
-        "GET"
+        "GET",
       ).then((res) => {
         if (res) {
           this.conflict = res.data[0].conflict;
@@ -584,7 +584,7 @@ export default {
                   this.gradeName +
                   "/" +
                   filter,
-                "POST"
+                "POST",
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
@@ -612,7 +612,7 @@ export default {
                   this.gradeName +
                   "/" +
                   filter,
-                "POST"
+                "POST",
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
@@ -640,7 +640,7 @@ export default {
                   this.gradeName +
                   "/" +
                   filter,
-                "POST"
+                "POST",
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
@@ -668,7 +668,7 @@ export default {
                   this.gradeName +
                   "/" +
                   filter,
-                "POST"
+                "POST",
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
@@ -696,7 +696,7 @@ export default {
                   this.gradeName +
                   "/" +
                   filter,
-                "POST"
+                "POST",
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
@@ -724,7 +724,7 @@ export default {
                   this.gradeName +
                   "/" +
                   filter,
-                "POST"
+                "POST",
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
@@ -778,7 +778,7 @@ export default {
         this.gradeName = "Grade 7";
         this.axiosCall(
           "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -791,7 +791,7 @@ export default {
 
         this.axiosCall(
           "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -804,7 +804,7 @@ export default {
 
         this.axiosCall(
           "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -817,7 +817,7 @@ export default {
 
         this.axiosCall(
           "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -830,7 +830,7 @@ export default {
 
         this.axiosCall(
           "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -843,7 +843,7 @@ export default {
 
         this.axiosCall(
           "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -912,7 +912,7 @@ export default {
             this.fadeAwayMessage.header = "System Message";
             this.fadeAwayMessage.message = res.data.msg;
           }
-        }
+        },
       );
     },
     confirmDeletedItem(item) {
@@ -938,7 +938,7 @@ export default {
             this.strandList = data;
             console.log("All Strand", res.data);
           }
-        }
+        },
       );
     },
   },

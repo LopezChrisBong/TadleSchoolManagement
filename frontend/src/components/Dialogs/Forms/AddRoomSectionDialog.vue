@@ -1,27 +1,35 @@
 <template>
   <div>
-    <v-dialog v-model="dialog" persistent eager scrollable max-width="900px">
+    <v-dialog v-model="dialog" persistent eager scrollable max-width="600px">
       <v-form ref="AddClassroom" @submit.prevent>
-        <v-card>
-          <v-card-title class="d-flex dialog-header">
-            <span>{{ action }} Classroom</span>
-            <v-spacer></v-spacer>
+        <v-card rounded="xl">
+          <!-- Header -->
+          <v-card-title class="d-flex align-center justify-space-between">
+            <div>
+              <div class="text-h6 font-weight-bold">{{ action }} Classroom</div>
+              <!-- <div class="text-caption text-grey">
+                Assign modules and permissions
+              </div> -->
+            </div>
+
             <v-btn
               icon="mdi-close"
               variant="text"
-              color="white"
-              @click="closeD()"
-            >
-            </v-btn>
+              color="grey"
+              @click="closeD"
+            />
           </v-card-title>
+
+          <v-divider />
+          <v-divider></v-divider>
 
           <v-card-text style="max-height: 700px" class="my-4">
             <v-container>
               <v-row>
                 <v-col cols="12">
                   <v-text-field
-                    outlined
-                    dense
+                    variant="outlined"
+                    density="compact"
                     v-model="room_section"
                     label="Room Name"
                     :rules="[formRules.required]"
@@ -58,8 +66,8 @@
                 >
                   <v-autocomplete
                     v-model="strandId"
-                    outlined
-                    dense
+                    variant="outlined"
+                    density="compact"
                     :rules="
                       grade == 'Grade 11'
                         ? [formRules.required]
@@ -82,13 +90,14 @@
 
           <v-card-actions class="pa-5">
             <v-spacer></v-spacer>
-            <v-btn color="red" outlined @click="closeD()">
+            <v-btn color="red" variant="outlined" @click="closeD()">
               <v-icon>mdi-close-circle-outline</v-icon>
               Cancel
             </v-btn>
             <v-btn
               color="#e35e93"
               class="white--text"
+              variant="flat"
               v-if="action == 'Add'"
               @click="checkConflict('ADD')"
             >
@@ -98,6 +107,7 @@
             <v-btn
               color="#e35e93"
               class="white--text"
+              variant="flat"
               v-if="action == 'Update'"
               @click="checkConflict('UPDATE')"
             >
@@ -198,8 +208,8 @@ export default {
           this.seniorJunior = data.seniorJunior;
           this.dateFrom = data.date_from;
           this.dateTo = data.date_to;
-          this.adviser =
-            data.teacherId != null ? data.teacherId.toString() : null;
+          // this.adviser =
+          //   data.teacherId != null ? data.teacherId.toString() : null;
         } else {
           this.$refs.AddClassroom.reset();
           this.strandId = data.strandId;
@@ -308,14 +318,14 @@ export default {
             this.axiosCall(
               "/rooms-section/" + this.updateID,
               "PATCH",
-              data
+              data,
             ).then((res) => {
               console.log(res.data);
               if (res.data.status == 201) {
                 this.fadeAwayMessage.show = true;
                 this.fadeAwayMessage.type = "success";
                 this.fadeAwayMessage.header = "System Message";
-                this.fadeAwayMessage.message = "Successfully updated subject!";
+                this.fadeAwayMessage.message = "Successfully updated!!";
                 this.closeD();
                 location.reload();
               } else if (res.data.status == 400) {
@@ -347,14 +357,14 @@ export default {
             this.strandList = data;
             console.log("All Strand", res.data);
           }
-        }
+        },
       );
     },
 
     getRoleTeachers() {
       this.axiosCall(
-        "/user-details/getAllVerifiedUser/TeachingRole/" + this.grade,
-        "GET"
+        "/user-details/getAdvisoryNotAssigned/" + this.grade,
+        "GET",
       ).then((res) => {
         console.log("Teacher Role", res.data);
         this.adviserList = res.data;

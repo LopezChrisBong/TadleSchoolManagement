@@ -1,13 +1,7 @@
 <template>
   <div>
     <v-row class="mx-2 mt-2">
-      <v-col cols="12" md="8" class="flex-items">
-        <!-- <v-tabs v-model="activeTab" color="#147452" align-tabs="left">
-          <v-tab v-for="tab in tabList" :key="tab.id" @click="changeTab(tab)">{{
-            tab.name
-          }}</v-tab>
-        </v-tabs> -->
-      </v-col>
+      <v-col cols="12" md="8" class="flex-items"> </v-col>
       <v-spacer></v-spacer>
       <v-col cols="12" md="4" class="d-flex justify-space-between">
         <v-text-field
@@ -30,19 +24,9 @@
           <v-icon left> mdi-plus-box-outline </v-icon>
           Add New
         </v-btn>
-        <!-- <v-btn
-                  :class="tab == 3 ? '' : 'd-none'"
-                  class="white--text ml-2 rounded-lg"
-                  color="#147452"
-                  v-if="this.$store.state.user.user.isAdminApproved == 1"
-                  @click="printJobApplicants()"
-                >
-                  <v-icon left> mdi-printer-outline </v-icon>
-                  Print
-                </v-btn> -->
       </v-col>
     </v-row>
-    <v-card class="ma-5 dt-container" elevation="0" outlined>
+    <v-card class="ma-5 dt-container" elevation="1">
       <v-data-table
         :headers="headers"
         :items="data"
@@ -50,7 +34,6 @@
         :search="search"
         @update:options="options"
         :loading="loading"
-        @pagination="pagination"
       >
         <template v-slot:[`item.action`]="{ item }">
           <div class="text-no-wrap" style="padding: 4px">
@@ -63,15 +46,15 @@
             >
               <v-icon size="14">mdi-pencil-outline</v-icon>Update
             </v-btn>
-            <!-- <v-btn
-                x-small
-                color="red"
-                class="my-2"
-                outlined
-                @click="confirmDelete(item)"
-              >
-                <v-icon size="14">mdi-delete-off</v-icon>Delete
-              </v-btn> -->
+            <v-btn
+              x-small
+              color="red"
+              class="my-2"
+              outlined
+              @click="confirmDelete(item)"
+            >
+              <v-icon size="14">mdi-delete-off</v-icon>Delete
+            </v-btn>
           </div>
         </template>
       </v-data-table>
@@ -226,12 +209,6 @@ export default {
     loading: false,
     options: {},
     action: null,
-    toPrint: null,
-    jobitem: null,
-    jobitemsList: [],
-    selectedYear: null,
-    selectedMonth: null,
-    paginationData: {},
     formdata: [],
     work_dates_menu: false,
     confirmDialog: false,
@@ -326,27 +303,22 @@ export default {
         this.yearList.push(i);
       }
     },
-    printJobApplicants() {
-      this.JobPostPrint = true;
-    },
+
     pagination(data) {
       this.paginationData = data;
     },
 
     initialize() {
       this.loading = true;
-
-      if (this.tab == 1) {
-        this.axiosCall("/rooms-section/AllStrand/Data/strand", "GET").then(
-          (res) => {
-            if (res) {
-              console.log("All Strand", res.data);
-              this.data = res.data;
-              this.loading = false;
-            }
+      this.axiosCall("/rooms-section/AllStrand/Data/strand", "GET").then(
+        (res) => {
+          if (res) {
+            console.log("All Strand", res.data);
+            this.data = res.data;
+            this.loading = false;
           }
-        );
-      }
+        },
+      );
     },
 
     changeTab(tab) {
@@ -389,25 +361,26 @@ export default {
     },
 
     deleteItem() {
-      this.axiosCall("/rooms-section/" + this.deleteData.id, "DELETE").then(
-        (res) => {
-          if (res.data.status == 200) {
-            this.dialog = false;
-            this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "success";
-            this.fadeAwayMessage.header = "System Message";
-            this.fadeAwayMessage.message = res.data.msg;
-            this.confirmDialog = false;
-            this.initialize();
-          } else if (res.data.status == 400) {
-            this.confirmDialog = false;
-            this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
-            this.fadeAwayMessage.message = res.data.msg;
-          }
+      this.axiosCall(
+        "/rooms-section/archieveStrand/" + this.deleteData.id,
+        "PATCH",
+        {},
+      ).then((res) => {
+        if (res.data.status == 201) {
+          // this.initialize();
+          // this.confirmDialog = false;
+          this.fadeAwayMessage.show = true;
+          this.fadeAwayMessage.type = "success";
+          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.message = "Successfully updated!!";
+          location.reload();
+        } else if (res.data.status == 400) {
+          this.fadeAwayMessage.show = true;
+          this.fadeAwayMessage.type = "error";
+          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.message = res.data.msg;
         }
-      );
+      });
     },
     confirmDelete(item) {
       this.confirmDialog = true;

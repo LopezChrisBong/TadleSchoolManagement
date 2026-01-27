@@ -169,11 +169,11 @@
 
           <v-card-actions class="pa-5">
             <v-spacer></v-spacer>
-            <v-btn color="red" outlined @click="closeD()">
+            <v-btn color="red" variant="outlined" @click="closeD()">
               <v-icon>mdi-close-circle-outline</v-icon>
               Close
             </v-btn>
-            <v-btn color="green" v-if="edit" outlined @click="save()">
+            <v-btn color="green" v-if="edit" variant="flat" @click="save()">
               <v-icon>mdi-check</v-icon>
               Save
             </v-btn>
@@ -182,31 +182,31 @@
       </v-form>
     </v-dialog>
 
-    <v-dialog v-model="confirmDialog" persistent max-width="350">
-      <v-card color="white">
-        <div class="pa-4 #3a3b3a--text">
-          <div class="text-h6 mb-1">WARNING!</div>
-          <div class="text-body-1 mb-1">
-            <p style="text-align: justify">
-              <v-icon class="mt-n2" color="white">mdi-account</v-icon> &nbsp;
-              Are you sure you want to save this information?
-            </p>
-          </div>
-        </div>
+    <v-dialog v-model="confirmDialog" persistent max-width="420">
+      <v-card rounded="lg" elevation="8">
+        <v-card-title class="d-flex align-center text-warning">
+          <v-icon class="me-2">mdi-account-alert</v-icon>
+          Confirmation
+        </v-card-title>
 
-        <!-- <v-card-title class="text-h5">
-                  Are you sure you want to proceed?
-                </v-card-title> -->
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="red" outlined @click="confirmDialog = false">
-            Close
+        <v-divider />
+
+        <v-card-text class="text-body-1">
+          Are you sure you want to <strong>save</strong> this information?
+        </v-card-text>
+
+        <v-card-actions class="justify-end">
+          <v-btn variant="outlined" color="grey" @click="confirmDialog = false">
+            Cancel
           </v-btn>
+
           <v-btn
-            color="#147452"
-            class="white--text"
+            color="info"
+            variant="flat"
             @click="
-              savedata == 'save' ? confirmSave() : confirmSubmitGradeToParents()
+              savedata === 'save'
+                ? confirmSave()
+                : confirmSubmitGradeToParents()
             "
           >
             Confirm
@@ -246,7 +246,7 @@
                 <template v-slot:[`item.status`]="{ item }">
                   <v-chip
                     :border="`${getColor(
-                      item.transmuted_grade
+                      item.transmuted_grade,
                     )} thin opacity-25`"
                     :color="getColor(item.transmuted_grade)"
                     size="small"
@@ -330,7 +330,7 @@
                 <template v-slot:[`item.status`]="{ item }">
                   <v-chip
                     :border="`${getColor(
-                      item.transmuted_grade
+                      item.transmuted_grade,
                     )} thin opacity-25`"
                     :color="getColor(item.transmuted_grade)"
                     size="small"
@@ -353,7 +353,7 @@
           <v-spacer></v-spacer>
           <v-btn
             color="red"
-            outlined
+            variant="outlined"
             @click="
               gradesDialog = false;
               gradeData = [];
@@ -363,7 +363,8 @@
           </v-btn>
           <v-btn
             color="#147452"
-            class="white--text"
+            variant="flat"
+            class="text-white"
             v-if="edit"
             @click="confirmSubmitGrade()"
           >
@@ -474,7 +475,7 @@
           <v-spacer></v-spacer>
           <v-btn
             color="red"
-            outlined
+            variant="outlined"
             @click="
               (quizListDialog = false),
                 (editScoreData = false),
@@ -486,6 +487,7 @@
             Close
           </v-btn>
           <v-btn
+            variant="flat"
             color="#147452"
             class="white--text"
             v-if="edit"
@@ -682,7 +684,7 @@ export default {
       this.axiosCall(
         "/rooms-section/updateStudentGrade/" + item.studentID,
         "PATCH",
-        data
+        data,
       ).then((res) => {
         console.log(res.data);
         if (res.data.status == 200) {
@@ -736,7 +738,7 @@ export default {
           this.data.subjectId +
           "/" +
           subjectID,
-        "GET"
+        "GET",
       ).then((res) => {
         console.log("Data Grades", res.data);
         if (res.data) {
@@ -768,7 +770,7 @@ export default {
             this.filter +
             "/" +
             this.sub_subject,
-          "GET"
+          "GET",
         ).then((res) => {
           console.log("Data Students", res.data);
           // if (res.data && Array.isArray(res.data) && res.data.length > 0) {
@@ -813,7 +815,7 @@ export default {
           this.filter +
           "/" +
           this.data.roomId,
-        "GET"
+        "GET",
       ).then((res) => {
         console.log("Data Students", res.data);
         if (res.data) {
@@ -885,7 +887,7 @@ export default {
           this.data.roomId +
           "/" +
           this.data.subjectId,
-        "GET"
+        "GET",
       ).then((res) => {
         if (res.data) {
           this.conflictData = res.data.count_gen;
@@ -919,7 +921,7 @@ export default {
           this.data.roomId +
           "/" +
           this.data.subjectId,
-        "GET"
+        "GET",
       ).then((res) => {
         if (res.data) {
           this.conflictData = res.data.count_gen;
@@ -944,7 +946,7 @@ export default {
         (student) =>
           student.quarterScore !== null &&
           student.quarterScore !== undefined &&
-          student.quarterScore !== ""
+          student.quarterScore !== "",
       );
     },
     editItem(data) {
@@ -976,7 +978,8 @@ export default {
         console.log("OldData", this.gradeData);
       }
 
-      if (this.gradeData.length <= 0 || this.newData.length <= 0) {
+      if (this.gradeData.length <= 0 && this.newData.length <= 0) {
+        console.log(this.newData.length);
         this.fadeAwayMessage.show = true;
         this.fadeAwayMessage.type = "error";
         this.fadeAwayMessage.header = "System Message";
@@ -1019,7 +1022,7 @@ export default {
             acc[studentID].MAPEH.transmuted_grade = transmuted_grade;
           } else if (
             ["Music", "Arts", "Physical Education", "Health"].includes(
-              subject_title
+              subject_title,
             )
           ) {
             acc[studentID].MAPEH.sub_subjects[subject_title] = {
@@ -1029,7 +1032,7 @@ export default {
           }
 
           return acc;
-        }, {})
+        }, {}),
       );
 
       // console.log(transformed);
@@ -1065,7 +1068,7 @@ export default {
             this.fadeAwayMessage.header = "System Message";
             this.fadeAwayMessage.message = res.data.msg;
           }
-        }
+        },
       );
     },
     confirmSave() {
@@ -1094,7 +1097,7 @@ export default {
             this.fadeAwayMessage.header = "System Message";
             this.fadeAwayMessage.message = res.data.msg;
           }
-        }
+        },
       );
     },
     closeD() {

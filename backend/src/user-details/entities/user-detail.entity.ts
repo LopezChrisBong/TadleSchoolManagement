@@ -53,26 +53,8 @@ export class UserDetail {
   })
   bdate: string;
 
-  @Column({
-    nullable: true,
-    type: 'varchar',
-    length: 10,
-  })
-  hired: string;
 
-  @Column({
-    nullable: true,
-    type: 'varchar',
-    length: 255,
-  })
-  education: string;
 
-  @Column({
-    nullable: true,
-    type: 'varchar',
-    length: 255,
-  })
-  birth_place: string;
 
   @Column({
     nullable: true,
@@ -84,91 +66,14 @@ export class UserDetail {
   @Column({
     nullable: true,
     type: 'varchar',
-  })
-  email: string;
-
-  @Column({
-    nullable: true,
-    type: 'varchar',
     length: 50,
   })
   civil_status: string;
 
-  @Column({
-    nullable: true,
-    type: 'varchar',
-    length: 50,
-  })
-  civil_status_others: string;
 
-  @Column({
-    nullable: true,
-    type: 'varchar',
-    length: 10,
-  })
-  height: string;
 
-  @Column({
-    nullable: true,
-    type: 'varchar',
-    length: 10,
-  })
-  weight: string;
 
-  @Column({
-    nullable: true,
-    type: 'varchar',
-    length: 10,
-  })
-  blood_type: string;
 
-  @Column({
-    nullable: true,
-    type: 'varchar',
-    length: 255,
-  })
-  GSIS: string;
-
-  @Column({
-    nullable: true,
-    type: 'varchar',
-    length: 255,
-  })
-  PHILHEALTH: string;
-
-  @Column({
-    nullable: true,
-    type: 'varchar',
-    length: 255,
-  })
-  PAGIBIG: string;
-
-  @Column({
-    nullable: true,
-    type: 'varchar',
-    length: 255,
-  })
-  SSS: string;
-
-  @Column({
-    nullable: true,
-    type: 'varchar',
-    length: 100,
-  })
-  TIN: string;
-
-  @Column({
-    nullable: true,
-    type: 'varchar',
-    length: 255,
-  })
-  agency_employee_num: string;
-
-  @Column({
-    type: 'tinyint',
-    default: false,
-  })
-  is_dual_citizen: boolean;
 
   @Column({
     nullable: true,
@@ -177,11 +82,6 @@ export class UserDetail {
   })
   citizenship: string;
 
-  @Column({
-    nullable: true,
-    type: 'int',
-  })
-  citizenship_type: number;
 
   @Column({
     nullable: true,
@@ -245,47 +145,6 @@ export class UserDetail {
   })
   residential_prov: string;
 
-  @Column({
-    nullable: true,
-    type: 'varchar',
-  })
-  permanent_zip: string;
-
-  @Column({
-    nullable: true,
-    type: 'varchar',
-  })
-  permanent_house_no: string;
-
-  @Column({
-    nullable: true,
-    type: 'varchar',
-  })
-  permanent_street: string;
-
-  @Column({
-    nullable: true,
-    type: 'varchar',
-  })
-  permanent_subd: string;
-
-  @Column({
-    nullable: true,
-    type: 'varchar',
-  })
-  permanent_brgy: string;
-
-  @Column({
-    nullable: true,
-    type: 'varchar',
-  })
-  permanent_city: string;
-
-  @Column({
-    nullable: true,
-    type: 'varchar',
-  })
-  permanent_prov: string;
 
   @Column({
     nullable: true,
@@ -300,17 +159,6 @@ export class UserDetail {
   })
   status: number;
 
-  @Column({
-    nullable: true,
-    type: 'tinyint',
-  })
-  isSameAddress: boolean;
-
-  @Column({
-    nullable: true,
-    type: 'datetime',
-  })
-  date_approved: string;
 
   @Column({
     nullable: true,
@@ -325,11 +173,6 @@ export class UserDetail {
   })
   profile_img: string;
 
-  @Column({
-    type: 'int',
-    nullable: true,
-  })
-  allowedPDSUpdateID: number;
 
   @CreateDateColumn({
     nullable: false,
