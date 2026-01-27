@@ -14,11 +14,11 @@ async function bootstrap() {
   var whitelist = [
     'http://localhost:8080',
     'http://localhost:3000',
-    // 'https://limbaan.life:3000',
-    // 'https://limbaan.life:8080',
-    // 'http://limbaan.life:8080',
-    // 'http://limbaan.life:3000',
-    // 'https://limbaan.life',
+    // 'https://SSMS.life:3000',
+    // 'https://SSMS.life:8080',
+    // 'http://SSMS.life:8080',
+    // 'http://SSMS.life:3000',
+    // 'https://SSMS.life',
     'http://localhost',
   ];
   const httpsOptions = {
@@ -55,8 +55,8 @@ async function bootstrap() {
   });
 
   const config1 = new DocumentBuilder()
-    .setTitle('LIMBAAN APIsss')
-    .setDescription('limbaan backend')
+    .setTitle('SSMS APIsss')
+    .setDescription('SSMS backend')
     .setVersion('1.0')
     .addBearerAuth({
       type: 'http',

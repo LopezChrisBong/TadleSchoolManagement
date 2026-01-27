@@ -36,6 +36,11 @@ export class ParentRecordsController {
     return this.parentRecordsService.getMyChildrenAttendance(+studentID,+filter);
   }
 
+  @Get('searchStudentData/:data')
+  searchStudentData(@Param('data') data: string,) {
+    return this.parentRecordsService.searchStudentData(data);
+  }
+
 
   @Get('getMyChildrenGrades/:studentID/:filter/:gradeLevel')
   getMyChildrenGrades(@Param('studentID') studentID: string,@Param('filter') filter: string,@Param('gradeLevel') gradeLevel: string) {

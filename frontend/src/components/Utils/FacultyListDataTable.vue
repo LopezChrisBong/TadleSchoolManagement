@@ -1,48 +1,39 @@
 <template>
-  <v-container fluid>
+  <v-container fluid class="pa-6">
     <!-- Header with Tabs & Search -->
-    <v-row class="align-center mb-4 mt-2 flex-items">
-      <v-col cols="12" md="4" class="flex-items" style="overflow: auto">
-        <v-tab
-          v-for="tab in tabList"
-          :key="tab.id"
-          :value="tab.id"
-          @click="changeTab(tab)"
-          :class="[
-            ' pa-3 mx-3 transition-all',
-            tab.active ? 'bg-pink-lighten-1 text-white' : 'bg-grey-lighten-4',
-          ]"
-          rounded="lg"
-          >{{ tab.name }}</v-tab
-        >
-      </v-col>
-
-      <v-col cols="12" md="6" offset-md="2" class="d-flex">
-        <v-text-field
-          v-model="search"
-          label="Search"
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          density="compact"
-          hide-details
-          clearable
-          class="mr-2"
-          color="primary"
-        />
-        <!-- <v-btn
-          class="me-2"
-          prepend-icon="mdi-plus"
-          rounded="lg"
-          :color="$vuetify.theme.themes.light.submitBtns"
-          text="Add"
-          border
-          @click="add()"
-        ></v-btn> -->
-      </v-col>
-    </v-row>
+    <v-card rounded="xl" elevation="1" class="mb-6">
+      <v-card-text>
+        <v-row align="center" dense>
+          <v-col cols="12" md="6" class="d-flex flex-wrap ga-2">
+            <v-btn
+              size="small"
+              v-for="tab in tabList"
+              :key="tab.id"
+              @click="changeTab(tab)"
+              :color="tab.active ? 'pink' : 'grey'"
+              :variant="tab.active ? 'flat' : 'tonal'"
+              rounded="lg"
+              >{{ tab.name }}</v-btn
+            >
+          </v-col>
+          <v-spacer></v-spacer>
+          <v-col cols="12" md="6" class="d-flex justify-end ga-3">
+            <v-text-field
+              v-model="search"
+              placeholder="Search users..."
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              density="compact"
+              hide-details
+              clearable
+              max-width="260"
+            /> </v-col
+        ></v-row>
+      </v-card-text>
+    </v-card>
 
     <!-- Data Table -->
-    <v-card class="elevation-1">
+    <v-card rounded="xl" elevation="1">
       <v-data-table
         :items="data"
         :class="isMobile"
@@ -85,9 +76,11 @@
         </template>
 
         <template #no-data>
-          <v-alert type="info" border="start" color="white">
-            No users found.
-          </v-alert>
+          <v-empty-state
+            icon="mdi-account-off"
+            title="No users found"
+            text="Try adjusting your search or filters"
+          />
         </template>
       </v-data-table>
     </v-card>
@@ -116,24 +109,38 @@
     </v-dialog>
 
     <!-- view dialog -->
-    <v-dialog v-model="dialog" max-width="500px">
-      <v-card>
-        <v-card-title>
-          <div class="d-flex justify-space-between">
-            <span class="headline" v-if="dataEdit"
-              >Print {{ dataEdit.name }} SF2</span
-            >
+    <v-dialog
+      v-model="dialog"
+      max-width="520"
+      transition="dialog-bottom-transition"
+    >
+      <v-card rounded="xl" elevation="8">
+        <!-- HEADER -->
+        <v-card-title class="px-4 py-3">
+          <div class="d-flex align-center justify-space-between w-100">
+            <div>
+              <div class="text-h6 font-weight-bold">Print SF2</div>
+              <div class="text-caption text-grey">
+                {{ dataEdit?.name }}
+              </div>
+            </div>
+
             <v-btn
+              icon
               variant="text"
-              icon="mdi-close"
-              density="compact"
-              color="red"
+              density="comfortable"
               @click="dialog = false"
-            ></v-btn>
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
           </div>
         </v-card-title>
-        <v-card-text>
-          <v-row>
+
+        <v-divider />
+
+        <!-- FORM -->
+        <v-card-text class="px-4 pt-4">
+          <v-row dense>
             <v-col cols="12" md="6">
               <v-autocomplete
                 v-model="roomID"
@@ -142,11 +149,13 @@
                 item-value="id"
                 item-title="room_section"
                 label="Class Room"
-                dense
-                class="rounded-lg"
-                color="#93CB5B"
-              ></v-autocomplete>
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="mdi-google-classroom"
+                clearable
+              />
             </v-col>
+
             <v-col cols="12" md="6">
               <v-autocomplete
                 v-model="subjectID"
@@ -155,77 +164,114 @@
                 item-value="id"
                 item-title="subject_title"
                 label="Subject"
-                dense
-                class="rounded-lg"
-                color="#93CB5B"
-              ></v-autocomplete>
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="mdi-book-education"
+                clearable
+              />
             </v-col>
-            <v-col>
+
+            <v-col cols="12">
               <v-autocomplete
                 v-model="attendanceDate"
                 :rules="[formRules.required]"
                 :items="attendanceList"
                 item-value="id"
                 item-title="description"
-                label="Date"
-                dense
-                class="rounded-lg"
-                color="#93CB5B"
-              ></v-autocomplete>
+                label="Attendance Date"
+                variant="outlined"
+                density="comfortable"
+                prepend-inner-icon="mdi-calendar"
+                clearable
+              />
             </v-col>
           </v-row>
         </v-card-text>
-        <v-card-actions>
+
+        <!-- ACTIONS -->
+        <v-card-actions class="px-4 pb-4">
           <v-spacer />
-          <v-btn color="blue" outlined class="mt-4" @click="printSF2()">
-            Print
+
+          <v-btn variant="outlined" color="red" @click="dialog = false">
+            Cancel
+          </v-btn>
+
+          <v-btn
+            color="pink"
+            variant="flat"
+            prepend-icon="mdi-printer"
+            :disabled="!roomID || !subjectID || !attendanceDate"
+            @click="printSF2()"
+          >
+            Print SF2
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- view dialog -->
-    <v-dialog v-model="SF10dialog" max-width="500px">
-      <v-card>
-        <v-card-title>
-          <div class="d-flex justify-space-between">
-            <span class="headline" v-if="SF10Data"
-              >Print {{ SF10Data.name }} SF10</span
-            >
+    <v-dialog
+      v-model="SF10dialog"
+      max-width="480"
+      transition="dialog-bottom-transition"
+    >
+      <v-card rounded="xl" elevation="8">
+        <!-- HEADER -->
+        <v-card-title class="px-4 py-3">
+          <div class="d-flex align-center justify-space-between w-100">
+            <div>
+              <div class="text-h6 font-weight-bold">Print SF10</div>
+              <div class="text-caption text-grey">
+                {{ SF10Data?.name }}
+              </div>
+            </div>
+
             <v-btn
+              icon
               variant="text"
-              icon="mdi-close"
-              density="compact"
-              color="red"
+              density="comfortable"
               @click="SF10dialog = false"
-            ></v-btn>
+            >
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
           </div>
         </v-card-title>
-        <v-card-text>
-          <v-row>
-            <v-col cols="12">
-              <v-autocomplete
-                v-model="roomID"
-                :rules="[formRules.required]"
-                :items="roomList"
-                item-value="id"
-                item-title="room_section"
-                label="Class Room"
-                dense
-                class="rounded-lg"
-                color="#93CB5B"
-              ></v-autocomplete>
-            </v-col>
-          </v-row>
+
+        <v-divider />
+
+        <!-- CONTENT -->
+        <v-card-text class="px-4 pt-4">
+          <v-autocomplete
+            v-model="roomID"
+            :rules="[formRules.required]"
+            :items="roomList"
+            item-value="id"
+            item-title="room_section"
+            label="Select Class Room"
+            variant="outlined"
+            density="comfortable"
+            clearable
+            prepend-inner-icon="mdi-google-classroom"
+          />
         </v-card-text>
-        <v-card-actions>
+
+        <!-- ACTIONS -->
+        <v-card-actions class="px-4 pb-4">
           <v-spacer />
-          <v-btn color="blue" outlined class="mt-4" @click="printSF10()">
-            Print
+          <v-btn variant="text" @click="SF10dialog = false"> Cancel </v-btn>
+
+          <v-btn
+            color="primary"
+            variant="flat"
+            prepend-icon="mdi-printer"
+            @click="printSF10()"
+          >
+            Print SF10
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+
     <!-- Toast Message -->
     <fade-away-message-component
       displayType="variation2"
@@ -371,7 +417,7 @@ export default {
       this.loading = false;
       this.axiosCall(
         "/user-details/getAllFaculty/" + this.tab + "/" + filter,
-        "GET"
+        "GET",
       ).then((res) => {
         if (res) {
           // console.log(res.data);
@@ -388,7 +434,7 @@ export default {
     async getMySubjectList(id) {
       const res = await this.axiosCall(
         "/subjects/getAllSubjectSF2/" + id,
-        "GET"
+        "GET",
       );
 
       if (res.data && res.data.length > 0) {
@@ -411,12 +457,12 @@ export default {
       let filter = this.$store.getters.getFilterSelected;
       this.axiosCall(
         "/subjects/getAllFacultySF2/" + filter + "/" + id,
-        "GET"
+        "GET",
       ).then((res) => {
         if (res.data.status != 500 && Array.isArray(res.data)) {
           res.data.forEach((element, i) => {
             res.data[i].room_section = this.toUpperCaseData(
-              element.room_section || ""
+              element.room_section || "",
             );
           });
           this.roomList = res.data;
@@ -489,7 +535,7 @@ export default {
           "/" +
           this.dataEdit.id +
           "",
-        "_blank"
+        "_blank",
       );
     },
     printSF10(item) {
@@ -502,7 +548,7 @@ export default {
           "/" +
           Number(item.id) +
           "",
-        "_blank"
+        "_blank",
       );
     },
 
@@ -515,7 +561,7 @@ export default {
           this.fadeAwayMessage.header = "System Message";
           this.fadeAwayMessage.message = "Account deleted successfully!";
           this.initialize();
-        }
+        },
       );
     },
   },

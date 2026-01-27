@@ -75,13 +75,20 @@
 
           <v-card-actions class="pa-5">
             <v-spacer></v-spacer>
-            <v-btn class="mx-2" x-small color="red" @click="closeD()">
+            <v-btn
+              class="mx-2"
+              variant="outlined"
+              x-small
+              color="red"
+              @click="closeD()"
+            >
               <v-icon>mdi-close-circle</v-icon>
               Close
             </v-btn>
             <v-btn
               v-if="update"
               :color="$vuetify.theme.themes.light.submitBtns"
+              variant="flat"
               class="white--text"
               @click="updateAttendance()"
             >
@@ -90,6 +97,7 @@
             <v-btn
               v-if="edit"
               :color="$vuetify.theme.themes.light.submitBtns"
+              variant="flat"
               class="white--text"
               @click="saveAttendance()"
             >
@@ -152,8 +160,8 @@
               <v-autocomplete
                 v-model="report_type"
                 :rules="[formRules.required]"
-                dense
-                outlined
+                variant="outlined"
+                density="comfortable"
                 class="rounded-lg"
                 item-title="description"
                 item-value="id"
@@ -182,12 +190,17 @@
         <v-card-actions>
           <v-spacer></v-spacer>
 
-          <v-btn color="teal darken-3" outlined @click="reportDialog = false">
+          <v-btn
+            color="red darken-3"
+            variant="outlined"
+            @click="reportDialog = false"
+          >
             Cancel
           </v-btn>
 
           <v-btn
             :color="$vuetify.theme.themes.light.submitBtns"
+            variant="flat"
             class="white--text"
             @click="submitReport()"
           >
@@ -288,7 +301,7 @@ export default {
           this.filter +
           "/" +
           this.data.roomId,
-        "GET"
+        "GET",
       ).then((res) => {
         // console.log("Data Students", res.data);
         if (res.data) {
@@ -336,7 +349,7 @@ export default {
             this.fadeAwayMessage.header = "System Message";
             this.fadeAwayMessage.message = res.data.msg;
           }
-        }
+        },
       );
     },
 
@@ -348,7 +361,7 @@ export default {
         this.report_type,
         this.report_description,
         this.filter,
-        this.studentData.id
+        this.studentData.id,
       );
     },
 

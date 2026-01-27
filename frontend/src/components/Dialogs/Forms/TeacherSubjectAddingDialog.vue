@@ -1,43 +1,52 @@
 <template>
   <div>
     <v-dialog
-      fullscreen
       v-model="dialog"
       persistent
-      eager
       scrollable
-      max-width="900px"
+      max-width="1000"
+      transition="dialog-bottom-transition"
     >
-      <v-form ref="dataGradeSubjects" @submit.prevent>
-        <v-card>
-          <v-card-title dark class="d-flex dialog-header pt-5 pb-5 pl-6">
-            <span v-if="toAdd == 1">{{ action }} My Subject List</span>
-            <span v-else>{{ action }} My Grade Level List</span>
-            <v-spacer></v-spacer>
+      <v-form ref="dataGradeSubjects">
+        <v-card class="rounded-xl">
+          <!-- HEADER -->
+          <v-card-title class="dialog-header d-flex align-center">
+            <span class="text-h6">
+              {{
+                toAdd == 1
+                  ? action + " My Subject List"
+                  : action + " My Grade Level List"
+              }}
+            </span>
+
+            <v-spacer />
+
             <v-btn
               icon="mdi-close"
               variant="text"
               color="white"
               @click="closeD()"
-            >
-            </v-btn>
+            />
           </v-card-title>
 
-          <v-card-text style="max-height: 700px" class="my-4">
-            <v-container>
-              <v-row>
-                <v-col cols="12" class="elevation-1 mt-4">
-                  <div class="d-flex flex-row-reverse">
-                    <v-btn
-                      color="#147452"
-                      medium
-                      class="mb-2 ma-2 pa-2"
-                      outlined
-                      @click="subjectGradeDialog = true"
-                    >
-                      <v-icon size="14">mdi-plus</v-icon>Add
-                    </v-btn>
-                  </div>
+          <!-- CONTENT -->
+          <v-card-text class="pa-4">
+            <v-row>
+              <v-col cols="12">
+                <!-- ADD BUTTON -->
+                <div class="d-flex justify-end mb-3">
+                  <v-btn
+                    color="#147452"
+                    prepend-icon="mdi-plus"
+                    variant="tonal"
+                    @click="subjectGradeDialog = true"
+                  >
+                    Add
+                  </v-btn>
+                </div>
+
+                <!-- TABLE (SCROLLABLE ON MOBILE) -->
+                <div class="table-wrapper">
                   <v-data-table
                     :headers="toAdd == 1 ? headers : headers1"
                     :items="subject_list"
@@ -45,113 +54,116 @@
                     hide-default-footer
                   >
                     <template v-slot:[`item.action`]="{ item, index }">
-                      <div class="text-no-wrap">
-                        <v-btn
-                          x-small
-                          color="red"
-                          class="mx-1"
-                          outlined
-                          @click="deleteItem(item, index)"
-                        >
-                          <v-icon size="14">mdi-trash-can</v-icon>Delete
-                        </v-btn>
-                      </div>
+                      <v-btn
+                        size="small"
+                        color="error"
+                        variant="outlined"
+                        @click="deleteItem(item, index)"
+                      >
+                        <v-icon start size="16">mdi-trash-can</v-icon>
+                        Delete
+                      </v-btn>
                     </template>
                   </v-data-table>
-                </v-col>
-              </v-row>
-            </v-container>
+                </div>
+              </v-col>
+            </v-row>
           </v-card-text>
-          <v-divider></v-divider>
 
-          <v-card-actions class="pa-5">
-            <v-spacer></v-spacer>
+          <v-divider />
 
-            <v-btn color="red" outlined @click="closeD()">
-              <v-icon>mdi-close-circle-outline</v-icon>
-              Cancel
-            </v-btn>
+          <!-- ACTIONS (MOBILE FRIENDLY) -->
+          <v-card-actions class="pa-4">
+            <v-row dense class="w-100">
+              <v-col cols="12" sm="auto">
+                <v-btn block variant="outlined" color="error" @click="closeD()">
+                  Cancel
+                </v-btn>
+              </v-col>
 
-            <v-btn color="#147452" class="white--text" @click="save()">
-              <v-icon>mdi-check-circle</v-icon>
-              Save
-            </v-btn>
-            <v-btn
-              color="#1eb6a8"
-              class="white--text"
-              v-if="action == 'Update'"
-              @click="update()"
-            >
-              <v-icon>mdi-check-circle</v-icon>
-              Delete
-            </v-btn>
+              <v-col cols="12" sm="auto">
+                <v-btn block color="#147452" @click="save" variant="flat">
+                  Save
+                </v-btn>
+              </v-col>
+
+              <v-col cols="12" sm="auto" v-if="action === 'Update'">
+                <v-btn block color="#1eb6a8" @click="update"> Delete </v-btn>
+              </v-col>
+            </v-row>
           </v-card-actions>
         </v-card>
       </v-form>
     </v-dialog>
+
     <v-dialog
       v-model="subjectGradeDialog"
       persistent
-      eager
       scrollable
-      max-width="700px"
+      max-width="600"
+      transition="dialog-bottom-transition"
     >
-      <v-form ref="subjectGradeDialogForm" @submit.prevent>
-        <v-card>
-          <v-card-title dark class="d-flex dialog-header pt-5 pb-5 pl-6">
-            <span v-if="toAdd == 1">Add Subjects To Teach</span>
-            <span v-else>Add Grade Level To Teach</span>
-            <v-spacer></v-spacer>
+      <v-form ref="subjectGradeDialogForm">
+        <v-card class="rounded-xl">
+          <v-card-title class="dialog-header d-flex align-center">
+            <span class="text-h6">
+              {{
+                toAdd == 1
+                  ? "Add Subjects To Teach"
+                  : "Add Grade Level To Teach"
+              }}
+            </span>
+
+            <v-spacer />
 
             <v-btn
               icon="mdi-close"
               variant="text"
-              color="red"
+              color="white"
               @click="subjectGradeDialog = false"
-            >
-            </v-btn>
+            />
           </v-card-title>
 
-          <v-card-text style="max-height: 700px" class="my-4">
-            <v-container>
-              <v-row>
-                <v-col cols="12">
-                  <v-autocomplete
-                    v-model="dataAddedList"
-                    multiple
-                    chips
-                    dense
-                    outlined
-                    required
-                    :label="toAdd == 1 ? 'Subjects' : 'Grade Level'"
-                    :items="dataListed"
-                    :item-title="toAdd == 1 ? 'subject_title' : 'description'"
-                    item-value="id"
-                    class="rounded-lg"
-                    color="#6DB249"
-                  ></v-autocomplete>
-                </v-col>
-              </v-row>
-            </v-container>
+          <v-card-text class="pa-4">
+            <v-autocomplete
+              v-model="dataAddedList"
+              multiple
+              chips
+              density="comfortable"
+              variant="outlined"
+              :label="toAdd == 1 ? 'Subjects' : 'Grade Level'"
+              :items="dataListed"
+              :item-title="toAdd == 1 ? 'subject_title' : 'description'"
+              item-value="id"
+            />
           </v-card-text>
-          <v-divider></v-divider>
 
-          <v-card-actions class="pa-5">
-            <v-spacer></v-spacer>
+          <v-divider />
 
-            <v-btn color="red" outlined @click="subjectGradeDialog = false">
-              <v-icon>mdi-close-circle-outline</v-icon>
-              Cancel
-            </v-btn>
+          <v-card-actions class="pa-4">
+            <v-row dense class="w-100">
+              <v-col cols="12" sm="auto">
+                <v-btn
+                  block
+                  variant="outlined"
+                  color="error"
+                  @click="subjectGradeDialog = false"
+                >
+                  Cancel
+                </v-btn>
+              </v-col>
 
-            <v-btn
-              color="#147452"
-              class="white--text"
-              @click="saveSubjectGradeLevel()"
-            >
-              <v-icon>mdi-check-circle</v-icon>
-              Save
-            </v-btn>
+              <v-col cols="12" sm="auto">
+                <v-btn
+                  block
+                  color="#147452"
+                  @click="saveSubjectGradeLevel"
+                  variant="flat"
+                >
+                  Save
+                </v-btn>
+              </v-col>
+            </v-row>
           </v-card-actions>
         </v-card>
       </v-form>
@@ -264,7 +276,7 @@ export default {
             console.log("LISTED DATA", data);
             for (let i = 0; i < data.length; i++) {
               data[i].subject_title = this.toTitleCase(
-                data[i].subject_title + " (" + data[i].grade_level + ")"
+                data[i].subject_title + " (" + data[i].grade_level + ")",
               );
             }
             this.dataListed = data;
@@ -296,13 +308,13 @@ export default {
 
               for (let i = 0; i < data.length; i++) {
                 data[i].subject_title = this.toTitleCase(
-                  data[i].subject_title + " (" + data[i].grade_level + ")"
+                  data[i].subject_title + " (" + data[i].grade_level + ")",
                 );
                 this.dataAddedList.push(data[i].id);
               }
               this.subject_list = data;
             }
-          }
+          },
         );
       } else {
         this.axiosCall("/subjects/getGradeTaagged/" + id, "GET").then((res) => {
@@ -395,7 +407,7 @@ export default {
               this.fadeAwayMessage.header = "System Message";
               this.fadeAwayMessage.message = res.data.msg;
             }
-          }
+          },
         );
       } else {
         let data = {
@@ -418,7 +430,7 @@ export default {
               this.fadeAwayMessage.header = "System Message";
               this.fadeAwayMessage.message = res.data.msg;
             }
-          }
+          },
         );
       }
     },
@@ -502,3 +514,14 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.dialog-header {
+  background: linear-gradient(135deg, #dc0b70, #f06292);
+  color: white;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+</style>

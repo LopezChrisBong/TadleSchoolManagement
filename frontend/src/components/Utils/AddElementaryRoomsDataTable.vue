@@ -62,7 +62,7 @@
               </v-btn> -->
       </v-col>
     </v-row>
-    <v-card class="ma-5 dt-container" elevation="0" outlined>
+    <v-card class="ma-5 dt-container" elevation="1" variant="outlined">
       <v-data-table
         :headers="headers"
         :items="data"
@@ -422,7 +422,7 @@ export default {
               this.data = res.data;
               this.loading = false;
             }
-          }
+          },
         );
       } else if (this.tab == 2) {
         this.gradeName = "Grade 2";
@@ -434,7 +434,7 @@ export default {
               this.data = res.data;
               this.loading = false;
             }
-          }
+          },
         );
       } else if (this.tab == 3) {
         this.gradeName = "Grade 3";
@@ -446,7 +446,7 @@ export default {
               this.data = res.data;
               this.loading = false;
             }
-          }
+          },
         );
       } else if (this.tab == 4) {
         this.gradeName = "Grade 4";
@@ -458,7 +458,7 @@ export default {
               this.data = res.data;
               this.loading = false;
             }
-          }
+          },
         );
       } else if (this.tab == 5) {
         this.gradeName = "Grade 5";
@@ -470,7 +470,7 @@ export default {
               this.data = res.data;
               this.loading = false;
             }
-          }
+          },
         );
       } else if (this.tab == 6) {
         this.gradeName = "Grade 6";
@@ -482,7 +482,7 @@ export default {
               this.data = res.data;
               this.loading = false;
             }
-          }
+          },
         );
       } else if (this.tab == 7) {
         this.gradeName = "Kinder 1";
@@ -494,7 +494,7 @@ export default {
               this.data = res.data;
               this.loading = false;
             }
-          }
+          },
         );
       } else if (this.tab == 8) {
         this.gradeName = "Kinder 2";
@@ -506,7 +506,7 @@ export default {
               this.data = res.data;
               this.loading = false;
             }
-          }
+          },
         );
       }
     },
@@ -518,7 +518,7 @@ export default {
           this.gradeName +
           "/" +
           filter,
-        "GET"
+        "GET",
       ).then((res) => {
         if (res) {
           this.conflict = res.data[0].conflict;
@@ -537,7 +537,7 @@ export default {
                   this.gradeName +
                   "/" +
                   filter,
-                "POST"
+                "POST",
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
@@ -565,7 +565,7 @@ export default {
                   this.gradeName +
                   "/" +
                   filter,
-                "POST"
+                "POST",
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
@@ -593,7 +593,7 @@ export default {
                   this.gradeName +
                   "/" +
                   filter,
-                "POST"
+                "POST",
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
@@ -621,7 +621,7 @@ export default {
                   this.gradeName +
                   "/" +
                   filter,
-                "POST"
+                "POST",
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
@@ -649,7 +649,7 @@ export default {
                   this.gradeName +
                   "/" +
                   filter,
-                "POST"
+                "POST",
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
@@ -677,7 +677,7 @@ export default {
                   this.gradeName +
                   "/" +
                   filter,
-                "POST"
+                "POST",
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
@@ -705,7 +705,7 @@ export default {
                   this.gradeName +
                   "/" +
                   filter,
-                "POST"
+                "POST",
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
@@ -733,7 +733,7 @@ export default {
                   this.gradeName +
                   "/" +
                   filter,
-                "POST"
+                "POST",
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
@@ -784,7 +784,7 @@ export default {
         this.gradeName = "Grade 1";
         this.axiosCall(
           "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -797,7 +797,7 @@ export default {
 
         this.axiosCall(
           "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -810,7 +810,7 @@ export default {
 
         this.axiosCall(
           "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -823,7 +823,7 @@ export default {
 
         this.axiosCall(
           "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -836,7 +836,7 @@ export default {
 
         this.axiosCall(
           "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -849,7 +849,7 @@ export default {
 
         this.axiosCall(
           "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -862,7 +862,7 @@ export default {
 
         this.axiosCall(
           "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -875,7 +875,7 @@ export default {
 
         this.axiosCall(
           "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -944,7 +944,7 @@ export default {
             this.fadeAwayMessage.header = "System Message";
             this.fadeAwayMessage.message = res.data.msg;
           }
-        }
+        },
       );
     },
     confirmGenerate() {

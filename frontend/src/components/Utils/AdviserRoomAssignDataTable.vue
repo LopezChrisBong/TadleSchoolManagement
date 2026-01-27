@@ -100,6 +100,11 @@
 
     <!-- Verification Dialog -->
     <StudentGoodMoralDialog :data="updateData" :action="action" />
+    <AddStudentList
+      :data="studentDataListed"
+      :action="action"
+      :filter="filter"
+    />
     <ViewStudentFinalGradeDialog
       :data="finalGradeData"
       :action="action"
@@ -159,24 +164,7 @@
         </v-card-title>
         <v-card-text>
           <v-row>
-            <v-col cols="12" class="d-flex">
-              <v-autocomplete
-                style="height: 200px; width: 500px"
-                v-model="studentData"
-                multiple
-                chips
-                closable-chips
-                density="compact"
-                variant="outlined"
-                required
-                label="Students"
-                :items="student_activeList"
-                item-title="name"
-                item-value="id"
-                class="rounded-lg"
-                color="#6DB249"
-              />
-            </v-col>
+            <v-col cols="12" class="d-flex"> love </v-col>
           </v-row>
         </v-card-text>
         <v-card-actions>
@@ -203,10 +191,12 @@
 <script>
 import eventBus from "@/eventBus";
 import StudentGoodMoralDialog from "../../components/Dialogs/Forms/StudentGoodMoralDialog.vue";
+import AddStudentList from "../../components/Dialogs/Forms/AddStudentList.vue";
 import ViewStudentFinalGradeDialog from "../../components/Dialogs/Views/ViewStudentFinalGradeDialog.vue";
 export default {
   components: {
     StudentGoodMoralDialog,
+    AddStudentList,
     ViewStudentFinalGradeDialog,
   },
   data: () => ({
@@ -215,6 +205,7 @@ export default {
     userRoleID: null,
     filter: null,
     studentData: [],
+    studentDataListed: null,
     student_activeList: [],
     headers: [
       { title: "Name", value: "name", align: "start" },
@@ -255,12 +246,18 @@ export default {
     eventBus.on("closeStudentBehaviorStatementDialog", () => {
       this.initialize();
     });
+
+    eventBus.on("closeStudentDataList", () => {
+      this.initialize();
+    });
+
     eventBus.on("closeStudentGradeDialog", () => {
       this.initialize();
     });
   },
   beforeUnmount() {
     eventBus.off("closeStudentBehaviorStatementDialog");
+    eventBus.off("closeStudentDataList");
     eventBus.off("closeStudentGradeDialog");
   },
   watch: {
@@ -293,7 +290,7 @@ export default {
   methods: {
     initialize() {
       this.userRoleID = this.$store.state.user.id;
-      // this.filter = this.$store.getters.getFilterSelected;
+      this.filter = this.$store.getters.getFilterSelected;
       this.getTaggedStudent();
     },
     valuesItem(item) {
@@ -307,7 +304,7 @@ export default {
           grade +
           "/" +
           this.filterYear,
-        "GET"
+        "GET",
       ).then((res) => {
         if (res.data) {
           let data = res.data;
@@ -324,7 +321,7 @@ export default {
           this.userRoleID +
           "/" +
           this.filterYear,
-        "GET"
+        "GET",
       ).then((res) => {
         if (res.data && Array.isArray(res.data) && res.data.length > 0) {
           let data = res.data;
@@ -363,7 +360,11 @@ export default {
     },
 
     add() {
-      this.dialog = true;
+      this.studentDataListed = [
+        { id: null, roomID: this.classID, grade_level: this.grade },
+      ];
+      this.action = "Add";
+      // this.dialog = true;
     },
     save() {
       if (this.studentData.length > 0) {
@@ -376,7 +377,7 @@ export default {
         this.axiosCall(
           "/rooms-section/addMyStudentClassRoom",
           "POST",
-          data
+          data,
         ).then((res) => {
           console.log(res);
           if (res.data.status == 201) {
@@ -423,13 +424,13 @@ export default {
           "/" +
           item.grade_level +
           "",
-        "_blank"
+        "_blank",
       );
     },
     async confirmDelete() {
       this.axiosCall(
         "/rooms-section/removeMyStudent/" + this.deleteData.id,
-        "DELETE"
+        "DELETE",
       ).then((res) => {
         if (res.data.status == 200) {
           this.fadeAwayMessage.show = true;
@@ -455,15 +456,16 @@ export default {
       this.axiosCall(
         "/enroll-student/updateDropStudent/" + this.dropData.studentId,
         "PATCH",
-        data
+        data,
       ).then((res) => {
         if (res.data.status == 200) {
           this.fadeAwayMessage.show = true;
           this.fadeAwayMessage.type = "success";
           this.fadeAwayMessage.header = "System Message";
           this.fadeAwayMessage.message = res.data.msg;
-          this.dialogConfirmDrop = false;
           this.initialize();
+          this.dialogConfirmDrop = false;
+          location.reload();
         } else {
           this.fadeAwayMessage.show = true;
           this.fadeAwayMessage.type = "error";

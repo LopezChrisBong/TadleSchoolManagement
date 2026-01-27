@@ -320,62 +320,73 @@
           </v-chip>
         </template>
 
-        <v-card width="260" elevation="10" class="rounded-lg">
+        <v-card width="280" elevation="12" rounded="xl" class="overflow-hidden">
           <!-- HEADER -->
-          <v-list class="pa-0">
-            <v-list-item>
-              <v-row align="center" class="ma-0">
-                <v-col cols="3" class="d-flex justify-center">
-                  <v-avatar size="50">
-                    <v-img
-                      :src="
-                        !profImg
-                          ? require('@/assets/img/img_avatar.png')
-                          : profImg
-                      "
-                    />
-                  </v-avatar>
-                </v-col>
+          <v-sheet color="pink" class="pa-4">
+            <v-row align="center" no-gutters>
+              <v-col cols="auto">
+                <v-avatar size="56" class="elevation-6">
+                  <v-img
+                    :src="
+                      !profImg
+                        ? require('@/assets/img/img_avatar.png')
+                        : profImg
+                    "
+                    cover
+                  />
+                </v-avatar>
+              </v-col>
 
-                <v-col cols="7" class="pl-0">
-                  <div class="text-subtitle-1 font-weight-bold">
-                    {{ $store.state.user.fname }}
-                    {{ $store.state.user.lname.charAt(0).toUpperCase() }}.
-                  </div>
-                  <div class="text-caption">
-                    {{ $store.state.user.usertype.description }} /
-                    {{ getMyRole($store.state.user.user.user_roleID) }}
-                  </div>
-                </v-col>
+              <v-col class="pl-3">
+                <div class="text-subtitle-1 font-weight-bold text-white">
+                  {{ $store.state.user.fname }}
+                  {{ $store.state.user.lname.charAt(0).toUpperCase() }}.
+                </div>
+                <div class="text-caption text-white opacity-80">
+                  {{ $store.state.user.usertype.description }} •
+                  {{ getMyRole($store.state.user.user.user_roleID) }}
+                </div>
+              </v-col>
 
-                <v-col cols="2" class="text-end">
-                  <v-btn
-                    icon
-                    size="small"
-                    variant="text"
-                    @click="menu = false"
-                    class="close"
-                    color="white"
-                  >
-                    <v-icon>mdi-close</v-icon>
-                  </v-btn>
-                </v-col>
-              </v-row>
-            </v-list-item>
-          </v-list>
+              <v-col cols="auto">
+                <v-btn
+                  icon
+                  size="small"
+                  variant="text"
+                  color="white"
+                  @click="menu = false"
+                >
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </v-col>
+            </v-row>
+          </v-sheet>
 
-          <!-- MENU OPTIONS -->
-          <v-divider />
-
-          <v-list class="py-1">
+          <!-- MENU -->
+          <v-list density="comfortable" class="py-2">
             <v-list-item
-              @click="logout()"
-              class="hover:bg-grey-lighten-4 transition rounded-lg"
+              v-if="isValidated == 1"
+              @click="assignedModuleDialog = true"
+              rounded="lg"
+              class="mx-2"
+              prepend-icon="mdi-refresh-circle"
+            >
+              <v-list-item-title class="text-body-2">
+                Change Role
+              </v-list-item-title>
+            </v-list-item>
+
+            <v-divider class="my-2" v-if="isValidated == 1" />
+
+            <v-list-item
+              @click="logoutDialog = true"
+              rounded="lg"
+              class="mx-2 text-error"
               prepend-icon="mdi-logout"
             >
-              <v-list-item-title class="text-body-2"
-                >Sign Out</v-list-item-title
-              >
+              <v-list-item-title class="text-body-2 font-weight-medium">
+                Sign Out
+              </v-list-item-title>
             </v-list-item>
           </v-list>
         </v-card>
@@ -438,29 +449,38 @@
 
     <!-- Scrollable Main Content -->
     <v-main class="scrollable-main bg-grey-lighten-4">
-      <v-container fluid>
-        <v-row>
-          <v-col :cols="$vuetify.display.smAndUp ? 12 : 12">
-            <div class="fill-height pb-6" style="background-color: white">
-              <div class="d-flex justify-space-between align-center pa-4">
-                <h2 class="text-h6 font-weight-bold">
-                  {{ $route.meta.title }}
-                </h2>
-                <div style="width: 200px; height: auto">
-                  <v-autocomplete
-                    label="Year"
-                    @update:modelValue="changeFilter"
-                    v-model="selectedFilter"
-                    item-title="school_year"
-                    item-value="id"
-                    :items="filterYears"
-                  ></v-autocomplete>
-                </div>
+      <v-container fluid class="pa-6">
+        <v-card rounded="xl" elevation="1">
+          <!-- Header -->
+          <v-card-title class="d-flex align-center justify-space-between">
+            <div>
+              <div class="text-h6 font-weight-bold">
+                {{ $route.meta.title }}
               </div>
-              <router-view @reloadProfile="loadImg" />
+              <!-- <div class="text-caption text-grey">Academic overview</div> -->
             </div>
-          </v-col>
-        </v-row>
+
+            <v-autocomplete
+              v-model="selectedFilter"
+              label="School Year"
+              item-title="school_year"
+              item-value="id"
+              :items="filterYears"
+              density="compact"
+              variant="outlined"
+              hide-details
+              style="max-width: 220px"
+              @update:modelValue="changeFilter"
+            />
+          </v-card-title>
+
+          <v-divider />
+
+          <!-- Content -->
+          <v-card-text class="pa-6">
+            <router-view @reloadProfile="loadImg" />
+          </v-card-text>
+        </v-card>
       </v-container>
     </v-main>
     <!-- Notification Dialog -->
@@ -736,6 +756,112 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <!--Logout Dialog-->
+    <v-dialog v-model="logoutDialog" max-width="420" persistent>
+      <v-card class="rounded-lg">
+        <!-- Header -->
+        <v-card-title class="headline d-flex align-center">
+          <!-- <v-icon color="red" class="mr-2">mdi-logout</v-icon> -->
+          Confirm Logout
+        </v-card-title>
+
+        <v-divider></v-divider>
+
+        <!-- Content -->
+        <v-card-text class="text-center py-6">
+          <p class="mb-2">Are you sure you want to log out?</p>
+          <span class="grey--text text--darken-1">
+            You will need to log in again to continue.
+          </span>
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <!-- Actions -->
+        <v-card-actions class="px-4 py-3">
+          <v-spacer></v-spacer>
+
+          <v-btn color="grey" variant="outlined" @click="logoutDialog = false">
+            Cancel
+          </v-btn>
+
+          <v-btn color="red" variant="flat" @click="logout()"> Logout </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!--Change Assign Module Dialog-->
+    <v-dialog v-model="assignedModuleDialog" max-width="380" persistent>
+      <v-card class="rounded-xl">
+        <!-- Header -->
+        <v-card-title class="text-h6 font-weight-medium px-6 py-4">
+          Change Role
+        </v-card-title>
+
+        <v-divider />
+
+        <!-- Content -->
+        <v-card-text class="px-4 py-4">
+          <v-row dense>
+            <v-col
+              cols="12"
+              v-for="(item, index) in assigneAccessModulesList"
+              :key="item.id"
+            >
+              <v-card
+                class="role-card d-flex align-center justify-space-between px-4 py-3"
+                :class="{ active: selectedModuleId === item.id }"
+                elevation="0"
+                border
+                clickable
+                ripple
+                @click="selectButton(index, item)"
+              >
+                <span class="text-body-1">
+                  {{ item.description }}
+                </span>
+                <v-icon v-if="selectedModuleId === item.id" color="#ff82e0">
+                  mdi-check-circle
+                </v-icon>
+              </v-card>
+            </v-col>
+          </v-row>
+        </v-card-text>
+
+        <v-divider />
+
+        <!-- Actions -->
+        <v-card-actions class="px-6 py-4">
+          <v-btn
+            variant="outlined"
+            color="red"
+            @click="assignedModuleDialog = false"
+          >
+            Cancel
+          </v-btn>
+
+          <v-spacer />
+
+          <v-btn
+            color="pink"
+            :loading="isLoading"
+            variant="flat"
+            :disabled="selectedModuleId === null"
+            @click="confirmChangeRole"
+          >
+            Confirm
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+    <fade-away-message-component
+      displayType="variation2"
+      v-model="fadeAwayMessage.show"
+      :message="fadeAwayMessage.message"
+      :header="fadeAwayMessage.header"
+      :top="fadeAwayMessage.top"
+      :type="fadeAwayMessage.type"
+    ></fade-away-message-component>
   </v-app>
 </template>
 
@@ -745,6 +871,12 @@ export default {
   data() {
     return {
       drawer: true,
+      logoutDialog: false,
+      assignedModuleDialog: false,
+      selectedModuleId: null,
+      selected: [],
+      selectedIndex: null,
+      isLoading: false,
       selectedDate: new Date().toISOString().substr(0, 10),
       menu: [
         {
@@ -766,6 +898,13 @@ export default {
           items: ["Buttons", "Avatars"],
         },
       ],
+      fadeAwayMessage: {
+        show: false,
+        type: "success",
+        header: "Successfully Added!",
+        message: "",
+        top: 10,
+      },
       mini: false,
       profImg: null,
       mobile: false,
@@ -781,13 +920,16 @@ export default {
       options: [],
       activeGroup: null,
       schooYearList: [],
+      newRoleData: null,
       selectedFilter: null,
       filterYears: [],
       userModule: null,
       notifTab: 0,
+      isValidated: null,
       // unreadCount: 5,
       // hasUnread: true,
       lardoNotificationForFaculty: [],
+      assigneAccessModulesList: [],
       lardoNotification: [
         // {
         //   name: "Jovelyn Billote Autintico",
@@ -853,23 +995,53 @@ export default {
     reloadImg() {
       this.loadImg();
     },
+    assignedModuleDialog(val) {
+      if (val) {
+        this.setInitialSelectedRole();
+      }
+    },
   },
   mounted() {
     this.userId = this.$store.state.user.id;
     this.userModule = this.$store.state.user.user.assignedModuleID;
-    // console.log(this.userModule);
+    this.isValidated = this.$store.state.user.user.isValidated;
+    // console.log(this.$store.state.user.user.isValidated);
     this.loadYearForFilter();
     this.getLardoNotification();
     this.getLardoNotificationForFaculty();
     this.getAtRiskNotification();
     this.getAtRiskNotificationForFaculty();
     this.getParentNotification();
+    this.getAccessControlAssignedModules();
+
     if (this.$vuetify.display.xs) {
       this.drawer = false;
       this.mini = false;
     }
   },
   methods: {
+    setInitialSelectedRole() {
+      this.assigneAccessModulesList = this.assigneAccessModulesList.map(
+        (item) => ({
+          ...item,
+          id: Array.isArray(item.id) ? Number(item.id[0]) : Number(item.id),
+        }),
+      );
+      console.table(this.assigneAccessModulesList);
+
+      // this.selectedModuleId = Number(
+      //   this.$store.state.user.user.assignedModuleID,
+      // );
+
+      this.newRoleData = this.assigneAccessModulesList.find(
+        (item) => item.id === this.selectedModuleId,
+      );
+    },
+    selectButton(index, item) {
+      this.selectedModuleId = item.id;
+      this.newRoleData = item;
+      this.selectedIndex = index;
+    },
     loadYearForFilter() {
       this.axiosCall("/enroll-student/getSchoolYear", "GET").then((res) => {
         if (res) {
@@ -903,7 +1075,7 @@ export default {
               // this.$router.push(notif.route);
               this.$router.push("/" + this.userType + notif.route);
             }
-          }
+          },
         );
 
         // this.$router.push(req.route);
@@ -916,7 +1088,7 @@ export default {
         this.axiosCall(
           "/notification/updateAtRiskAdviser/" + notif.id,
           "PATCH",
-          { read: 1 }
+          { read: 1 },
         ).then((res) => {
           console.log(res);
           if (notif.route) {
@@ -936,7 +1108,7 @@ export default {
         this.axiosCall(
           "/notification/updateAtRiskFaculty/" + notif.id,
           "PATCH",
-          { read: 1 }
+          { read: 1 },
         ).then((res) => {
           console.log(res);
           if (notif.route) {
@@ -956,7 +1128,7 @@ export default {
         this.axiosCall(
           "/notification/updateLardoAdviser/" + notif.id,
           "PATCH",
-          { read: 1 }
+          { read: 1 },
         ).then((res) => {
           console.log(res);
           if (notif.route) {
@@ -975,7 +1147,7 @@ export default {
         this.axiosCall(
           "/notification/updateLardoFaculty/" + notif.id,
           "PATCH",
-          { read: 1 }
+          { read: 1 },
         ).then((res) => {
           console.log(res);
           if (notif.route) {
@@ -990,7 +1162,7 @@ export default {
 
     getMyRole(id) {
       const match = this.userRoleList.find(
-        (r) => parseInt(r.id) === parseInt(id)
+        (r) => parseInt(r.id) === parseInt(id),
       );
       return match ? match.description : "";
     },
@@ -1057,6 +1229,8 @@ export default {
       this.openGroups = this.links.map((link) => !!link.subLink && false);
       this.axiosCall("/assigned-modules/getMyAssignedModules/my", "GET").then(
         (resp) => {
+          this.selectedModuleId = resp.data.id;
+          // console.log("getMyAssignedModules", resp.data.id);
           this.links = JSON.parse(resp.data.assign_mods);
           switch (userType) {
             case 1:
@@ -1072,14 +1246,14 @@ export default {
               this.userType = "teacher";
               break;
           }
-        }
+        },
       );
     },
 
     getLardoNotification() {
       this.axiosCall(
         "/notification/getLardoStudent/" + this.userId,
-        "GET"
+        "GET",
       ).then((res) => {
         console.log("Lardo", res.data);
         if (this.userModule == 21) {
@@ -1091,7 +1265,7 @@ export default {
     getLardoNotificationForFaculty() {
       this.axiosCall(
         "/notification/getLardoStudentForFaculty/" + this.userId,
-        "GET"
+        "GET",
       ).then((res) => {
         console.log("Lardo", res.data);
         if (this.userModule != 21) {
@@ -1103,7 +1277,7 @@ export default {
     getAtRiskNotification() {
       this.axiosCall(
         "/notification/getAtRiskStudent/" + this.userId,
-        "GET"
+        "GET",
       ).then((res) => {
         console.log("At-Risk", res.data);
         if (this.userModule == 21) {
@@ -1115,7 +1289,7 @@ export default {
     getAtRiskNotificationForFaculty() {
       this.axiosCall(
         "/notification/getAtRiskStudentForFaculty/" + this.userId,
-        "GET"
+        "GET",
       ).then((res) => {
         console.log("At-Risk", res.data);
         if (this.userModule != 21) {
@@ -1126,10 +1300,47 @@ export default {
     getParentNotification() {
       this.axiosCall(
         "/notification/getParentNotification/" + this.userId,
-        "GET"
+        "GET",
       ).then((res) => {
         console.log("Parent", res.data);
         this.parentNotification = res.data;
+      });
+    },
+    getAccessControlAssignedModules() {
+      this.axiosCall("/assigned-modules/getSpecificModules", "GET").then(
+        (res) => {
+          // console.log("AssignedM", res.data);
+          let data = res.data;
+          this.assigneAccessModulesList = data;
+        },
+      );
+    },
+    confirmChangeRole() {
+      // console.log(
+      //   "confirmChangeRole()",
+      //   this.newRoleData.id,
+      //   this.$store.state.user.user.id,
+      // );
+      this.isLoading = true;
+      let userID = this.$store.state.user.user.id;
+      let data = {
+        assignedModuleID: this.newRoleData.id,
+      };
+      this.axiosCall(
+        "/auth/changeAssignedModule/Role/" + userID,
+        "POST",
+        data,
+      ).then((res) => {
+        if (res.data.status == 200) {
+          this.isLoading = false;
+          location.reload();
+        } else if (res.data.status == 400) {
+          this.isLoading = false;
+          this.fadeAwayMessage.message = res.data.msg;
+          this.fadeAwayMessage.show = true;
+          this.fadeAwayMessage.type = "error";
+          this.fadeAwayMessage.header = "System Message";
+        }
       });
     },
   },
@@ -1192,13 +1403,36 @@ export default {
 }
 
 /* Primary button color override */
-.v-btn {
-  background-color: #dc0b70 !important;
+/* .v-btn {
+  background-color: #dc700b !important;
   color: white !important;
-}
+} */
 
 .close {
   background-color: #ffffff !important;
   color: rgb(0, 0, 0) !important;
+}
+
+.role-card {
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.role-card:hover {
+  /* background-color: rgba(0, 0, 0, 0.03); */
+  background-color: #ff82e0;
+}
+
+.role-card.active {
+  border: 2px solid #ff82e0;
+  background-color: rgba(25, 118, 210, 0.08);
+}
+.v-list-item {
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.v-list-item:hover {
+  transform: translateX(2px);
 }
 </style>

@@ -30,9 +30,8 @@
                 <v-col cols="12">
                   <v-text-field
                     v-model="room_section"
-                    dense
-                    outlined
-                    required
+                    variant="outlined"
+                    density="comfortable"
                     :rules="[formRules.required]"
                     deletable-chips
                     label="Class Name"
@@ -76,7 +75,7 @@
                     >
                       <v-icon size="14">mdi-pencil</v-icon>Update
                     </v-btn> -->
-                    <v-btn
+                    <!-- <v-btn
                       color="#147452"
                       medium
                       class="mb-2 ma-2 pa-2"
@@ -84,7 +83,7 @@
                       @click="studentDialog = true"
                     >
                       <v-icon size="14">mdi-plus</v-icon>Add
-                    </v-btn>
+                    </v-btn> -->
                   </div>
                   <v-data-table
                     :headers="headers"
@@ -115,15 +114,15 @@
           <v-card-actions class="pa-5">
             <v-spacer></v-spacer>
 
-            <v-btn color="red" outlined @click="closeD()">
+            <v-btn color="red" variant="outlined" @click="closeD()">
               <v-icon>mdi-close-circle-outline</v-icon>
               Cancel
             </v-btn>
 
-            <v-btn color="#147452" class="white--text" @click="save()">
+            <!-- <v-btn color="#147452" class="white--text" @click="save()">
               <v-icon>mdi-check-circle</v-icon>
               Save
-            </v-btn>
+            </v-btn> -->
           </v-card-actions>
         </v-card>
       </v-form>
@@ -360,7 +359,7 @@ export default {
           this.grade +
           "/" +
           this.filter,
-        "GET"
+        "GET",
       ).then((res) => {
         if (res.data) {
           let data = res.data;
@@ -382,7 +381,7 @@ export default {
           this.grade +
           "/" +
           this.filter,
-        "GET"
+        "GET",
       ).then((res) => {
         if (res.data) {
           // alert(this.filter);
@@ -435,7 +434,7 @@ export default {
             console.log("Love", res.data);
             this.nextClassRoomList = res.data;
           }
-        }
+        },
       );
     },
     saveStudent() {
@@ -496,7 +495,7 @@ export default {
             this.fadeAwayMessage.header = "System Message";
             this.fadeAwayMessage.message = res.data.msg;
           }
-        }
+        },
       );
       // } else {
       //   this.fadeAwayMessage.show = true;
@@ -521,7 +520,7 @@ export default {
             "/" +
             this.nextClass,
           "POST",
-          this.studentList
+          this.studentList,
         ).then((res) => {
           if (res) {
             if (res.data.status == 201) {

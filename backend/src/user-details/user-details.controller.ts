@@ -91,7 +91,13 @@ export class UserDetailsController {
     return this.userDetailsService.getAllVerifiedUser(curr_user);
   }
 
-  @Get('getAllVerifiedUser/TeachingRole/:grade')
+  @Get('getAdvisoryNotAssigned/:grade')
+  getAdvisoryNotAssigned(@Param('grade') grade: string, ) {
+   
+    return this.userDetailsService.getAdvisoryNotAssigned(grade);
+  }
+
+    @Get('getAllVerifiedUser/TeachingRole/:grade')
   TeachingRole(@Param('grade') grade: string, @Headers() headers ) {
     var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
@@ -170,7 +176,7 @@ export class UserDetailsController {
   ): StreamableFile {
     let file;
    
-    file = createReadStream(join(process.cwd(), '/../upload_img/' + filename));
+    file = createReadStream(join(process.cwd(), process.env.FILE_PATH+'upload_img/' + filename));
     res.set({
       'Content-Type': 'image/png',
     });
@@ -215,7 +221,7 @@ export class UserDetailsController {
       //   );
       // } else {
       fs.unlink(
-        join(process.cwd(), `/../upload_img/${user.profile_img}`),
+        join(process.cwd(), process.env.FILE_PATH+`upload_img/${user.profile_img}`),
         async (err) => {
           if (err) {
             console.log(err);

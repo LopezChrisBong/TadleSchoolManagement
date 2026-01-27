@@ -30,7 +30,7 @@
         >
       </v-col>
     </v-row>
-    <v-card class="ma-5 dt-container" elevation="0" outlined>
+    <v-card class="ma-5 dt-container" elevation="1">
       <v-data-table
         :headers="headers"
         :items="data"
@@ -256,12 +256,12 @@ export default {
       let filter = this.$store.getters.getFilterSelected;
       this.axiosCall(
         "/subjects/getMyClassRecord/" + filter + "/" + this.tab,
-        "GET"
+        "GET",
       ).then((res) => {
         if (res.data.status != 500 && Array.isArray(res.data)) {
           res.data.forEach((element, i) => {
             res.data[i].room_section = this.toUpperCaseData(
-              element.room_section || ""
+              element.room_section || "",
             );
           });
           this.data = res.data;

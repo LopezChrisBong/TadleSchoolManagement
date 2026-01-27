@@ -2,17 +2,17 @@
   <div>
     <v-dialog v-model="dialog" eager scrollable max-width="600px">
       <v-form ref="ModulesListFormref" @submit.prevent>
-        <v-card elevation="4" class="rounded-lg">
+        <v-card elevation="4" rounded="xl">
           <!-- Header -->
           <v-card-title
-            class="dialog-header d-flex align-center justify-space-between px-6 py-4 bg-primary text-white rounded-t-lg"
+            class="d-flex align-center justify-space-between px-6 py-4 text-black rounded-t-lg"
           >
             <span class="text-h6 font-weight-medium">{{ action }} Module</span>
-            <v-btn icon @click="closeD" class="text-white" variant="tonal">
+            <v-btn icon @click="closeD" class="text-red" variant="tonal">
               <v-icon>mdi-close</v-icon>
             </v-btn>
           </v-card-title>
-
+          <v-divider></v-divider>
           <!-- Content -->
           <v-card-text
             style="max-height: 700px; overflow-y: auto"
@@ -25,8 +25,8 @@
                     v-model="title"
                     label="Title"
                     :rules="[formRules.required]"
-                    outlined
-                    dense
+                    variant="outlined"
+                    density="comfortable"
                     clearable
                     color="primary"
                     hint="Enter the module title"
@@ -39,8 +39,8 @@
                     v-model="icon"
                     label="Icon Name"
                     :rules="[formRules.required]"
-                    outlined
-                    dense
+                    variant="outlined"
+                    density="comfortable"
                     clearable
                     color="primary"
                     hint="Use mdi- icon names, e.g. mdi-home"
@@ -63,8 +63,8 @@
                     :items="isParentList"
                     label="Is Parent Route"
                     :rules="[formRules.required]"
-                    outlined
-                    dense
+                    variant="outlined"
+                    density="comfortable"
                     clearable
                     color="primary"
                   />
@@ -77,8 +77,8 @@
                       label="Route"
                       :rules="[formRules.required]"
                       outlined
-                      dense
-                      clearable
+                      variant="outlined"
+                      density="comfortable"
                       color="primary"
                     />
                   </v-col>
@@ -90,8 +90,8 @@
                       item-title="title"
                       item-value="id"
                       label="Parent Module"
-                      outlined
-                      dense
+                      variant="outlined"
+                      density="comfortable"
                       clearable
                       color="primary"
                     />

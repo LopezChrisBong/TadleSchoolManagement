@@ -14,7 +14,7 @@ export class UpdateVerifiedUser {
   positionID: number;
 
   @ApiProperty()
-  empID: string;
+  subModules: string;
 
   @ApiProperty()
   date_hired: string;
@@ -26,7 +26,7 @@ export class UpdateVerifiedUser {
   designationID: number;
 
   @ApiProperty()
-  empStatusID: number;
+  isValidated: boolean;
 
   @ApiProperty()
   usertypeID: number;

@@ -40,7 +40,7 @@
         </v-btn>
       </v-col>
     </v-row>
-    <v-card class="ma-5 dt-container" elevation="0" outlined>
+    <v-card class="ma-5 dt-container" elevation="1">
       <v-data-table
         :items="data"
         :class="isMobile"
@@ -334,7 +334,7 @@ export default {
             this.data = res.data;
             this.loading = false;
           }
-        }
+        },
       );
     },
 
@@ -397,7 +397,7 @@ export default {
           "/" +
           filter +
           "",
-        "_blank" // <- This is what makes it open in a new window.
+        "_blank", // <- This is what makes it open in a new window.
       );
     },
   },

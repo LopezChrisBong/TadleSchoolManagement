@@ -1,194 +1,182 @@
 <template>
   <div>
-    <v-dialog v-model="dialog" eager scrollable max-width="900px">
+    <v-dialog
+      v-model="dialog"
+      scrollable
+      max-width="640"
+      transition="dialog-bottom-transition"
+    >
       <v-form ref="UserVerifyFormref" @submit.prevent>
-        <v-card>
-          <v-card-title dark class="d-flex dialog-header pt-5 pb-5 pl-6">
-            <span
-              >{{ action }} {{ grade }} {{ className }} Classroom Program
-              Schedule
-            </span>
-            <v-spacer></v-spacer>
-            <v-btn
-              icon="mdi-close"
-              variant="text"
-              color="white"
-              @click="closeD()"
-            >
-            </v-btn>
+        <v-card rounded="xl" elevation="8">
+          <!-- HEADER -->
+          <v-card-title class="px-4 py-3">
+            <div class="d-flex align-center justify-space-between w-100">
+              <div>
+                <div class="text-h6 font-weight-bold">
+                  {{ action }} Classroom Schedule
+                </div>
+                <div class="text-caption text-grey">
+                  {{ grade }} • {{ className }}
+                </div>
+              </div>
+
+              <v-btn
+                icon
+                variant="text"
+                density="comfortable"
+                @click="closeD()"
+              >
+                <v-icon>mdi-close</v-icon>
+              </v-btn>
+            </div>
           </v-card-title>
 
-          <v-card-text style="max-height: 700px" class="my-4">
-            <v-container>
-              <v-row>
-                <v-col cols="11" sm="5">
-                  <v-dialog v-model="modal1" persistent width="400">
-                    <template v-slot:activator="{ props }">
-                      <v-text-field
-                        v-model="time_slot_from"
-                        label="Select time from:"
-                        prepend-inner-icon="mdi-clock-time-four-outline"
-                        readonly
-                        v-bind="props"
-                        :rules="[formRules.required]"
-                      ></v-text-field>
-                    </template>
+          <v-divider />
 
-                    <v-card>
-                      <v-time-picker v-model="time_slot_from"></v-time-picker>
+          <!-- CONTENT -->
+          <v-card-text class="px-4 pt-4">
+            <v-row dense>
+              <!-- TIME FROM -->
+              <v-col cols="12" md="6">
+                <v-dialog v-model="modal1" persistent width="380">
+                  <template #activator="{ props }">
+                    <v-text-field
+                      v-model="time_slot_from"
+                      label="Time From"
+                      prepend-inner-icon="mdi-clock-outline"
+                      readonly
+                      v-bind="props"
+                      variant="outlined"
+                      density="comfortable"
+                      :rules="[formRules.required]"
+                    />
+                  </template>
 
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          variant="text"
-                          color="primary"
-                          @click="modal1 = false"
-                        >
-                          Cancel
-                        </v-btn>
-                        <v-btn
-                          variant="text"
-                          color="primary"
-                          @click="modal1 = false"
-                        >
-                          OK
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-                </v-col>
-                <v-spacer></v-spacer>
-                <v-col cols="11" sm="5">
-                  <v-dialog v-model="modal2" persistent width="400">
-                    <template v-slot:activator="{ props }">
-                      <v-text-field
-                        v-model="time_slot_to"
-                        label="Select time to:"
-                        prepend-inner-icon="mdi-clock-time-four-outline"
-                        readonly
-                        v-bind="props"
-                        :rules="[formRules.required]"
-                      ></v-text-field>
-                    </template>
+                  <v-card rounded="lg">
+                    <v-time-picker v-model="time_slot_from" />
+                    <v-card-actions>
+                      <v-spacer />
+                      <v-btn
+                        variant="outlined"
+                        color="red"
+                        @click="modal1 = false"
+                        >Cancel</v-btn
+                      >
+                      <v-btn
+                        variant="flat"
+                        color="pink"
+                        @click="modal1 = false"
+                      >
+                        OK
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </v-col>
 
-                    <v-card>
-                      <v-time-picker v-model="time_slot_to"></v-time-picker>
+              <!-- TIME TO -->
+              <v-col cols="12" md="6">
+                <v-dialog v-model="modal2" persistent width="380">
+                  <template #activator="{ props }">
+                    <v-text-field
+                      v-model="time_slot_to"
+                      label="Time To"
+                      prepend-inner-icon="mdi-clock-outline"
+                      readonly
+                      v-bind="props"
+                      variant="outlined"
+                      density="comfortable"
+                      :rules="[formRules.required]"
+                    />
+                  </template>
 
-                      <v-card-actions>
-                        <v-spacer></v-spacer>
-                        <v-btn
-                          variant="text"
-                          color="primary"
-                          @click="modal2 = false"
-                        >
-                          Cancel
-                        </v-btn>
-                        <v-btn
-                          variant="text"
-                          color="primary"
-                          @click="modal2 = false"
-                        >
-                          OK
-                        </v-btn>
-                      </v-card-actions>
-                    </v-card>
-                  </v-dialog>
-                </v-col>
-                <v-col cols="12" md="12">
-                  <v-autocomplete
-                    v-model="day"
-                    :rules="[formRules.required]"
-                    dense
-                    class="rounded-lg"
-                    item-title="name"
-                    item-value="name"
-                    label="Select Day"
-                    multipel
-                    color="#93CB5B"
-                    :items="dayList"
-                  >
-                  </v-autocomplete>
-                  <!--if ever na mag request daghanon ang pag pick sa days-->
-                  <!-- <v-autocomplete
-                    v-model="day"
-                    :rules="[formRules.required]"
-                    dense
-                    class="rounded-lg"
-                    item-title="name"
-                    item-value="name"
-                    label="Select Day"
-                    multipel
-                    color="#93CB5B"
-                    :items="dayList"
-                    multiple
-                    small-chips
-                    deletable-chips
-                    outlined
-                  >
-                  </v-autocomplete> -->
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-autocomplete
-                    v-model="teacher"
-                    :rules="[formRules.required]"
-                    dense
-                    class="rounded-lg"
-                    item-title="name"
-                    item-value="id"
-                    label="Teacher to assign"
-                    @update:modelValue="teacherAssign"
-                    color="#93CB5B"
-                    :items="TeachersList"
-                  >
-                  </v-autocomplete>
-                </v-col>
-                <v-col cols="12" md="6">
-                  <v-autocomplete
-                    v-model="subject"
-                    dense
-                    :rules="[formRules.required]"
-                    class="rounded-lg"
-                    item-title="subject_title"
-                    item-value="id"
-                    label="Subject Title Name"
-                    color="#93CB5B"
-                    :items="subjectList"
-                  >
-                  </v-autocomplete>
-                </v-col>
+                  <v-card rounded="lg">
+                    <v-time-picker v-model="time_slot_to" />
+                    <v-card-actions>
+                      <v-spacer />
+                      <v-btn
+                        variant="outlined"
+                        color="red"
+                        @click="modal2 = false"
+                        >Cancel</v-btn
+                      >
+                      <v-btn
+                        variant="flat"
+                        color="pink"
+                        @click="modal2 = false"
+                      >
+                        OK
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+              </v-col>
 
-                <!-- <v-col cols="12" md="6">
-                  <v-autocomplete
-                    v-model="class_room"
-                    :rules="[formRules.required]"
-                    dense
-                    class="rounded-lg"
-                    item-title="room_section"
-                    item-value="id"
-                    label="Classroom to assign"
-                    color="#93CB5B"
-                    :items="classroomList"
-                  >
-                  </v-autocomplete>
-                </v-col> -->
-              </v-row>
-            </v-container>
+              <!-- DAY -->
+              <v-col cols="12">
+                <v-autocomplete
+                  v-model="day"
+                  :rules="[formRules.required]"
+                  :items="dayList"
+                  item-title="name"
+                  item-value="name"
+                  label="Day"
+                  variant="outlined"
+                  density="comfortable"
+                  prepend-inner-icon="mdi-calendar-week"
+                />
+              </v-col>
+
+              <!-- TEACHER -->
+              <v-col cols="12" md="6">
+                <v-autocomplete
+                  v-model="teacher"
+                  :rules="[formRules.required]"
+                  :items="TeachersList"
+                  item-title="name"
+                  item-value="id"
+                  label="Teacher"
+                  variant="outlined"
+                  density="comfortable"
+                  prepend-inner-icon="mdi-account-tie"
+                  @update:modelValue="teacherAssign"
+                />
+              </v-col>
+
+              <!-- SUBJECT -->
+              <v-col cols="12" md="6">
+                <v-autocomplete
+                  v-model="subject"
+                  :rules="[formRules.required]"
+                  :items="subjectList"
+                  item-title="subject_title"
+                  item-value="id"
+                  label="Subject"
+                  variant="outlined"
+                  density="comfortable"
+                  prepend-inner-icon="mdi-book-education"
+                />
+              </v-col>
+            </v-row>
           </v-card-text>
-          <v-divider></v-divider>
 
-          <v-card-actions class="pa-5">
-            <v-spacer></v-spacer>
-            <v-btn color="red" outlined @click="closeD()">
-              <v-icon>mdi-close-circle-outline</v-icon>
+          <v-divider />
+
+          <!-- ACTIONS -->
+          <v-card-actions class="px-4 pb-4">
+            <v-spacer />
+
+            <v-btn variant="outlined" color="red" @click="closeD()">
               Cancel
             </v-btn>
+
             <v-btn
-              :color="$vuetify.theme.themes.light.submitBtns"
-              class="white--text"
+              color="pink"
+              variant="flat"
+              prepend-icon="mdi-check-circle"
               @click="accept()"
             >
-              <v-icon>mdi-check-circle</v-icon>
-              {{ action == "Add" ? "Add" : "Update" }}
+              {{ action === "Add" ? "Add Schedule" : "Update Schedule" }}
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -319,7 +307,7 @@ export default {
         let filter = this.$store.getters.getFilterSelected;
         let hours = this.calculateHoursDifference(
           this.time_slot_from,
-          this.time_slot_to
+          this.time_slot_to,
         );
         if (hours < 1) {
           this.fadeAwayMessage.show = true;
@@ -359,7 +347,7 @@ export default {
                   this.fadeAwayMessage.message = res.data.msg;
                   this.closeD();
                 }
-              }
+              },
             );
           } else if (this.action == "Update") {
             let data = {
@@ -376,7 +364,7 @@ export default {
             this.axiosCall(
               "/enroll-student/updateClassProgram/" + this.id,
               "PATCH",
-              data
+              data,
             ).then((res) => {
               if (res.data.status == 200) {
                 this.fadeAwayMessage.show = true;
@@ -425,7 +413,7 @@ export default {
       }
       this.axiosCall(
         "/subjects/getSpicificSubject/" + id + "/" + this.filter + "/" + grade,
-        "GET"
+        "GET",
       ).then((res) => {
         if (res) {
           console.log("Subject List", res.data);
@@ -438,7 +426,7 @@ export default {
       //   let grade = this.grade.toString();
       this.axiosCall(
         "/rooms-section/" + this.grade + "/" + this.section,
-        "GET"
+        "GET",
       ).then((res) => {
         console.log("ClassName", res.data[0].teacherId);
         // this.adviser = res.data[0].teacherId;
@@ -449,7 +437,7 @@ export default {
     getRoleTeachers() {
       this.axiosCall(
         "/user-details/getAllVerifiedUser/TeachingRole/" + this.grade,
-        "GET"
+        "GET",
       ).then((res) => {
         console.log("Teacher Role1", res.data);
         this.TeachersList = res.data;
@@ -462,7 +450,7 @@ export default {
           this.adviser +
           "/" +
           this.grade,
-        "GET"
+        "GET",
       ).then((res) => {
         console.log("Teacher Role2", res.data);
         this.TeachersList = res.data;

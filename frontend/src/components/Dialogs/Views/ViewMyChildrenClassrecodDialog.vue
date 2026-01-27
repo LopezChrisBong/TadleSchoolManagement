@@ -6,7 +6,9 @@
           <v-card-title
             class="d-flex dialog-header justify-center align-center"
           >
-            <span v-if="data">{{ action }} {{ data.name }} Class Record </span>
+            <span v-if="data"
+              >{{ action }} {{ data.name }} Class Record {{ isJunior }}
+            </span>
             <v-spacer></v-spacer>
             <v-btn
               icon="mdi-close"
@@ -61,77 +63,90 @@
 
                 <!-- Senior High Tables -->
                 <template v-else>
-                  <!-- First Sem -->
-                  <v-card class="elevation-1 mb-3">
-                    <div class="text-center font-weight-bold my-4">
-                      REPORT ON LEARNING PROGRESS AND ACHIEVEMENT 1ST SEMESTER
-                    </div>
-                    <v-data-table
-                      :headers="semHeaders"
-                      :items="firstSemData"
-                      item-key="subject"
-                      class="elevation-1"
-                    >
-                      <template v-slot:[`item.remarks`]="{ item }">
-                        <span
-                          :style="{
-                            color: item.remarks === 'Passed' ? 'green' : 'red',
-                          }"
-                        >
-                          {{ item.remarks }}
-                        </span>
-                      </template>
+                  <div v-if="firstSemData.length">
+                    <!-- First Sem -->
+                    <v-card class="elevation-1 mb-3">
+                      <div class="text-center font-weight-bold my-4">
+                        REPORT ON LEARNING PROGRESS AND ACHIEVEMENT 1ST SEMESTER
+                      </div>
+                      <v-data-table
+                        :headers="semHeaders"
+                        :items="firstSemData"
+                        item-key="subject"
+                        class="elevation-1"
+                      >
+                        <template v-slot:[`item.remarks`]="{ item }">
+                          <span
+                            :style="{
+                              color:
+                                item.remarks === 'Passed' ? 'green' : 'red',
+                            }"
+                          >
+                            {{ item.remarks }}
+                          </span>
+                        </template>
 
-                      <!-- Footer for General Average -->
-                      <template v-slot:bottom>
-                        <tr>
-                          <td colspan="3" class="text-right font-weight-bold">
-                            General Average:
-                          </td>
-                          <td class="text-center">
-                            <b>{{ calculateGeneralAverage(firstSemData) }}</b>
-                          </td>
-                          <td></td>
-                        </tr>
-                      </template>
-                    </v-data-table>
-                  </v-card>
+                        <!-- Footer for General Average -->
+                        <template v-slot:bottom>
+                          <tr>
+                            <td colspan="3" class="text-right font-weight-bold">
+                              General Average:
+                            </td>
+                            <td class="text-center">
+                              <b>{{ calculateGeneralAverage(firstSemData) }}</b>
+                            </td>
+                            <td></td>
+                          </tr>
+                        </template>
+                      </v-data-table>
+                    </v-card>
 
-                  <!-- Second Sem -->
-                  <v-card class="elevation-1">
-                    <div class="text-center font-weight-bold my-4">
-                      REPORT ON LEARNING PROGRESS AND ACHIEVEMENT 2ND SEMESTER
-                    </div>
-                    <v-data-table
-                      :headers="semHeaders"
-                      :items="secondSemData"
-                      item-key="subject"
-                      class="elevation-1"
-                    >
-                      <template v-slot:[`item.remarks`]="{ item }">
-                        <span
-                          :style="{
-                            color: item.remarks === 'Passed' ? 'green' : 'red',
-                          }"
-                        >
-                          {{ item.remarks }}
-                        </span>
-                      </template>
+                    <!-- Second Sem -->
+                    <v-card class="elevation-1">
+                      <div class="text-center font-weight-bold my-4">
+                        REPORT ON LEARNING PROGRESS AND ACHIEVEMENT 2ND SEMESTER
+                      </div>
+                      <v-data-table
+                        :headers="semHeaders"
+                        :items="secondSemData"
+                        item-key="subject"
+                        class="elevation-1"
+                      >
+                        <template v-slot:[`item.remarks`]="{ item }">
+                          <span
+                            :style="{
+                              color:
+                                item.remarks === 'Passed' ? 'green' : 'red',
+                            }"
+                          >
+                            {{ item.remarks }}
+                          </span>
+                        </template>
 
-                      <!-- Footer for General Average -->
-                      <template v-slot:bottom>
-                        <tr>
-                          <td colspan="3" class="text-right font-weight-bold">
-                            General Average:
-                          </td>
-                          <td class="text-center">
-                            <b>{{ calculateGeneralAverage(secondSemData) }}</b>
-                          </td>
-                          <td></td>
-                        </tr>
-                      </template>
-                    </v-data-table>
-                  </v-card>
+                        <!-- Footer for General Average -->
+                        <template v-slot:bottom>
+                          <tr>
+                            <td colspan="3" class="text-right font-weight-bold">
+                              General Average:
+                            </td>
+                            <td class="text-center">
+                              <b>{{
+                                calculateGeneralAverage(secondSemData)
+                              }}</b>
+                            </td>
+                            <td></td>
+                          </tr>
+                        </template>
+                      </v-data-table>
+                    </v-card>
+                  </div>
+                  <div v-else>
+                    <v-empty-state
+                      icon="mdi-account-off"
+                      title="Student not yet graded for this school year"
+                      text="Please contact the school if the grades for the specific semester or school year have already been submitted."
+                    />
+                  </div>
                 </template>
               </v-col>
             </v-row>
@@ -286,7 +301,7 @@ export default {
           this.filter +
           "/" +
           this.data.grade_level,
-        "GET"
+        "GET",
       ).then((res) => {
         console.log("Child Data", res.data);
         if (res.data) {
@@ -304,6 +319,7 @@ export default {
 
     closeD() {
       eventBus.emit("closeMyChildrenGradeDialog", false);
+      this.studentGrade = [];
       this.dialog = false;
     },
   },

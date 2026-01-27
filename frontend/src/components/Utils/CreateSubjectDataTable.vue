@@ -50,7 +50,7 @@
           </v-btn> -->
       </v-col>
     </v-row>
-    <v-card class="ma-5 dt-container" elevation="0" outlined>
+    <v-card class="ma-5 dt-container" elevation="1">
       <v-data-table
         :headers="headers"
         :items="data"
@@ -285,7 +285,7 @@ export default {
           "/" +
           filter +
           "",
-        "_blank" // <- This is what makes it open in a new window.
+        "_blank", // <- This is what makes it open in a new window.
       );
     },
 
@@ -310,7 +310,7 @@ export default {
       if (this.tab == 1) {
         this.axiosCall(
           "/subjects/getSubject/active/" + this.activeTab.name,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             console.log("Love", res.data);
@@ -321,7 +321,7 @@ export default {
       } else if (this.tab == 2) {
         this.axiosCall(
           "/subjects/getSubject/active/" + this.activeTab.name,
-          "GET"
+          "GET",
         ).then((res) => {
           if (res) {
             console.log("LoveNot", res.data);
@@ -373,7 +373,7 @@ export default {
             this.fadeAwayMessage.header = "System Message";
             this.fadeAwayMessage.message = res.data.msg;
           }
-        }
+        },
       );
     },
     confirmDelete(item) {

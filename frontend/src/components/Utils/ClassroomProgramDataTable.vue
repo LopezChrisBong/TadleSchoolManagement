@@ -8,7 +8,7 @@
           :value="tab.id"
           @click="changeTab(tab)"
           :class="[
-            ' pa-3 mx-3 transition-all',
+            ' pa-2 mx-2 transition-all',
             tab.active ? 'bg-pink-lighten-1 text-white' : 'bg-grey-lighten-4',
           ]"
           rounded="lg"
@@ -20,8 +20,8 @@
         <v-autocomplete
           v-model="section"
           :rules="[formRules.required]"
-          dense
-          outlined
+          variant="outlined"
+          density="compact"
           @update:modelValue="changeValueSection"
           label="Section"
           class="rounded-lg"
@@ -54,7 +54,7 @@
         </v-btn>
       </v-col>
     </v-row>
-    <v-card class="ma-5 dt-container" elevation="0" outlined>
+    <v-card class="ma-5 dt-container" elevation="1">
       <v-data-table
         :headers="headers"
         :items="filteredItems"
@@ -397,7 +397,7 @@ export default {
     getClassListed() {
       this.loading = true;
       const itemsWithSameId = this.tabList.filter(
-        (item) => item.id === this.tab
+        (item) => item.id === this.tab,
       );
       // alert(itemsWithSameId[0].name);
 
@@ -406,7 +406,7 @@ export default {
           console.log("Classroom List", res.data);
           this.sectionList = res.data;
           this.section = res.data[0].id;
-        }
+        },
       );
     },
     getClassroom(section) {
@@ -431,7 +431,7 @@ export default {
           section +
           "/" +
           filter,
-        "GET"
+        "GET",
       ).then((res) => {
         if (res) {
           this.data = res.data;
@@ -462,7 +462,7 @@ export default {
                 this.fadeAwayMessage.message = res.data.msg;
               }
             }
-          }
+          },
         );
       } else if (this.tab == 2) {
         this.axiosCall("/my-designation/toggleActive/" + item.id, "PATCH").then(
@@ -481,7 +481,7 @@ export default {
                 this.fadeAwayMessage.message = res.data.msg;
               }
             }
-          }
+          },
         );
       }
     },
@@ -601,7 +601,7 @@ export default {
     deleteItem() {
       this.axiosCall(
         "/enroll-student/deleteAvailabilitySchedule/" + this.deleteData.availId,
-        "DELETE"
+        "DELETE",
       ).then((res) => {
         if (res.data.status == 200) {
           this.dialog = false;

@@ -1,36 +1,36 @@
 <template>
-  <div>
-    <v-row class="mx-2 mt-2">
-      <v-col cols="12" md="5" class="flex-items" style="overflow: auto">
-        <v-tab
-          v-for="tab in tabList"
-          :key="tab.id"
-          :value="tab.id"
-          @click="changeTab(tab)"
-          :class="[
-            ' pa-3 mx-3 transition-all',
-            tab.active ? 'bg-pink-lighten-1 text-white' : 'bg-grey-lighten-4',
-          ]"
-          rounded="lg"
-          >{{ tab.name }}</v-tab
-        >
-      </v-col>
-      <v-spacer></v-spacer>
-      <v-col cols="12" md="3">
-        <v-text-field
-          v-model="search"
-          label="Search"
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          density="compact"
-          hide-details
-          clearable
-          class="mr-2"
-          color="primary"
-        />
-      </v-col>
-    </v-row>
-    <v-card class="ma-5 dt-container" elevation="0" outlined>
+  <v-container fluid class="pa-6">
+    <v-card rounded="xl" elevation="1" class="mb-6">
+      <v-card-text>
+        <v-row align="center" dense>
+          <v-col cols="12" md="6" class="d-flex flex-wrap ga-2">
+            <v-btn
+              size="small"
+              v-for="tab in tabList"
+              :key="tab.id"
+              @click="changeTab(tab)"
+              :color="tab.active ? 'pink' : 'grey'"
+              :variant="tab.active ? 'flat' : 'tonal'"
+              rounded="lg"
+              >{{ tab.name }}</v-btn
+            >
+          </v-col>
+          <v-spacer></v-spacer>
+          <v-col cols="12" md="6" class="d-flex justify-end ga-3">
+            <v-text-field
+              v-model="search"
+              placeholder="Search users..."
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              density="compact"
+              hide-details
+              clearable
+              max-width="260"
+            /> </v-col
+        ></v-row>
+      </v-card-text>
+    </v-card>
+    <v-card rounded="xl" elevation="1">
       <v-data-table
         :headers="tab == 1 ? headers : headers1"
         :items="data"
@@ -55,7 +55,13 @@
 
         <template v-slot:[`item.actions`]="{ item }">
           <div class="d-flex">
-            <v-btn x-small color="pink" outlined @click="editItem(item)">
+            <v-btn
+              x-small
+              color="pink"
+              outlined
+              @click="editItem(item)"
+              v-if="tab == 2"
+            >
               <v-icon size="14">{{
                 tab == 1 ? "mdi-pencil-outline" : "mdi-eye"
               }}</v-icon>
@@ -73,6 +79,13 @@
               View
             </v-btn>
           </div>
+        </template>
+        <template #no-data>
+          <v-empty-state
+            icon="mdi-account-off"
+            title="No students found"
+            text="Try adjusting your search or filters"
+          />
         </template>
       </v-data-table>
     </v-card>
@@ -120,8 +133,9 @@
       :top="fadeAwayMessage.top"
       :type="fadeAwayMessage.type"
     ></fade-away-message-component>
-  </div>
+  </v-container>
 </template>
+
 <script>
 import eventBus from "@/eventBus";
 import AccountVerificationDialog from "../../components/Dialogs/Forms/student_verifyDialog.vue";
@@ -138,7 +152,7 @@ export default {
       {
         title: "Actions",
         value: "actions",
-        align: "center",
+        align: "end",
         sortable: false,
         width: 200,
       },
@@ -213,7 +227,11 @@ export default {
     eventBus.off("closeStudentVerificationDialog");
     eventBus.off("closeAccountsVerificationDialog");
   },
-
+  computed: {
+    filterYear() {
+      return this.$store.getters.getFilterSelected;
+    },
+  },
   watch: {
     options: {
       handler() {
@@ -221,6 +239,19 @@ export default {
           this.initialize();
         } else if (this.tab == 2) {
           this.getVerifiedUsers();
+        }
+      },
+      deep: true,
+    },
+    filterYear: {
+      handler(newData, oldData) {
+        if (oldData != newData) {
+          console.log(oldData, newData);
+          if (this.tab == 1) {
+            this.initialize();
+          } else if (this.tab == 2) {
+            this.getVerifiedUsers();
+          }
         }
       },
       deep: true,

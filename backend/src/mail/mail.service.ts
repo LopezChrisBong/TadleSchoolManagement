@@ -57,10 +57,11 @@ export class MailService {
   }
 
   async sendOTP(user: any) {
+    console.log(user)
     await this.mailerService.sendMail({
       to: user.email,
       // from: '"Support Team" <support@example.com>', // override default from
-      subject: 'Welcome to DNSC-HIS! Confirm your Email',
+      subject: 'Welcome to Southern SMS! Confirm your Email',
       template: 'otp1', // `.hbs` extension is appended automatically
       context: {
         // ✏️ filling curly brackets with content
@@ -69,7 +70,8 @@ export class MailService {
       attachments: [
         {
           filename: 'headerImg',
-          path: join(process.cwd(), '/../static/img/HIS_LOGO3.png'),
+          // path: join(process.cwd(), '/../static/img/southern logo.jpg'),
+          path: join(process.cwd(), process.env.FILE_PATH+'static/img/southern logo.jpg'),
           cid: 'headerImg',
         },
       ],
@@ -80,7 +82,7 @@ export class MailService {
     await this.mailerService.sendMail({
       to: user.email,
       // from: '"Support Team" <support@example.com>', // override default from
-      subject: 'Welcome to DNSC-HIS! Temporary Password',
+      subject: 'Welcome to Southern SMS! Temporary Password',
       template: 'reset-password', // `.hbs` extension is appended automatically
       context: {
         // ✏️ filling curly brackets with content
@@ -89,7 +91,8 @@ export class MailService {
       attachments: [
         {
           filename: 'headerImg',
-          path: join(process.cwd(), '/../static/img/HIS_LOGO3.png'),
+           // path: join(process.cwd(), '/../static/img/southern logo.jpg'),
+          path: join(process.cwd(), process.env.FILE_PATH+'static/img/southern logo.jpg'),
           cid: 'headerImg',
         },
       ],
@@ -100,12 +103,13 @@ export class MailService {
     await this.mailerService.sendMail({
       to: user.email,
       // from: '"Support Team" <support@example.com>', // override default from
-      subject: 'Welcome to DNSC-HIS!',
+      subject: 'Welcome to Southern SMS!',
       template: 'confirmation', // `.hbs` extension is appended automatically
       attachments: [
         {
           filename: 'headerImg',
-          path: join(process.cwd(), '/../static/img/HIS_LOGO3.png'),
+           // path: join(process.cwd(), '/../static/img/southern logo.jpg'),
+          path: join(process.cwd(), process.env.FILE_PATH+'static/img/southern logo.jpg'),
           cid: 'headerImg',
         },
       ],

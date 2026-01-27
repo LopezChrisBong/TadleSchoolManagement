@@ -2,19 +2,24 @@
   <div>
     <v-dialog v-model="dialog" persistent eager scrollable max-width="600px">
       <v-form ref="AddSubjectDialog" @submit.prevent>
-        <v-card>
-          <v-card-title class="d-flex dialog-header">
-            <span>{{ action }} Strand</span>
-            <v-spacer></v-spacer>
+        <v-card rounded="xl">
+          <!-- Header -->
+          <v-card-title class="d-flex align-center justify-space-between">
+            <div>
+              <div class="text-h6 font-weight-bold">{{ action }} Strand</div>
+              <!-- <div class="text-caption text-grey">
+                Assign modules and permissions
+              </div> -->
+            </div>
+
             <v-btn
               icon="mdi-close"
               variant="text"
-              color="white"
-              @click="closeD()"
-            >
-            </v-btn>
+              color="grey"
+              @click="closeD"
+            />
           </v-card-title>
-
+          <v-divider></v-divider>
           <v-card-text style="max-height: 700px" class="my-4">
             <v-container>
               <v-row>
@@ -24,7 +29,8 @@
                     v-model="strand_name"
                     label="Strand Name"
                     hide-details
-                    outlined
+                    variant="outlined"
+                    density="comfortable"
                     color="#93CB5B"
                     required
                   ></v-text-field>
@@ -33,8 +39,8 @@
                   <v-autocomplete
                     v-model="trackId"
                     :rules="[formRules.required]"
-                    dense
-                    outlined
+                    variant="outlined"
+                    density="comfortable"
                     label="Track"
                     class="rounded-lg"
                     item-title="tracks_name"
@@ -51,13 +57,14 @@
 
           <v-card-actions class="pa-5">
             <v-spacer></v-spacer>
-            <v-btn color="red" outlined @click="closeD()">
+            <v-btn color="red" variant="outlined" @click="closeD()">
               <v-icon>mdi-close-circle-outline</v-icon>
               Cancel
             </v-btn>
             <v-btn
               color="#e35e93"
               class="white--text"
+              variant="flat"
               v-if="action == 'Add'"
               @click="checkConflict('ADD')"
             >
@@ -67,6 +74,7 @@
             <v-btn
               color="#e35e93"
               class="white--text"
+              variant="flat"
               v-if="action == 'Update'"
               @click="checkConflict('UPDATE')"
             >
@@ -219,7 +227,7 @@ export default {
         this.axiosCall(
           "/rooms-section/updateStrand/" + this.updateID,
           "PATCH",
-          data
+          data,
         ).then((res) => {
           console.log(res.data);
           if (res.data.status == 201) {
@@ -227,7 +235,7 @@ export default {
             this.fadeAwayMessage.show = true;
             this.fadeAwayMessage.type = "success";
             this.fadeAwayMessage.header = "System Message";
-            this.fadeAwayMessage.message = "Successfully updated subject!";
+            this.fadeAwayMessage.message = "Successfully updated!!";
 
             // location.reload();
           } else if (res.data.status == 400) {
@@ -245,7 +253,7 @@ export default {
         (res) => {
           this.trackList = res.data;
           console.log("list", this.trackList);
-        }
+        },
       );
     },
   },

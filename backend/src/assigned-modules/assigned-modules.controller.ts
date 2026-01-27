@@ -17,10 +17,10 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtService } from '@nestjs/jwt';
 import { currentUser } from 'src/shared/jwtDecode';
 
-@ApiTags('Assigned Modules')
+// @ApiTags('Assigned Modules')
 @Controller('assigned-modules')
-@UseGuards(JWTAuthGuard)
-@ApiBearerAuth()
+// @UseGuards(JWTAuthGuard)
+// @ApiBearerAuth()
 export class AssignedModulesController {
   constructor(
     private readonly assignedModulesService: AssignedModulesService,
@@ -36,6 +36,12 @@ export class AssignedModulesController {
   findAll() {
     return this.assignedModulesService.findAll();
   }
+
+    @Get('getSpecificModules')
+  getSpecificModules() {
+    return this.assignedModulesService.getSpecificModules();
+  }
+
 
   @Get('getMyModuleAsOIC')
   asOIC(@Headers() headers) {

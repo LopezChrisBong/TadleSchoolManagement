@@ -15,9 +15,9 @@
                 :rules="[formRules.required, formRules.email]"
                 label="Email address"
                 prepend-inner-icon="mdi-email"
-                outlined
+                variant="outlined"
+                density="compact"
                 @keyup.enter="dologin()"
-                dense
                 class="mb-3"
               />
               <v-text-field
@@ -28,8 +28,8 @@
                 @click:append-inner="showPassword = !showPassword"
                 prepend-inner-icon="mdi-lock"
                 @keyup.enter="dologin()"
-                outlined
-                dense
+                variant="outlined"
+                density="compact"
                 class="mb-5"
               />
               <v-btn color="primary" block @click="dologin()">Sign In</v-btn>
@@ -45,8 +45,8 @@
         <div class="form-container sign-up-container">
           <v-card class="form-card" elevation="10">
             <h2 class="text-center mb-4">Create Account</h2>
-            <p class="text-caption text-gray-100">
-              Step {{ step.id }} of 2 - {{ step.name }}
+            <p class="text-caption text-gray-100 mb-3">
+              Step {{ step.id }} of 3 - {{ step.name }}
             </p>
             <v-form ref="formInformation" v-show="step.id == 1">
               <v-text-field
@@ -54,15 +54,16 @@
                 label="First Name"
                 prepend-inner-icon="mdi-account"
                 :rules="[formRules.required]"
-                outlined
-                dense
+                variant="outlined"
+                density="compact"
                 class="mb-3"
               />
               <v-text-field
                 v-model="mname"
-                label="Middle Name"
+                label="Middle Name(optional)"
                 prepend-inner-icon="mdi-account"
-                outlined
+                variant="outlined"
+                density="compact"
                 class="mb-3"
               />
               <v-text-field
@@ -70,8 +71,8 @@
                 label="Last Name"
                 prepend-inner-icon="mdi-account"
                 :rules="[formRules.required]"
-                outlined
-                dense
+                variant="outlined"
+                density="compact"
                 class="mb-3"
               />
               <v-btn color="primary" block @click="next()" class="mb-2"
@@ -91,6 +92,21 @@
                 dense
                 class="mb-3"
               /> -->
+              <v-autocomplete
+                v-if="userType == 1"
+                v-model="assignedModuleID"
+                :rules="[formRules.required]"
+                variant="outlined"
+                clearable=""
+                density="compact"
+                class="rounded-lg"
+                item-value="id"
+                item-title="description"
+                label="Modules to assign"
+                color="#93CB5B"
+                :items="assignedModulesList"
+              >
+              </v-autocomplete>
               <v-text-field
                 v-model="email"
                 label="Email"
@@ -98,8 +114,8 @@
                 :rules="[formRules.required, formRules.email]"
                 @change="checkEmail()"
                 :error-messages="emailError"
-                outlined
-                dense
+                variant="outlined"
+                density="compact"
                 class="mb-3"
               />
               <v-text-field
@@ -110,15 +126,15 @@
                 @click:append-inner="showPassword = !showPassword"
                 :rules="[formRules.required, formRules.password]"
                 prepend-inner-icon="mdi-lock"
-                outlined
-                dense
+                variant="outlined"
+                density="compact"
                 class="mb-5"
               />
               <v-text-field
                 class="font-size-14"
-                outlined
                 color="#93CB5B"
-                dense
+                variant="outlined"
+                density="compact"
                 v-model="confirmPassword"
                 :rules="[
                   formRules.required,
@@ -147,6 +163,61 @@
                 <p>Already have an account?</p>
                 <a class="text-green" @click="mobileChange()">Sign In</a>
               </div>
+            </v-form>
+            <v-form
+              ref="formOTP"
+              v-show="step.id === 3"
+              @submit.prevent="submitOTP"
+            >
+              <v-row class="mx-5 mt-3">
+                <v-col cols="12" class="pa-0 px-2 mb-2">
+                  <span class="text-justify" style="font-size: 10px">
+                    Please enter the OTP that was sent to your Email Address to
+                    continue your system Registration.
+                  </span>
+                </v-col>
+
+                <v-col cols="12" class="mb-4">
+                  <p class="text-caption text-grey">
+                    Please enter your One Time Pin
+                  </p>
+
+                  <div class="otp-wrapper">
+                    <!-- <input
+                      v-for="(digit, index) in otp"
+                      :key="index"
+                      type="text"
+                      maxlength="1"
+                      v-model="otp[index]"
+                      class="otp-input"
+                      @update:modelValue="focusNext(index)"
+                    /> -->
+                    <input
+                      v-for="(digit, index) in otp"
+                      :key="index"
+                      type="tel"
+                      inputmode="numeric"
+                      maxlength="1"
+                      v-model="otp[index]"
+                      class="otp-input"
+                      @input="onOtpInput($event, index)"
+                    />
+                  </div>
+                </v-col>
+
+                <v-col cols="12" class="pa-0 px-4">
+                  <v-btn
+                    type="submit"
+                    :loading="isLoading"
+                    block
+                    variant="flat"
+                    color="primary"
+                    class="py-5 text-white rounded-lg"
+                  >
+                    CONFIRM
+                  </v-btn>
+                </v-col>
+              </v-row>
             </v-form>
           </v-card>
         </div>
@@ -213,9 +284,12 @@ export default {
       step: { id: 1, name: "Personal Information" },
       fname: null,
       lname: null,
+      assignedModulesList: [],
+      assignedModuleID: null,
       mname: null,
       name: "",
       email: "",
+      otp: ["", "", "", "", "", ""],
       emailLogin: "",
       passwordLogin: "",
       password: "",
@@ -237,7 +311,7 @@ export default {
     },
   },
   mounted() {
-    // this.initialize();
+    this.getAssignedModules();
     this.userType = localStorage.getItem("userType");
   },
   methods: {
@@ -318,10 +392,11 @@ export default {
             mname: this.mname,
             lname: this.lname,
             user_roleID: this.userType == 0 ? 3 : 2,
-            isAdminApproved: this.userType == 0 ? 0 : 0,
+            isAdminApproved: 1,
             usertypeID: 2,
             email: this.email,
             password: this.password,
+            assignedModuleID: this.userType == 1 ? this.assignedModuleID : 22,
           };
           this.axiosCall("/auth/registerUser", "POST", data).then((res) => {
             if (res.data.status == 201) {
@@ -329,10 +404,12 @@ export default {
               this.$store.dispatch("setEmail", this.email);
               this.fadeAwayMessage.show = true;
               this.fadeAwayMessage.type = "success";
-              this.fadeAwayMessage.message = "Successfully Registered!";
+              this.fadeAwayMessage.message =
+                "We’ve sent an OTP to your email. Please enter it to confirm your login.";
               this.fadeAwayMessage.header = "System Message";
-              this.isLogin = true;
-              this.refresh();
+              // this.isLogin = true;
+              // this.refresh();
+              this.next();
               // this.$router.push("/login");
             } else {
               this.isLoading = false;
@@ -358,7 +435,7 @@ export default {
             this.emailError = "";
           }
           this.emailChecking = false;
-        }
+        },
       );
     },
     refresh() {
@@ -386,11 +463,78 @@ export default {
       //     this.step = { id: 3, name: "Account Information" };
       //   }
       // }
-      //  else if (this.step.id == 3) {
-      //   if (this.$refs.Step3Formref.validate()) {
-      //     this.step = { id: 4, name: "Otp Confirmation" };
-      //   }
-      // }
+      else if (this.step.id == 2) {
+        if (this.$refs.formRegister.validate()) {
+          this.step = { id: 3, name: "Otp Confirmation" };
+        }
+      }
+    },
+
+    getAssignedModules() {
+      this.axiosCall("/assigned-modules/getSpecificModules", "GET").then(
+        (res) => {
+          // console.log("AssignedM", res.data);
+          this.assignedModulesList = res.data;
+        },
+      );
+    },
+    // focusNext(index) {
+    //   console.log(index);
+    //   if (this.otp[index] && index < this.otp.length - 1) {
+    //     const inputs = document.querySelectorAll(".otp-input input");
+    //     inputs[index + 1]?.focus();
+    //   }
+    // },
+
+    onOtpInput(event, index) {
+      const value = event.target.value.replace(/\D/g, "").slice(0, 1);
+      this.otp[index] = value;
+
+      if (value && index < this.otp.length - 1) {
+        const inputs = document.querySelectorAll(".otp-input");
+        inputs[index + 1]?.focus();
+      }
+    },
+
+    submitOTP() {
+      const otpValue = this.otp.join("");
+
+      if (otpValue.length !== 6) {
+        alert("Please enter complete OTP");
+        return;
+      }
+
+      this.isLoading = true;
+
+      // 🔗 Call your API here
+      console.log("OTP:", otpValue);
+      let data = {
+        email: this.$store.getters.getEmail,
+        otp: otpValue,
+      };
+      this.axiosCall("/auth/confirmOtp", "POST", data).then((res) => {
+        if (res.data.status == 200) {
+          this.isLoading = false;
+          this.isLogin = true;
+          this.refresh();
+          this.fadeAwayMessage.show = true;
+          this.fadeAwayMessage.type = "success";
+          this.fadeAwayMessage.message =
+            "Your OTP has been successfully confirmed. You may now proceed to log in.";
+          this.fadeAwayMessage.header = "System Message";
+          // this.$router.push("/registration-success");
+        } else {
+          this.isLoading = false;
+          this.fadeAwayMessage.show = true;
+          this.fadeAwayMessage.type = "error";
+          this.fadeAwayMessage.message = res.data.msg;
+          this.fadeAwayMessage.header = "System Message";
+        }
+      });
+
+      setTimeout(() => {
+        this.isLoading = false;
+      }, 1000);
     },
   },
 };
@@ -517,5 +661,27 @@ export default {
 
 .overlay-right {
   transform: translateX(0);
+}
+.otp-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  color: black;
+}
+/* 
+.otp-input {
+  max-width: 100px;
+  text-align: center;
+} */
+.otp-input {
+  border: 2px solid;
+  border-color: #ff53cc;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  margin-right: 2px;
+  margin-left: 2px;
+  font-size: 28px;
+  text-align: center;
 }
 </style>

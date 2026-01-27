@@ -345,6 +345,15 @@ export class RoomsSectionService {
     return data
   }
 
+  async getMyAdvisorySection(facultyID:number){
+     let data = await this.dataSource.manager
+    .createQueryBuilder(RoomsSection, 'RS')
+    .where('RS.teacherId = :facultyID ',{facultyID})
+    .getOne();
+    console.log('facultyID',data)
+    return data
+  }
+
   async getAllAttendanceWholeSemester(roomID:number, subjectID:number){
       console.log('Semester Attendance',roomID,subjectID)
         // Step 1: Get distinct attendance dates for this room & subject
@@ -959,7 +968,7 @@ for (let i = 0; i < gradeRecordclassList.length; i++) {
   async AllStrand() {
 
     const toReturn = await this.dataSource.query(
-      'SELECT *, add_strand.id as id FROM add_strand left join add_tracks on add_strand.trackId = add_tracks.id  order by strand_name ASC',
+      'SELECT *, add_strand.id as id FROM add_strand left join add_tracks on add_strand.trackId = add_tracks.id where arvhieve != 1  order by strand_name ASC',
     );
     return toReturn;
   }
@@ -1031,7 +1040,7 @@ try {
   
 
   updateStrand(id: number, updateAddStrandDto: UpdateAddStrandDto) {
-try {
+  try {
     this.dataSource.manager.update(AddStrand,id,{
     strand_name:updateAddStrandDto.strand_name,
     trackId:updateAddStrandDto.trackId,
@@ -1039,11 +1048,27 @@ try {
   return{
     msg:'Updated successfully!', status:HttpStatus.CREATED
   }
-} catch (error) {
-  return{
-    msg:'Something went wrong!'+ error, status:HttpStatus.BAD_REQUEST
+  } catch (error) {
+    return{
+      msg:'Something went wrong!'+ error, status:HttpStatus.BAD_REQUEST
+    }
   }
-}
+  }
+
+
+  archieveStrand(id:number){
+   try {
+    this.dataSource.manager.update(AddStrand,id,{
+      arvhieve:true
+  })
+  return{
+    msg:'Updated successfully!', status:HttpStatus.CREATED
+  }
+  } catch (error) {
+    return{
+      msg:'Something went wrong!'+ error, status:HttpStatus.BAD_REQUEST
+    }
+  }
   }
 
 //   async updateAttendance( date:string, updateStudentAttendanceDto:UpdateStudentAttendanceDto){

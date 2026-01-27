@@ -9,18 +9,25 @@
       max-width="1200px"
     >
       <v-form ref="UserVerifyFormref" @submit.prevent>
-        <v-card>
-          <v-card-title dark class="d-flex dialog-header">
-            <span>{{ action }} Student </span>
-            <v-spacer></v-spacer>
+        <v-card elevation="2">
+          <!-- Header -->
+          <v-card-title class="d-flex align-center justify-space-between">
+            <div>
+              <div class="text-h6 font-weight-bold">{{ action }} Student</div>
+              <div class="text-caption text-grey">
+                Update student personal information
+              </div>
+            </div>
+
             <v-btn
               icon="mdi-close"
               variant="text"
-              color="white"
-              @click="closeD()"
-            >
-            </v-btn>
+              color="grey"
+              @click="closeD"
+            />
           </v-card-title>
+
+          <v-divider />
 
           <v-card-text style="max-height: 700px" class="my-5">
             <v-row class="ma-5">
@@ -33,8 +40,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="fname"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -48,8 +55,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="mname"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -63,8 +70,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="lname"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -78,8 +85,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="suffix"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -93,8 +100,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="bdate"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -108,8 +115,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="birth_place"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -123,8 +130,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="sex"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -138,8 +145,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="civil_status"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -153,8 +160,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="height"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -168,8 +175,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="weight"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -183,8 +190,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="blood_type"
                   chips
                   :readonly="readonly"
@@ -198,8 +205,8 @@
 
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="isFilipino"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -213,8 +220,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="ip_Name"
                   chips
                   :readonly="readonly"
@@ -227,8 +234,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="fourpis"
                   chips
                   :readonly="readonly"
@@ -241,8 +248,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="mobile_no"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -256,8 +263,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="email"
                   chips
                   :readonly="readonly"
@@ -270,8 +277,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="disability_desc"
                   chips
                   :readonly="readonly"
@@ -292,8 +299,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="residential_house_no"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -308,8 +315,8 @@
 
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="residential_street"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -324,8 +331,8 @@
 
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="residential_subd"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -340,8 +347,8 @@
 
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="residential_brgy"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -355,8 +362,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="residential_city"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -370,8 +377,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="residential_prov"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -386,8 +393,8 @@
 
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="residential_zip"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -409,8 +416,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="father_fname"
                   chips
                   :readonly="readonly"
@@ -423,8 +430,8 @@
               </v-col>
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="father_mname"
                   chips
                   :readonly="readonly"
@@ -438,8 +445,8 @@
 
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="father_lname"
                   chips
                   :readonly="readonly"
@@ -453,8 +460,8 @@
 
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="father_number"
                   chips
                   :readonly="readonly"
@@ -468,8 +475,8 @@
 
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="mother_fname"
                   chips
                   :readonly="readonly"
@@ -483,8 +490,8 @@
 
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="mother_mname"
                   chips
                   :readonly="readonly"
@@ -498,8 +505,8 @@
 
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="mother_lname"
                   chips
                   :readonly="readonly"
@@ -513,8 +520,8 @@
 
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="mother_number"
                   chips
                   :readonly="readonly"
@@ -528,8 +535,8 @@
 
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="guardian_fname"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -544,8 +551,8 @@
 
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="guardian_mname"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -560,8 +567,8 @@
 
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="guardian_lname"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -576,8 +583,8 @@
 
               <v-col cols="12" md="3">
                 <v-text-field
-                  outlined
-                  dense
+                  variant="outlined"
+                  density="comfortable"
                   v-model="guardian_number"
                   :rules="action == 'View' ? [] : [formRules.required]"
                   chips
@@ -600,22 +607,23 @@
 
           <v-card-actions class="pa-5" v-if="action == 'View'">
             <v-spacer></v-spacer>
-            <v-btn color="red" outlined @click="closeD()">
+            <v-btn color="red" variant="outlined" @click="closeD()">
               <v-icon>mdi-close-circle-outline</v-icon>
               Close
             </v-btn>
-            <v-btn
+            <!-- <v-btn
               :color="$vuetify.theme.themes.light.submitBtns"
               class="white--text"
+              variant="flat"
               @click="verifyStudent(data)"
             >
               <v-icon>mdi-check-circle</v-icon>
               Enroll
-            </v-btn>
+            </v-btn> -->
           </v-card-actions>
           <v-card-actions class="pa-5" v-if="action == 'Update'">
             <v-spacer></v-spacer>
-            <v-btn color="red" outlined @click="closeD()">
+            <v-btn color="red" variant="outlined" @click="closeD()">
               <v-icon>mdi-close-circle-outline</v-icon>
               Close
             </v-btn>
@@ -623,6 +631,7 @@
               v-if="readonly == true"
               :color="$vuetify.theme.themes.light.submitBtns"
               class="white--text"
+              variant="flat"
               @click="readonly = false"
             >
               <v-icon>mdi-pencil</v-icon>
@@ -632,6 +641,7 @@
               v-if="readonly == false"
               :color="$vuetify.theme.themes.light.submitBtns"
               class="white--text"
+              variant="flat"
               @click="accept()"
             >
               <v-icon>mdi-pencil </v-icon>
@@ -881,7 +891,7 @@ export default {
         this.axiosCall(
           "/enroll-student/updateEnrolledStudent",
           "POST",
-          data
+          data,
         ).then((res) => {
           if (res.data.status == 200) {
             this.dialog = false;
