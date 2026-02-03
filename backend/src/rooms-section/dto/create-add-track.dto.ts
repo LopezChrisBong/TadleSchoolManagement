@@ -1,7 +1,6 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAddTrackDto {
-
-    @ApiProperty()
-    tracks_name: string;
+  @ApiProperty()
+  tracks_name: string;
 }

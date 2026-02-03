@@ -1,28 +1,27 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateStudentAttendanceDto {
+  @ApiProperty()
+  roomID: number;
 
-    @ApiProperty()
-    roomID: number;
+  @ApiProperty()
+  school_yearID: number;
 
-    @ApiProperty()
-    school_yearID:number;
+  @ApiProperty()
+  attendance: number;
 
-     @ApiProperty()
-    attendance:number;
+  @ApiProperty()
+  studentID: number;
 
-     @ApiProperty()
-    studentID:number;
+  @ApiProperty()
+  subjectID: number;
 
-     @ApiProperty()
-    subjectID:number;
+  @ApiProperty()
+  attendanceDate: string;
 
-    @ApiProperty()
-    attendanceDate:string;
+  @ApiProperty()
+  data: string;
 
-    @ApiProperty()
-    data:string;
-
-    @ApiProperty()
-    teacherID:number;
+  @ApiProperty()
+  teacherID: number;
 }

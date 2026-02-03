@@ -64,8 +64,8 @@ export class Users {
   isAdminApproved: boolean;
 
   @Column({
-  nullable: true,
-  type: 'longtext',
+    nullable: true,
+    type: 'longtext',
   })
   subModules: string;
 

@@ -41,6 +41,7 @@ import FacultyList from '../views/Pages/FacultyList.vue';
 import StudentDiscipline from '../views/Pages/StudentDiscipline.vue';
 import ParentChildren from '../views/Pages/ParentChildren.vue';
 import AdvisoryProgramm from '../views/Pages/AdvisoryProgramm.vue';
+import Events from '../views/Pages/Events.vue';
 // Vue.use(VueRouter);
 
 const routes = [
@@ -224,10 +225,15 @@ const routes = [
         component: TransmutedGrade,
         meta: { title: "Transmuted Grade", authRequired: true },
       },
-       {
+      {
         path: "faculty-list",
         component: FacultyList,
         meta: { title: "Faculty List", authRequired: true },
+      },
+      {
+        path: "events",
+        component: Events,
+        meta: { title: "Events", authRequired: true },
       },
       
       
@@ -372,6 +378,11 @@ const routes = [
         path: "advisory-programm",
         component: AdvisoryProgramm,
         meta: { title: "Class Schedules", authRequired: true },
+      },
+      {
+        path: "events",
+        component: Events,
+        meta: { title: "Events", authRequired: true },
       },
     ],
   },

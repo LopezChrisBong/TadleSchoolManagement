@@ -1,15 +1,12 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateTeacherGradeLevelDto {
+  @ApiProperty()
+  userID: string;
 
-    @ApiProperty()
-    userID: string;
+  @ApiProperty()
+  gradeLevel_list: string;
 
-    @ApiProperty()
-    gradeLevel_list:string;
-
-    @ApiProperty()
-    removed_gradeLevel:string;
-
-
+  @ApiProperty()
+  removed_gradeLevel: string;
 }

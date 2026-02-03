@@ -1,16 +1,15 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateRoomsSectionDto {
+  @ApiProperty()
+  room_section: string;
 
-    @ApiProperty()
-    room_section: string;
+  @ApiProperty()
+  grade_level: string;
 
-    @ApiProperty()
-    grade_level:string;
+  @ApiProperty()
+  strandId: number;
 
-    @ApiProperty()
-    strandId:number;
-
-    @ApiProperty()
-    teacherId:number;
+  @ApiProperty()
+  teacherId: number;
 }

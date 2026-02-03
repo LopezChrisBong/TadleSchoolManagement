@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
@@ -36,7 +44,6 @@ export class NotificationController {
     return this.notificationService.getLardoStudentForFaculty(+id);
   }
 
-
   @Get('getAtRiskStudent/:id')
   getAtRiskStudent(@Param('id') id: string) {
     return this.notificationService.getAtRiskStudent(+id);
@@ -47,37 +54,65 @@ export class NotificationController {
     return this.notificationService.getAtRiskStudentForFaculty(+id);
   }
 
-
-
-      @Get('getParentNotification/:id')
+  @Get('getParentNotification/:id')
   getParentNotification(@Param('id') id: string) {
     return this.notificationService.getParentNotification(+id);
   }
 
-
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNotificationDto: UpdateNotificationDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateNotificationDto: UpdateNotificationDto,
+  ) {
     return this.notificationService.update(+id, updateNotificationDto);
   }
 
   @Patch('updateLardoAdviser/:id')
-  updateLardoAdviser(@Param('id') id: string, @Body() updateLardoStudentNotificationDto: UpdateLardoStudentNotificationDto) {
-    return this.notificationService.updateLardoAdviser(+id, updateLardoStudentNotificationDto);
+  updateLardoAdviser(
+    @Param('id') id: string,
+    @Body()
+    updateLardoStudentNotificationDto: UpdateLardoStudentNotificationDto,
+  ) {
+    return this.notificationService.updateLardoAdviser(
+      +id,
+      updateLardoStudentNotificationDto,
+    );
   }
 
   @Patch('updateLardoFaculty/:id')
-  updateLardoFaculty(@Param('id') id: string, @Body() updateLardoStudentForFacultyNotificationDto: UpdateLardoStudentForFacultyNotificationDto) {
-    return this.notificationService.updateLardoFaculty(+id, updateLardoStudentForFacultyNotificationDto);
+  updateLardoFaculty(
+    @Param('id') id: string,
+    @Body()
+    updateLardoStudentForFacultyNotificationDto: UpdateLardoStudentForFacultyNotificationDto,
+  ) {
+    return this.notificationService.updateLardoFaculty(
+      +id,
+      updateLardoStudentForFacultyNotificationDto,
+    );
   }
 
-    @Patch('updateAtRiskAdviser/:id')
-  updateAtRiskAdviser(@Param('id') id: string, @Body() updateAtRiskStudentNotificationDto: UpdateAtRiskStudentNotificationDto) {
-    return this.notificationService.updateAtRiskAdviser(+id, updateAtRiskStudentNotificationDto);
+  @Patch('updateAtRiskAdviser/:id')
+  updateAtRiskAdviser(
+    @Param('id') id: string,
+    @Body()
+    updateAtRiskStudentNotificationDto: UpdateAtRiskStudentNotificationDto,
+  ) {
+    return this.notificationService.updateAtRiskAdviser(
+      +id,
+      updateAtRiskStudentNotificationDto,
+    );
   }
 
-      @Patch('updateAtRiskFaculty/:id')
-  updateAtRiskFaculty(@Param('id') id: string, @Body() updateAtRiskStudentForFacultyNotificationDto: UpdateAtRiskStudentForFacultyNotificationDto) {
-    return this.notificationService.updateAtRiskFaculty(+id, updateAtRiskStudentForFacultyNotificationDto);
+  @Patch('updateAtRiskFaculty/:id')
+  updateAtRiskFaculty(
+    @Param('id') id: string,
+    @Body()
+    updateAtRiskStudentForFacultyNotificationDto: UpdateAtRiskStudentForFacultyNotificationDto,
+  ) {
+    return this.notificationService.updateAtRiskFaculty(
+      +id,
+      updateAtRiskStudentForFacultyNotificationDto,
+    );
   }
 
   @Delete(':id')

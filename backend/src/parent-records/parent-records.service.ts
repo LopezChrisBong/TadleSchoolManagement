@@ -1,74 +1,96 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreateParentRecordDto } from './dto/create-parent-record.dto';
 import { UpdateParentRecordDto } from './dto/update-parent-record.dto';
-import { AddStrand, AddTracks, EnrollStudent, RoomsSection, SchoolYear, StudentList, UserDetail,StudentAttendance,StudentGrade, TransmutedGrade,StudentQuarterFinalGrade, ParentRecord, Subject, StudentReportDisciplinary } from 'src/entities';
+import {
+  AddStrand,
+  AddTracks,
+  EnrollStudent,
+  RoomsSection,
+  SchoolYear,
+  StudentList,
+  UserDetail,
+  StudentAttendance,
+  StudentGrade,
+  TransmutedGrade,
+  StudentQuarterFinalGrade,
+  ParentRecord,
+  Subject,
+  StudentReportDisciplinary,
+} from 'src/entities';
 import { Brackets, DataSource, Repository } from 'typeorm';
 import { CreateStudentReportDisciplinaryDto } from './dto/create-student-report-disciplinary.dto';
 import { UpdateStudentReportDiscipilinarydDto } from './dto/update-student-report-disciplinary.dto';
 
 @Injectable()
 export class ParentRecordsService {
-    constructor(private dataSource: DataSource,){}
-async  create(createParentRecordDto: CreateParentRecordDto) {
-         try {
-          let exist = await this.dataSource.manager.findOneBy(ParentRecord,{studentID:createParentRecordDto.studentID})
-          if(!exist){
-            // console.log('wala')
-           let data = this.dataSource.manager.create(ParentRecord,{
-             studentID: createParentRecordDto.studentID,
-             parentID:createParentRecordDto.parentID,
-             school_yearID:createParentRecordDto.school_yearID,
-           })
-           await this.dataSource.manager.save(data)
-           return{
-             msg:'Save successfully!', status:HttpStatus.CREATED
-           }
-          }else{
-            //  console.log(exist)
-            return{
-             msg:'Student already assigned parent!', status:HttpStatus.BAD_REQUEST
-           }
-          }
-
-         } catch (error) {
-           return{
-             msg:'Something went wrong!'+ error, status:HttpStatus.BAD_REQUEST
-           }
-         }
+  constructor(private dataSource: DataSource) {}
+  async create(createParentRecordDto: CreateParentRecordDto) {
+    try {
+      let exist = await this.dataSource.manager.findOneBy(ParentRecord, {
+        studentID: createParentRecordDto.studentID,
+      });
+      if (!exist) {
+        // console.log('wala')
+        let data = this.dataSource.manager.create(ParentRecord, {
+          studentID: createParentRecordDto.studentID,
+          parentID: createParentRecordDto.parentID,
+          school_yearID: createParentRecordDto.school_yearID,
+        });
+        await this.dataSource.manager.save(data);
+        return {
+          msg: 'Save successfully!',
+          status: HttpStatus.CREATED,
+        };
+      } else {
+        //  console.log(exist)
+        return {
+          msg: 'Student already assigned parent!',
+          status: HttpStatus.BAD_REQUEST,
+        };
+      }
+    } catch (error) {
+      return {
+        msg: 'Something went wrong!' + error,
+        status: HttpStatus.BAD_REQUEST,
+      };
+    }
   }
 
-  async  studentReport(createStudentReportDisciplinaryDto: CreateStudentReportDisciplinaryDto) {
-
-  // console.log(createStudentReportDisciplinaryDto)
-         try {
-           let data = this.dataSource.manager.create(StudentReportDisciplinary,{
-             studentID: createStudentReportDisciplinaryDto.studentID,
-             roomID: createStudentReportDisciplinaryDto.roomID,
-             school_yearID: createStudentReportDisciplinaryDto.school_yearID,
-             subjectID: createStudentReportDisciplinaryDto.subjectID,
-             teacherID: createStudentReportDisciplinaryDto.teacherID,
-             report_type: createStudentReportDisciplinaryDto.report_type,
-             grade_level: createStudentReportDisciplinaryDto.grade_level,
-             report_description: createStudentReportDisciplinaryDto.report_description,
-           })
-           await this.dataSource.manager.save(data)
-           return{
-             msg:'Save successfully!', status:HttpStatus.CREATED
-           }
-         } catch (error) {
-           return{
-             msg:'Something went wrong!'+ error, status:HttpStatus.BAD_REQUEST
-           }
-         }
+  async studentReport(
+    createStudentReportDisciplinaryDto: CreateStudentReportDisciplinaryDto,
+  ) {
+    // console.log(createStudentReportDisciplinaryDto)
+    try {
+      let data = this.dataSource.manager.create(StudentReportDisciplinary, {
+        studentID: createStudentReportDisciplinaryDto.studentID,
+        roomID: createStudentReportDisciplinaryDto.roomID,
+        school_yearID: createStudentReportDisciplinaryDto.school_yearID,
+        subjectID: createStudentReportDisciplinaryDto.subjectID,
+        teacherID: createStudentReportDisciplinaryDto.teacherID,
+        report_type: createStudentReportDisciplinaryDto.report_type,
+        grade_level: createStudentReportDisciplinaryDto.grade_level,
+        report_description:
+          createStudentReportDisciplinaryDto.report_description,
+      });
+      await this.dataSource.manager.save(data);
+      return {
+        msg: 'Save successfully!',
+        status: HttpStatus.CREATED,
+      };
+    } catch (error) {
+      return {
+        msg: 'Something went wrong!' + error,
+        status: HttpStatus.BAD_REQUEST,
+      };
+    }
   }
 
-
-async searchStudentData(data: string) {
-  const query = this.dataSource.manager
-    .createQueryBuilder(EnrollStudent, 'ES')
-    .select([
-      'ES.id as id',
-      `
+  async searchStudentData(data: string) {
+    const query = this.dataSource.manager
+      .createQueryBuilder(EnrollStudent, 'ES')
+      .select([
+        'ES.id as id',
+        `
       IF (
         ES.mname IS NOT NULL 
         AND LOWER(ES.mname) != 'n/a',
@@ -76,15 +98,15 @@ async searchStudentData(data: string) {
         CONCAT(ES.fname, ' ', ES.lname)
       ) as name
       `,
-    ])
-    .where(
-      new Brackets(qb => {
-        qb.where('ES.lrnNo LIKE  :data', { data })
-          .orWhere('ES.fname LIKE  :data', { data })
-          .orWhere('ES.mname LIKE  :data', { data })
-          .orWhere('ES.lname LIKE  :data', { data })
-          .orWhere(
-                    `
+      ])
+      .where(
+        new Brackets((qb) => {
+          qb.where('ES.lrnNo LIKE  :data', { data })
+            .orWhere('ES.fname LIKE  :data', { data })
+            .orWhere('ES.mname LIKE  :data', { data })
+            .orWhere('ES.lname LIKE  :data', { data })
+            .orWhere(
+              `
                     CONCAT(
                       ES.fname, ' ',
                       IF(ES.mname IS NOT NULL AND LOWER(ES.mname) != 'n/a',
@@ -94,20 +116,20 @@ async searchStudentData(data: string) {
                       ES.lname
                     ) LIKE :data
                     `,
-                    { data: `%${data}%` }
-                  );
+              { data: `%${data}%` },
+            );
+        }),
+      );
 
-                }),
-              );
+    const newData = await query.getRawMany();
+    return newData;
+  }
 
-  const newData = await query.getRawMany();
-  return newData;
-}
-
-  async  findAll() {
-      let data = await this.dataSource.manager
+  async findAll() {
+    let data = await this.dataSource.manager
       .createQueryBuilder(EnrollStudent, 'ES')
-      .select(["IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
+      .select([
+        "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
         'ES.id as id',
         'ES.fname as fname',
         'ES.mname as mname',
@@ -177,15 +199,16 @@ async searchStudentData(data: string) {
       .where('ES.statusEnrolled != 0')
       .andWhere('PR.studentID IS NULL')
       .getRawMany();
-      // console.log(data)
-      return data
+    // console.log(data)
+    return data;
   }
 
- async getMyChildrenList(curr_user:any){
-      let parentID = curr_user.userdetail.id
-      let data = await this.dataSource.manager
+  async getMyChildrenList(curr_user: any) {
+    let parentID = curr_user.userdetail.id;
+    let data = await this.dataSource.manager
       .createQueryBuilder(EnrollStudent, 'ES')
-      .select(["IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
+      .select([
+        "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
         'ES.id as id',
         'ES.fname as fname',
         'ES.mname as mname',
@@ -255,17 +278,18 @@ async searchStudentData(data: string) {
       .where('ES.statusEnrolled != 0')
       .andWhere('PR.parentID = :parentID', { parentID })
       .getRawMany();
-      
-      // console.log(data)
-      return data
- }
- 
- async getDisciplinaryReport(filter:number, tab:number, teacherID:number){
-  // console.log(filter,tab,teacherID)
 
-        const data =  this.dataSource.manager
+    // console.log(data)
+    return data;
+  }
+
+  async getDisciplinaryReport(filter: number, tab: number, teacherID: number) {
+    // console.log(filter,tab,teacherID)
+
+    const data = this.dataSource.manager
       .createQueryBuilder(EnrollStudent, 'ES')
-      .select(["IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
+      .select([
+        "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
         "IF (!ISNULL(UD.mname)  AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ',SUBSTRING(UD.mname, 1, 1) ,'. ',UD.lname) ,concat(UD.fname, ' ', UD.lname)) as teacher_name",
         'ES.id as id',
         'SRD.id as reportID',
@@ -290,26 +314,27 @@ async searchStudentData(data: string) {
       .leftJoin(Subject, 'S', 'S.id = SRD.subjectID')
       // .where('ES.statusEnrolled != 0')
       .where('SRD.school_yearID = :filter', { filter })
-      .andWhere('RS.teacherId = :teacherID', { teacherID })
+      .andWhere('RS.teacherId = :teacherID', { teacherID });
 
-      if (tab == 1) {
-        data.andWhere("SRD.status = 0")
-        data.orderBy('SRD.created_at','DESC')
-      } else {
-           data.andWhere("SRD.status != 0")
-           data.orderBy('SRD.created_at','DESC')
-      }
-      // .getRawMany();
-      const results = await data.getRawMany();
-      // console.log(results)
-      return results
- }
+    if (tab == 1) {
+      data.andWhere('SRD.status = 0');
+      data.orderBy('SRD.created_at', 'DESC');
+    } else {
+      data.andWhere('SRD.status != 0');
+      data.orderBy('SRD.created_at', 'DESC');
+    }
+    // .getRawMany();
+    const results = await data.getRawMany();
+    // console.log(results)
+    return results;
+  }
 
-  async getPrefectReport(filter:number, tab:number, roleID:number){
-  console.log(filter,tab,roleID)
-        const data =  this.dataSource.manager
+  async getPrefectReport(filter: number, tab: number, roleID: number) {
+    console.log(filter, tab, roleID);
+    const data = this.dataSource.manager
       .createQueryBuilder(EnrollStudent, 'ES')
-      .select(["IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
+      .select([
+        "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
         "IF (!ISNULL(UD.mname)  AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ',SUBSTRING(UD.mname, 1, 1) ,'. ',UD.lname) ,concat(UD.fname, ' ', UD.lname)) as teacher_name",
         'ES.id as id',
         'SRD.id as reportID',
@@ -333,34 +358,37 @@ async searchStudentData(data: string) {
       .leftJoin(UserDetail, 'UD', 'UD.id = SRD.teacherID')
       .leftJoin(Subject, 'S', 'S.id = SRD.subjectID')
       // .where('ES.statusEnrolled != 0')
-      .where('SRD.school_yearID = :filter', { filter })
+      .where('SRD.school_yearID = :filter', { filter });
 
-      if (roleID == 6) {
-        data.andWhere("SRD.grade_level IN (:...grades)", { grades: ['Grade 7','Grade 8','Grade 9','Grade 10'] });
-      } else if (roleID == 7) {
-        data.andWhere("SRD.grade_level IN (:...grades)", { grades: ['Grade 11','Grade 12'] });
-      }
-      if (tab == 1) {
-        data.andWhere("SRD.status = 1")
-        data.orderBy('SRD.created_at','DESC')
-      } else {
-           data.andWhere("SRD.status = 2")
-           data.orderBy('SRD.created_at','DESC')
-      }
-      // .getRawMany();
-      const results = await data.getRawMany();
-      // console.log(results)
-      return results
- }
+    if (roleID == 6) {
+      data.andWhere('SRD.grade_level IN (:...grades)', {
+        grades: ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'],
+      });
+    } else if (roleID == 7) {
+      data.andWhere('SRD.grade_level IN (:...grades)', {
+        grades: ['Grade 11', 'Grade 12'],
+      });
+    }
+    if (tab == 1) {
+      data.andWhere('SRD.status = 1');
+      data.orderBy('SRD.created_at', 'DESC');
+    } else {
+      data.andWhere('SRD.status = 2');
+      data.orderBy('SRD.created_at', 'DESC');
+    }
+    // .getRawMany();
+    const results = await data.getRawMany();
+    // console.log(results)
+    return results;
+  }
 
- async getMyChildrenAttendance(studentID:number,school_yearID:number){
-        let data = await this.dataSource.manager
+  async getMyChildrenAttendance(studentID: number, school_yearID: number) {
+    let data = await this.dataSource.manager
       .createQueryBuilder(StudentAttendance, 'SA')
       .select([
-        "SA.*",
+        'SA.*',
         "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
-        "S.subject_title as subject_title",
-        
+        'S.subject_title as subject_title',
       ])
       .leftJoin(EnrollStudent, 'ES', 'SA.studentID = ES.id')
       .leftJoin(Subject, 'S', 'S.id = SA.subjectID')
@@ -368,19 +396,19 @@ async searchStudentData(data: string) {
       .andWhere('SA.studentID = :studentID', { studentID })
       .andWhere('SA.school_yearID = :school_yearID', { school_yearID })
       .getRawMany();
-      // console.log(data)
+    // console.log(data)
 
-        if (!data.length) {
-            return []; 
-          }
-      const dateColumns = data
-        .map(
-          (d) =>
-            `MAX(CASE WHEN a.attendanceDate = '${d.attendanceDate}' THEN a.attendance END) AS \`${d.attendanceDate}\``
-        )
-        .join(', ');
+    if (!data.length) {
+      return [];
+    }
+    const dateColumns = data
+      .map(
+        (d) =>
+          `MAX(CASE WHEN a.attendanceDate = '${d.attendanceDate}' THEN a.attendance END) AS \`${d.attendanceDate}\``,
+      )
+      .join(', ');
 
-      const sql = `
+    const sql = `
         SELECT 
           CONCAT(s.fname, ' ', s.lname) AS student_name,
           subj.subject_title AS subject,
@@ -394,388 +422,439 @@ async searchStudentData(data: string) {
         GROUP BY s.id, s.fname, s.lname, subj.subject_title
         ORDER BY student_name, subject
       `;
-        // console.log(await this.dataSource.query(sql, [studentID, school_yearID]));
-        return this.dataSource.query(sql, [studentID, school_yearID]);
-      
- }
+    // console.log(await this.dataSource.query(sql, [studentID, school_yearID]));
+    return this.dataSource.query(sql, [studentID, school_yearID]);
+  }
 
- async getMyChildrenGrades(studentID:number,filter:number, gradeLevel:string){
+  async getMyChildrenGrades(
+    studentID: number,
+    filter: number,
+    gradeLevel: string,
+  ) {
+    let query = this.dataSource.manager
+      .createQueryBuilder(EnrollStudent, 'ES')
+      .select([
+        'ES.id as id',
+        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ', SUBSTRING(ES.mname, 1, 1), '. ', ES.lname), concat(ES.fname, ' ', ES.lname)) as name",
+        'SQF.transmuted_grade as final_grade',
+        'SQF.initial_grade as initial_grade',
+        'SQF.quarter as quarter',
+        'SQF.semester as semester',
+        'S.subject_title as subject_title',
+        'SQF.sub_subject as sub_subject',
+      ])
+      .leftJoin(StudentList, 'SL', 'ES.id = SL.studentId')
+      .leftJoin(StudentQuarterFinalGrade, 'SQF', 'SQF.studentID = ES.id')
+      .leftJoin(Subject, 'S', 'S.id = SQF.subjectID')
+      .where('SQF.school_yearID = :filter', { filter })
+      // .andWhere('SQF.roomID = :roomID', { roomID })
+      .andWhere('SQF.studentID = :studentID', { studentID });
+    // .andWhere('ES.grade_level = :gradeLevel', { gradeLevel })
+    // .andWhere('ES.statusEnrolled = 1');
+    let newData = await query.getRawMany();
 
-            let query = this.dataSource.manager
-              .createQueryBuilder(EnrollStudent, 'ES')
-              .select([
-                "ES.id as id",
-                "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ', SUBSTRING(ES.mname, 1, 1), '. ', ES.lname), concat(ES.fname, ' ', ES.lname)) as name",
-                "SQF.transmuted_grade as final_grade", 
-                "SQF.initial_grade as initial_grade", 
-                "SQF.quarter as quarter", 
-                "SQF.semester as semester", 
-                "S.subject_title as subject_title",
-                "SQF.sub_subject as sub_subject"
-              ])
-              .leftJoin(StudentList, 'SL', 'ES.id = SL.studentId')
-              .leftJoin(StudentQuarterFinalGrade, 'SQF', 'SQF.studentID = ES.id')
-              .leftJoin(Subject, 'S', 'S.id = SQF.subjectID')
-              .where('SQF.school_yearID = :filter', { filter })
-              // .andWhere('SQF.roomID = :roomID', { roomID })
-              .andWhere('SQF.studentID = :studentID', { studentID })
-              // .andWhere('ES.grade_level = :gradeLevel', { gradeLevel })
-              // .andWhere('ES.statusEnrolled = 1');
-            let newData = await query.getRawMany();
-          
-              if(newData.length > 0){
-                let childGrade = await  this.transformChildrenGrade(newData,gradeLevel)
-                // console.log(JSON.stringify(childGrade))
-                return childGrade
-              }
-              return
- }
+    if (newData.length > 0) {
+      let childGrade = await this.transformChildrenGrade(newData, gradeLevel);
+      // console.log(JSON.stringify(childGrade))
+      return childGrade;
+    }
+    return;
+  }
 
-//  async transformChildrenGrade(data:any,gradeLevel:string){
-//         let arr
-//         let firstSemSubjects
-//         let secondSemSubjects
-//         let juniorHigh
-//         let junior
-//         let arrs
-//         if(gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12'){
-//     const pivoted = Object.values(
-//   data.reduce((acc, row) => {
-//     const { id, name, semester, subject_title, quarter, final_grade } = row;
+  //  async transformChildrenGrade(data:any,gradeLevel:string){
+  //         let arr
+  //         let firstSemSubjects
+  //         let secondSemSubjects
+  //         let juniorHigh
+  //         let junior
+  //         let arrs
+  //         if(gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12'){
+  //     const pivoted = Object.values(
+  //   data.reduce((acc, row) => {
+  //     const { id, name, semester, subject_title, quarter, final_grade } = row;
 
-//     if (!acc[id]) {
-//       acc[id] = {
-//         id,
-//         name,
-//         semesters: {}
-//       };
-//     }
+  //     if (!acc[id]) {
+  //       acc[id] = {
+  //         id,
+  //         name,
+  //         semesters: {}
+  //       };
+  //     }
 
-//     // ensure semester bucket exists
-//     if (!acc[id].semesters[semester]) {
-//       acc[id].semesters[semester] = { subjects: [] };
-//     }
+  //     // ensure semester bucket exists
+  //     if (!acc[id].semesters[semester]) {
+  //       acc[id].semesters[semester] = { subjects: [] };
+  //     }
 
-//     // find or create subject inside this semester
-//     let subject = acc[id].semesters[semester].subjects.find(
-//       (s) => s.subject === subject_title
-//     );
-//     if (!subject) {
-//       subject = {
-//         subject: subject_title,
-//         "1st Quarter": null,
-//         "2nd Quarter": null,
-//         "3rd Quarter": null,
-//         "4th Quarter": null,
-//         finalGrade: null,
-//         remarks: null
-//       };
-//       acc[id].semesters[semester].subjects.push(subject);
-//     }
+  //     // find or create subject inside this semester
+  //     let subject = acc[id].semesters[semester].subjects.find(
+  //       (s) => s.subject === subject_title
+  //     );
+  //     if (!subject) {
+  //       subject = {
+  //         subject: subject_title,
+  //         "1st Quarter": null,
+  //         "2nd Quarter": null,
+  //         "3rd Quarter": null,
+  //         "4th Quarter": null,
+  //         finalGrade: null,
+  //         remarks: null
+  //       };
+  //       acc[id].semesters[semester].subjects.push(subject);
+  //     }
 
-//     // assign grade
-//     subject[quarter] = final_grade;
+  //     // assign grade
+  //     subject[quarter] = final_grade;
 
-//     // recalc
-//     const grades = [
-//       subject["1st Quarter"],
-//       subject["2nd Quarter"],
-//       subject["3rd Quarter"],
-//       subject["4th Quarter"],
-//     ].filter((g) => g !== null);
+  //     // recalc
+  //     const grades = [
+  //       subject["1st Quarter"],
+  //       subject["2nd Quarter"],
+  //       subject["3rd Quarter"],
+  //       subject["4th Quarter"],
+  //     ].filter((g) => g !== null);
 
-//     if (grades.length > 0) {
-//       const avg = Math.round(
-//         grades.reduce((a, b) => a + b, 0) / grades.length
-//       );
-//       subject.finalGrade = avg;
-//       subject.remarks = avg >= 75 ? "Passed" : "Failed";
-//     }
+  //     if (grades.length > 0) {
+  //       const avg = Math.round(
+  //         grades.reduce((a, b) => a + b, 0) / grades.length
+  //       );
+  //       subject.finalGrade = avg;
+  //       subject.remarks = avg >= 75 ? "Passed" : "Failed";
+  //     }
 
-//     return acc;
-//   }, {})
-// );
-//     // ensure both semesters exist
-//     const arr = JSON.parse(JSON.stringify(pivoted));
-//     const arrs = arr[0].semesters;
+  //     return acc;
+  //   }, {})
+  // );
+  //     // ensure both semesters exist
+  //     const arr = JSON.parse(JSON.stringify(pivoted));
+  //     const arrs = arr[0].semesters;
 
-//         if (!arrs["1st Semester"]) arrs["1st Semester"] = { subjects: [] };
-//         if (!arrs["2nd Semester"]) arrs["2nd Semester"] = { subjects: [] };
+  //         if (!arrs["1st Semester"]) arrs["1st Semester"] = { subjects: [] };
+  //         if (!arrs["2nd Semester"]) arrs["2nd Semester"] = { subjects: [] };
 
-//         firstSemSubjects = arrs["1st Semester"].subjects;
-//         secondSemSubjects = arrs["2nd Semester"].subjects;
-//           return {
-//             firstSem: firstSemSubjects || [],
-//             secondSem: secondSemSubjects || []
-//           };
-        
-//             }else{
-//         const pivoted = Object.values(
-//           data.reduce((acc, row) => {
-//             const { id, name, semester, subject_title, quarter, final_grade, sub_subject } = row;
+  //         firstSemSubjects = arrs["1st Semester"].subjects;
+  //         secondSemSubjects = arrs["2nd Semester"].subjects;
+  //           return {
+  //             firstSem: firstSemSubjects || [],
+  //             secondSem: secondSemSubjects || []
+  //           };
 
-//             if (!acc[id]) {
-//               acc[id] = { id, name, semesters: {} };
-//             }
+  //             }else{
+  //         const pivoted = Object.values(
+  //           data.reduce((acc, row) => {
+  //             const { id, name, semester, subject_title, quarter, final_grade, sub_subject } = row;
 
-//             if (!acc[id].semesters[semester]) {
-//               acc[id].semesters[semester] = { subjects: [] };
-//             }
+  //             if (!acc[id]) {
+  //               acc[id] = { id, name, semesters: {} };
+  //             }
 
-//             const sem = acc[id].semesters[semester];
+  //             if (!acc[id].semesters[semester]) {
+  //               acc[id].semesters[semester] = { subjects: [] };
+  //             }
 
-//             if (sub_subject) {
-//               const subSubjects = JSON.parse(sub_subject);
-//               const subGrades: number[] = [];
+  //             const sem = acc[id].semesters[semester];
 
-//               Object.keys(subSubjects).forEach(sub => {
-//                 let subItem = sem.subjects.find(s => s.subject === sub);
-//                 if (!subItem) {
-//                   subItem = {
-//                     subject: sub,
-//                     '1st Quarter': null,
-//                     '2nd Quarter': null,
-//                     '3rd Quarter': null,
-//                     '4th Quarter': null,
-//                     finalGrade: null,
-//                     conspan:null,
-//                     remarks: null
-//                   };
-//                   sem.subjects.push(subItem);
-//                 }
+  //             if (sub_subject) {
+  //               const subSubjects = JSON.parse(sub_subject);
+  //               const subGrades: number[] = [];
 
-//                 subItem[quarter] = subSubjects[sub].transmuted_grade;
-//                 subGrades.push(subSubjects[sub].transmuted_grade);
-//               });
+  //               Object.keys(subSubjects).forEach(sub => {
+  //                 let subItem = sem.subjects.find(s => s.subject === sub);
+  //                 if (!subItem) {
+  //                   subItem = {
+  //                     subject: sub,
+  //                     '1st Quarter': null,
+  //                     '2nd Quarter': null,
+  //                     '3rd Quarter': null,
+  //                     '4th Quarter': null,
+  //                     finalGrade: null,
+  //                     conspan:null,
+  //                     remarks: null
+  //                   };
+  //                   sem.subjects.push(subItem);
+  //                 }
 
-            
-//               let mapeh = sem.subjects.find(s => s.subject === subject_title);
-//               if (!mapeh) {
-//                 mapeh = {
-//                   subject: subject_title, // "MAPEH"
-//                   '1st Quarter': null,
-//                   '2nd Quarter': null,
-//                   '3rd Quarter': null,
-//                   '4th Quarter': null,
-//                   finalGrade: null,
-//                   conspan:null,
-//                   remarks: null
-//                 };
-//                 sem.subjects.push(mapeh);
-//               }
+  //                 subItem[quarter] = subSubjects[sub].transmuted_grade;
+  //                 subGrades.push(subSubjects[sub].transmuted_grade);
+  //               });
 
-              
-//               if (subGrades.length > 0) {
-//                 const quarterAvg = Math.round(subGrades.reduce((a, b) => a + b, 0) / subGrades.length);
-//                 mapeh[quarter] = quarterAvg;
-//               }
+  //               let mapeh = sem.subjects.find(s => s.subject === subject_title);
+  //               if (!mapeh) {
+  //                 mapeh = {
+  //                   subject: subject_title, // "MAPEH"
+  //                   '1st Quarter': null,
+  //                   '2nd Quarter': null,
+  //                   '3rd Quarter': null,
+  //                   '4th Quarter': null,
+  //                   finalGrade: null,
+  //                   conspan:null,
+  //                   remarks: null
+  //                 };
+  //                 sem.subjects.push(mapeh);
+  //               }
 
-             
-//               const mapehGrades = [
-//                 mapeh['1st Quarter'],
-//                 mapeh['2nd Quarter'],
-//                 mapeh['3rd Quarter'],
-//                 mapeh['4th Quarter'],
-//               ].filter(g => g !== null);
+  //               if (subGrades.length > 0) {
+  //                 const quarterAvg = Math.round(subGrades.reduce((a, b) => a + b, 0) / subGrades.length);
+  //                 mapeh[quarter] = quarterAvg;
+  //               }
 
-//               if (mapehGrades.length > 0) {
-//                 const avg = Math.round(mapehGrades.reduce((a, b) => a + b, 0) / mapehGrades.length);
-//                 mapeh.finalGrade = avg;
-//                 mapeh.remarks = avg >= 75 ? "Passed" : "Failed";
-//               }
+  //               const mapehGrades = [
+  //                 mapeh['1st Quarter'],
+  //                 mapeh['2nd Quarter'],
+  //                 mapeh['3rd Quarter'],
+  //                 mapeh['4th Quarter'],
+  //               ].filter(g => g !== null);
 
-//             } else {
-//               let subject = sem.subjects.find(s => s.subject === subject_title);
-//               if (!subject) {
-//                 subject = {
-//                   subject: subject_title,
-//                   '1st Quarter': null,
-//                   '2nd Quarter': null,
-//                   '3rd Quarter': null,
-//                   '4th Quarter': null,
-//                   finalGrade: null,
-//                   conspan:1,
-//                   remarks: null
-//                 };
-//                 sem.subjects.push(subject);
-//               }
+  //               if (mapehGrades.length > 0) {
+  //                 const avg = Math.round(mapehGrades.reduce((a, b) => a + b, 0) / mapehGrades.length);
+  //                 mapeh.finalGrade = avg;
+  //                 mapeh.remarks = avg >= 75 ? "Passed" : "Failed";
+  //               }
 
-//               subject[quarter] = final_grade;
+  //             } else {
+  //               let subject = sem.subjects.find(s => s.subject === subject_title);
+  //               if (!subject) {
+  //                 subject = {
+  //                   subject: subject_title,
+  //                   '1st Quarter': null,
+  //                   '2nd Quarter': null,
+  //                   '3rd Quarter': null,
+  //                   '4th Quarter': null,
+  //                   finalGrade: null,
+  //                   conspan:1,
+  //                   remarks: null
+  //                 };
+  //                 sem.subjects.push(subject);
+  //               }
 
-//               const grades = [
-//                 subject['1st Quarter'],
-//                 subject['2nd Quarter'],
-//                 subject['3rd Quarter'],
-//                 subject['4th Quarter'],
-//               ].filter(g => g !== null);
+  //               subject[quarter] = final_grade;
 
-//               if (grades.length > 0) {
-//                 const avg = Math.round(grades.reduce((a, b) => a + b, 0) / grades.length);
-//                 subject.finalGrade = avg;
-//                 subject.remarks = avg >= 75 ? "Passed" : "Failed";
-//               }
-//             }
+  //               const grades = [
+  //                 subject['1st Quarter'],
+  //                 subject['2nd Quarter'],
+  //                 subject['3rd Quarter'],
+  //                 subject['4th Quarter'],
+  //               ].filter(g => g !== null);
 
-//             return acc;
-//           }, {})
-//         );
+  //               if (grades.length > 0) {
+  //                 const avg = Math.round(grades.reduce((a, b) => a + b, 0) / grades.length);
+  //                 subject.finalGrade = avg;
+  //                 subject.remarks = avg >= 75 ? "Passed" : "Failed";
+  //               }
+  //             }
 
-//         arr = JSON.parse(JSON.stringify(pivoted));
-//         arrs = arr[0].semesters;
+  //             return acc;
+  //           }, {})
+  //         );
 
-//         Object.keys(arrs).forEach(semKey => {
-//           let semSubjects = arrs[semKey].subjects;
+  //         arr = JSON.parse(JSON.stringify(pivoted));
+  //         arrs = arr[0].semesters;
 
-//           const normalSubjects = semSubjects.filter(s => s.subject !== "MAPEH" && !["Music","Arts","Physical Education","Health"].includes(s.subject));
-//           const mapeh = semSubjects.find(s => s.subject === "MAPEH");
-//           const subs = semSubjects.filter(s => ["Music","Arts","Physical Education","Health"].includes(s.subject));
+  //         Object.keys(arrs).forEach(semKey => {
+  //           let semSubjects = arrs[semKey].subjects;
 
-//           const generalGrades = [...normalSubjects, mapeh].filter(Boolean).map(s => s.finalGrade).filter(g => g !== null);
-//           let generalAverage = null;
-//           if (generalGrades.length > 0) {
-//             generalAverage = Math.round(generalGrades.reduce((a,b) => a+b,0) / generalGrades.length);
-//           }
+  //           const normalSubjects = semSubjects.filter(s => s.subject !== "MAPEH" && !["Music","Arts","Physical Education","Health"].includes(s.subject));
+  //           const mapeh = semSubjects.find(s => s.subject === "MAPEH");
+  //           const subs = semSubjects.filter(s => ["Music","Arts","Physical Education","Health"].includes(s.subject));
 
-//         arrs[semKey].subjects = [
-//           ...normalSubjects,
-//           mapeh,
-//           ...subs,
-//           {
-//             subject: "General Average",
-//             conspan:5,
-//             finalGrade: generalAverage,
-//             remarks: generalAverage >= 75 ? "Passed" : "Failed"
-//           }
-//         ];
-//       });
+  //           const generalGrades = [...normalSubjects, mapeh].filter(Boolean).map(s => s.finalGrade).filter(g => g !== null);
+  //           let generalAverage = null;
+  //           if (generalGrades.length > 0) {
+  //             generalAverage = Math.round(generalGrades.reduce((a,b) => a+b,0) / generalGrades.length);
+  //           }
 
-//         if (arrs["Junior High"]) {
-//     return { juniorHigh: arrs["Junior High"].subjects };
-//   } else {
-//     return { juniorHigh: [] }; // fallback safe return
-//   }
-//           }
+  //         arrs[semKey].subjects = [
+  //           ...normalSubjects,
+  //           mapeh,
+  //           ...subs,
+  //           {
+  //             subject: "General Average",
+  //             conspan:5,
+  //             finalGrade: generalAverage,
+  //             remarks: generalAverage >= 75 ? "Passed" : "Failed"
+  //           }
+  //         ];
+  //       });
 
-//  }
-async transformChildrenGrade(data:any, gradeLevel:string){
-  if (gradeLevel === "Grade 11" || gradeLevel === "Grade 12") {
-    // ----- Senior High -----
-    const pivoted = Object.values(
-      data.reduce((acc, row) => {
-        const { id, name, semester, subject_title, quarter, final_grade } = row;
+  //         if (arrs["Junior High"]) {
+  //     return { juniorHigh: arrs["Junior High"].subjects };
+  //   } else {
+  //     return { juniorHigh: [] }; // fallback safe return
+  //   }
+  //           }
 
-        if (!acc[id]) acc[id] = { id, name, semesters: {} };
-        if (!acc[id].semesters[semester]) acc[id].semesters[semester] = { subjects: [] };
+  //  }
+  async transformChildrenGrade(data: any, gradeLevel: string) {
+    if (gradeLevel === 'Grade 11' || gradeLevel === 'Grade 12') {
+      // ----- Senior High -----
+      const pivoted = Object.values(
+        data.reduce((acc, row) => {
+          const { id, name, semester, subject_title, quarter, final_grade } =
+            row;
 
-        const sem = acc[id].semesters[semester];
+          if (!acc[id]) acc[id] = { id, name, semesters: {} };
+          if (!acc[id].semesters[semester])
+            acc[id].semesters[semester] = { subjects: [] };
 
-        let subject = sem.subjects.find(s => s.subject === subject_title);
-        if (!subject) {
-          subject = {
-            subject: subject_title,
-            "1st Quarter": null,
-            "2nd Quarter": null,
-            finalGrade: null,
-            remarks: null
-          };
-          sem.subjects.push(subject);
-        }
+          const sem = acc[id].semesters[semester];
 
-        subject[quarter] = final_grade;
-
-        const grades = [subject["1st Quarter"], subject["2nd Quarter"]].filter(g => g !== null);
-        if (grades.length) {
-          const avg = Math.round(grades.reduce((a,b)=>a+b,0)/grades.length);
-          subject.finalGrade = avg;
-          subject.remarks = avg >= 75 ? "Passed" : "Failed";
-        }
-
-        return acc;
-      }, {})
-    );
-
-    const arr = JSON.parse(JSON.stringify(pivoted));
-    const arrs = arr[0].semesters;
-
-    return {
-      seniorHigh: {
-        firstSem: arrs["1st Semester"]?.subjects || [],
-        secondSem: arrs["2nd Semester"]?.subjects || []
-      }
-    };
-
-  } else {
-    // ----- Junior High -----
-    const pivoted = Object.values(
-      data.reduce((acc, row) => {
-        const { id, name, semester, subject_title, quarter, final_grade, sub_subject } = row;
-
-        if (!acc[id]) acc[id] = { id, name, semesters: {} };
-        if (!acc[id].semesters[semester]) acc[id].semesters[semester] = { subjects: [] };
-
-        const sem = acc[id].semesters[semester];
-
-        if (sub_subject) {
-          const subSubjects = JSON.parse(sub_subject);
-          const subGrades: number[] = [];
-
-          Object.keys(subSubjects).forEach(sub => {
-            let subItem = sem.subjects.find(s => s.subject === sub);
-            if (!subItem) {
-              subItem = { subject: sub, "1st Quarter": null, "2nd Quarter": null, "3rd Quarter": null, "4th Quarter": null, finalGrade: null, remarks: null };
-              sem.subjects.push(subItem);
-            }
-            subItem[quarter] = subSubjects[sub].transmuted_grade;
-            subGrades.push(subSubjects[sub].transmuted_grade);
-          });
-
-          let mapeh = sem.subjects.find(s => s.subject === "MAPEH");
-          if (!mapeh) {
-            mapeh = { subject: "MAPEH", "1st Quarter": null, "2nd Quarter": null, "3rd Quarter": null, "4th Quarter": null, finalGrade: null, remarks: null };
-            sem.subjects.push(mapeh);
-          }
-
-          if (subGrades.length > 0) {
-            const quarterAvg = Math.round(subGrades.reduce((a,b)=>a+b,0)/subGrades.length);
-            mapeh[quarter] = quarterAvg;
-          }
-
-          const mapehGrades = [mapeh["1st Quarter"], mapeh["2nd Quarter"], mapeh["3rd Quarter"], mapeh["4th Quarter"]].filter(g => g !== null);
-          if (mapehGrades.length) {
-            const avg = Math.round(mapehGrades.reduce((a,b)=>a+b,0)/mapehGrades.length);
-            mapeh.finalGrade = avg;
-            mapeh.remarks = avg >= 75 ? "Passed" : "Failed";
-          }
-
-        } else {
-          let subject = sem.subjects.find(s => s.subject === subject_title);
+          let subject = sem.subjects.find((s) => s.subject === subject_title);
           if (!subject) {
-            subject = { subject: subject_title, "1st Quarter": null, "2nd Quarter": null, "3rd Quarter": null, "4th Quarter": null, finalGrade: null, remarks: null };
+            subject = {
+              subject: subject_title,
+              '1st Quarter': null,
+              '2nd Quarter': null,
+              finalGrade: null,
+              remarks: null,
+            };
             sem.subjects.push(subject);
           }
 
           subject[quarter] = final_grade;
 
-          const grades = [subject["1st Quarter"], subject["2nd Quarter"], subject["3rd Quarter"], subject["4th Quarter"]].filter(g => g !== null);
+          const grades = [
+            subject['1st Quarter'],
+            subject['2nd Quarter'],
+          ].filter((g) => g !== null);
           if (grades.length) {
-            const avg = Math.round(grades.reduce((a,b)=>a+b,0)/grades.length);
+            const avg = Math.round(
+              grades.reduce((a, b) => a + b, 0) / grades.length,
+            );
             subject.finalGrade = avg;
-            subject.remarks = avg >= 75 ? "Passed" : "Failed";
+            subject.remarks = avg >= 75 ? 'Passed' : 'Failed';
           }
-        }
 
-        return acc;
-      }, {})
-    );
+          return acc;
+        }, {}),
+      );
 
-    const arr = JSON.parse(JSON.stringify(pivoted));
-    const arrs = arr[0].semesters;
+      const arr = JSON.parse(JSON.stringify(pivoted));
+      const arrs = arr[0].semesters;
 
-    return { juniorHigh: arrs["Junior High"]?.subjects || [] };
+      return {
+        seniorHigh: {
+          firstSem: arrs['1st Semester']?.subjects || [],
+          secondSem: arrs['2nd Semester']?.subjects || [],
+        },
+      };
+    } else {
+      // ----- Junior High -----
+      const pivoted = Object.values(
+        data.reduce((acc, row) => {
+          const {
+            id,
+            name,
+            semester,
+            subject_title,
+            quarter,
+            final_grade,
+            sub_subject,
+          } = row;
+
+          if (!acc[id]) acc[id] = { id, name, semesters: {} };
+          if (!acc[id].semesters[semester])
+            acc[id].semesters[semester] = { subjects: [] };
+
+          const sem = acc[id].semesters[semester];
+
+          if (sub_subject) {
+            const subSubjects = JSON.parse(sub_subject);
+            const subGrades: number[] = [];
+
+            Object.keys(subSubjects).forEach((sub) => {
+              let subItem = sem.subjects.find((s) => s.subject === sub);
+              if (!subItem) {
+                subItem = {
+                  subject: sub,
+                  '1st Quarter': null,
+                  '2nd Quarter': null,
+                  '3rd Quarter': null,
+                  '4th Quarter': null,
+                  finalGrade: null,
+                  remarks: null,
+                };
+                sem.subjects.push(subItem);
+              }
+              subItem[quarter] = subSubjects[sub].transmuted_grade;
+              subGrades.push(subSubjects[sub].transmuted_grade);
+            });
+
+            let mapeh = sem.subjects.find((s) => s.subject === 'MAPEH');
+            if (!mapeh) {
+              mapeh = {
+                subject: 'MAPEH',
+                '1st Quarter': null,
+                '2nd Quarter': null,
+                '3rd Quarter': null,
+                '4th Quarter': null,
+                finalGrade: null,
+                remarks: null,
+              };
+              sem.subjects.push(mapeh);
+            }
+
+            if (subGrades.length > 0) {
+              const quarterAvg = Math.round(
+                subGrades.reduce((a, b) => a + b, 0) / subGrades.length,
+              );
+              mapeh[quarter] = quarterAvg;
+            }
+
+            const mapehGrades = [
+              mapeh['1st Quarter'],
+              mapeh['2nd Quarter'],
+              mapeh['3rd Quarter'],
+              mapeh['4th Quarter'],
+            ].filter((g) => g !== null);
+            if (mapehGrades.length) {
+              const avg = Math.round(
+                mapehGrades.reduce((a, b) => a + b, 0) / mapehGrades.length,
+              );
+              mapeh.finalGrade = avg;
+              mapeh.remarks = avg >= 75 ? 'Passed' : 'Failed';
+            }
+          } else {
+            let subject = sem.subjects.find((s) => s.subject === subject_title);
+            if (!subject) {
+              subject = {
+                subject: subject_title,
+                '1st Quarter': null,
+                '2nd Quarter': null,
+                '3rd Quarter': null,
+                '4th Quarter': null,
+                finalGrade: null,
+                remarks: null,
+              };
+              sem.subjects.push(subject);
+            }
+
+            subject[quarter] = final_grade;
+
+            const grades = [
+              subject['1st Quarter'],
+              subject['2nd Quarter'],
+              subject['3rd Quarter'],
+              subject['4th Quarter'],
+            ].filter((g) => g !== null);
+            if (grades.length) {
+              const avg = Math.round(
+                grades.reduce((a, b) => a + b, 0) / grades.length,
+              );
+              subject.finalGrade = avg;
+              subject.remarks = avg >= 75 ? 'Passed' : 'Failed';
+            }
+          }
+
+          return acc;
+        }, {}),
+      );
+
+      const arr = JSON.parse(JSON.stringify(pivoted));
+      const arrs = arr[0].semesters;
+
+      return { juniorHigh: arrs['Junior High']?.subjects || [] };
+    }
   }
-}
-
- 
 
   findOne(id: number) {
     return `This action returns a #${id} parentRecord`;
@@ -785,18 +864,23 @@ async transformChildrenGrade(data:any, gradeLevel:string){
     return `This action updates a #${id} parentRecord`;
   }
 
-   updateStudentReport(id:number,updateStudentReportDiscipilinarydDto:UpdateStudentReportDiscipilinarydDto){
-      try {
-        this.dataSource.manager.update(StudentReportDisciplinary, id,{
-          status:updateStudentReportDiscipilinarydDto.status,
-      })
-      return{
-        msg:'Updated successfully!', status:HttpStatus.CREATED
-      }
+  updateStudentReport(
+    id: number,
+    updateStudentReportDiscipilinarydDto: UpdateStudentReportDiscipilinarydDto,
+  ) {
+    try {
+      this.dataSource.manager.update(StudentReportDisciplinary, id, {
+        status: updateStudentReportDiscipilinarydDto.status,
+      });
+      return {
+        msg: 'Updated successfully!',
+        status: HttpStatus.CREATED,
+      };
     } catch (error) {
-      return{
-        msg:'Something went wrong!'+ error, status:HttpStatus.BAD_REQUEST
-      }
+      return {
+        msg: 'Something went wrong!' + error,
+        status: HttpStatus.BAD_REQUEST,
+      };
     }
   }
 

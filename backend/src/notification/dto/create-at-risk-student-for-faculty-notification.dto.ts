@@ -1,38 +1,36 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAtRiskStudentForFacultyNotificationDto {
+  @ApiProperty()
+  studentID: number;
 
-    @ApiProperty()
-    studentID:number
+  @ApiProperty()
+  student_name: string;
 
-    @ApiProperty()
-    student_name: string;
+  @ApiProperty()
+  teacherID: number;
 
-    @ApiProperty()
-    teacherID:number;
+  @ApiProperty()
+  school_yearID: number;
 
-    @ApiProperty()
-    school_yearID:number;
+  @ApiProperty()
+  transmuted_grade: number;
 
-    @ApiProperty()
-    transmuted_grade:number
+  @ApiProperty()
+  route: string;
 
-    @ApiProperty()
-    route:string
+  @ApiProperty()
+  remarks: string;
 
-    @ApiProperty()
-    remarks:string
+  @ApiProperty()
+  room_name: string;
 
-    @ApiProperty()
-    room_name:string
+  @ApiProperty()
+  grade_level: string;
 
-    @ApiProperty()
-    grade_level:string
+  @ApiProperty()
+  subject_title: string;
 
-    @ApiProperty()
-    subject_title:string
-
-    @ApiProperty()
-    read:boolean
-
+  @ApiProperty()
+  read: boolean;
 }

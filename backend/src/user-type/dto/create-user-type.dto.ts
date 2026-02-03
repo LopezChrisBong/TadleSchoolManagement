@@ -1,8 +1,8 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
 
 export class CreateUserTypeDto {
-    @ApiProperty()
-    @IsNotEmpty()
-    description: string
+  @ApiProperty()
+  @IsNotEmpty()
+  description: string;
 }

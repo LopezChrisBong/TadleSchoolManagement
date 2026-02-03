@@ -1,35 +1,33 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateLardoStudentForFacultyNotificationDto {
+  @ApiProperty()
+  studentID: number;
 
-    @ApiProperty()
-    studentID:number
+  @ApiProperty()
+  student_name: string;
 
-    @ApiProperty()
-    student_name: string;
+  @ApiProperty()
+  teacherID: number;
 
-    @ApiProperty()
-    teacherID:number;
+  @ApiProperty()
+  school_yearID: number;
 
-    @ApiProperty()
-    school_yearID:number;
+  @ApiProperty()
+  route: string;
 
-    @ApiProperty()
-    route:string
+  @ApiProperty()
+  remarks: string;
 
-    @ApiProperty()
-    remarks:string
+  @ApiProperty()
+  grade_level: string;
 
-    @ApiProperty()
-    grade_level:string
+  @ApiProperty()
+  room_name: string;
 
-    @ApiProperty()
-    room_name:string
+  @ApiProperty()
+  subject_title: string;
 
-    @ApiProperty()
-    subject_title:string
-
-    @ApiProperty()
-    read:boolean
-
+  @ApiProperty()
+  read: boolean;
 }

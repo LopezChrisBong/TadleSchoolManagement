@@ -57,7 +57,7 @@ export class MailService {
   }
 
   async sendOTP(user: any) {
-    console.log(user)
+    console.log(user);
     await this.mailerService.sendMail({
       to: user.email,
       // from: '"Support Team" <support@example.com>', // override default from
@@ -71,7 +71,10 @@ export class MailService {
         {
           filename: 'headerImg',
           // path: join(process.cwd(), '/../static/img/southern logo.jpg'),
-          path: join(process.cwd(), process.env.FILE_PATH+'static/img/southern logo.jpg'),
+          path: join(
+            process.cwd(),
+            process.env.FILE_PATH + 'static/img/southern logo.jpg',
+          ),
           cid: 'headerImg',
         },
       ],
@@ -91,8 +94,11 @@ export class MailService {
       attachments: [
         {
           filename: 'headerImg',
-           // path: join(process.cwd(), '/../static/img/southern logo.jpg'),
-          path: join(process.cwd(), process.env.FILE_PATH+'static/img/southern logo.jpg'),
+          // path: join(process.cwd(), '/../static/img/southern logo.jpg'),
+          path: join(
+            process.cwd(),
+            process.env.FILE_PATH + 'static/img/southern logo.jpg',
+          ),
           cid: 'headerImg',
         },
       ],
@@ -108,8 +114,11 @@ export class MailService {
       attachments: [
         {
           filename: 'headerImg',
-           // path: join(process.cwd(), '/../static/img/southern logo.jpg'),
-          path: join(process.cwd(), process.env.FILE_PATH+'static/img/southern logo.jpg'),
+          // path: join(process.cwd(), '/../static/img/southern logo.jpg'),
+          path: join(
+            process.cwd(),
+            process.env.FILE_PATH + 'static/img/southern logo.jpg',
+          ),
           cid: 'headerImg',
         },
       ],

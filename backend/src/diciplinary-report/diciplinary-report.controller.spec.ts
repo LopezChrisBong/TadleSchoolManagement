@@ -11,7 +11,9 @@ describe('DiciplinaryReportController', () => {
       providers: [DiciplinaryReportService],
     }).compile();
 
-    controller = module.get<DiciplinaryReportController>(DiciplinaryReportController);
+    controller = module.get<DiciplinaryReportController>(
+      DiciplinaryReportController,
+    );
   });
 
   it('should be defined', () => {

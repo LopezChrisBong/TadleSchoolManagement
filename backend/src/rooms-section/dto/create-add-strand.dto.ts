@@ -1,13 +1,12 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAddStrandDto {
+  @ApiProperty()
+  strand_name: string;
 
-    @ApiProperty()
-    strand_name: string;
+  @ApiProperty()
+  trackId: string;
 
-    @ApiProperty()
-    trackId:string;
-
-    @ApiProperty()
-    arvhieve:boolean;
+  @ApiProperty()
+  arvhieve: boolean;
 }

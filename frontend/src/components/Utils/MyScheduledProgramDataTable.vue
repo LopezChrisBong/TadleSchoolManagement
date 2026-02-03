@@ -66,9 +66,9 @@
             class="my-1"
           >
             <v-icon start size="18">{{
-              tab === 1 ? "mdi-check" : "mdi-eye"
+              tab === 1 ? 'mdi-check' : 'mdi-eye'
             }}</v-icon>
-            {{ tab === 1 ? "Verify" : "View" }}
+            {{ tab === 1 ? 'Verify' : 'View' }}
           </v-btn>
           <v-btn
             v-if="tab === 1"
@@ -134,20 +134,20 @@
   </div>
 </template>
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
 export default {
   components: {},
   data: () => ({
-    search: "",
+    search: '',
     taggingData: null,
     fullname: null,
     applicantData: null,
     headers: [
       {
-        title: "Time",
-        value: "time",
-        align: "start",
-        valign: "start",
+        title: 'Time',
+        value: 'time',
+        align: 'start',
+        valign: 'start',
         sortable: false,
       },
       // {
@@ -158,38 +158,38 @@ export default {
       //   sortable: false,
       // },
       {
-        title: "Monday",
-        value: "Monday",
-        align: "center",
-        valign: "center",
+        title: 'Monday',
+        value: 'Monday',
+        align: 'center',
+        valign: 'center',
         sortable: false,
       },
       {
-        title: "Tuesday",
-        value: "Tuesday",
-        align: "center",
-        valign: "center",
+        title: 'Tuesday',
+        value: 'Tuesday',
+        align: 'center',
+        valign: 'center',
         sortable: false,
       },
       {
-        title: "Wednesday",
-        value: "Wednesday",
-        align: "center",
-        valign: "center",
+        title: 'Wednesday',
+        value: 'Wednesday',
+        align: 'center',
+        valign: 'center',
         sortable: false,
       },
       {
-        title: "Thursday",
-        value: "Thursday",
-        align: "center",
-        valign: "center",
+        title: 'Thursday',
+        value: 'Thursday',
+        align: 'center',
+        valign: 'center',
         sortable: false,
       },
       {
-        title: "Friday",
-        value: "Friday",
-        align: "center",
-        valign: "center",
+        title: 'Friday',
+        value: 'Friday',
+        align: 'center',
+        valign: 'center',
         sortable: false,
       },
       // {
@@ -214,17 +214,17 @@ export default {
     printData: [],
     verified: [],
     perPageChoices: [
-      { text: "5", value: 5 },
-      { text: "10", value: 10 },
-      { text: "20", value: 20 },
-      { text: "50", value: 50 },
-      { text: "100", value: 100 },
-      { text: "250", value: 250 },
-      { text: "500", value: 500 },
+      { text: '5', value: 5 },
+      { text: '10', value: 10 },
+      { text: '20', value: 20 },
+      { text: '50', value: 50 },
+      { text: '100', value: 100 },
+      { text: '250', value: 250 },
+      { text: '500', value: 500 },
     ],
-    activeTab: { id: 1, name: "Tracks" },
+    activeTab: { id: 1, name: 'Tracks' },
     tab: 1,
-    tabList: [{ id: 1, name: "Tracks" }],
+    tabList: [{ id: 1, name: 'Tracks' }],
     coreTimeData: null,
     designationData: null,
     totalCount: 0,
@@ -246,38 +246,38 @@ export default {
     JobPostPrint: false,
     fadeAwayMessage: {
       show: false,
-      type: "success",
-      header: "Successfully Deleted!",
-      message: "",
+      type: 'success',
+      header: 'Successfully Deleted!',
+      message: '',
       top: 10,
     },
     yearList: [],
     monthsList: [
-      { id: 0, name: "All" },
-      { id: 1, name: "January" },
-      { id: 2, name: "February" },
-      { id: 3, name: "March" },
-      { id: 4, name: "April" },
-      { id: 5, name: "May" },
-      { id: 6, name: "June" },
-      { id: 7, name: "July" },
-      { id: 8, name: "August" },
-      { id: 9, name: "September" },
-      { id: 10, name: "October" },
-      { id: 11, name: "November" },
-      { id: 12, name: "December" },
+      { id: 0, name: 'All' },
+      { id: 1, name: 'January' },
+      { id: 2, name: 'February' },
+      { id: 3, name: 'March' },
+      { id: 4, name: 'April' },
+      { id: 5, name: 'May' },
+      { id: 6, name: 'June' },
+      { id: 7, name: 'July' },
+      { id: 8, name: 'August' },
+      { id: 9, name: 'September' },
+      { id: 10, name: 'October' },
+      { id: 11, name: 'November' },
+      { id: 12, name: 'December' },
     ],
   }),
 
   mounted() {
     this.initialize();
-    eventBus.on("closeAddTrackDialog", () => {
+    eventBus.on('closeAddTrackDialog', () => {
       this.initialize();
     });
   },
 
   beforeUnmount() {
-    eventBus.off("closeAddTrackDialog");
+    eventBus.off('closeAddTrackDialog');
   },
 
   watch: {
@@ -312,7 +312,7 @@ export default {
   methods: {
     tag(item) {
       this.taggingData = item;
-      this.action = "Tag";
+      this.action = 'Tag';
     },
 
     printJobApplicants() {
@@ -328,7 +328,7 @@ export default {
       // this.handleAllChanges();
       this.loading = false;
       let filter = this.$store.getters.getFilterSelected;
-      this.axiosCall("/enroll-student/MySchedule/" + filter, "GET").then(
+      this.axiosCall('/enroll-student/MySchedule/' + filter, 'GET').then(
         (res) => {
           if (res) {
             this.data = res.data;
@@ -352,12 +352,12 @@ export default {
     },
     add() {
       this.coreTimeData = [{ id: null }];
-      this.action = "Add";
+      this.action = 'Add';
     },
     editItem(item) {
       console.log(this.tab, item);
       this.coreTimeData = item;
-      this.action = "Update";
+      this.action = 'Update';
     },
 
     // deleteItem() {
@@ -388,16 +388,16 @@ export default {
 
     printMySched() {
       let userDetailId = this.$store.state.user.id;
-      console.log("User", userDetailId);
+      console.log('User', userDetailId);
       let filter = this.$store.getters.getFilterSelected;
       window.open(
         process.env.VUE_APP_SERVER +
-          "/pdf-generator/getMySchedule/" +
+          '/pdf-generator/getMySchedule/' +
           userDetailId +
-          "/" +
+          '/' +
           filter +
-          "",
-        "_blank", // <- This is what makes it open in a new window.
+          '',
+        '_blank', // <- This is what makes it open in a new window.
       );
     },
   },

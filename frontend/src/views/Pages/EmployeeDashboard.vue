@@ -10,8 +10,8 @@
 </template>
 
 <script>
-import StudentDashboard from "./ParentDashboard.vue";
-import TeacherDashboard from "./TeacherDashboard.vue";
+import StudentDashboard from './ParentDashboard.vue';
+import TeacherDashboard from './TeacherDashboard.vue';
 
 export default {
   components: { StudentDashboard, TeacherDashboard },
@@ -19,50 +19,50 @@ export default {
     return {
       user_roleID: null,
       appointments: [
-        { id: 1, patient: "John Doe", time: "9:00 AM" },
-        { id: 2, patient: "Jane Smith", time: "10:30 AM" },
+        { id: 1, patient: 'John Doe', time: '9:00 AM' },
+        { id: 2, patient: 'Jane Smith', time: '10:30 AM' },
       ],
       lowStocks: [
-        { name: "Gloves", quantity: 3 },
-        { name: "Syringes", quantity: 2 },
+        { name: 'Gloves', quantity: 3 },
+        { name: 'Syringes', quantity: 2 },
       ],
       recentPatients: [
-        { name: "Emily", date: "2025-04-18" },
-        { name: "Mark", date: "2025-04-17" },
+        { name: 'Emily', date: '2025-04-18' },
+        { name: 'Mark', date: '2025-04-17' },
       ],
       shortcuts: [
         {
-          title: "New Appointment",
-          icon: "mdi-calendar-plus",
-          route: "/appointments/new",
+          title: 'New Appointment',
+          icon: 'mdi-calendar-plus',
+          route: '/appointments/new',
         },
         {
-          title: "Patient Records",
-          icon: "mdi-folder-account",
-          route: "/patients",
+          title: 'Patient Records',
+          icon: 'mdi-folder-account',
+          route: '/patients',
         },
-        { title: "Inventory", icon: "mdi-warehouse", route: "/inventory" },
-        { title: "Reports", icon: "mdi-chart-bar", route: "/reports" },
+        { title: 'Inventory', icon: 'mdi-warehouse', route: '/inventory' },
+        { title: 'Reports', icon: 'mdi-chart-bar', route: '/reports' },
       ],
       notifications: [
         {
-          title: "Reminder: Appointment at 10AM",
-          date: "Today",
+          title: 'Reminder: Appointment at 10AM',
+          date: 'Today',
           read: false,
-          route: "/appointments",
+          route: '/appointments',
         },
         {
-          title: "Stock alert: Syringes",
-          date: "Yesterday",
+          title: 'Stock alert: Syringes',
+          date: 'Yesterday',
           read: true,
-          route: "/inventory",
+          route: '/inventory',
         },
       ],
     };
   },
   mounted() {
     this.user_roleID = this.$store.state.user.user.user_roleID;
-    console.log("USer", this.$store.state.user.user.user_roleID);
+    console.log('USer', this.$store.state.user.user.user_roleID);
   },
   methods: {
     goToNotification(notif) {
@@ -74,11 +74,11 @@ export default {
     goTo(section) {
       // Replace with real route mapping
       const routes = {
-        attendance: "/teacher/attendance",
-        scores: "/teacher/scores",
-        atrisk: "/teacher/at-risk",
-        lardo: "/teacher/lardo",
-        confirmation: "/teacher/confirmation",
+        attendance: '/teacher/attendance',
+        scores: '/teacher/scores',
+        atrisk: '/teacher/at-risk',
+        lardo: '/teacher/lardo',
+        confirmation: '/teacher/confirmation',
       };
       this.$router.push(routes[section]);
     },

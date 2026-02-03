@@ -1,16 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { UserTypeService } from './user-type.service';
 import { CreateUserTypeDto } from './dto/create-user-type.dto';
 import { UpdateUserTypeDto } from './dto/update-user-type.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JWTAuthGuard } from 'src/auth/utils/jwt-auth-guard';
 
-@ApiTags("User Type")
+@ApiTags('User Type')
 @Controller('user-type')
 @UseGuards(JWTAuthGuard)
 @ApiBearerAuth()
 export class UserTypeController {
-  constructor(private readonly userTypeService: UserTypeService) { }
+  constructor(private readonly userTypeService: UserTypeService) {}
 
   @Post()
   create(@Body() createUserTypeDto: CreateUserTypeDto) {
@@ -28,7 +37,10 @@ export class UserTypeController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserTypeDto: UpdateUserTypeDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateUserTypeDto: UpdateUserTypeDto,
+  ) {
     return this.userTypeService.update(+id, updateUserTypeDto);
   }
 

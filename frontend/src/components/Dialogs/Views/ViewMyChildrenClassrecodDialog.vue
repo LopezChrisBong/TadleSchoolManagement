@@ -6,9 +6,7 @@
           <v-card-title
             class="d-flex dialog-header justify-center align-center"
           >
-            <span v-if="data"
-              >{{ action }} {{ data.name }} Class Record {{ isJunior }}
-            </span>
+            <span v-if="data">{{ action }} {{ data.name }} Class Record </span>
             <v-spacer></v-spacer>
             <v-btn
               icon="mdi-close"
@@ -321,6 +319,7 @@ export default {
       eventBus.emit("closeMyChildrenGradeDialog", false);
       this.studentGrade = [];
       this.dialog = false;
+      this.isJunior = false;
     },
   },
 };

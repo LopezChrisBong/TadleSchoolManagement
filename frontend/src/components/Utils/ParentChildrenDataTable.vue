@@ -250,8 +250,6 @@ export default {
     eventBus.on("closeMyChildrenGradeDialog", () => {
       this.initialize();
     });
-
-    this.filter = this.$store.getters.getFilterSelected;
   },
   beforeUnmount() {
     eventBus.off("closeMyChildrenAttendanceDialog");
@@ -268,11 +266,11 @@ export default {
     },
   },
   computed: {
-    isMobile() {
-      return this.$vuetify.display.mobile;
-    },
     filterYear() {
       return this.$store.getters.getFilterSelected;
+    },
+    isMobile() {
+      return this.$vuetify.display.mobile;
     },
   },
 
@@ -283,6 +281,7 @@ export default {
       console.log(index);
     },
     initialize() {
+      this.filter = this.$store.getters.getFilterSelected;
       this.loading = false;
       this.axiosCall("/parent-records/getMyChildrenList", "GET").then((res) => {
         if (res) {

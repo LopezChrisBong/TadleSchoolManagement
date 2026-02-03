@@ -1,13 +1,12 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateTransmutedGradeDto {
+  @ApiProperty()
+  start_range: string;
 
-    @ApiProperty()
-    start_range: string;
-    
-    @ApiProperty()
-    end_range: string;
+  @ApiProperty()
+  end_range: string;
 
-    @ApiProperty()
-    transmuted_grade: number;
+  @ApiProperty()
+  transmuted_grade: number;
 }

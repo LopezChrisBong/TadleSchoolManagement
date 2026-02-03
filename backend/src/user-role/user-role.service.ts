@@ -16,12 +16,12 @@ export class UserRoleService {
     return 'This action adds a new userRole';
   }
 
- async findAll() {
+  async findAll() {
     let data = await this.userRoleRep.find();
     // .createQueryBuilder('ur')
     // .where('ur.id != 5')
     // .getMany();
-    return data
+    return data;
   }
 
   findOne(id: number) {

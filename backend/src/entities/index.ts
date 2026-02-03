@@ -1,4 +1,3 @@
-
 import { AssignedModule } from 'src/assigned-modules/entities/assigned-module.entity';
 import { Users } from 'src/auth/entities/auth.entity';
 import { Availability } from 'src/enroll-student/entities/availability.entity';
@@ -20,6 +19,7 @@ import { StudentGrade } from 'src/rooms-section/entities/student-grade.entity';
 import { StudentList } from 'src/rooms-section/entities/student-list.entity';
 import { StudentQuarterFinalGrade } from 'src/rooms-section/entities/student-quarter-final-grade.entity';
 import { TransmutedGrade } from 'src/rooms-section/entities/transmuted-grade.entity';
+import { SchoolEvent } from 'src/school-events/entities/school-event.entity';
 import { GradeLevel } from 'src/subjects/entities/grade-level.entity';
 import { TeacherGradeLevel } from 'src/subjects/entities/prefered-grade-level.entity';
 import { TeacherSubject } from 'src/subjects/entities/prefered-subject.entity';
@@ -58,7 +58,8 @@ const entities = [
   AtRiskStudentForFacultyNotification,
   LardoStudentNotification,
   LardoStudentForFacultyNotification,
-  StudentReportDisciplinary
+  StudentReportDisciplinary,
+  SchoolEvent
 ];
 
 export {
@@ -90,7 +91,8 @@ export {
   AtRiskStudentForFacultyNotification,
   LardoStudentNotification,
   LardoStudentForFacultyNotification,
-  StudentReportDisciplinary
+  StudentReportDisciplinary,
+  SchoolEvent
 };
 
 export default entities;

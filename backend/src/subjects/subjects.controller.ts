@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete,Headers } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Headers,
+} from '@nestjs/common';
 import { SubjectsService } from './subjects.service';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
@@ -11,10 +20,7 @@ export class SubjectsController {
   constructor(private readonly subjectsService: SubjectsService) {}
 
   @Post('')
-  create(
-    @Body() createSubjectDto: CreateSubjectDto,
-    @Headers() headers,
-  ) {
+  create(@Body() createSubjectDto: CreateSubjectDto, @Headers() headers) {
     var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
     return this.subjectsService.create(createSubjectDto, curr_user);
@@ -26,63 +32,58 @@ export class SubjectsController {
   }
 
   @Post('addTeachers/Grade-Level')
-  addTeachersGradeLevel(@Body() createTeacherGradeLevelDto: CreateTeacherGradeLevelDto) {
-    return this.subjectsService.addTeachersGradeLevel(createTeacherGradeLevelDto);
+  addTeachersGradeLevel(
+    @Body() createTeacherGradeLevelDto: CreateTeacherGradeLevelDto,
+  ) {
+    return this.subjectsService.addTeachersGradeLevel(
+      createTeacherGradeLevelDto,
+    );
   }
 
   @Get('getMySubjects')
-  getMySubjects(
-    @Headers() headers,
-     ) {
-        var head_str = headers.authorization;
+  getMySubjects(@Headers() headers) {
+    var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
     return this.subjectsService.getMySubjects(curr_user);
   }
 
-  
   @Get('getAllSubjectSF2/:teacherID')
-  getAllSubjectSF2(
-   @Param('teacherID') teacherID: string,
-     ) {
-   
+  getAllSubjectSF2(@Param('teacherID') teacherID: string) {
     return this.subjectsService.getAllSubjectSF2(+teacherID);
   }
 
-
   @Get('getMyClassRecord/:filter/:tab')
   getMyClassRecord(
-    @Headers() headers,@Param('filter') filter: string,@Param('tab') tab: string
-     ) {
-        var head_str = headers.authorization;
+    @Headers() headers,
+    @Param('filter') filter: string,
+    @Param('tab') tab: string,
+  ) {
+    var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
-    return this.subjectsService.getMyClassRecord(curr_user,+filter,+tab);
+    return this.subjectsService.getMyClassRecord(curr_user, +filter, +tab);
   }
 
-    @Get('getAllFacultySF2/:filter/:teacherID')
+  @Get('getAllFacultySF2/:filter/:teacherID')
   getAllFacultySF2(
-   @Param('filter') filter: string,@Param('teacherID') teacherID: string
-     ) {
-    return this.subjectsService.getAllFacultySF2(+filter,+teacherID);
+    @Param('filter') filter: string,
+    @Param('teacherID') teacherID: string,
+  ) {
+    return this.subjectsService.getAllFacultySF2(+filter, +teacherID);
   }
 
   @Get('getSubject/active/:gradeLevel')
-  activeSubject(
-    @Headers() headers,@Param('gradeLevel') gradeLevel: string,
-     ) {
-        var head_str = headers.authorization;
+  activeSubject(@Headers() headers, @Param('gradeLevel') gradeLevel: string) {
+    var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
-    return this.subjectsService.activeSubject(curr_user,gradeLevel);
+    return this.subjectsService.activeSubject(curr_user, gradeLevel);
   }
 
   @Get('getAllSubject/active')
-  getAllSubject(
-    @Headers() headers,
-     ) {
-        var head_str = headers.authorization;
+  getAllSubject(@Headers() headers) {
+    var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
     return this.subjectsService.getAllSubject(curr_user);
   }
-  
 
   @Get('getFacultyList/:grade')
   getFacultyList(@Param('grade') grade: string) {
@@ -101,18 +102,18 @@ export class SubjectsController {
 
   @Get('getSpicificSubject/:id/:filter/:grade')
   getSpicificSubject(
-    // @Headers() headers, 
+    // @Headers() headers,
     @Param('id') id: string,
     @Param('filter') filter: string,
-    @Param('grade') grade: string) {
+    @Param('grade') grade: string,
+  ) {
     // var head_str = headers.authorization;
     // const curr_user = currentUser(head_str);
-    return this.subjectsService.getSpicificSubject(+id,+filter,grade);
+    return this.subjectsService.getSpicificSubject(+id, +filter, grade);
   }
 
-
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSubjectDto: UpdateSubjectDto,) {
+  update(@Param('id') id: string, @Body() updateSubjectDto: UpdateSubjectDto) {
     return this.subjectsService.update(+id, updateSubjectDto);
   }
 

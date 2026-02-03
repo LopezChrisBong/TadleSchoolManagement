@@ -1,20 +1,37 @@
 <template>
-  <div class="container">
-    <div class="oops">OOPS!</div>
-    <div class="_404">
-      <div style="margin-bottom: 20px">404 - PAGE COULD NOT BE FOUND</div>
+  <v-container fluid class="d-flex align-center justify-center error-bg">
+    <v-card
+      class="pa-10 text-center error-card"
+      elevation="10"
+      rounded="xl"
+      max-width="520"
+    >
+      <v-icon size="80" color="pink-darken-2" class="mb-4">
+        mdi-alert-circle-outline
+      </v-icon>
+
+      <div class="error-code mb-2">404</div>
+
+      <div class="text-h5 font-weight-bold mb-2">Page not found</div>
+
+      <div class="text-body-1 text-grey mb-6">
+        Oops! The page you’re looking for doesn’t exist or has been moved.
+      </div>
+
       <v-btn
-        @click="redirectTo()"
+        color="pink-darken-2"
+        size="large"
         rounded="xl"
-        size="x-large"
-        class="elevation-12"
-        color="#e35e93"
-        style="color: white"
-        >go back to homepage</v-btn
+        class="px-8"
+        @click="redirectTo"
       >
-    </div>
-  </div>
+        <v-icon start>mdi-home</v-icon>
+        Back to Home
+      </v-btn>
+    </v-card>
+  </v-container>
 </template>
+
 <script>
 export default {
   methods: {
@@ -24,28 +41,21 @@ export default {
   },
 };
 </script>
+
 <style scoped>
-.container {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -100%);
-}
-.oops {
-  position: relative;
-  width: 50%;
-  font-size: 15rem;
-  text-align: center;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-  margin: auto;
+.error-bg {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fde2eb, #fce7f3);
 }
 
-._404 {
-  width: 50%;
-  display: grid;
-  font-size: 20px;
-  text-align: center;
-  font-family: Verdana, Geneva, Tahoma, sans-serif;
-  margin: auto;
+.error-card {
+  backdrop-filter: blur(8px);
+}
+
+.error-code {
+  font-size: 6rem;
+  font-weight: 800;
+  color: #e35e93;
+  line-height: 1;
 }
 </style>

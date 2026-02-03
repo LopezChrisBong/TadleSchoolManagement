@@ -39,7 +39,6 @@ export class AuthController {
   @UsePipes(ValidationPipe)
   @Post('registerUser')
   create(@Body() registerUser: RegisterUserDto) {
-    
     return this.authService.create(registerUser);
   }
 
@@ -63,15 +62,20 @@ export class AuthController {
   //   @UseGuards(JWTAuthGuard)
   // @ApiBearerAuth()
   @Post('changePassIDCred/:id')
-  changePassID(@Param('id') id: number, @Body() changPassDto: ChangePasswordDto) {
+  changePassID(
+    @Param('id') id: number,
+    @Body() changPassDto: ChangePasswordDto,
+  ) {
     return this.authService.changePassID(id, changPassDto);
   }
-
 
   // @UseGuards(JWTAuthGuard)
   // @ApiBearerAuth()
   @Post('changeAssignedModule/Role/:id')
-  changeAssignedModule(@Param('id') id: string, @Body() changPassDto: ChangePasswordDto) {
+  changeAssignedModule(
+    @Param('id') id: string,
+    @Body() changPassDto: ChangePasswordDto,
+  ) {
     return this.authService.changeAssignedModule(+id, changPassDto);
   }
 

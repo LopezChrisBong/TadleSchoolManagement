@@ -4,7 +4,7 @@
       <v-form ref="UserVerifyFormref" @submit.prevent>
         <v-card>
           <v-card-title dark class="d-flex dialog-header pt-5 pb-5 pl-6">
-            <span v-if="data">
+            <span v-if="data" style="text-transform: uppercase">
               {{ data.subject_title }} {{ data.grade_level }}
               {{ data.room_section }} Student Attendance</span
             >

@@ -11,7 +11,9 @@ describe('AssignedModulesController', () => {
       providers: [AssignedModulesService],
     }).compile();
 
-    controller = module.get<AssignedModulesController>(AssignedModulesController);
+    controller = module.get<AssignedModulesController>(
+      AssignedModulesController,
+    );
   });
 
   it('should be defined', () => {
