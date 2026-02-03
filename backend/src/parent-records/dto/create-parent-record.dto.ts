@@ -1,14 +1,12 @@
-
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateParentRecordDto {
+  @ApiProperty()
+  studentID: number;
 
-    @ApiProperty()
-    studentID: number;
+  @ApiProperty()
+  parentID: number;
 
-    @ApiProperty()
-    parentID:number;
-
-     @ApiProperty()
-    school_yearID:number;
+  @ApiProperty()
+  school_yearID: number;
 }

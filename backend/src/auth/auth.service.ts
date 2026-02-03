@@ -44,7 +44,6 @@ export class AuthService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-     
       const otp = Math.floor(100000 + Math.random() * 9000);
       const hashOtp = hashPassword(otp.toString());
 
@@ -57,7 +56,6 @@ export class AuthService {
         assignedModuleID: registerUser.assignedModuleID,
         user_roleID: registerUser.user_roleID,
       });
-     
 
       const newUserSaved = await queryRunner.manager.save(newUser);
       const newUserDetail = queryRunner.manager.create(UserDetail, {
@@ -85,7 +83,6 @@ export class AuthService {
         status: HttpStatus.CREATED,
         msg: 'User saved.',
       };
-      
     } catch (err) {
       await queryRunner.rollbackTransaction();
       const toReturn = {
@@ -99,13 +96,12 @@ export class AuthService {
     }
   }
 
-  async addUserByAdmin(registerUser:RegisterUserDto){
-    console.log(registerUser)
+  async addUserByAdmin(registerUser: RegisterUserDto) {
+    console.log(registerUser);
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
     try {
-     
       const otp = Math.floor(100000 + Math.random() * 9000);
       const hashOtp = hashPassword(otp.toString());
 
@@ -119,9 +115,8 @@ export class AuthService {
         user_roleID: registerUser.user_roleID,
         isValidated: registerUser.isValidated,
         subModules: registerUser.subModules,
-        isAdminApproved: true
+        isAdminApproved: true,
       });
-     
 
       const newUserSaved = await queryRunner.manager.save(newUser);
 
@@ -136,9 +131,9 @@ export class AuthService {
       await queryRunner.manager.save(newUserDetail);
 
       const sendEmail = {
-        email:registerUser.email,
-        new_password:registerUser.password,
-      }
+        email: registerUser.email,
+        new_password: registerUser.password,
+      };
 
       await this.mailService.sendTempPassword(sendEmail);
 
@@ -148,7 +143,6 @@ export class AuthService {
         status: HttpStatus.CREATED,
         msg: 'User saved.',
       };
-      
     } catch (err) {
       await queryRunner.rollbackTransaction();
       const toReturn = {
@@ -172,57 +166,55 @@ export class AuthService {
         res_user.password,
       );
       if (isMatch) {
-          
-        const adminApproved = res_user.isAdminApproved
-        if(adminApproved != false){
+        const adminApproved = res_user.isAdminApproved;
+        if (adminApproved != false) {
           const userdetail = await this.dataSource
-          .getRepository(UserDetail)
-          .createQueryBuilder('userdetail')
-          .leftJoinAndMapOne(
-            'userdetail.user',
-            Users,
-            'user',
-            'userdetail.userID = user.id',
-          )
-          .leftJoinAndMapOne(
-            'userdetail.usertype',
-            UserType,
-            'usertype',
-            'user.usertypeID = usertype.id',
-          )
-          .where('userdetail.userID = :userid', { userid: res_user.id })
-          .getOne();
+            .getRepository(UserDetail)
+            .createQueryBuilder('userdetail')
+            .leftJoinAndMapOne(
+              'userdetail.user',
+              Users,
+              'user',
+              'userdetail.userID = user.id',
+            )
+            .leftJoinAndMapOne(
+              'userdetail.usertype',
+              UserType,
+              'usertype',
+              'user.usertypeID = usertype.id',
+            )
+            .where('userdetail.userID = :userid', { userid: res_user.id })
+            .getOne();
 
-        const {
-          bdate,
-          sex,
-          civil_status,
-          citizenship,
-          country,
-          tel_no,
-          mobile_no,
-          residential_brgy,
-          residential_city,
-          residential_house_no,
-          residential_prov,
-          residential_street,
-          residential_subd,
-          residential_zip,
-          ...rest
-        } = userdetail;
-        const payload = { userdetail: rest };
+          const {
+            bdate,
+            sex,
+            civil_status,
+            citizenship,
+            country,
+            tel_no,
+            mobile_no,
+            residential_brgy,
+            residential_city,
+            residential_house_no,
+            residential_prov,
+            residential_street,
+            residential_subd,
+            residential_zip,
+            ...rest
+          } = userdetail;
+          const payload = { userdetail: rest };
 
-        return {
-          status: HttpStatus.OK,
-          token: this.jwtService.sign(payload),
-        };
-        }else{
+          return {
+            status: HttpStatus.OK,
+            token: this.jwtService.sign(payload),
+          };
+        } else {
           return new HttpException(
             'Please contact admin for the approval of your account!.',
             HttpStatus.NOT_FOUND,
           );
         }
-   
       } else {
         return new HttpException(
           'Password do not match.',
@@ -289,33 +281,31 @@ export class AuthService {
       .where('user.email = :email', { email })
       .getOne();
   }
-  
-  
+
   async changePassID(id: number, changPassDto: ChangePasswordDto) {
-       console.log(changPassDto)
+    console.log(changPassDto);
     let user_details = await this.dataSource.query(
       'SELECT * FROM user_detail WHERE id = ' + id,
     );
     let activeUser = await this.dataSource.query(
       'SELECT * FROM users WHERE id = ' + user_details[0].userID,
     );
-    console.log(activeUser[0].email)
+    console.log(activeUser[0].email);
     try {
-        let pass = hashPassword(changPassDto.new_password);
-        await this.usersRepository.update(activeUser[0].id, { password: pass });
+      let pass = hashPassword(changPassDto.new_password);
+      await this.usersRepository.update(activeUser[0].id, { password: pass });
 
       const sendEmail = {
-        email:activeUser[0].email,
-        new_password:changPassDto.new_password,
-      }
+        email: activeUser[0].email,
+        new_password: changPassDto.new_password,
+      };
 
       await this.mailService.sendTempPassword(sendEmail);
-      
-        return {
-          msg: 'New password saved.',
-          status: HttpStatus.OK,
-        };
-   
+
+      return {
+        msg: 'New password saved.',
+        status: HttpStatus.OK,
+      };
     } catch (error) {
       return {
         msg: error,
@@ -325,16 +315,16 @@ export class AuthService {
   }
 
   async changeAssignedModule(id: number, changPassDto: ChangePasswordDto) {
-
-    console.log(id,changPassDto)
+    console.log(id, changPassDto);
     try {
-        await this.usersRepository.update(id, { assignedModuleID: changPassDto.assignedModuleID });
+      await this.usersRepository.update(id, {
+        assignedModuleID: changPassDto.assignedModuleID,
+      });
 
-        return {
-          msg: 'Successfully Change Role.',
-          status: HttpStatus.OK,
-        };
-   
+      return {
+        msg: 'Successfully Change Role.',
+        status: HttpStatus.OK,
+      };
     } catch (error) {
       return {
         msg: error,

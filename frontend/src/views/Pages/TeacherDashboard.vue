@@ -1,10 +1,9 @@
 <template>
   <v-container fluid>
-    <!-- Course Cards -->
     <v-row>
       <v-col cols="12" md="8">
         <v-row>
-          <v-col v-for="(course, i) in courses" :key="i" cols="12" md="4">
+          <!-- <v-col v-for="(course, i) in courses" :key="i" cols="12" md="4">
             <v-card :color="course.color" class="pa-4" dark>
               <h3 style="text-transform: uppercase">{{ course.title }}</h3>
               <v-divider class="my-2"></v-divider>
@@ -13,39 +12,65 @@
                 size="small"
                 class="mr-2"
                 color="white"
+                @click="goStudentRecords()"
                 block
               >
                 <v-icon size="18" class="mr-1">mdi-eye</v-icon> View Classes
               </v-btn>
             </v-card>
-          </v-col>
+          </v-col> -->
           <v-col cols="12">
             <h3 style="text-transform: uppercase">My Schedule</h3>
             <v-data-table
-              :headers="tableHeaders"
-              :items="tableItems"
-              class="elevation-1"
+              :headers="headers"
+              :items="schedule"
               hide-default-footer
-              density="compact"
+              dense
+              class="rounded"
             >
-              <!-- Render the full row manually to avoid dynamic slot-per-column issues -->
               <template v-slot:item="{ item }">
                 <tr>
-                  <!-- Time cell -->
-                  <td>{{ item.time }}</td>
+                  <td>
+                    <v-chip
+                      color="grey lighten-2"
+                      text-color="black"
+                      small
+                      label
+                    >
+                      {{ item.time }}
+                    </v-chip>
+                  </td>
 
-                  <!-- Day cells -->
                   <td v-for="day in weekDays" :key="day" class="text-center">
                     <v-chip
-                      v-if="getClass(day, item.time)"
-                      :color="getClass(day, item.time).color"
-                      text-color="white"
-                      size="small"
+                      style="font-size: 12px"
+                      v-if="item[day]"
+                      :color="getChipColor(item[day])"
+                      dark
+                      small
+                      label
                     >
-                      {{ getClass(day, item.time).title }}
+                      {{ item[day] }}
+                    </v-chip>
+
+                    <v-chip
+                      v-else
+                      color="grey lighten-3"
+                      text-color="grey"
+                      small
+                      outlined
+                      label
+                    >
+                      —
                     </v-chip>
                   </td>
                 </tr>
+              </template>
+
+              <template #no-data>
+                <v-alert type="info" border="start" color="white">
+                  No schedule found.
+                </v-alert>
               </template>
             </v-data-table>
           </v-col>
@@ -71,10 +96,10 @@
                   <span>
                     {{
                       item.feeStatus == 1
-                        ? "Warning"
+                        ? 'Warning'
                         : item.feeStatus == 2
-                        ? "Passed"
-                        : "At-risk"
+                        ? 'Passed'
+                        : 'At-risk'
                     }}</span
                   >
                 </v-chip>
@@ -84,29 +109,44 @@
         </v-row>
       </v-col>
 
-      <!-- Calendar & Events -->
       <v-col cols="12" md="4">
-        <!-- Calendar -->
-        <v-card class="mb-4">
-          <v-date-picker v-model="selectedDate" color="primary" />
-        </v-card>
+        <v-card rounded="xl" elevation="2">
+          <v-card-title class="d-flex align-center">
+            <v-icon class="mr-2" color="primary"> mdi-calendar-clock </v-icon>
+            <span class="font-weight-bold">Upcoming Events</span>
+          </v-card-title>
 
-        <!-- Upcoming Events -->
-        <v-card>
-          <v-card-title>Upcoming Events</v-card-title>
-          <v-divider></v-divider>
-          <v-list>
-            <v-list-item v-for="(event, i) in events" :key="i">
-              <v-list-item-icon>
-                <v-icon :color="event.color">mdi-circle</v-icon>
-              </v-list-item-icon>
-              <v-list-item-content>
-                <v-list-item-title>{{ event.title }}</v-list-item-title>
-                <v-list-item-subtitle
-                  >{{ event.date }} - {{ event.time }}</v-list-item-subtitle
-                >
-              </v-list-item-content>
-            </v-list-item>
+          <v-divider />
+
+          <v-list density="comfortable">
+            <template
+              v-for="(events, eventType) in eventList.event"
+              :key="eventType"
+            >
+              <v-list-subheader
+                class="text-primary font-weight-bold text-uppercase"
+              >
+                {{ eventType }}
+              </v-list-subheader>
+              <v-list-item
+                v-for="(event, i) in events"
+                :key="`${eventType}-${i}`"
+                rounded="lg"
+                class="mb-1"
+              >
+                <template #prepend>
+                  <v-avatar size="10" :color="getEventColor(eventType)" />
+                </template>
+
+                <v-list-item-title class="font-weight-medium">
+                  {{ event.eventName }}
+                </v-list-item-title>
+
+                <v-list-item-subtitle class="text-medium-emphasis">
+                  {{ formatDate(event.eventDate) }}
+                </v-list-item-subtitle>
+              </v-list-item>
+            </template>
           </v-list>
         </v-card>
       </v-col>
@@ -116,116 +156,165 @@
 
 <script>
 export default {
-  name: "TeacherDashboard",
+  name: 'TeacherDashboard',
+
   data() {
     return {
-      search: "",
       selectedDate: new Date(),
-      weekDays: ["Mon", "Tue", "Wed", "Thu", "Fri"], // keep only one
-      timeSlots: ["09:00", "11:00", "13:00", "15:00"],
-
-      courses: [
-        { title: "Technology", color: "indigo" },
-        { title: "Artificial Intelligence", color: "cyan" },
-        { title: "Business Management", color: "deep-orange" },
-        { title: "UX Design", color: "orange" },
-        { title: "Applied Science", color: "red" },
-      ],
-
-      schedule: [
-        { day: "Mon", time: "09:00", title: "Applied Science", color: "red" },
-        { day: "Tue", time: "11:00", title: "Technology", color: "indigo" },
-        { day: "Wed", time: "13:00", title: "UX Design", color: "orange" },
-        {
-          day: "Wed",
-          time: "15:00",
-          title: "Business Mgmt",
-          color: "deep-orange",
-        },
-        { day: "Thu", time: "13:00", title: "AI", color: "cyan" },
-      ],
-
+      search: '',
+      eventList: { event: {} },
+      subjects: [],
+      subjectColorMap: {
+        English: 'indigo',
+        Math: 'cyan',
+        MAPEH: 'deep-orange',
+        Science: 'red',
+        Technology: 'blue',
+      },
+      schedule: [],
       studentHeaders: [
-        { title: "Student Name", value: "name" },
-        { title: "Parents Names", value: "parents" },
-        { title: "Phone", value: "phone" },
-        { title: "Class", value: "class" },
-        { title: "Grade", value: "grade" },
-        { title: "Status", value: "feeStatus" },
+        { title: 'Student Name', value: 'name' },
+        { title: 'Parents', value: 'parents' },
+        { title: 'Phone', value: 'phone' },
+        { title: 'Class', value: 'class' },
+        { title: 'Grade', value: 'grade' },
+        { title: 'Status', value: 'feeStatus' },
       ],
       studentList: [
         {
-          name: "Selva Raj",
-          parents: "Muthu Kumar",
-          phone: "9600778090",
-          class: "7th",
-          grade: "F+",
+          name: 'Selva Raj',
+          parents: 'Muthu Kumar',
+          phone: '9600',
+          class: '7th',
+          grade: 'F+',
           feeStatus: 0,
         },
         {
-          name: "Malar",
-          parents: "Muthu Kumar",
-          phone: "7550364512",
-          class: "10th",
-          grade: "D+",
+          name: 'Malar',
+          parents: 'Muthu Kumar',
+          phone: '7550',
+          class: '10th',
+          grade: 'D+',
           feeStatus: 1,
         },
         {
-          name: "Vinoth",
-          parents: "Deva Raj",
-          phone: "9600779080",
-          class: "7th",
-          grade: "D+",
+          name: 'Vinoth',
+          parents: 'Deva Raj',
+          phone: '9600',
+          class: '7th',
+          grade: 'D+',
           feeStatus: 1,
         },
       ],
-
-      events: [
+      weekDays: [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+      ],
+      loading: true,
+      headers: [
+        { title: 'Time', value: 'time', align: 'start', sortable: false },
+        { title: 'Monday', value: 'Monday', align: 'center', sortable: false },
         {
-          title: "Applied Science Homework",
-          date: "Feb 2",
-          time: "11:30 - 12:30",
-          color: "red",
+          title: 'Tuesday',
+          value: 'Tuesday',
+          align: 'center',
+          sortable: false,
         },
         {
-          title: "Technology Exam",
-          date: "Feb 3",
-          time: "11:30 - 12:30",
-          color: "orange",
+          title: 'Wednesday',
+          value: 'Wednesday',
+          align: 'center',
+          sortable: false,
         },
         {
-          title: "AI Workshop",
-          date: "Feb 5",
-          time: "11:30 - 12:30",
-          color: "cyan",
+          title: 'Thursday',
+          value: 'Thursday',
+          align: 'center',
+          sortable: false,
         },
+        { title: 'Friday', value: 'Friday', align: 'center', sortable: false },
         {
-          title: "UX Design Conference",
-          date: "Feb 8",
-          time: "11:30 - 12:30",
-          color: "green",
+          title: 'Saturday',
+          value: 'Saturday',
+          align: 'center',
+          sortable: false,
         },
       ],
     };
   },
+
   computed: {
-    tableHeaders() {
-      return [
-        { title: "Time", value: "time" },
-        ...this.weekDays.map((day) => ({ title: day, value: day })),
-      ];
-    },
-    tableItems() {
-      return this.timeSlots.map((slot) => ({
-        time: slot,
-        ...Object.fromEntries(this.weekDays.map((day) => [day, null])),
+    courses() {
+      return this.subjects.map((subject, index) => ({
+        title: subject.subject_title,
+        color:
+          this.subjectColorMap[subject.subject_title] ||
+          this.fallbackColor(index),
+        raw: subject,
       }));
     },
   },
+
+  mounted() {
+    this.getEventsWithMandatory();
+    this.getSubject();
+    this.getMySchedules();
+  },
+
   methods: {
-    getClass(day, time) {
+    getChipColor(text) {
+      if (!text) return 'grey';
+      if (text.includes('Math')) return 'cyan';
+      if (text.includes('English')) return 'indigo';
+      if (text.includes('MAPEH')) return 'deep-orange';
+      if (text.includes('Technology')) return 'blue';
+      return 'primary';
+    },
+    fallbackColor(index) {
+      const colors = ['purple', 'teal', 'orange', 'pink', 'green'];
+      return colors[index % colors.length];
+    },
+
+    getEventColor(type) {
       return (
-        this.schedule.find((c) => c.day === day && c.time === time) || null
+        { Academic: 'green', Celebration: 'orange', Mandatory: 'red' }[type] ||
+        'grey'
+      );
+    },
+
+    getEventsWithMandatory() {
+      this.axiosCall('/school-events/getEventsWithMandatory', 'GET').then(
+        (res) => {
+          if (res.data) this.eventList = res.data;
+        },
+      );
+    },
+
+    getSubject() {
+      const userID = this.$store.state.user.id;
+      this.axiosCall(`/subjects/getSubjectTaagged/${userID}`, 'GET').then(
+        (res) => {
+          if (res.data) this.subjects = res.data;
+        },
+      );
+    },
+    goStudentRecords() {
+      this.$router.push('students-records');
+    },
+
+    getMySchedules() {
+      let filter = this.$store.getters.getFilterSelected;
+      this.axiosCall('/enroll-student/MySchedule/' + filter, 'GET').then(
+        (res) => {
+          if (res) {
+            this.schedule = res.data;
+            this.loading = false;
+          }
+        },
       );
     },
   },

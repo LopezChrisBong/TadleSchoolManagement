@@ -472,6 +472,7 @@
                     : 'd-flex justify-end'
                 "
               >
+                <!--:disabled="userModule == 22"-->
                 <v-autocomplete
                   v-model="selectedFilter"
                   label="School Year"

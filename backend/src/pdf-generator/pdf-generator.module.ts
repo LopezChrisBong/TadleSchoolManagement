@@ -7,6 +7,6 @@ import { MailService } from 'src/mail/mail.service';
 @Module({
   // imports:[IpcrTargetModule],
   controllers: [PdfGeneratorController],
-  providers: [PdfGeneratorService, MailService]
+  providers: [PdfGeneratorService, MailService],
 })
-export class PdfGeneratorModule { }
+export class PdfGeneratorModule {}

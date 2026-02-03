@@ -1,4 +1,4 @@
-import {   
+import {
   Controller,
   Res,
   Headers,
@@ -15,7 +15,8 @@ import {
   UploadedFile,
   UploadedFiles,
   HttpStatus,
-  Query,} from '@nestjs/common';
+  Query,
+} from '@nestjs/common';
 import { EnrollStudentService } from './enroll-student.service';
 import { CreateEnrollStudentDto } from './dto/create-enroll-student.dto';
 import { UpdateEnrollStudentDto } from './dto/update-enroll-student.dto';
@@ -48,7 +49,6 @@ export class EnrollStudentController {
     return this.enrollStudentService.create(createEnrollStudentDto);
   }
 
-  
   @UseGuards(JWTAuthGuard)
   @ApiBearerAuth()
   @Post('importStudent')
@@ -56,11 +56,10 @@ export class EnrollStudentController {
     return this.enrollStudentService.importStudent(createImportStudentDto);
   }
 
-    @Post('studentValues')
+  @Post('studentValues')
   studentValues(@Body() createStudentValuesDto: CreateStudentValuesDto) {
     return this.enrollStudentService.studentValues(createStudentValuesDto);
   }
-
 
   @Post('/enrollStudentWithFile')
   @UseInterceptors(
@@ -81,7 +80,6 @@ export class EnrollStudentController {
     const bodystring = JSON.parse(request.body.body);
     return this.enrollStudentService.enrollStudentWithFile(bodystring, files);
   }
-
 
   @Post('/update-student-file')
   @UseInterceptors(
@@ -114,8 +112,7 @@ export class EnrollStudentController {
   @Delete('deleteApplicantsFile/:fileName')
   async deleteFile(@Param('fileName') fileName: string) {
     // fs.unlink('student_file/'+fileName,
-    fs.unlink('/../student_file/' + fileName, 
-      (err) => {
+    fs.unlink('/../student_file/' + fileName, (err) => {
       if (err) {
         console.error(err);
         return err;
@@ -124,109 +121,130 @@ export class EnrollStudentController {
     });
   }
 
-
   @Post('AddSchedule')
   AddSchedule(@Body() createAvailabilityDto: CreateAvailabilityDto) {
     return this.enrollStudentService.AddSchedule(createAvailabilityDto);
   }
 
-    // @UseGuards(JWTAuthGuard)
+  // @UseGuards(JWTAuthGuard)
   // @ApiBearerAuth()
   @Post('updateEnrolledStudent')
   updateEnrolledStudent(@Body() updateVS: UpdateEnrollStudentDto) {
     return this.enrollStudentService.updateEnrolledStudent(updateVS);
   }
 
-
-
-
-  
-
   @Post('addSchoolYear')
   addSchoolYear(@Body() createSchoolYearDto: CreateSchoolYearDto) {
     return this.enrollStudentService.addSchoolYear(createSchoolYearDto);
   }
 
-
-
-   // @UseGuards(JWTAuthGuard)
+  // @UseGuards(JWTAuthGuard)
   // @ApiBearerAuth()
   @Get('EnrollStudent')
-  EnrollStudent(
-    @Headers() headers,
-    ) {
-     var head_str = headers.authorization;
+  EnrollStudent(@Headers() headers) {
+    var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
     return this.enrollStudentService.EnrollStudent(curr_user);
   }
 
   @Get('EnrolledStudent')
-  EnrolledStudent(
-    @Headers() headers,
-  ) {
+  EnrolledStudent(@Headers() headers) {
     var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
     return this.enrollStudentService.EnrolledStudent(curr_user);
   }
 
   @Get('AddClassStudent/EnrolledStudent/:grade/:filter')
-  AddClassStudent(@Param('grade') grade: string,@Param('filter') filter: string,) {
-    return this.enrollStudentService.AddClassStudent(grade,+filter);
+  AddClassStudent(
+    @Param('grade') grade: string,
+    @Param('filter') filter: string,
+  ) {
+    return this.enrollStudentService.AddClassStudent(grade, +filter);
   }
 
   @Get('getTotalEnrolledStudent/:filter/:status')
-  getTotalEnrolledStudent(@Param('filter') filter: string,@Param('status') status: string,) {
+  getTotalEnrolledStudent(
+    @Param('filter') filter: string,
+    @Param('status') status: string,
+  ) {
     return this.enrollStudentService.getTotalEnrolledStudent(+filter, +status);
   }
 
-
   @Get('FacultySchedule/:filter')
-  FacultySchedule(@Param('filter') filter: string,
-  @Headers() headers,
-) {
-  var head_str = headers.authorization;
+  FacultySchedule(@Param('filter') filter: string, @Headers() headers) {
+    var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
     return this.enrollStudentService.FacultySchedule(+filter, curr_user);
   }
 
-    @Get('getSchoolYear')
-    getSchoolYear() {
+  @Get('getSchoolYear')
+  getSchoolYear() {
     return this.enrollStudentService.getSchoolYear();
   }
 
   @Get('getSchoolYear/toGenerate/:grade/:filter')
-  getSchoolYearGenerate(@Param('grade') grade: string,@Param('filter') filter: string,) {
-  return this.enrollStudentService.getSchoolYearGenerate(grade,+filter);
-}
+  getSchoolYearGenerate(
+    @Param('grade') grade: string,
+    @Param('filter') filter: string,
+  ) {
+    return this.enrollStudentService.getSchoolYearGenerate(grade, +filter);
+  }
 
   @Get('getValuesData/:filter/:studentID/:roomID/:quarter/:semester')
-  getValuesData(@Param('filter') filter: string,@Param('studentID') studentID: string,@Param('roomID') roomID: string,@Param('quarter') quarter: string,@Param('semester') semester: string,) {
-  return this.enrollStudentService.getValuesData(+filter,+studentID,+roomID,quarter,semester);
+  getValuesData(
+    @Param('filter') filter: string,
+    @Param('studentID') studentID: string,
+    @Param('roomID') roomID: string,
+    @Param('quarter') quarter: string,
+    @Param('semester') semester: string,
+  ) {
+    return this.enrollStudentService.getValuesData(
+      +filter,
+      +studentID,
+      +roomID,
+      quarter,
+      semester,
+    );
   }
- 
-    @Get('getAllStudentsFinalGrade/:filter/:roomID/:quarter/:semester')
-  getAllStudentsFinalGrade(@Param('filter') filter: string,@Param('roomID') roomID: string,@Param('quarter') quarter: string,@Param('semester') semester: string,) {
-  return this.enrollStudentService.getAllStudentsFinalGrade(+filter,+roomID,quarter,semester);
+
+  @Get('getAllStudentsFinalGrade/:filter/:roomID/:quarter/:semester')
+  getAllStudentsFinalGrade(
+    @Param('filter') filter: string,
+    @Param('roomID') roomID: string,
+    @Param('quarter') quarter: string,
+    @Param('semester') semester: string,
+  ) {
+    return this.enrollStudentService.getAllStudentsFinalGrade(
+      +filter,
+      +roomID,
+      quarter,
+      semester,
+    );
   }
 
   @Get('getAllValuesData/:filter/:studentID')
-  getAllValuesData(@Param('filter') filter: string,@Param('studentID') studentID: string,) {
-  return this.enrollStudentService.getAllValuesData(+filter,+studentID);
+  getAllValuesData(
+    @Param('filter') filter: string,
+    @Param('studentID') studentID: string,
+  ) {
+    return this.enrollStudentService.getAllValuesData(+filter, +studentID);
   }
 
-
   @Get('MySchedule/:filter')
-  MySchedule(@Headers() headers,@Param('filter') filter: string,) {
+  MySchedule(@Headers() headers, @Param('filter') filter: string) {
     var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
-    return this.enrollStudentService.MySchedule(curr_user,+filter);
+    return this.enrollStudentService.MySchedule(curr_user, +filter);
   }
 
   @Get('getClassProgramm/:grade/:section/:filter')
-  getMyCoreTime(@Param('grade') grade: string,@Param('section') section: string,@Param('filter') filter: string,) {
-    return this.enrollStudentService.getClassProgramm(grade, +section,+filter);
+  getMyCoreTime(
+    @Param('grade') grade: string,
+    @Param('section') section: string,
+    @Param('filter') filter: string,
+  ) {
+    return this.enrollStudentService.getClassProgramm(grade, +section, +filter);
   }
-
 
   @Get('view/studentFile/:data')
   getFile(
@@ -261,7 +279,7 @@ export class EnrollStudentController {
     }
 
     const file = createReadStream(
-      join(process.cwd(), process.env.FILE_PATH+'student_file/'+data),
+      join(process.cwd(), process.env.FILE_PATH + 'student_file/' + data),
       // join(process.cwd(), '/../student_file/' + data),
     );
     res.set({
@@ -269,8 +287,6 @@ export class EnrollStudentController {
     });
     return new StreamableFile(file);
   }
-
-
 
   @Patch('updateClassProgram/:id')
   update(
@@ -280,20 +296,35 @@ export class EnrollStudentController {
   ) {
     var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
-    return this.enrollStudentService.updateClassProgram(+id, updateAvailabilityDto, curr_user);
+    return this.enrollStudentService.updateClassProgram(
+      +id,
+      updateAvailabilityDto,
+      curr_user,
+    );
   }
 
   @Patch('updateDropStudent/:id')
-  updateDropStudent(@Param('id') id: string,@Body() updateEnrollStudentDto: UpdateEnrollStudentDto) {
-    return this.enrollStudentService.updateDropStudent(+id,updateEnrollStudentDto);
+  updateDropStudent(
+    @Param('id') id: string,
+    @Body() updateEnrollStudentDto: UpdateEnrollStudentDto,
+  ) {
+    return this.enrollStudentService.updateDropStudent(
+      +id,
+      updateEnrollStudentDto,
+    );
   }
 
-    @Patch('updateStudentValues/:id')
-  updateStudentValues(@Param('id') id: string,@Body() updateStudentValuesDto: UpdateStudentValuesDto) {
-    return this.enrollStudentService.updateStudentValues(+id,updateStudentValuesDto);
+  @Patch('updateStudentValues/:id')
+  updateStudentValues(
+    @Param('id') id: string,
+    @Body() updateStudentValuesDto: UpdateStudentValuesDto,
+  ) {
+    return this.enrollStudentService.updateStudentValues(
+      +id,
+      updateStudentValuesDto,
+    );
   }
 
-  
   @Patch('updateSchoolYear/:id')
   updateSchoolYear(
     @Param('id') id: string,
@@ -305,12 +336,8 @@ export class EnrollStudentController {
     return this.enrollStudentService.updateSchoolYear(+id, updateSchoolYearDto);
   }
 
-
-
-
   @Delete('deleteAvailabilitySchedule/:id')
   remove(@Param('id') id: string) {
     return this.enrollStudentService.remove(+id);
   }
-
 }

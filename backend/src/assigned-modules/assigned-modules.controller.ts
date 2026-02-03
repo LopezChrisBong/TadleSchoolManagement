@@ -37,11 +37,10 @@ export class AssignedModulesController {
     return this.assignedModulesService.findAll();
   }
 
-    @Get('getSpecificModules')
+  @Get('getSpecificModules')
   getSpecificModules() {
     return this.assignedModulesService.getSpecificModules();
   }
-
 
   @Get('getMyModuleAsOIC')
   asOIC(@Headers() headers) {

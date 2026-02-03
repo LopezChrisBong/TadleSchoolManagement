@@ -6,8 +6,15 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TeacherSubject } from './entities/prefered-subject.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Subject,TeacherSubject,TeacherGradeLevel,GradeLevel])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Subject,
+      TeacherSubject,
+      TeacherGradeLevel,
+      GradeLevel,
+    ]),
+  ],
   controllers: [SubjectsController],
-  providers: [SubjectsService]
+  providers: [SubjectsService],
 })
 export class SubjectsModule {}

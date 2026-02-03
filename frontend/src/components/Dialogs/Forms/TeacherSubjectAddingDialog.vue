@@ -14,8 +14,8 @@
             <span class="text-h6">
               {{
                 toAdd == 1
-                  ? action + " My Subject List"
-                  : action + " My Grade Level List"
+                  ? action + ' My Subject List'
+                  : action + ' My Grade Level List'
               }}
             </span>
 
@@ -109,8 +109,8 @@
             <span class="text-h6">
               {{
                 toAdd == 1
-                  ? "Add Subjects To Teach"
-                  : "Add Grade Level To Teach"
+                  ? 'Add Subjects To Teach'
+                  : 'Add Grade Level To Teach'
               }}
             </span>
 
@@ -182,7 +182,7 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
 export default {
   props: {
     data: null,
@@ -205,43 +205,43 @@ export default {
       room_section: null,
       headers: [
         {
-          title: "Subject Name",
-          value: "subject_title",
-          align: "start",
-          valign: "center",
+          title: 'Subject Name',
+          value: 'subject_title',
+          align: 'start',
+          valign: 'center',
           sortable: false,
         },
 
         {
-          title: "Action",
-          value: "action",
-          align: "end",
-          valign: "center",
+          title: 'Action',
+          value: 'action',
+          align: 'end',
+          valign: 'center',
           sortable: false,
         },
       ],
       headers1: [
         {
-          title: "Grade Level",
-          value: "description",
-          align: "start",
-          valign: "center",
+          title: 'Grade Level',
+          value: 'description',
+          align: 'start',
+          valign: 'center',
           sortable: false,
         },
 
         {
-          title: "Action",
-          value: "action",
-          align: "end",
-          valign: "center",
+          title: 'Action',
+          value: 'action',
+          align: 'end',
+          valign: 'center',
           sortable: false,
         },
       ],
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
@@ -252,7 +252,7 @@ export default {
         this.initialize();
         this.dialog = true;
         if (data.id) {
-          console.log("Data Title", data);
+          console.log('Data Title', data);
           this.getTaggedSubjects(data.id);
           this.dataAddedList = [];
           this.room_section = data.room_section;
@@ -270,13 +270,13 @@ export default {
 
     getAllDataNeeded() {
       if (this.toAdd == 1) {
-        this.axiosCall("/subjects/getAllSubject/active", "GET").then((res) => {
+        this.axiosCall('/subjects/getAllSubject/active', 'GET').then((res) => {
           if (res.data) {
             let data = res.data;
-            console.log("LISTED DATA", data);
+            console.log('LISTED DATA', data);
             for (let i = 0; i < data.length; i++) {
               data[i].subject_title = this.toTitleCase(
-                data[i].subject_title + " (" + data[i].grade_level + ")",
+                data[i].subject_title + ' (' + data[i].grade_level + ')',
               );
             }
             this.dataListed = data;
@@ -291,7 +291,7 @@ export default {
         //   }
         // } else {
         for (let index = 7; index < 13; index++) {
-          const data = { id: index, description: "Grade " + [index] };
+          const data = { id: index, description: 'Grade ' + [index] };
 
           this.dataListed.push(data);
         }
@@ -301,14 +301,14 @@ export default {
 
     getTaggedSubjects(id) {
       if (this.toAdd == 1) {
-        this.axiosCall("/subjects/getSubjectTaagged/" + id, "GET").then(
+        this.axiosCall('/subjects/getSubjectTaagged/' + id, 'GET').then(
           (res) => {
             if (res.data) {
               let data = res.data;
 
               for (let i = 0; i < data.length; i++) {
                 data[i].subject_title = this.toTitleCase(
-                  data[i].subject_title + " (" + data[i].grade_level + ")",
+                  data[i].subject_title + ' (' + data[i].grade_level + ')',
                 );
                 this.dataAddedList.push(data[i].id);
               }
@@ -317,10 +317,10 @@ export default {
           },
         );
       } else {
-        this.axiosCall("/subjects/getGradeTaagged/" + id, "GET").then((res) => {
+        this.axiosCall('/subjects/getGradeTaagged/' + id, 'GET').then((res) => {
           if (res.data) {
             let data = res.data;
-            console.log("Grade Level", data);
+            console.log('Grade Level', data);
             for (let i = 0; i < data.length; i++) {
               data[i].grade_level = this.toTitleCase(data[i].grade_level);
               this.dataAddedList.push(data[i].id);
@@ -378,7 +378,7 @@ export default {
     },
 
     closeD() {
-      eventBus.emit("closedDataGradeSubjects", false);
+      eventBus.emit('closedDataGradeSubjects', false);
       this.initialize();
       this.$router.go(0);
       this.dialog = false;
@@ -392,19 +392,19 @@ export default {
           subject_list: JSON.stringify(this.subject_list),
           removed_subjects: JSON.stringify(this.remove_item),
         };
-        this.axiosCall("/subjects/addTeachersSubject", "POST", data).then(
+        this.axiosCall('/subjects/addTeachersSubject', 'POST', data).then(
           (res) => {
             console.log(res);
             if (res.data.status == 201) {
               this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = "success";
-              this.fadeAwayMessage.header = "System Message";
+              this.fadeAwayMessage.type = 'success';
+              this.fadeAwayMessage.header = 'System Message';
               this.fadeAwayMessage.message = res.data.msg;
               this.closeD();
             } else {
               this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = "error";
-              this.fadeAwayMessage.header = "System Message";
+              this.fadeAwayMessage.type = 'error';
+              this.fadeAwayMessage.header = 'System Message';
               this.fadeAwayMessage.message = res.data.msg;
             }
           },
@@ -415,19 +415,19 @@ export default {
           gradeLevel_list: JSON.stringify(this.subject_list),
           removed_gradeLevel: JSON.stringify(this.remove_item),
         };
-        this.axiosCall("/subjects/addTeachers/Grade-Level", "POST", data).then(
+        this.axiosCall('/subjects/addTeachers/Grade-Level', 'POST', data).then(
           (res) => {
             console.log(res);
             if (res.data.status == 201) {
               this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = "success";
-              this.fadeAwayMessage.header = "System Message";
+              this.fadeAwayMessage.type = 'success';
+              this.fadeAwayMessage.header = 'System Message';
               this.fadeAwayMessage.message = res.data.msg;
               this.closeD();
             } else {
               this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = "error";
-              this.fadeAwayMessage.header = "System Message";
+              this.fadeAwayMessage.type = 'error';
+              this.fadeAwayMessage.header = 'System Message';
               this.fadeAwayMessage.message = res.data.msg;
             }
           },
@@ -435,80 +435,10 @@ export default {
       }
     },
 
-    // update() {
-    //   console.log("Update Data");
-    //   if (this.$refs.ShortListAccess.validate()) {
-    //     const fd = new FormData();
-    //     console.log(fd);
-    //     let data = {
-    //       resolution: this.resolution,
-    //       effective_date: this.effective_date,
-    //     };
-    //     if (this.fileNewValue == true) {
-    //       console.log("File naa", this.fileNewValue);
-    //       fd.append("file", this.file_selected);
-    //       fd.append("body", JSON.stringify(data));
-    //       this.axiosCall("/resolution/" + this.id, "PATCH", fd).then((res) => {
-    //         if (res.data.status == 200) {
-    //           this.fadeAwayMessage.show = true;
-    //           this.fadeAwayMessage.type = "success";
-    //           this.fadeAwayMessage.header = "System Message";
-    //           this.fadeAwayMessage.message = res.data.msg;
-    //           this.closeD();
-    //         } else {
-    //           this.fadeAwayMessage.show = true;
-    //           this.fadeAwayMessage.type = "error";
-    //           this.fadeAwayMessage.header = "System Message";
-    //           this.fadeAwayMessage.message = res.data.msg;
-    //         }
-    //       });
-    //     } else {
-    //       console.log("File", this.fileNewValue);
-    //       this.axiosCall(
-    //         "/resolution/noFileUploaded/" + this.id,
-    //         "PATCH",
-    //         data
-    //       ).then((res) => {
-    //         if (res.data.status == 200) {
-    //           this.fadeAwayMessage.show = true;
-    //           this.fadeAwayMessage.type = "success";
-    //           this.fadeAwayMessage.header = "System Message";
-    //           this.fadeAwayMessage.message = res.data.msg;
-    //           this.closeD();
-    //         } else {
-    //           this.fadeAwayMessage.show = true;
-    //           this.fadeAwayMessage.type = "error";
-    //           this.fadeAwayMessage.header = "System Message";
-    //           this.fadeAwayMessage.message = res.data.msg;
-    //         }
-    //       });
-    //     }
-    //   }
-    // },
-
     getSchoolYear() {
-      this.axiosCall("/school-year", "GET").then((res) => {
+      this.axiosCall('/school-year', 'GET').then((res) => {
         console.log(res.data);
         this.syList = res.data;
-      });
-    },
-
-    getEmpDetails() {
-      this.axiosCall("/employee/my-details", "GET").then((res) => {
-        console.log(res.data);
-        this.assigned_office = res.data.officeID;
-      });
-    },
-
-    getOffices() {
-      this.axiosCall("/offices", "GET").then((res) => {
-        this.officeList = res.data;
-      });
-    },
-
-    getDesignations() {
-      this.axiosCall("/designations", "GET").then((res) => {
-        this.designationList = res.data;
       });
     },
   },

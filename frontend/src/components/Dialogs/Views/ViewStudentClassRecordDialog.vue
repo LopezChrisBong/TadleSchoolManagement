@@ -11,7 +11,7 @@
       <v-form ref="UserVerifyFormref" @submit.prevent>
         <v-card>
           <v-card-title dark class="d-flex dialog-header align-center">
-            <span v-if="data">
+            <span v-if="data" style="text-transform: uppercase">
               {{ data.subject_title }} {{ data.grade_level }}
               {{ data.room_section }} Student Classrecords
             </span>
@@ -128,7 +128,7 @@
                   </div>
 
                   <v-data-table
-                    :headers="headers"
+                    :headers="tab != 3 ? headers : headers1"
                     :items="studentList"
                     density="compact"
                     item-key="name"
@@ -146,6 +146,13 @@
                           @input="onInputGradeScore(item)"
                         ></v-text-field>
                       </div>
+                    </template>
+                    <template v-slot:[`item.records`]="{ item }">
+                      <!-- {{ scoresNeeded(item) }} -->
+                      <div v-if="scoresNeeded(item) == 'Passed'">
+                        <v-icon size="40" color="pink">mdi-check</v-icon>
+                      </div>
+                      <div v-else v-html="scoresNeeded(item)"></div>
                     </template>
                     <!-- <template v-slot:[`item.action`]="{ item }">
                       <div class="d-flex justify-center align-center">
@@ -192,7 +199,8 @@
         <v-divider />
 
         <v-card-text class="text-body-1">
-          Are you sure you want to <strong>save</strong> this information?
+          Are you sure you want to <strong>save</strong> this
+          {{ tab != 4 ? "quiz" : "exam" }}?
         </v-card-text>
 
         <v-card-actions class="justify-end">
@@ -215,10 +223,10 @@
       </v-card>
     </v-dialog>
 
-    <v-dialog v-model="gradesDialog" fullscreen eager scrollable>
+    <v-dialog v-model="gradesDialog" max-width="900" persistent scrollable>
       <v-card>
         <v-card-title class="d-flex dialog-header align-center">
-          <span v-if="data">
+          <span v-if="data" style="text-transform: uppercase">
             {{ data.subject_title }} {{ data.grade_level }}
             {{ data.room_section }} Student Grade</span
           >
@@ -377,7 +385,7 @@
     <v-dialog v-model="quizListDialog" fullscreen eager scrollable>
       <v-card>
         <v-card-title class="d-flex dialog-header align-center">
-          <span v-if="data">
+          <span v-if="data" style="text-transform: uppercase">
             {{ data.subject_title }} {{ data.grade_level }}
             {{ data.room_section }} Student Quizes</span
           >
@@ -566,6 +574,7 @@ export default {
       conflictData: null,
       editQuizData: false,
       editScoreData: false,
+      decisionData: [],
       headersMapeh: [
         { title: "Subject", key: "subject_title" },
         { title: "Written Works", key: "ww_weighted" },
@@ -585,13 +594,28 @@ export default {
         { id: 1, name: "Written Works", active: true },
         { id: 2, name: "Performance Tasks", active: false },
         { id: 3, name: "Quarterly Assessment", active: false },
-        // { id: 4, name: "Final Grade", active: false },
       ],
       items: [],
       quizLabels: [],
       headersQuizList: [],
       headers: [
         { title: "Name", align: "start", sortable: false, key: "name" },
+        {
+          title: "Score",
+          align: "center",
+          sortable: false,
+          key: "quarterScore",
+          width: "200",
+        },
+      ],
+      headers1: [
+        { title: "Name", align: "start", sortable: false, key: "name" },
+        {
+          title: "Recommendation",
+          align: "center",
+          sortable: false,
+          key: "records",
+        },
         {
           title: "Score",
           align: "center",
@@ -804,9 +828,12 @@ export default {
       this.tabList.forEach((t) => {
         t.active = t.id === tab.id;
       });
-
-      // ✅ Only reload class record for this tab
+      //  Only reload class record for this tab
+      if (tab.id == 3) {
+        this.decisionSupport();
+      }
     },
+
     getTaggedStudent() {
       this.axiosCall(
         "/rooms-section/getMyStudentClassRecords/" +
@@ -834,7 +861,8 @@ export default {
       this.quizLabels.forEach((quiz) => {
         const normalizedKey = quiz.replace(/\s+/g, ""); // "Quiz 1" -> "Quiz1"
         this.headersQuizList.push({
-          title: quiz, // show "Quiz 1" in header
+          // title: quiz, // show "Quiz 1" in header
+          title: "Scores / Denominator", // show "Quiz 1" in header
           align: "center",
           sortable: false,
           key: normalizedKey, // but data key is "Quiz1"
@@ -1090,7 +1118,12 @@ export default {
             this.fadeAwayMessage.type = "success";
             this.fadeAwayMessage.header = "System Message";
             this.fadeAwayMessage.message = res.data.msg;
-            this.closeD();
+            this.confirmDialog = false;
+            this.getTaggedStudent();
+            this.dinominator = null;
+            if (this.tab != 4) {
+              this.closeD();
+            }
           } else if (res.data.status == 400) {
             this.fadeAwayMessage.show = true;
             this.fadeAwayMessage.type = "error";
@@ -1102,6 +1135,7 @@ export default {
     },
     closeD() {
       eventBus.emit("closeStudentClassRecordDialog", true);
+
       this.studentList = [];
       this.quarter = "1st Quarter";
       this.dialog = false;
@@ -1109,7 +1143,69 @@ export default {
       this.dinominator = null;
       this.quizListDialog = false;
       this.gradesDialog = false;
-      // this.edit = false;
+
+      // reset tabs
+      this.tab = 1;
+      this.activeTab = {
+        id: 1,
+        name: "For Verification",
+        active: true,
+      };
+
+      this.tabList = this.tabList.map((tab) => ({
+        ...tab,
+        active: tab.id === 1,
+      }));
+    },
+    decisionSupport() {
+      let subjectID = this.sub_subject == null ? "noData" : this.sub_subject;
+      console.log(this.sub_subject);
+      this.axiosCall(
+        "/rooms-section/getGeneratedGrade/" +
+          this.data.roomId +
+          "/" +
+          this.filter +
+          "/" +
+          this.quarter +
+          "/" +
+          this.semester +
+          "/" +
+          this.data.subjectId +
+          "/" +
+          subjectID,
+        "GET",
+      ).then((res) => {
+        console.log("decisionData", res.data);
+        if (res.data) {
+          this.decisionData = res.data;
+        }
+      });
+    },
+    scoresNeeded(rec) {
+      const record = this.decisionData.find((d) => d.studentID === rec.id);
+      // let ws = 60 - record?.initial_grade;
+      // let grade = (
+      //   (ws / (this.data.writen_works * 100)) *
+      //   this.dinominator *
+      //   100
+      // ).toFixed(0);
+      let remaining = 62 - record?.initial_grade; // 14.46
+      let weight = this.data.writen_works / 100; // 0.30
+      let highest = this.dinominator; // 50
+
+      let grade = (remaining / weight) * (highest / 100);
+
+      // console.log(
+      //   "scoresNeeded",
+      //   record?.transmuted_grade,
+      //   this.dinominator,
+      //   grade * 100,
+      // );
+      if (remaining <= 0) {
+        return "Passed";
+      }
+      return `Student is below 75<br>
+        Required score needed: ${grade.toFixed(0)} / ${this.dinominator}`;
     },
   },
 };

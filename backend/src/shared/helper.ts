@@ -4,7 +4,10 @@ export class Helper {
   static customFileName(req, file, cb) {
     let customFile = file.originalname.split('.')[0];
     customFile =
-     customFile.replace(/\s/g, "").replace(/%20/g, "") + Date.now() + '-' + Math.round(Math.random() * 1e9);
+      customFile.replace(/\s/g, '').replace(/%20/g, '') +
+      Date.now() +
+      '-' +
+      Math.round(Math.random() * 1e9);
     let fileExtension = '';
 
     if (file.mimetype.indexOf('jpeg') > -1) {
@@ -23,13 +26,12 @@ export class Helper {
 
   static filePath(req, file, cb) {
     // cb(null, join(process.cwd(), '/../upload_img/'));
-    cb(null, join(process.cwd(),process.env.FILE_PATH+'upload_img/'));
+    cb(null, join(process.cwd(), process.env.FILE_PATH + 'upload_img/'));
   }
 
   static student_files(req, file, cb) {
     // cb(null, join(process.cwd(), '/../student_file/'));
-    cb(null, join(process.cwd(), process.env.FILE_PATH+'student_file/'));
-
+    cb(null, join(process.cwd(), process.env.FILE_PATH + 'student_file/'));
   }
 
   // static esign_filepath(req, file, cb) {

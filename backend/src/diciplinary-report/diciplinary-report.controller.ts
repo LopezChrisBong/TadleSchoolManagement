@@ -1,11 +1,21 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { DiciplinaryReportService } from './diciplinary-report.service';
 import { CreateDiciplinaryReportDto } from './dto/create-diciplinary-report.dto';
 import { UpdateDiciplinaryReportDto } from './dto/update-diciplinary-report.dto';
 
 @Controller('diciplinary-report')
 export class DiciplinaryReportController {
-  constructor(private readonly diciplinaryReportService: DiciplinaryReportService) {}
+  constructor(
+    private readonly diciplinaryReportService: DiciplinaryReportService,
+  ) {}
 
   @Post()
   create(@Body() createDiciplinaryReportDto: CreateDiciplinaryReportDto) {
@@ -23,8 +33,14 @@ export class DiciplinaryReportController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDiciplinaryReportDto: UpdateDiciplinaryReportDto) {
-    return this.diciplinaryReportService.update(+id, updateDiciplinaryReportDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateDiciplinaryReportDto: UpdateDiciplinaryReportDto,
+  ) {
+    return this.diciplinaryReportService.update(
+      +id,
+      updateDiciplinaryReportDto,
+    );
   }
 
   @Delete(':id')

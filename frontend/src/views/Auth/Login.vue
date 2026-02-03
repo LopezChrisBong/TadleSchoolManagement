@@ -1,14 +1,27 @@
 <template>
   <div>
     <v-container fluid class="auth-container">
-      <div
+      <v-card
         class="auth-wrapper"
+        rounded="xl"
+        elevation="6"
         :class="isSmAndUp ? { 'right-panel-active': !isLogin } : {}"
       >
         <!-- Sign In Form -->
         <div class="form-container sign-in-container">
-          <v-card class="form-card" elevation="10">
-            <h2 class="text-center mb-4">Sign In</h2>
+          <v-card class="form-card" elevation="10" rounded="xl">
+            <v-img
+              src="/img/southernlogo.png"
+              max-width="90"
+              class="mx-auto"
+              cover
+              rounded="xl"
+            />
+            <h2 class="text-center mx-3 mb-5">
+              Welcome to <span class="text-pink"> SDSMS </span>
+            </h2>
+            <!-- <h2 class="text-start">Sign In</h2> -->
+
             <v-form ref="formLogin">
               <v-text-field
                 v-model="emailLogin"
@@ -32,7 +45,7 @@
                 density="compact"
                 class="mb-5"
               />
-              <v-btn color="primary" block @click="dologin()">Sign In</v-btn>
+              <v-btn color="#e93175" block @click="dologin()">Sign In</v-btn>
               <div class="mt-4 text-caption d-flex" v-if="!isSmAndUp">
                 <p>Don't have an account yet?</p>
                 <a class="text-green" @click="mobileChange()">Sign Up</a>
@@ -43,7 +56,7 @@
 
         <!-- Sign Up Form -->
         <div class="form-container sign-up-container">
-          <v-card class="form-card" elevation="10">
+          <v-card class="form-card" elevation="10" rounded="xl">
             <h2 class="text-center mb-4">Create Account</h2>
             <p class="text-caption text-gray-100 mb-3">
               Step {{ step.id }} of 3 - {{ step.name }}
@@ -75,7 +88,7 @@
                 density="compact"
                 class="mb-3"
               />
-              <v-btn color="primary" block @click="next()" class="mb-2"
+              <v-btn color="#e93175" block @click="next()" class="mb-2"
                 >Next</v-btn
               >
               <div class="mt-4 text-caption d-flex" v-if="!isSmAndUp">
@@ -148,7 +161,12 @@
                 prepend-inner-icon="mdi-lock"
                 label="Confirm Password"
               ></v-text-field>
-              <v-btn color="primary" block @click="register()" class="mb-2"
+              <v-btn
+                color="#e93175"
+                block
+                @click="register()"
+                class="mb-2"
+                :loading="isLoading"
                 >Sign Up</v-btn
               >
               <!-- <v-btn
@@ -211,7 +229,7 @@
                     :loading="isLoading"
                     block
                     variant="flat"
-                    color="primary"
+                    color="#e93175"
                     class="py-5 text-white rounded-lg"
                   >
                     CONFIRM
@@ -225,39 +243,64 @@
         <!-- Overlay Panel -->
         <div class="overlay-container" v-if="isSmAndUp">
           <div class="overlay">
-            <div class="overlay-panel overlay-center">
+            <div class="overlay-panel overlay-center" style="color: #e93175">
               <h2>
                 Hello
                 {{ userType == 0 ? "Parents/Guardians" : "Admin/Teachers" }}!
               </h2>
               <p>To stay connected, sign in with your credentials.</p>
               <p class="mt-4">Already have an account? Click Sign In</p>
-              <v-btn
-                variant="outlined"
-                class="font-weight-bold"
-                color="white"
-                @click="isLogin = true"
-                >Sign In</v-btn
-              >
+              <div class="d-flex justify-center mt-5">
+                <v-btn
+                  variant="outlined"
+                  class="font-weight-bold mx-3"
+                  style="width: 150px"
+                  append-icon="mdi-account"
+                  color="e93175"
+                  @click="isLogin = true"
+                  >Sign In</v-btn
+                >
+                <v-btn
+                  variant="flat"
+                  append-icon="mdi-home"
+                  style="width: 150px"
+                  class="font-weight-bold mx-3"
+                  color="#e93175"
+                  @click="doHome()"
+                  >Home</v-btn
+                >
+              </div>
             </div>
-            <div class="overlay-panel overlay-right">
+            <div class="overlay-panel overlay-right" style="color: white">
               <h2>
                 Welcome
                 {{ userType == 0 ? "Parents/Guardians" : "Admin/Teachers" }}!
               </h2>
               <p>Enter your details and start your journey with us!</p>
               <p class="mt-4">Don't have an account yet? Click Sign Up</p>
-              <v-btn
-                variant="outlined"
-                color="white"
-                class="font-weight-bold"
-                @click="isLogin = false"
-                >Sign Up</v-btn
-              >
+              <div class="d-flex justify-center mt-5">
+                <v-btn
+                  variant="outlined"
+                  class="font-weight-bold mx-3"
+                  append-icon="mdi-account"
+                  color="white"
+                  style="width: 150px"
+                  @click="isLogin = false"
+                  >Sign Up</v-btn
+                >
+                <v-btn
+                  variant="flat"
+                  append-icon="mdi-home"
+                  class="font-weight-bold mx-3"
+                  style="width: 150px; color: #e93175"
+                  @click="doHome()"
+                  >Home</v-btn
+                >
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </v-card>
     </v-container>
     <fade-away-message-component
       displayType="variation2"
@@ -279,6 +322,7 @@ export default {
       display: useDisplay(),
       isLogin: true,
       mobile: true,
+      isLoading: false,
       showPassword: false,
       showPasswordConfirm: false,
       step: { id: 1, name: "Personal Information" },
@@ -386,6 +430,7 @@ export default {
         this.fadeAwayMessage.message = "Password not mutch";
         this.fadeAwayMessage.header = "System Message";
       } else {
+        this.isLoading = true;
         if (this.$refs.formRegister.validate()) {
           let data = {
             fname: this.fname,
@@ -497,14 +542,13 @@ export default {
     },
 
     submitOTP() {
+      this.isLoading = true;
       const otpValue = this.otp.join("");
 
       if (otpValue.length !== 6) {
         alert("Please enter complete OTP");
         return;
       }
-
-      this.isLoading = true;
 
       // 🔗 Call your API here
       console.log("OTP:", otpValue);
@@ -536,6 +580,9 @@ export default {
         this.isLoading = false;
       }, 1000);
     },
+    doHome() {
+      this.$router.push("/");
+    },
   },
 };
 </script>
@@ -546,8 +593,8 @@ export default {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #e0cad9, #bb73a9);
-  /* background: linear-gradient(135deg, #20bfa9, #178ca6); */
+  /* background: linear-gradient(135deg, #e0cad9, #bb73a9); */
+  background: linear-gradient(135deg, #ffffff, #ffffff);
 }
 
 .auth-wrapper {
@@ -580,7 +627,7 @@ export default {
     padding: none;
   }
   .auth-wrapper {
-    min-height: 500px;
+    min-height: 550px;
   }
   /* .sign-up-container {
     left: 0;
@@ -627,8 +674,7 @@ export default {
 
 .overlay {
   /* background: linear-gradient(135deg, #20bfa9, #178ca6); */
-  background: linear-gradient(135deg, #e0cad9, #bb73a9);
-  color: white;
+  background: linear-gradient(to right, #f8f9fa, #e93175);
   position: relative;
   left: -100%;
   height: 100%;

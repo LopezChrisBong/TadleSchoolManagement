@@ -60,72 +60,78 @@ export class UserDetailsController {
   @UseGuards(JWTAuthGuard)
   @ApiBearerAuth()
   @Get('getAllUsersToVerify')
-  getAllUsersToVerify(
-    @Headers() headers
-  ) {
+  getAllUsersToVerify(@Headers() headers) {
     var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
     return this.userDetailsService.getAllUsersToVerify(curr_user);
   }
 
-    @UseGuards(JWTAuthGuard)
+  @UseGuards(JWTAuthGuard)
   @ApiBearerAuth()
   @Get('getAllFaculty/:tab/:filter')
   getAllFaculty(
-   @Param('tab') tab: number,@Param('filter') filter: number, @Headers() headers, 
+    @Param('tab') tab: number,
+    @Param('filter') filter: number,
+    @Headers() headers,
   ) {
     var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
-    return this.userDetailsService.getAllFaculty(curr_user,filter,tab);
+    return this.userDetailsService.getAllFaculty(curr_user, filter, tab);
   }
-
 
   @UseGuards(JWTAuthGuard)
   @ApiBearerAuth()
   @Get('getAllVerifiedUser')
-  getAllVerifiedUser(
-    @Headers() headers
-  ) {
+  getAllVerifiedUser(@Headers() headers) {
     var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
     return this.userDetailsService.getAllVerifiedUser(curr_user);
   }
 
   @Get('getAdvisoryNotAssigned/:grade')
-  getAdvisoryNotAssigned(@Param('grade') grade: string, ) {
-   
+  getAdvisoryNotAssigned(@Param('grade') grade: string) {
     return this.userDetailsService.getAdvisoryNotAssigned(grade);
   }
 
-    @Get('getAllVerifiedUser/TeachingRole/:grade')
-  TeachingRole(@Param('grade') grade: string, @Headers() headers ) {
+  @Get('getAllVerifiedUser/TeachingRole/:grade')
+  TeachingRole(@Param('grade') grade: string, @Headers() headers) {
     var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
-    return this.userDetailsService.TeachingRole(grade,curr_user);
+    return this.userDetailsService.TeachingRole(grade, curr_user);
   }
 
   @Get('getAdviser/RoomAdvisory/:id/:grade')
-  TeachingRoleAdvisory( @Param('id') id: number,@Param('grade') grade: string, @Headers() headers ) {
+  TeachingRoleAdvisory(
+    @Param('id') id: number,
+    @Param('grade') grade: string,
+    @Headers() headers,
+  ) {
     var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
-    return this.userDetailsService.TeachingRoleAdvisory(id,grade, curr_user);
+    return this.userDetailsService.TeachingRoleAdvisory(id, grade, curr_user);
   }
 
   @Get('getAllVerifiedUser/TeachingRoleSched')
-  TeachingRoleSched( @Headers() headers ) {
+  TeachingRoleSched(@Headers() headers) {
     var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
     return this.userDetailsService.TeachingRoleSched(curr_user);
   }
 
-  
-    @UseGuards(JWTAuthGuard)
+  @UseGuards(JWTAuthGuard)
   @ApiBearerAuth()
   @Post('updateUserInfo/:id/:data')
-  updateUserInfo(@Param('id') id: number,@Param('data') data: string,@Body() updateUserDetailDto: UpdateUserDetailDto,) {
-  return this.userDetailsService.updateUserInfo(+id,data ,updateUserDetailDto);
+  updateUserInfo(
+    @Param('id') id: number,
+    @Param('data') data: string,
+    @Body() updateUserDetailDto: UpdateUserDetailDto,
+  ) {
+    return this.userDetailsService.updateUserInfo(
+      +id,
+      data,
+      updateUserDetailDto,
+    );
   }
-
 
   @UseGuards(JWTAuthGuard)
   @ApiBearerAuth()
@@ -133,7 +139,6 @@ export class UserDetailsController {
   updateVerifiedUser(@Body() updateVU: UpdateVerifiedUser) {
     return this.userDetailsService.updateVerifiedUser(updateVU);
   }
-
 
   @Get()
   findAll() {
@@ -165,18 +170,17 @@ export class UserDetailsController {
     const curr_user = currentUser(head_str);
     return this.userDetailsService.getPersonalInfo(curr_user);
   }
-  
 
-
-  
   @Get('getProfileImg/:filename')
   getProfileImg(
     @Param('filename') filename: string,
     @Response({ passthrough: true }) res,
   ): StreamableFile {
     let file;
-   
-    file = createReadStream(join(process.cwd(), process.env.FILE_PATH+'upload_img/' + filename));
+
+    file = createReadStream(
+      join(process.cwd(), process.env.FILE_PATH + 'upload_img/' + filename),
+    );
     res.set({
       'Content-Type': 'image/png',
     });
@@ -187,8 +191,6 @@ export class UserDetailsController {
     return new StreamableFile(file);
   }
 
-
-  
   @UseGuards(JWTAuthGuard)
   @ApiBearerAuth()
   // Image uploading
@@ -221,7 +223,10 @@ export class UserDetailsController {
       //   );
       // } else {
       fs.unlink(
-        join(process.cwd(), process.env.FILE_PATH+`upload_img/${user.profile_img}`),
+        join(
+          process.cwd(),
+          process.env.FILE_PATH + `upload_img/${user.profile_img}`,
+        ),
         async (err) => {
           if (err) {
             console.log(err);
@@ -270,11 +275,8 @@ export class UserDetailsController {
     return this.userDetailsService.getMaleFemaleCount();
   }
 
-  
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userDetailsService.remove(+id);
   }
-
-
 }

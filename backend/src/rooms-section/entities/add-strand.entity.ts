@@ -1,4 +1,3 @@
-
 import { Exclude } from 'class-transformer';
 import { UserDetail } from 'src/entities';
 import {
@@ -13,44 +12,36 @@ import {
 
 @Entity()
 export class AddStrand {
+  @PrimaryGeneratedColumn({ type: 'int' })
+  id: number;
 
-    @PrimaryGeneratedColumn({ type: 'int' })
-    id: number
+  @Column({
+    type: 'varchar',
+    nullable: false,
+  })
+  strand_name: string;
 
-    @Column(
-      {  
-        type:'varchar',
-        nullable:false
-      }
-    )
-    strand_name:string
+  @Column({
+    type: 'varchar',
+    nullable: false,
+  })
+  trackId: string;
 
+  @Column({ type: 'boolean', default: false })
+  arvhieve: boolean;
 
-    @Column(
-        {  
-          type:'varchar',
-          nullable:false
-        }
-      )
-      trackId:string
+  @CreateDateColumn({
+    nullable: false,
+    type: 'datetime',
+    name: 'created_at',
+    default: () => 'CURRENT_TIMESTAMP(6)',
+  })
+  createdAt: Date;
 
-
-      @Column({ type:'boolean', default:false})
-      arvhieve:boolean
-
-      
-      @CreateDateColumn({
-        nullable: false,
-        type: 'datetime',
-        name: 'created_at',
-        default: () => 'CURRENT_TIMESTAMP(6)',
-      })
-      createdAt: Date;
-    
-      @UpdateDateColumn({
-        default: () => 'CURRENT_TIMESTAMP(6)',
-        name: 'updated_at',
-        type: 'datetime',
-      })
-      updatedAt: Date;
+  @UpdateDateColumn({
+    default: () => 'CURRENT_TIMESTAMP(6)',
+    name: 'updated_at',
+    type: 'datetime',
+  })
+  updatedAt: Date;
 }

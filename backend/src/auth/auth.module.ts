@@ -10,11 +10,16 @@ import { MailService } from 'src/mail/mail.service';
 import { MailModule } from 'src/mail/mail.module';
 
 @Module({
-  imports: [ConfigModule.forRoot(), JwtModule.register({
-    secret: process.env.JWT_SECRET,
-    signOptions: { expiresIn: process.env.JWT_TOKEN_EXPIRATION }
-  }), TypeOrmModule.forFeature([Users]), MailModule],
+  imports: [
+    ConfigModule.forRoot(),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: process.env.JWT_TOKEN_EXPIRATION },
+    }),
+    TypeOrmModule.forFeature([Users]),
+    MailModule,
+  ],
   controllers: [AuthController],
-  providers: [AuthService, JWTAuthStrategy, MailService]
+  providers: [AuthService, JWTAuthStrategy, MailService],
 })
-export class AuthModule { }
+export class AuthModule {}

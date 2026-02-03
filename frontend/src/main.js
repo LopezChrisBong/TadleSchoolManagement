@@ -10,7 +10,13 @@ import VueJsonToCsv from "vue-json-to-csv";
 import FadeAwayMessage from './components/Alerts/FadeAwayMessage.vue'; // Use .vue directly for simplicity
 
 const app = createApp(App);
-
+window.addEventListener('error', (e) => {
+  if (e.message.includes('ResizeObserver loop limit exceeded') || 
+      e.message.includes('ResizeObserver loop completed with undelivered notifications')) {
+    e.stopImmediatePropagation();
+    console.warn('ResizeObserver warning ignored');
+  }
+});
 // Register global component
 app.config.productionTip = false;
 app.component('fade-away-message-component', FadeAwayMessage);

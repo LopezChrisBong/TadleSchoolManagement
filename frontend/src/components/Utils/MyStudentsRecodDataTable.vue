@@ -243,10 +243,10 @@ export default {
         data = data.map((item, index) => ({
           ...item,
           subject_title: this.toTitleCase(item.subject_title),
-          active: index === 0, // ✅ mark first as active
+          active: index === 0, //  mark first as active
         }));
-
-        // ✅ Set first tab values
+        // console.log(data);
+        //  Set first tab values
         this.tab = data[0].id;
         this.activeTab = data[0];
         this.tabList = data;
@@ -284,7 +284,7 @@ export default {
         t.active = t.id === tab.id;
       });
 
-      // ✅ Only reload class record for this tab
+      //Only reload class record for this tab
     },
     // deleteItem(item) {
     //   this.dialogConfirmDelete = true;

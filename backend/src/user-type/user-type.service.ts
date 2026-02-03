@@ -7,7 +7,11 @@ import { UserType } from './entities/user-type.entity';
 
 @Injectable()
 export class UserTypeService {
-  constructor(@InjectRepository(UserType) private readonly usertypeRepository: Repository<UserType>, private dataSource: DataSource) { }
+  constructor(
+    @InjectRepository(UserType)
+    private readonly usertypeRepository: Repository<UserType>,
+    private dataSource: DataSource,
+  ) {}
   // async createInitialUserType() {
   //   return await this.dataSource.createQueryBuilder()
   //     .insert()
@@ -25,33 +29,31 @@ export class UserTypeService {
   //     .execute()
   // }
 
-
   async create(createUserTypeDto: CreateUserTypeDto) {
     try {
       const type = this.usertypeRepository.create(createUserTypeDto);
       const saved = await this.usertypeRepository.save(type);
       if (saved) {
         return {
-          msg: "Saved successful.",
-          status: HttpStatus.CREATED
-        }
+          msg: 'Saved successful.',
+          status: HttpStatus.CREATED,
+        };
       } else {
         return {
-          msg: "Saved failed.",
-          status: HttpStatus.BAD_REQUEST
-        }
+          msg: 'Saved failed.',
+          status: HttpStatus.BAD_REQUEST,
+        };
       }
     } catch (error) {
       return {
         msg: error,
-        status: HttpStatus.BAD_REQUEST
-      }
+        status: HttpStatus.BAD_REQUEST,
+      };
     }
-
   }
 
   getUserType(id: number) {
-    return this.usertypeRepository.findOneBy({ id })
+    return this.usertypeRepository.findOneBy({ id });
   }
 
   getAllUserType() {
@@ -60,25 +62,26 @@ export class UserTypeService {
 
   async update(id: number, updateUserTypeDto: UpdateUserTypeDto) {
     try {
-      const toUpdate = await this.usertypeRepository.update(id, { description: updateUserTypeDto.description })
+      const toUpdate = await this.usertypeRepository.update(id, {
+        description: updateUserTypeDto.description,
+      });
       if (toUpdate.affected == 1) {
         return {
-          msg: "Update successful.",
-          status: HttpStatus.CREATED
-        }
+          msg: 'Update successful.',
+          status: HttpStatus.CREATED,
+        };
       } else {
         return {
-          msg: "Update failed.",
-          status: HttpStatus.BAD_REQUEST
-        }
+          msg: 'Update failed.',
+          status: HttpStatus.BAD_REQUEST,
+        };
       }
     } catch (error) {
       return {
         msg: error,
-        status: HttpStatus.BAD_REQUEST
-      }
+        status: HttpStatus.BAD_REQUEST,
+      };
     }
-
   }
 
   remove(id: number) {

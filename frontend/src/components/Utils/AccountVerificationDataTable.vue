@@ -52,7 +52,7 @@
         :search="search"
         :items-per-page="10"
         :loading="loading"
-        loading-text="Loading accounts..."
+        loading-text="Loading data..."
         class="text-body-2"
       >
         <template v-slot:[`item.fname`]="{ item }">

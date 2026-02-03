@@ -1,12 +1,12 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAddStudentRoomDto {
-    @ApiProperty()
-    classID:string
+  @ApiProperty()
+  classID: string;
 
-    @ApiProperty()
-    stundent_list:string
+  @ApiProperty()
+  stundent_list: string;
 
-    @ApiProperty()
-    removed_student:string
+  @ApiProperty()
+  removed_student: string;
 }

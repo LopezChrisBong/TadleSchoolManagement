@@ -7,30 +7,31 @@ import { join } from 'path';
 import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
-  imports: [ConfigModule.forRoot(), MailerModule.forRoot({
-    transport: {
-      host: process.env.MAIL_HOST,
-      secure: false,
-      port: parseInt(process.env.MAIL_PORT),
-      auth: {
-        user: process.env.MAIL_USER,
-        pass: process.env.MAIL_PASSWORD
+  imports: [
+    ConfigModule.forRoot(),
+    MailerModule.forRoot({
+      transport: {
+        host: process.env.MAIL_HOST,
+        secure: false,
+        port: parseInt(process.env.MAIL_PORT),
+        auth: {
+          user: process.env.MAIL_USER,
+          pass: process.env.MAIL_PASSWORD,
+        },
       },
-    },
-    defaults: {
-      from: process.env.MAIL_FROM,
-    },
-    template: {
-      dir: join(__dirname, 'templates'),
-      adapter: new HandlebarsAdapter(),
-      options: {
-        strict: true,
-
+      defaults: {
+        from: process.env.MAIL_FROM,
       },
-    },
-  }),
+      template: {
+        dir: join(__dirname, 'templates'),
+        adapter: new HandlebarsAdapter(),
+        options: {
+          strict: true,
+        },
+      },
+    }),
   ],
   controllers: [MailController],
   providers: [MailService],
 })
-export class MailModule { }
+export class MailModule {}

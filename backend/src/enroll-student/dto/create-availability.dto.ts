@@ -1,32 +1,30 @@
-import { ApiProperty } from "@nestjs/swagger"
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateAvailabilityDto {
+  @ApiProperty()
+  teacherID: number;
 
-    @ApiProperty()
-    teacherID: number;
+  @ApiProperty()
+  subjectId: number;
 
-    @ApiProperty()
-    subjectId: number;
+  @ApiProperty()
+  roomId: number;
 
-    @ApiProperty()
-    roomId: number;
+  @ApiProperty()
+  grade_level: string;
 
-    @ApiProperty()
-    grade_level:string;
+  @ApiProperty()
+  day: string;
 
-    @ApiProperty()
-    day:string;
+  @ApiProperty()
+  times_slot_from: string;
 
-    @ApiProperty()
-    times_slot_from:string;
+  @ApiProperty()
+  times_slot_to: string;
 
-    @ApiProperty()
-    times_slot_to:string;
+  @ApiProperty()
+  hours: string;
 
-    @ApiProperty()
-    hours:string;
-
-    @ApiProperty()
-    school_yearId:number;
-
+  @ApiProperty()
+  school_yearId: number;
 }

@@ -53,9 +53,6 @@ export class UserDetail {
   })
   bdate: string;
 
-
-
-
   @Column({
     nullable: true,
     type: 'varchar',
@@ -70,18 +67,12 @@ export class UserDetail {
   })
   civil_status: string;
 
-
-
-
-
-
   @Column({
     nullable: true,
     type: 'varchar',
     length: 100,
   })
   citizenship: string;
-
 
   @Column({
     nullable: true,
@@ -145,7 +136,6 @@ export class UserDetail {
   })
   residential_prov: string;
 
-
   @Column({
     nullable: true,
     type: 'tinyint',
@@ -159,7 +149,6 @@ export class UserDetail {
   })
   status: number;
 
-
   @Column({
     nullable: true,
     type: 'int',
@@ -172,7 +161,6 @@ export class UserDetail {
     length: 150,
   })
   profile_img: string;
-
 
   @CreateDateColumn({
     nullable: false,
