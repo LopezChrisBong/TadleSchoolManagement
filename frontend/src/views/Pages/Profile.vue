@@ -184,7 +184,12 @@
                 </v-col>
 
                 <v-col cols="12" sm="auto">
-                  <v-btn block color="pink" @click="updateProfile">
+                  <v-btn
+                    block
+                    :loading="loading"
+                    color="pink"
+                    @click="updateProfile"
+                  >
                     Save Changes
                   </v-btn>
                 </v-col>
@@ -205,10 +210,10 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
-import TeacherSubjectAddingDialog from "../../components/Dialogs/Forms/TeacherSubjectAddingDialog.vue";
+import eventBus from '@/eventBus';
+import TeacherSubjectAddingDialog from '../../components/Dialogs/Forms/TeacherSubjectAddingDialog.vue';
 export default {
-  name: "ProfilePage",
+  name: 'ProfilePage',
   components: {
     TeacherSubjectAddingDialog,
   },
@@ -217,30 +222,31 @@ export default {
       toAdd: null,
       action: null,
       taggingData: null,
+      loading: false,
       isSelecting: false,
       selectFile: null,
       previewImg: null,
       tagGrade: null,
       tab: null,
       // items: ["Personal Information", "Login Info"],
-      items: ["Personal Information"],
+      items: ['Personal Information'],
       educationList: [
-        "Teacher I",
-        "Teacher II",
-        "Teacher III",
-        "Teacher IV",
-        "Teacher V",
-        "Teacher VI",
-        "Teacher VII",
-        "Master Teacher I",
-        "Master Teacher II",
-        "Master Teacher III",
-        "Master Teacher IV",
-        "Master Teacher V",
-        "Principal I",
-        "Principal II",
-        "Principal III",
-        "Principal IV",
+        'Teacher I',
+        'Teacher II',
+        'Teacher III',
+        'Teacher IV',
+        'Teacher V',
+        'Teacher VI',
+        'Teacher VII',
+        'Master Teacher I',
+        'Master Teacher II',
+        'Master Teacher III',
+        'Master Teacher IV',
+        'Master Teacher V',
+        'Principal I',
+        'Principal II',
+        'Principal III',
+        'Principal IV',
       ],
       totalYears: null,
       filter: null,
@@ -267,9 +273,9 @@ export default {
       show2: false,
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "System Message!",
-        message: "",
+        type: 'success',
+        header: 'System Message!',
+        message: '',
         top: 10,
       },
       readonly: true,
@@ -277,30 +283,33 @@ export default {
     };
   },
   mounted() {
+    eventBus.on('closedDataGradeSubjects', (val) => {
+      this.dialog = val;
+      if (val === false) {
+        this.initialize();
+      }
+    });
+
     this.initialize();
     this.userRole = this.$store.state.user.user.user_roleID;
-    console.log(this.userRole);
-    eventBus.on("closedDataGradeSubjects", () => {
-      this.initialize();
-    });
   },
   beforeUnmount() {
-    eventBus.off("closedDataGradeSubjects");
+    eventBus.off('closedDataGradeSubjects');
   },
 
   methods: {
     addGrade_Subject(item) {
       let filter = this.$store.getters.getFilterSelected;
       this.taggingData = item;
-      this.action = "View";
+      this.action = 'View';
       this.filter = filter;
       this.toAdd;
     },
     initialize() {
-      this.axiosCall("/user-details/getPersonalInfo", "GET").then((res) => {
+      this.axiosCall('/user-details/getPersonalInfo', 'GET').then((res) => {
         if (res.data) {
           this.data.id = res.data.id;
-          this.data.name = res.data.lname + ", " + res.data.fname;
+          this.data.name = res.data.lname + ', ' + res.data.fname;
           this.data.fname = res.data.fname;
           this.data.mname = res.data.mname;
           this.data.lname = res.data.lname;
@@ -310,10 +319,10 @@ export default {
           this.data.mobile_no = res.data.mobile_no;
           this.data.profile_img = res.data.profile_img
             ? process.env.VUE_APP_SERVER +
-              "/user-details/getProfileImg/" +
+              '/user-details/getProfileImg/' +
               res.data.profile_img
             : process.env.VUE_APP_SERVER +
-              "/user-details/getProfileImg/img_avatar.png";
+              '/user-details/getProfileImg/img_avatar.png';
         }
       });
     },
@@ -324,17 +333,17 @@ export default {
           old_password: this.oldPass,
           new_password: this.password,
         };
-        this.axiosCall("/auth/changePass", "POST", data).then((res) => {
+        this.axiosCall('/auth/changePass', 'POST', data).then((res) => {
           if (res.data.status == 200) {
             this.fadeAwayMessage.message = res.data.msg;
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "success";
+            this.fadeAwayMessage.type = 'success';
             this.password = null;
             this.confirmPassword = null;
             this.credentialReadonly = true;
           } else if (res.data.status == 400) {
             this.fadeAwayMessage.message = res.data.msg;
-            this.fadeAwayMessage.type = "error";
+            this.fadeAwayMessage.type = 'error';
             this.fadeAwayMessage.show = true;
           }
         });
@@ -343,25 +352,28 @@ export default {
 
     updateProfile() {
       if (this.$refs.personalInfo.validate()) {
+        this.loading = true;
         const fd = new FormData();
-        this.axiosCall("/user-details/updateUser", "POST", this.data).then(
+        this.axiosCall('/user-details/updateUser', 'POST', this.data).then(
           (res) => {
             if (res.data.status == 200) {
               if (this.selectFile) {
-                fd.append("file", this.selectFile);
-                this.axiosCall("/user-details/uploadimage", "POST", fd).then(
+                fd.append('file', this.selectFile);
+                this.axiosCall('/user-details/uploadimage', 'POST', fd).then(
                   (resp) => {
                     if (resp.data.status == 200) {
                       this.initialize();
                       this.fadeAwayMessage.message = resp.data.msg;
                       this.fadeAwayMessage.show = true;
                       this.readonly = true;
-                      this.$emit("reloadProfile");
+                      this.loading = false;
+                      this.$emit('reloadProfile');
                     } else if (resp.data.status == 400) {
                       this.initialize();
                       this.fadeAwayMessage.message = resp.data.msg;
                       this.fadeAwayMessage.show = true;
                       this.readonly = true;
+                      this.loading = false;
                     }
                   },
                 );
@@ -370,6 +382,7 @@ export default {
                 this.fadeAwayMessage.message = res.data.msg;
                 this.fadeAwayMessage.show = true;
                 this.readonly = true;
+                this.loading = false;
               }
             } else if (res.data.status == 400) {
               this.initialize();
@@ -383,13 +396,13 @@ export default {
     },
 
     handleFileImport() {
-      let fileUpload = document.getElementById("fileUpload");
+      let fileUpload = document.getElementById('fileUpload');
       if (fileUpload != null) {
         fileUpload.click();
       }
     },
     onFileChanged() {
-      const uploadedimg = document.getElementById("fileUpload").files[0];
+      const uploadedimg = document.getElementById('fileUpload').files[0];
       this.selectFile = uploadedimg;
 
       this.previewImg = URL.createObjectURL(uploadedimg);
@@ -400,10 +413,10 @@ export default {
     this.initialize();
     // console.log("created");
     if (this.$store.state.expiryDate < Date.now()) {
-      this.$store.dispatch("setUser", null);
-      this.$store.dispatch("setIsAuthenticated", 0);
+      this.$store.dispatch('setUser', null);
+      this.$store.dispatch('setIsAuthenticated', 0);
       this.render = true;
-      this.$router.push("/");
+      this.$router.push('/');
       // location.reload();
     }
   },
