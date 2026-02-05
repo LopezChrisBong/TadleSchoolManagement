@@ -241,7 +241,7 @@ export class AuthService {
       const isMatch = comparePassword(conOTP.otp, user.otp);
       if (isMatch) {
         const toConfirm = await this.usersRepository.update(user.id, {
-          isAdminApproved: true,
+          isAdminApproved: user.assignedModuleID == 22 ? true : false,
         });
         if (toConfirm.affected == 1) {
           const dataForEmail = {

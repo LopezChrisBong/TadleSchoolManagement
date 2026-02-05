@@ -82,7 +82,13 @@
               </v-col>
 
               <v-col cols="12" sm="auto">
-                <v-btn block color="#147452" @click="save" variant="flat">
+                <v-btn
+                  block
+                  color="#147452"
+                  :loading="loading"
+                  @click="save"
+                  variant="flat"
+                >
                   Save
                 </v-btn>
               </v-col>
@@ -197,6 +203,7 @@ export default {
       effective_date: null,
       id: null,
       dialog: false,
+      loading: false,
       resolution_list: [],
       subject_list: [],
       dataAddedList: [],
@@ -379,13 +386,15 @@ export default {
 
     closeD() {
       eventBus.emit('closedDataGradeSubjects', false);
-      this.initialize();
-      this.$router.go(0);
       this.dialog = false;
+      setTimeout(() => {
+        location.reload();
+      }, 1000);
     },
 
     save() {
       // if (this.subject_list.length > 0) {
+      this.loading = true;
       if (this.toAdd == 1) {
         let data = {
           userID: this.data.id,
@@ -401,6 +410,7 @@ export default {
               this.fadeAwayMessage.header = 'System Message';
               this.fadeAwayMessage.message = res.data.msg;
               this.closeD();
+              this.loading = false;
             } else {
               this.fadeAwayMessage.show = true;
               this.fadeAwayMessage.type = 'error';
@@ -423,6 +433,7 @@ export default {
               this.fadeAwayMessage.type = 'success';
               this.fadeAwayMessage.header = 'System Message';
               this.fadeAwayMessage.message = res.data.msg;
+              this.loading = false;
               this.closeD();
             } else {
               this.fadeAwayMessage.show = true;

@@ -61,9 +61,9 @@
       <!--School Events-->
       <v-col cols="12" md="4">
         <!-- Calendar -->
-        <v-card class="mb-4">
+        <!-- <v-card class="mb-4">
           <v-date-picker v-model="selectedDate" color="primary" />
-        </v-card>
+        </v-card> -->
 
         <!-- Upcoming Events -->
         <v-card>
@@ -108,11 +108,11 @@ import {
   BarElement,
   CategoryScale,
   LinearScale,
-} from "chart.js";
+} from 'chart.js';
 import {
   // Doughnut,
   Bar,
-} from "vue-chartjs";
+} from 'vue-chartjs';
 
 ChartJS.register(
   Title,
@@ -121,7 +121,7 @@ ChartJS.register(
   ArcElement,
   BarElement,
   CategoryScale,
-  LinearScale
+  LinearScale,
 );
 
 export default {
@@ -134,107 +134,108 @@ export default {
       selectedDate: new Date(),
       events: [
         {
-          title: "Applied Science Homework",
-          date: "Feb 2",
-          time: "11:30 - 12:30",
-          color: "red",
+          title: 'Applied Science Homework',
+          date: 'Feb 2',
+          time: '11:30 - 12:30',
+          color: 'red',
         },
         {
-          title: "Technology Exam",
-          date: "Feb 3",
-          time: "11:30 - 12:30",
-          color: "orange",
+          title: 'Technology Exam',
+          date: 'Feb 3',
+          time: '11:30 - 12:30',
+          color: 'orange',
         },
         {
-          title: "AI Workshop",
-          date: "Feb 5",
-          time: "11:30 - 12:30",
-          color: "cyan",
+          title: 'AI Workshop',
+          date: 'Feb 5',
+          time: '11:30 - 12:30',
+          color: 'cyan',
         },
         {
-          title: "UX Design Conference",
-          date: "Feb 8",
-          time: "11:30 - 12:30",
-          color: "green",
+          title: 'UX Design Conference',
+          date: 'Feb 8',
+          time: '11:30 - 12:30',
+          color: 'green',
         },
       ],
-      selectedYear: "2024",
-      years: ["2023", "2024", "2025"],
-      selectedGrade: "All",
-      grades: ["All", "Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5"],
+      selectedYear: '2024',
+      years: ['2023', '2024', '2025'],
+      selectedGrade: 'All',
+      grades: ['All', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5'],
       totalStudents: 300,
       subjects: [
-        { name: "Arts", score: 84.37 },
-        { name: "English", score: 84.05 },
-        { name: "Maths", score: 81.86 },
-        { name: "Phys. Ed", score: 84.76 },
-        { name: "Science", score: 79.36 },
+        { name: 'Arts', score: 84.37 },
+        { name: 'English', score: 84.05 },
+        { name: 'Maths', score: 81.86 },
+        { name: 'Phys. Ed', score: 84.76 },
+        { name: 'Science', score: 79.36 },
       ],
       donutData: {
-        labels: ["Grade 1", "Grade 2", "Grade 3", "Grade 4", "Grade 5"],
+        labels: ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5'],
         datasets: [
           {
             data: [22.3, 19.3, 23.0, 14.8, 20.6],
             backgroundColor: [
-              "#f87171",
-              "#fbbf24",
-              "#34d399",
-              "#60a5fa",
-              "#a78bfa",
+              '#f87171',
+              '#fbbf24',
+              '#34d399',
+              '#60a5fa',
+              '#a78bfa',
             ],
           },
         ],
       },
       barHorizontalData: {
-        labels: ["English", "Arts", "Maths", "Phys. Ed", "Science"],
+        labels: ['English', 'Arts', 'Maths', 'Phys. Ed', 'Science'],
         datasets: [
           {
-            label: "Participation Rate (%)",
+            label: 'Participation Rate (%)',
             data: [98.5, 97.2, 96.7, 93.8, 92.5],
-            backgroundColor: "#60a5fa",
+            backgroundColor: '#60a5fa',
           },
         ],
       },
       barHorizontalOptions: {
-        indexAxis: "y",
+        indexAxis: 'y',
         responsive: true,
         plugins: {
           legend: { display: false },
         },
       },
       examResultsData: {
-        labels: ["Phys. Ed", "Arts", "English", "Science", "Maths"],
+        labels: ['Phys. Ed', 'Arts', 'English', 'Science', 'Maths'],
         datasets: [
           {
-            label: "Pass",
+            label: 'Pass',
             data: [220, 180, 170, 160, 150],
-            backgroundColor: "#34d399",
+            backgroundColor: '#34d399',
           },
           {
-            label: "Fail",
+            label: 'Fail',
             data: [20, 40, 50, 30, 35],
-            backgroundColor: "#f87171",
+            backgroundColor: '#f87171',
           },
           {
-            label: "Not attended",
+            label: 'Not attended',
             data: [10, 15, 20, 15, 10],
-            backgroundColor: "#a3a3a3",
+            backgroundColor: '#a3a3a3',
           },
         ],
       },
       examResultsOptions: {
         responsive: true,
         plugins: {
-          legend: { position: "top" },
+          legend: { position: 'top' },
         },
       },
       chartOptions: {
         responsive: true,
         plugins: {
-          legend: { position: "bottom" },
+          legend: { position: 'bottom' },
         },
       },
     };
   },
+  methods: {},
 };
 </script>
