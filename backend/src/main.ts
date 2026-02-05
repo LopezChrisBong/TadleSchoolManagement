@@ -20,6 +20,9 @@ async function bootstrap() {
     // 'http://SSMS.life:3000',
     // 'https://SSMS.life',
     'http://localhost',
+    'http://72.62.254.190',
+    'http://72.62.254.190:3000',
+    'http://72.62.254.190:8080',
   ];
   const httpsOptions = {
     // key: fs.readFileSync(join(__dirname, '../key.pem')),

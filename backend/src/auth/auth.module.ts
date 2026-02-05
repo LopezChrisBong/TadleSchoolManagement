@@ -8,13 +8,12 @@ import { Users } from './entities/auth.entity';
 import { JwtModule } from '@nestjs/jwt';
 import { MailService } from 'src/mail/mail.service';
 import { MailModule } from 'src/mail/mail.module';
-
 @Module({
   imports: [
     ConfigModule.forRoot(),
     JwtModule.register({
       secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.JWT_TOKEN_EXPIRATION },
+      signOptions: { expiresIn: "1d" },
     }),
     TypeOrmModule.forFeature([Users]),
     MailModule,
