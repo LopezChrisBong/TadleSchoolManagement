@@ -8,12 +8,13 @@ import {
   Delete,
   Request,
   UseGuards,
-  Response,
   UseInterceptors,
   UploadedFile,
   Headers,
+  Res,
   StreamableFile,
   Header,
+  NotFoundException,
   BadRequestException,
   Req,
 } from '@nestjs/common';
@@ -27,8 +28,9 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { Helper } from 'src/shared/helper';
 import { JwtService } from '@nestjs/jwt';
-import { createReadStream } from 'fs';
+import { createReadStream, existsSync } from 'fs';
 import { join } from 'path';
+import { lookup } from 'mime-types';
 import * as fs from 'fs';
 import { fileURLToPath } from 'url';
 import { fileMimetypeFilter } from './validation/file-mimetype-filters';
@@ -41,7 +43,7 @@ import { UpdateMyPDSDto } from './dto/update-my-pds.dto';
 import { UpdateVerifiedUser } from './dto/update-verified-user.dto';
 import { UserTypeRole } from './dto/update-user-type-role.dto';
 import { currentUser } from 'src/shared/jwtDecode';
-
+import { Response } from 'express';
 @ApiTags('User Details')
 @Controller('user-details')
 export class UserDetailsController {
@@ -172,28 +174,63 @@ export class UserDetailsController {
   }
 
   @Get('getProfileImg/:filename')
-  getProfileImg(
-    @Param('filename') filename: string,
-    @Response({ passthrough: true }) res,
-  ): StreamableFile {
-    let file;
+  getProfileImg(@Param('filename') filename: string, @Res() res: Response) {
+    const filePath = join(__dirname, '..', '..', 'upload_img', filename);
 
-    file = createReadStream(
-      join(process.cwd(), process.env.FILE_PATH + 'upload_img/' + filename),
-    );
-    res.set({
-      'Content-Type': 'image/png',
-    });
-    file.on('error', (err) => {
-      console.error(err);
-    });
+    if (!existsSync(filePath)) {
+      throw new NotFoundException('Image not found');
+    }
 
-    return new StreamableFile(file);
+    const mimeType = lookup(filename) || 'application/octet-stream';
+
+    res.setHeader('Content-Type', mimeType);
+
+    const file = createReadStream(filePath);
+    file.pipe(res);
   }
+
+  // @UseGuards(JWTAuthGuard)
+  // @ApiBearerAuth()
+  // // Image uploading
+  // @Post('uploadimage')
+  // @UseInterceptors(
+  //   FileInterceptor('file', {
+  //     storage: diskStorage({
+  //       destination: Helper.filePath,
+  //       filename: Helper.customFileName,
+  //     }),
+  //   }),
+  // )
+  // async uploadImage(@UploadedFile(ParseFile) file, @Headers() headers) {
+  //   var head_str = headers.authorization;
+
+  //   const curr_user = currentUser(head_str);
+
+  //   const user = await this.userDetailsService.getPersonalInfo(curr_user);
+
+  //   if (user.profile_img != 'img_avatar') {
+  //     fs.unlink(
+  //       join(
+  //         process.cwd(),
+  //         process.env.FILE_PATH + `upload_img/${user.profile_img}`,
+  //       ),
+  //       async (err) => {
+  //         if (err) {
+  //           console.log(err);
+  //         }
+  //       },
+  //     );
+  //     // }
+  //   }
+
+  //   return this.userDetailsService.uploadProfileImg(
+  //     file.file.filename,
+  //     curr_user,
+  //   );
+  // }
 
   @UseGuards(JWTAuthGuard)
   @ApiBearerAuth()
-  // Image uploading
   @Post('uploadimage')
   @UseInterceptors(
     FileInterceptor('file', {
@@ -201,34 +238,31 @@ export class UserDetailsController {
         destination: Helper.filePath,
         filename: Helper.customFileName,
       }),
+      limits: {
+        fileSize: 5 * 1024 * 1024,
+      },
     }),
   )
-  async uploadImage(@UploadedFile(ParseFile) file, @Headers() headers) {
-    var head_str = headers.authorization;
-
-    const curr_user = currentUser(head_str);
-
-    const user = await this.userDetailsService.getPersonalInfo(curr_user);
-
-    if (user.profile_img != 'img_avatar') {
-      fs.unlink(
-        join(
-          process.cwd(),
-          process.env.FILE_PATH + `upload_img/${user.profile_img}`,
-        ),
-        async (err) => {
-          if (err) {
-            console.log(err);
-          }
-        },
-      );
-      // }
+  async uploadImage(
+    @UploadedFile() file: Express.Multer.File,
+    @Headers('authorization') auth: string,
+  ) {
+    if (!file) {
+      throw new BadRequestException('No file uploaded');
     }
 
-    return this.userDetailsService.uploadProfileImg(
-      file.file.filename,
-      curr_user,
-    );
+    const curr_user = currentUser(auth);
+    const user = await this.userDetailsService.getPersonalInfo(curr_user);
+
+    if (user.profile_img && user.profile_img !== 'img_avatar') {
+      const oldPath = join(Helper.UPLOAD_ROOT, user.profile_img);
+
+      if (fs.existsSync(oldPath)) {
+        fs.unlinkSync(oldPath);
+      }
+    }
+
+    return this.userDetailsService.uploadProfileImg(file.filename, curr_user);
   }
 
   @UseGuards(JWTAuthGuard)

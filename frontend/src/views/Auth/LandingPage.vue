@@ -339,7 +339,7 @@
                   mdi-clock-outline
                 </v-icon>
                 {{ formatDate(detailData.eventDate) }} <br />
-                March 15, 2026 · 8:00 AM – 4:00 PM
+                <!-- March 15, 2026 · 8:00 AM – 4:00 PM -->
               </div>
             </v-col>
           </v-row>
