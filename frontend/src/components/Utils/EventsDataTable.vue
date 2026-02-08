@@ -67,6 +67,16 @@
             {{ formatDate(item.eventDate) }}
           </div>
         </template>
+        <template v-slot:[`item.isActive`]="{ item }">
+          <v-chip
+            size="30"
+            style="font-size: 12px"
+            class="pa-1"
+            :color="item.isActive == 1 ? 'green' : 'red'"
+          >
+            {{ item.isActive == 1 ? 'Active' : 'inActive' }}
+          </v-chip>
+        </template>
 
         <template v-slot:[`item.actions`]="{ item }">
           <div class="d-flex">
@@ -74,10 +84,15 @@
               size="small"
               variant="tonal"
               color="primary"
-              :disabled="!allowedUpdate(item.eventDate)"
               @click="viewItem(item)"
             >
-              <v-icon center size="20">mdi-pencil</v-icon>
+              <v-icon
+                center
+                size="20"
+                v-if="this.$store.state.user.id == item.addedBy"
+                >mdi-pencil</v-icon
+              >
+              <v-icon center size="20" v-else>mdi-eye</v-icon>
             </v-btn>
 
             <v-btn
@@ -245,6 +260,7 @@ export default {
       { title: "Even", value: "eventName", align: "start" },
       { title: "Added By", value: "name", align: "center" },
       { title: "Date", value: "eventDate", align: "center" },
+      { title: "Status", value: "isActive", align: "center" },
       {
         title: "Actions",
         value: "actions",

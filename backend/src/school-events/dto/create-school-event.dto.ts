@@ -17,5 +17,8 @@ export class CreateSchoolEventDto {
   schoolYearID: number;
 
   @ApiProperty()
+  isActive: boolean;
+
+  @ApiProperty()
   data: string;
 }

@@ -23,7 +23,7 @@
           <v-divider></v-divider>
           <v-card-text style="max-height: 700px" class="my-4">
             <v-row>
-              <v-col cols="12" :md="grade_level == 'Senior High' ? 4 : 6">
+              <v-col cols="12" :md="grade_level == 'Senior High' ? '6' : '12'">
                 <v-text-field
                   v-model="subject_title"
                   label="Subject Title"
@@ -31,16 +31,35 @@
                   density="compact"
                 ></v-text-field>
               </v-col>
-              <v-col cols="12" :md="grade_level == 'Senior High' ? 4 : 6">
+              <!-- <v-col cols="12" md="6" v-if="grade_level == 'Junior High'">
                 <v-autocomplete
                   v-model="grade_level"
                   :items="seniorJuniorList"
+                  label="Junior High"
+                  variant="outlined"
+                  density="compact"
+                  readonly
+                ></v-autocomplete>
+              </v-col> -->
+              <v-col cols="12" md="6" v-if="grade_level == 'Senior High'">
+                <v-autocomplete
+                  v-model="semester"
+                  :items="['First Semester', 'Second Semester']"
+                  label="Semester"
+                  variant="outlined"
+                  density="compact"
+                ></v-autocomplete
+              ></v-col>
+              <v-col cols="12" md="6" v-if="grade_level == 'Senior High'">
+                <v-autocomplete
+                  v-model="senior_level"
+                  :items="['Grade 11', 'Grade 12']"
                   label="Grade Level"
                   variant="outlined"
                   density="compact"
                 ></v-autocomplete>
               </v-col>
-              <v-col cols="12" md="4" v-if="grade_level == 'Senior High'">
+              <v-col cols="12" md="6" v-if="grade_level == 'Senior High'">
                 <v-autocomplete
                   v-model="indicator"
                   :items="indicatorList"
@@ -76,6 +95,44 @@
                   density="compact"
                   type="number"
                 ></v-text-field>
+              </v-col>
+              <v-col cols="12" md="6" v-if="grade_level == 'Senior High'">
+                <v-card
+                  variant="outlined"
+                  rounded="lg"
+                  class="pa-2 d-flex justify-space-between align-center"
+                >
+                  <div>
+                    <div class="font-weight-medium">Subject Specialized</div>
+                    <div class="text-caption text-grey">
+                      Subject specified only for specific strand
+                    </div>
+                  </div>
+
+                  <v-switch
+                    v-model="isSpecialized"
+                    true-value="1"
+                    false-value="0"
+                    inset
+                    color="primary"
+                    hide-details
+                  />
+                </v-card>
+              </v-col>
+              <v-col
+                cols="12"
+                md="6"
+                v-if="isSpecialized == 1 && grade_level == 'Senior High'"
+              >
+                <v-autocomplete
+                  v-model="strandID"
+                  :items="stranDataList"
+                  label="Strand"
+                  variant="outlined"
+                  density="compact"
+                  item-value="id"
+                  item-title="strand_name"
+                ></v-autocomplete>
               </v-col>
               <!-- <v-col cols="12">
                   <div>
@@ -185,7 +242,7 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
 export default {
   components: {},
   props: {
@@ -195,52 +252,37 @@ export default {
   },
   data() {
     return {
-      newStatus: null,
+      isSpecialized: false,
       writenWorks: null,
+      semester: null,
+      senior_level: null,
       performanceTask: null,
       quarterAssessment: null,
       subSubjectList: [],
       statusList: [
-        { id: 1, description: "Elementary" },
-        { id: 2, description: "High School" },
+        { id: 1, description: 'Elementary' },
+        { id: 2, description: 'High School' },
       ],
-
-      applicantNumber: null,
-      juniorList: ["Grade 7", "Grade 8", "Grade 9", "Grade 10"],
-      seniorList: ["Grade 11", "Grade 12"],
+      juniorList: ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'],
+      seniorList: ['Grade 11', 'Grade 12'],
       seniorJunior: null,
       grade_level: null,
       subject_title: null,
-      seniorJuniorList: ["Junior High", "Senior High"],
+      seniorJuniorList: ['Junior High', 'Senior High'],
       unit_departmentlist: [],
-      indicatorList: ["CORE", "APPLIED", "SPECIALIZED"],
+      indicatorList: ['CORE', 'APPLIED', 'SPECIALIZED'],
       indicator: null,
-      dateFrom: null,
-      dateTo: null,
+      strandID: null,
       updateID: null,
-      departmentData: null,
-      officeData: null,
-      menu: false,
-      menu2: false,
-      remarksData: [],
-      submitBtnLoading: false,
-      schedTimeDialog: false,
-      schedDialog: false,
-
-      schedList: [],
-      schedTimeList: [],
       tempSelectedDays: [],
       dialog: false,
-      timePicker1: null,
-      timePicker2: null,
-
+      stranDataList: [],
       yearSelection: [],
-
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
@@ -250,17 +292,18 @@ export default {
     data: {
       handler(data) {
         this.dialog = true;
-        console.log("View Data", data);
+        console.log('View Data', data);
         if (data.id) {
           this.initialize();
           this.updateID = data.id;
           this.subject_title = data.subject_title;
           this.seniorJunior = data.seniorJunior;
-          this.dateFrom = data.date_from;
           this.indicator = data.indicator;
-          this.dateTo = data.date_to;
+          this.semester = data.semester;
+          this.senior_level = data.senior_level;
           this.grade_level = data.grade_level;
-          this.newStatus = data.status;
+          this.strandID = data.strandID;
+          this.isSpecialized = data.isSpecialized.toString();
           this.writenWorks = data.writen_works ? data.writen_works : null;
           this.subSubjectList =
             data.sub_subject == null ? [] : JSON.parse(data.sub_subject);
@@ -272,12 +315,12 @@ export default {
             : null;
         } else {
           this.$refs.AddSubjectDialog.reset();
-          this.grade_level = data[0].tab == 1 ? "Junior High" : "Senior High";
+          this.grade_level = data[0].tab == 1 ? 'Junior High' : 'Senior High';
           this.initialize();
           this.subject_title = data.subject_title;
           this.seniorJunior = data.seniorJunior;
-          this.dateFrom = data.date_from;
-          this.dateTo = data.date_to;
+          this.semester = null;
+          this.senior_level = null;
         }
       },
       deep: true,
@@ -287,6 +330,7 @@ export default {
   methods: {
     initialize() {
       this.loadYearSelection();
+      this.getAllStrand();
     },
     loadYearSelection() {
       let d = new Date();
@@ -296,7 +340,7 @@ export default {
       }
     },
     closeD() {
-      eventBus.emit("closeAddSubjectDialog", false);
+      eventBus.emit('closeAddSubjectDialog', false);
       this.subSubjectList = [];
       this.dialog = false;
     },
@@ -305,14 +349,14 @@ export default {
         ? Math.max(...this.subSubjectList.map((item) => item.id)) + 1
         : 1;
 
-      this.subSubjectList.push({ id: newId, description: "" });
+      this.subSubjectList.push({ id: newId, description: '' });
     },
     deleteSub(item) {
       this.subSubjectList = this.subSubjectList.filter((i) => i.id !== item.id);
     },
     checkConflict(type) {
       console.log(type, this.subSubjectList);
-      if (type == "ADD") {
+      if (type == 'ADD') {
         if (
           this.subject_title == null ||
           this.grade_level == null ||
@@ -321,9 +365,9 @@ export default {
           this.quarterAssessment == null
         ) {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
-          this.fadeAwayMessage.message = "Please fill all fields";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
+          this.fadeAwayMessage.message = 'Please fill all fields';
         } else {
           let data = {
             subject_title: this.subject_title,
@@ -333,28 +377,29 @@ export default {
             writen_works: this.writenWorks,
             performance_task: this.performanceTask,
             quarter_assessment: this.quarterAssessment,
+            semester: this.semester,
+            senior_level: this.senior_level,
+            isSpecialized: this.isSpecialized,
+            strandID: this.strandID,
           };
-          // console.log(data);
-          this.axiosCall("/subjects", "POST", data).then((res) => {
+          console.log(data);
+          this.axiosCall('/subjects', 'POST', data).then((res) => {
             console.log(res.data);
-            // alert("Successfully Added");
             this.closeD();
             if (res.data.status == 201) {
               this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = "success";
-              this.fadeAwayMessage.header = "System Message";
-              this.fadeAwayMessage.message = "Successfully Added Subject!";
-
-              // location.reload();
+              this.fadeAwayMessage.type = 'success';
+              this.fadeAwayMessage.header = 'System Message';
+              this.fadeAwayMessage.message = 'Successfully Added Subject!';
             } else if (res.data.status == 400) {
               this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = "error";
-              this.fadeAwayMessage.header = "System Message";
+              this.fadeAwayMessage.type = 'error';
+              this.fadeAwayMessage.header = 'System Message';
               this.fadeAwayMessage.message = res.data.msg;
             }
           });
         }
-      } else if (type == "UPDATE") {
+      } else if (type == 'UPDATE') {
         // alert("UPDATED");
         if (
           this.subject_title == null ||
@@ -364,9 +409,9 @@ export default {
           this.quarterAssessment == null
         ) {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
-          this.fadeAwayMessage.message = "Please fill all fields";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
+          this.fadeAwayMessage.message = 'Please fill all fields';
         } else {
           let data = {
             subject_title: this.subject_title,
@@ -376,29 +421,41 @@ export default {
             sub_subject: JSON.stringify(this.subSubjectList),
             performance_task: this.performanceTask,
             quarter_assessment: this.quarterAssessment,
+            semester: this.semester,
+            senior_level: this.senior_level,
+            isSpecialized: this.isSpecialized,
+            strandID: this.strandID,
           };
           console.log(data);
-          this.axiosCall("/subjects/" + this.updateID, "PATCH", data).then(
+          this.axiosCall('/subjects/' + this.updateID, 'PATCH', data).then(
             (res) => {
-              console.log(res.data);
               if (res.data.status == 201) {
                 this.closeD();
                 this.fadeAwayMessage.show = true;
-                this.fadeAwayMessage.type = "success";
-                this.fadeAwayMessage.header = "System Message";
-                this.fadeAwayMessage.message = "Successfully updated!!";
+                this.fadeAwayMessage.type = 'success';
+                this.fadeAwayMessage.header = 'System Message';
+                this.fadeAwayMessage.message = 'Successfully updated!!';
 
                 // location.reload();
               } else if (res.data.status == 400) {
                 this.fadeAwayMessage.show = true;
-                this.fadeAwayMessage.type = "error";
-                this.fadeAwayMessage.header = "System Message";
+                this.fadeAwayMessage.type = 'error';
+                this.fadeAwayMessage.header = 'System Message';
                 this.fadeAwayMessage.message = res.data.msg;
               }
             },
           );
         }
       }
+    },
+    getAllStrand() {
+      this.axiosCall('/rooms-section/AllStrand/Data/strand', 'GET').then(
+        (res) => {
+          if (res) {
+            this.stranDataList = res.data;
+          }
+        },
+      );
     },
   },
 };

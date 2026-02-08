@@ -205,6 +205,7 @@
       :action="action"
       :filter="filter"
       :toAdd="toAdd"
+      @refresh="initialize"
     />
   </div>
 </template>
@@ -271,6 +272,7 @@ export default {
       showOldPass: false,
       show1: false,
       show2: false,
+      handleClose: null,
       fadeAwayMessage: {
         show: false,
         type: 'success',
@@ -282,21 +284,37 @@ export default {
       credentialReadonly: true,
     };
   },
+  // mounted() {
+  //   this.initialize();
+
+  //   eventBus.on('closedDataGradeSubjects', (val) => {
+  //     if (!val) {
+  //       // this.toAdd = null;
+  //       // this.taggingData = null;
+  //       this.initialize();
+  //     }
+  //   });
+  // },
+  // beforeUnmount() {
+  //   eventBus.off('closedDataGradeSubjects');
+  // },
+
   mounted() {
-    eventBus.on('closedDataGradeSubjects', (val) => {
-      this.dialog = val;
-      if (val === false) {
+    this.initialize();
+    this.handleClose = (val) => {
+      if (!val) {
+        this.toAdd = null;
+        this.taggingData = null;
         this.initialize();
       }
-    });
+    };
 
-    this.initialize();
-    this.userRole = this.$store.state.user.user.user_roleID;
+    eventBus.on('closedDataGradeSubjects', this.handleClose);
   },
+
   beforeUnmount() {
-    eventBus.off('closedDataGradeSubjects');
+    eventBus.off('closedDataGradeSubjects', this.handleClose);
   },
-
   methods: {
     addGrade_Subject(item) {
       let filter = this.$store.getters.getFilterSelected;
@@ -306,6 +324,7 @@ export default {
       this.toAdd;
     },
     initialize() {
+      this.userRole = this.$store.state.user.user.user_roleID;
       this.axiosCall('/user-details/getPersonalInfo', 'GET').then((res) => {
         if (res.data) {
           this.data.id = res.data.id;
@@ -409,17 +428,17 @@ export default {
       this.isSelecting = true;
     },
   },
-  created() {
-    this.initialize();
-    // console.log("created");
-    if (this.$store.state.expiryDate < Date.now()) {
-      this.$store.dispatch('setUser', null);
-      this.$store.dispatch('setIsAuthenticated', 0);
-      this.render = true;
-      this.$router.push('/');
-      // location.reload();
-    }
-  },
+  // created() {
+  //   this.initialize();
+  //   // console.log("created");
+  //   if (this.$store.state.expiryDate < Date.now()) {
+  //     this.$store.dispatch('setUser', null);
+  //     this.$store.dispatch('setIsAuthenticated', 0);
+  //     this.render = true;
+  //     this.$router.push('/');
+  //     // location.reload();
+  //   }
+  // },
 };
 </script>
 <style scoped>

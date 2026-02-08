@@ -188,7 +188,7 @@
 </template>
 
 <script>
-import eventBus from '@/eventBus';
+// import eventBus from '@/eventBus';
 export default {
   props: {
     data: null,
@@ -254,19 +254,30 @@ export default {
     };
   },
   watch: {
-    data: {
-      handler(data) {
+    // data: {
+    //   handler(data) {
+    //     this.initialize();
+    //     this.dialog = true;
+    //     if (data.id) {
+    //       console.log('Data Title', data);
+    //       this.getTaggedSubjects(data.id);
+    //       this.dataAddedList = [];
+    //       this.room_section = data.room_section;
+    //     }
+    //   },
+
+    //   deep: true,
+    // },
+    toAdd(val) {
+      if (val) {
         this.initialize();
         this.dialog = true;
-        if (data.id) {
-          console.log('Data Title', data);
-          this.getTaggedSubjects(data.id);
-          this.dataAddedList = [];
-          this.room_section = data.room_section;
-        }
-      },
 
-      deep: true,
+        if (this.data?.id) {
+          this.getTaggedSubjects(this.data.id);
+          this.dataAddedList = [];
+        }
+      }
     },
   },
 
@@ -384,12 +395,17 @@ export default {
       }
     },
 
+    // closeD() {
+    //   eventBus.emit('closedDataGradeSubjects', false);
+    //   this.dialog = false;
+    //   // setTimeout(() => {
+    //   //   location.reload();
+    //   // }, 1000);
+    // },
     closeD() {
-      eventBus.emit('closedDataGradeSubjects', false);
       this.dialog = false;
-      setTimeout(() => {
-        location.reload();
-      }, 1000);
+      this.$emit('update:modelValue', false);
+      this.$emit('refresh');
     },
 
     save() {

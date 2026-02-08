@@ -66,10 +66,19 @@
               x-small
               color="pink"
               class="my-2"
-              outlined
+              variant="flat"
               @click="editItem(item)"
             >
               <v-icon size="14">mdi-pencil-outline</v-icon>Update
+            </v-btn>
+            <v-btn
+              x-small
+              color="pink"
+              class="my-2 mx-2"
+              variant="outlined"
+              @click="confirmDelete(item)"
+            >
+              <v-icon size="14">mdi-delete-outline</v-icon>Delete
             </v-btn>
           </div>
         </template>
@@ -82,35 +91,41 @@
       :filter="filter"
     />
 
-    <v-dialog v-model="confirmDialog" persistent max-width="350">
-      <v-card color="white">
-        <div class="pa-4 #3a3b3a--text">
-          <div class="text-h6 mb-1">WARNING!</div>
-          <div class="text-body-1 mb-1">
-            <p style="text-align: justify">
-              <v-icon class="mt-n2" color="white">mdi-alert</v-icon> &nbsp; Are
-              you sure you want to delete this information?<br /><br />
-              Please note that
-              <b>this action is irreversible.</b>
-            </p>
-          </div>
-        </div>
+    <VDialog v-model="confirmDialog" persistent max-width="400">
+      <VCard rounded="lg">
+        <!-- Header -->
+        <VCardTitle class="d-flex align-center bg-error text-white">
+          <VIcon class="me-2">mdi-alert-circle</VIcon>
+          Warning
+        </VCardTitle>
 
-        <!-- <v-card-title class="text-h5">
-              Are you sure you want to proceed?
-            </v-card-title> -->
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn color="red" outlined @click="confirmDialog = false">
-            Close
-          </v-btn>
-          <v-btn color="#147452" class="white--text" @click="deleteItem()">
-            Confirm
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+        <!-- Content -->
+        <VCardText class="pt-4">
+          <p class="text-body-1 mb-3" style="text-align: justify">
+            Are you sure you want to delete subject
+            {{ deleteData.subject_title }}?
+          </p>
 
+          <!-- <VAlert type="error" variant="tonal" density="compact">
+            This action is <strong>irreversible</strong>.
+          </VAlert> -->
+        </VCardText>
+
+        <!-- Actions -->
+        <VCardActions class="px-4 pb-4">
+          <VSpacer />
+
+          <VBtn variant="text" color="grey" @click="confirmDialog = false">
+            Cancel
+          </VBtn>
+
+          <VBtn color="error" variant="flat" @click="deleteItem">
+            <VIcon start>mdi-delete</VIcon>
+            Delete
+          </VBtn>
+        </VCardActions>
+      </VCard>
+    </VDialog>
     <fade-away-message-component
       displayType="variation2"
       v-model="fadeAwayMessage.show"
@@ -123,38 +138,54 @@
   </div>
 </template>
 <script>
-import eventBus from "@/eventBus";
-import CreateSubjectDialog from "../../components/Dialogs/Forms/CreateSubjectDialog.vue";
+import eventBus from '@/eventBus';
+import CreateSubjectDialog from '../../components/Dialogs/Forms/CreateSubjectDialog.vue';
 export default {
   components: {
     CreateSubjectDialog,
   },
   data: () => ({
-    search: "",
+    search: '',
     taggingData: null,
     fullname: null,
     applicantData: null,
     headers: [
       {
-        title: "Subject Title",
-        value: "subject_title",
-        align: "start",
-        valign: "center",
+        title: 'Subject Title',
+        value: 'subject_title',
+        align: 'start',
+        valign: 'center',
       },
 
-      // {
-      //   title: "Senior / Junior",
-      //   value: "seniorJunior",
-      //   align: "center",
-      //   valign: "center",
-      //   sortable: false,
-      // },
+      {
+        title: 'Writen Works',
+        value: 'writen_works',
+        align: 'center',
+        valign: 'center',
+        sortable: false,
+      },
 
       {
-        title: "Action",
-        value: "action",
-        align: "end",
-        valign: "end",
+        title: 'Performance Task',
+        value: 'performance_task',
+        align: 'center',
+        valign: 'center',
+        sortable: false,
+      },
+
+      {
+        title: 'Quarter Assessment',
+        value: 'quarter_assessment',
+        align: 'center',
+        valign: 'center',
+        sortable: false,
+      },
+
+      {
+        title: 'Action',
+        value: 'action',
+        align: 'end',
+        valign: 'end',
         sortable: false,
       },
     ],
@@ -163,19 +194,19 @@ export default {
     printData: [],
     verified: [],
     perPageChoices: [
-      { text: "5", value: 5 },
-      { text: "10", value: 10 },
-      { text: "20", value: 20 },
-      { text: "50", value: 50 },
-      { text: "100", value: 100 },
-      { text: "250", value: 250 },
-      { text: "500", value: 500 },
+      { text: '5', value: 5 },
+      { text: '10', value: 10 },
+      { text: '20', value: 20 },
+      { text: '50', value: 50 },
+      { text: '100', value: 100 },
+      { text: '250', value: 250 },
+      { text: '500', value: 500 },
     ],
-    activeTab: { id: 1, name: "Junior High" },
+    activeTab: { id: 1, name: 'Junior High' },
     tab: 1,
     tabList: [
-      { id: 1, name: "Junior High", active: true },
-      { id: 2, name: "Senior High", active: false },
+      { id: 1, name: 'Junior High', active: true },
+      { id: 2, name: 'Senior High', active: false },
       // { id: 2, name: "Junior High" },
       // { id: 2, name: "Senior High" },
       //   { id: 3, name: "Applicants" },
@@ -202,39 +233,39 @@ export default {
     JobPostPrint: false,
     fadeAwayMessage: {
       show: false,
-      type: "success",
-      header: "Successfully Deleted!",
-      message: "",
+      type: 'success',
+      header: 'Successfully Deleted!',
+      message: '',
       top: 10,
     },
     yearList: [],
     monthsList: [
-      { id: 0, name: "All" },
-      { id: 1, name: "January" },
-      { id: 2, name: "February" },
-      { id: 3, name: "March" },
-      { id: 4, name: "April" },
-      { id: 5, name: "May" },
-      { id: 6, name: "June" },
-      { id: 7, name: "July" },
-      { id: 8, name: "August" },
-      { id: 9, name: "September" },
-      { id: 10, name: "October" },
-      { id: 11, name: "November" },
-      { id: 12, name: "December" },
+      { id: 0, name: 'All' },
+      { id: 1, name: 'January' },
+      { id: 2, name: 'February' },
+      { id: 3, name: 'March' },
+      { id: 4, name: 'April' },
+      { id: 5, name: 'May' },
+      { id: 6, name: 'June' },
+      { id: 7, name: 'July' },
+      { id: 8, name: 'August' },
+      { id: 9, name: 'September' },
+      { id: 10, name: 'October' },
+      { id: 11, name: 'November' },
+      { id: 12, name: 'December' },
     ],
   }),
 
   mounted() {
     this.initialize();
-    eventBus.on("closeAddSubjectDialog", () => {
+    eventBus.on('closeAddSubjectDialog', () => {
       this.initialize();
     });
   },
 
   beforeUnmount() {
     // eventBus.off("closeMyJobApplicationDialog");
-    eventBus.off("closeAddSubjectDialog");
+    eventBus.off('closeAddSubjectDialog');
 
     // eventBus.off("closeMyDesignationDialog");
   },
@@ -271,21 +302,21 @@ export default {
   methods: {
     tag(item) {
       this.taggingData = item;
-      this.action = "Tag";
+      this.action = 'Tag';
     },
     printApplicants(item) {
-      console.log("Item Print Report", item.id);
+      console.log('Item Print Report', item.id);
       let data = this.printData;
       let filter = this.$store.getters.getFilterSelected;
-      console.log("Print Data", data);
+      console.log('Print Data', data);
       window.open(
         process.env.VUE_APP_SERVER +
-          "/pdf-generator/generateJobApplicant/" +
+          '/pdf-generator/generateJobApplicant/' +
           item.id +
-          "/" +
+          '/' +
           filter +
-          "",
-        "_blank", // <- This is what makes it open in a new window.
+          '',
+        '_blank', // <- This is what makes it open in a new window.
       );
     },
 
@@ -307,29 +338,16 @@ export default {
       // alert(this.tabList[0].name);
       this.loading = true;
       // alert(filter);
-      if (this.tab == 1) {
-        this.axiosCall(
-          "/subjects/getSubject/active/" + this.activeTab.name,
-          "GET",
-        ).then((res) => {
-          if (res) {
-            console.log("Love", res.data);
-            this.data = res.data;
-            this.loading = false;
-          }
-        });
-      } else if (this.tab == 2) {
-        this.axiosCall(
-          "/subjects/getSubject/active/" + this.activeTab.name,
-          "GET",
-        ).then((res) => {
-          if (res) {
-            console.log("LoveNot", res.data);
-            this.data = res.data;
-            this.loading = false;
-          }
-        });
-      }
+      this.axiosCall(
+        '/subjects/getSubject/active/' + this.activeTab.name,
+        'GET',
+      ).then((res) => {
+        if (res) {
+          console.log('LoveNot', res.data);
+          this.data = res.data;
+          this.loading = false;
+        }
+      });
     },
 
     changeTab(tab) {
@@ -344,37 +362,39 @@ export default {
     add() {
       let filter = this.$store.getters.getFilterSelected;
       this.designationData = [{ id: null, tab: this.tab }];
-      this.action = "Add";
+      this.action = 'Add';
       this.filter = filter;
     },
     editItem(item) {
       console.log(this.tab, item);
       let filter = this.$store.getters.getFilterSelected;
       this.designationData = item;
-      this.action = "Update";
+      this.action = 'Update';
       this.filter = filter;
     },
 
     deleteItem() {
-      this.axiosCall("/job-applicant/" + this.deleteData.id, "DELETE").then(
-        (res) => {
-          if (res.data.status == 200) {
-            this.dialog = false;
-            this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "success";
-            this.fadeAwayMessage.header = "System Message";
-            this.fadeAwayMessage.message = res.data.msg;
-            this.confirmDialog = false;
-            this.initialize();
-          } else if (res.data.status == 400) {
-            this.confirmDialog = false;
-            this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
-            this.fadeAwayMessage.message = res.data.msg;
-          }
-        },
-      );
+      console.log(this.deleteData.id);
+      this.axiosCall(
+        '/subjects/deleteSubject/' + this.deleteData.id,
+        'PATCH',
+        {},
+      ).then((res) => {
+        if (res.data.status == 201) {
+          this.fadeAwayMessage.show = true;
+          this.fadeAwayMessage.type = 'success';
+          this.fadeAwayMessage.header = 'System Message';
+          this.fadeAwayMessage.message = res.data.msg;
+          this.confirmDialog = false;
+          this.initialize();
+        } else if (res.data.status == 400) {
+          this.confirmDialog = false;
+          this.fadeAwayMessage.show = true;
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
+          this.fadeAwayMessage.message = res.data.msg;
+        }
+      });
     },
     confirmDelete(item) {
       this.confirmDialog = true;
