@@ -112,6 +112,14 @@ export class SubjectsController {
     return this.subjectsService.getSpicificSubject(+id, +filter, grade);
   }
 
+  @Patch('deleteSubject/:id')
+  deleteSubject(
+    @Param('id') id: string,
+    @Body() updateSubjectDto: UpdateSubjectDto,
+  ) {
+    return this.subjectsService.deleteSubject(+id, updateSubjectDto);
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateSubjectDto: UpdateSubjectDto) {
     return this.subjectsService.update(+id, updateSubjectDto);

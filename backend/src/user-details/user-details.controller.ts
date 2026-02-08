@@ -211,17 +211,6 @@ export class UserDetailsController {
     const user = await this.userDetailsService.getPersonalInfo(curr_user);
 
     if (user.profile_img != 'img_avatar') {
-      //check if app is in production
-      // if (process.env.NODE_ENV == 'production') {
-      //   fs.unlink(
-      //     join(__dirname, `../upload_img/${user.profile_img}`),
-      //     async (err) => {
-      //       if (err) {
-      //         console.log(err);
-      //       }
-      //     },
-      //   );
-      // } else {
       fs.unlink(
         join(
           process.cwd(),
