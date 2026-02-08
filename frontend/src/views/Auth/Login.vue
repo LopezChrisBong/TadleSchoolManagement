@@ -18,7 +18,7 @@
               rounded="xl"
             />
             <h2 class="text-center mx-3 mb-5">
-              Welcome to <span class="text-pink"> SDSMS </span>
+              Welcome to <span class="text-pink"> CRMS </span>
             </h2>
             <!-- <h2 class="text-start">Sign In</h2> -->
 
@@ -46,16 +46,28 @@
                 class="mb-5"
               />
               <v-btn color="#e93175" block @click="dologin()">Sign In</v-btn>
-              <div class="mt-4 text-caption d-flex" v-if="!isSmAndUp">
-                <p>Don't have an account yet?</p>
-                <a class="text-green" @click="mobileChange()">Sign Up</a>
+              <div class="mt-4 text-caption" v-if="!isSmAndUp">
+                <div class="d-flex">
+                  <p>Don't have an account yet?</p>
+                  <a class="text-green" @click="mobileChange()">Sign Up</a>
+                </div>
+                <div class="text-green d-flex justify-center mt-3">
+                  <a @click="doHome()">Home</a>
+                </div>
               </div>
             </v-form>
           </v-card>
         </div>
 
         <!-- Sign Up Form -->
-        <div class="form-container sign-up-container">
+        <div
+          class="form-container sign-up-container"
+          :style="
+            !isLogin
+              ? { background: 'linear-gradient(135deg, #e93175, #d81b60)' }
+              : {}
+          "
+        >
           <v-card class="form-card" elevation="10" rounded="xl">
             <h2 class="text-center mb-4">Create Account</h2>
             <p class="text-caption text-gray-100 mb-3">
@@ -115,7 +127,7 @@
                 class="rounded-lg"
                 item-value="id"
                 item-title="description"
-                label="Modules to assign"
+                label="Role"
                 color="#93CB5B"
                 :items="assignedModulesList"
               >
@@ -178,8 +190,10 @@
                 >Sign In</v-btn
               > -->
               <div class="mt-4 text-caption d-flex" v-if="!isSmAndUp">
-                <p>Already have an account?</p>
-                <a class="text-green" @click="mobileChange()">Sign In</a>
+                <div class="d-flex">
+                  <p>Already have an account?</p>
+                  <a class="text-green" @click="mobileChange()">Sign In</a>
+                </div>
               </div>
             </v-form>
             <v-form
@@ -243,59 +257,101 @@
         <!-- Overlay Panel -->
         <div class="overlay-container" v-if="isSmAndUp">
           <div class="overlay">
-            <div class="overlay-panel overlay-center" style="color: #e93175">
-              <h2>
-                Hello
-                {{ userType == 0 ? "Parents/Guardians" : "Admin/Teachers" }}!
-              </h2>
-              <p>To stay connected, sign in with your credentials.</p>
-              <p class="mt-4">Already have an account? Click Sign In</p>
-              <div class="d-flex justify-center mt-5">
+            <div class="overlay-panel overlay-center custom-overlay-light">
+              <!-- LOGO -->
+              <v-img
+                :src="logo"
+                height="160"
+                width="100%"
+                cover
+                class="mb-1 pa-2"
+                style="border-radius: 10px"
+              />
+
+              <!-- SDNHS BIG TITLE -->
+              <div class="school-code-light mb-2">SDNHS</div>
+
+              <!-- SYSTEM NAME -->
+              <div class="system-title-light mb-3">
+                Class Record Management System
+              </div>
+
+              <!-- TAGLINE -->
+              <div class="tagline-light mb-6">
+                “Nurturing Potentials, Inspiring Excellence, Building Futures”
+              </div>
+
+              <!-- BUTTONS -->
+              <div class="d-flex justify-center mt-4">
                 <v-btn
                   variant="outlined"
                   class="font-weight-bold mx-3"
-                  style="width: 150px"
                   append-icon="mdi-account"
-                  color="e93175"
+                  width="150"
+                  style="border-color: #e93175; color: #e93175"
                   @click="isLogin = true"
-                  >Sign In</v-btn
                 >
+                  Sign In
+                </v-btn>
+
                 <v-btn
                   variant="flat"
-                  append-icon="mdi-home"
-                  style="width: 150px"
                   class="font-weight-bold mx-3"
-                  color="#e93175"
+                  append-icon="mdi-home"
+                  width="150"
+                  style="background: #e93175; color: white"
                   @click="doHome()"
-                  >Home</v-btn
                 >
+                  Home
+                </v-btn>
               </div>
             </div>
-            <div class="overlay-panel overlay-right" style="color: white">
-              <h2>
-                Welcome
-                {{ userType == 0 ? "Parents/Guardians" : "Admin/Teachers" }}!
-              </h2>
-              <p>Enter your details and start your journey with us!</p>
-              <p class="mt-4">Don't have an account yet? Click Sign Up</p>
-              <div class="d-flex justify-center mt-5">
+            <div class="overlay-panel overlay-right custom-overlay">
+              <!-- LOGO -->
+              <v-img
+                :src="logo"
+                height="160"
+                width="100%"
+                cover
+                class="mb-1 pa-2"
+              />
+
+              <!-- SDNHS BIG TITLE -->
+              <div class="school-code mb-2">SDNHS</div>
+
+              <!-- SYSTEM NAME -->
+              <div class="system-title mb-3">
+                Class Record Management System
+              </div>
+
+              <!-- TAGLINE -->
+              <div class="tagline mb-6">
+                “Nurturing Potentials, Inspiring Excellence, Building Futures”
+              </div>
+
+              <!-- OPTIONAL BUTTONS -->
+              <div class="d-flex justify-center mt-4">
                 <v-btn
                   variant="outlined"
                   class="font-weight-bold mx-3"
                   append-icon="mdi-account"
                   color="white"
-                  style="width: 150px"
+                  width="150"
                   @click="isLogin = false"
-                  >Sign Up</v-btn
                 >
+                  Sign Up
+                </v-btn>
+
                 <v-btn
                   variant="flat"
-                  append-icon="mdi-home"
                   class="font-weight-bold mx-3"
-                  style="width: 150px; color: #e93175"
+                  append-icon="mdi-home"
+                  width="150"
+                  style="background: white; color: #e93175"
                   @click="doHome()"
-                  >Home</v-btn
                 >
+                  Home
+                </v-btn>
               </div>
             </div>
           </div>
@@ -314,37 +370,38 @@
 </template>
 
 <script>
-import { useDisplay } from "vuetify";
+import { useDisplay } from 'vuetify';
 export default {
-  name: "loginPage",
+  name: 'loginPage',
   data() {
     return {
       display: useDisplay(),
+      logo: require('@/assets/img/records.png'),
       isLogin: true,
       mobile: true,
       isLoading: false,
       showPassword: false,
       showPasswordConfirm: false,
-      step: { id: 1, name: "Personal Information" },
+      step: { id: 1, name: 'Personal Information' },
       fname: null,
       lname: null,
       assignedModulesList: [],
       assignedModuleID: null,
       mname: null,
-      name: "",
-      email: "",
-      otp: ["", "", "", "", "", ""],
-      emailLogin: "",
-      passwordLogin: "",
-      password: "",
-      emailError: "",
-      confirmPassword: "",
+      name: '',
+      email: '',
+      otp: ['', '', '', '', '', ''],
+      emailLogin: '',
+      passwordLogin: '',
+      password: '',
+      emailError: '',
+      confirmPassword: '',
       userType: null,
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
@@ -356,29 +413,29 @@ export default {
   },
   mounted() {
     this.getAssignedModules();
-    this.userType = localStorage.getItem("userType");
+    this.userType = localStorage.getItem('userType');
   },
   methods: {
     mobileChange() {
       if (this.mobile == true) {
         this.mobile = false;
-        const signUp = document.querySelector(".sign-up-container");
-        const signIn = document.querySelector(".sign-in-container");
+        const signUp = document.querySelector('.sign-up-container');
+        const signIn = document.querySelector('.sign-in-container');
         if (signUp) {
-          signUp.style.zIndex = "1";
-          signUp.style.opacity = "100%";
-          signIn.style.zIndex = "0";
-          signIn.style.opacity = "0";
+          signUp.style.zIndex = '1';
+          signUp.style.opacity = '100%';
+          signIn.style.zIndex = '0';
+          signIn.style.opacity = '0';
         }
       } else if (this.mobile == false) {
         this.mobile = true;
-        const signUp = document.querySelector(".sign-up-container");
-        const signIn = document.querySelector(".sign-in-container");
+        const signUp = document.querySelector('.sign-up-container');
+        const signIn = document.querySelector('.sign-in-container');
         if (signIn) {
-          signUp.style.zIndex = "0";
-          signUp.style.opacity = "0";
-          signIn.style.zIndex = "1";
-          signIn.style.opacity = "100%";
+          signUp.style.zIndex = '0';
+          signUp.style.opacity = '0';
+          signIn.style.zIndex = '1';
+          signIn.style.opacity = '100%';
         }
       }
     },
@@ -392,7 +449,7 @@ export default {
           email: this.emailLogin,
           password: this.passwordLogin,
         };
-        this.axiosCall("/auth/login", "POST", data).then((res) => {
+        this.axiosCall('/auth/login', 'POST', data).then((res) => {
           this.isLoading = false;
           if (
             res.data.status == 200 ||
@@ -400,8 +457,8 @@ export default {
             res.data.status == 202
           ) {
             // console.log(res.data);
-            localStorage.setItem("token", res.data.token);
-            this.$store.commit("setExpiryDate");
+            localStorage.setItem('token', res.data.token);
+            this.$store.commit('setExpiryDate');
             location.reload();
             // setTimeout(() => {
             //   axios({
@@ -414,9 +471,9 @@ export default {
             // }, 500);
           } else {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
+            this.fadeAwayMessage.type = 'error';
             this.fadeAwayMessage.message = res.data.message;
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.header = 'System Message';
           }
         });
       }
@@ -426,9 +483,9 @@ export default {
       // registration logic here
       if (this.password != this.confirmPassword) {
         this.fadeAwayMessage.show = true;
-        this.fadeAwayMessage.type = "error";
-        this.fadeAwayMessage.message = "Password not mutch";
-        this.fadeAwayMessage.header = "System Message";
+        this.fadeAwayMessage.type = 'error';
+        this.fadeAwayMessage.message = 'Password not mutch';
+        this.fadeAwayMessage.header = 'System Message';
       } else {
         this.isLoading = true;
         if (this.$refs.formRegister.validate()) {
@@ -443,15 +500,15 @@ export default {
             password: this.password,
             assignedModuleID: this.userType == 1 ? this.assignedModuleID : 22,
           };
-          this.axiosCall("/auth/registerUser", "POST", data).then((res) => {
+          this.axiosCall('/auth/registerUser', 'POST', data).then((res) => {
             if (res.data.status == 201) {
               this.isLoading = false;
-              this.$store.dispatch("setEmail", this.email);
+              this.$store.dispatch('setEmail', this.email);
               this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = "success";
+              this.fadeAwayMessage.type = 'success';
               this.fadeAwayMessage.message =
-                "We’ve sent an OTP to your email. Please enter it to confirm your login.";
-              this.fadeAwayMessage.header = "System Message";
+                'We’ve sent an OTP to your email. Please enter it to confirm your login.';
+              this.fadeAwayMessage.header = 'System Message';
               // this.isLogin = true;
               // this.refresh();
               this.next();
@@ -459,9 +516,9 @@ export default {
             } else {
               this.isLoading = false;
               this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = "error";
+              this.fadeAwayMessage.type = 'error';
               this.fadeAwayMessage.message = res.data.message;
-              this.fadeAwayMessage.header = "System Message";
+              this.fadeAwayMessage.header = 'System Message';
               this.animated = true;
             }
           });
@@ -471,13 +528,13 @@ export default {
 
     checkEmail() {
       this.emailChecking = true;
-      this.axiosCall("/auth/checkEmailIfExist/" + this.email, "GET").then(
+      this.axiosCall('/auth/checkEmailIfExist/' + this.email, 'GET').then(
         (res) => {
           console.log(res.data);
           if (res.data) {
-            this.emailError = "Email Already Exist!";
+            this.emailError = 'Email Already Exist!';
           } else {
-            this.emailError = "";
+            this.emailError = '';
           }
           this.emailChecking = false;
         },
@@ -495,11 +552,11 @@ export default {
         if (this.$refs.formInformation.validate()) {
           if (this.fname == null || this.lname == null) {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.message = "Please fill-up required fields!";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.message = 'Please fill-up required fields!';
+            this.fadeAwayMessage.header = 'System Message';
           } else {
-            this.step = { id: 2, name: "Account Information" };
+            this.step = { id: 2, name: 'Account Information' };
           }
         }
       }
@@ -510,13 +567,13 @@ export default {
       // }
       else if (this.step.id == 2) {
         if (this.$refs.formRegister.validate()) {
-          this.step = { id: 3, name: "Otp Confirmation" };
+          this.step = { id: 3, name: 'Otp Confirmation' };
         }
       }
     },
 
     getAssignedModules() {
-      this.axiosCall("/assigned-modules/getSpecificModules", "GET").then(
+      this.axiosCall('/assigned-modules/getSpecificModules', 'GET').then(
         (res) => {
           // console.log("AssignedM", res.data);
           this.assignedModulesList = res.data;
@@ -532,47 +589,47 @@ export default {
     // },
 
     onOtpInput(event, index) {
-      const value = event.target.value.replace(/\D/g, "").slice(0, 1);
+      const value = event.target.value.replace(/\D/g, '').slice(0, 1);
       this.otp[index] = value;
 
       if (value && index < this.otp.length - 1) {
-        const inputs = document.querySelectorAll(".otp-input");
+        const inputs = document.querySelectorAll('.otp-input');
         inputs[index + 1]?.focus();
       }
     },
 
     submitOTP() {
       this.isLoading = true;
-      const otpValue = this.otp.join("");
+      const otpValue = this.otp.join('');
 
       if (otpValue.length !== 6) {
-        alert("Please enter complete OTP");
+        alert('Please enter complete OTP');
         return;
       }
 
       // 🔗 Call your API here
-      console.log("OTP:", otpValue);
+      console.log('OTP:', otpValue);
       let data = {
         email: this.$store.getters.getEmail,
         otp: otpValue,
       };
-      this.axiosCall("/auth/confirmOtp", "POST", data).then((res) => {
+      this.axiosCall('/auth/confirmOtp', 'POST', data).then((res) => {
         if (res.data.status == 200) {
           this.isLoading = false;
           this.isLogin = true;
           this.refresh();
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "success";
+          this.fadeAwayMessage.type = 'success';
           this.fadeAwayMessage.message =
-            "Your OTP has been successfully confirmed. You may now proceed to log in.";
-          this.fadeAwayMessage.header = "System Message";
+            'Your OTP has been successfully confirmed. You may now proceed to log in.';
+          this.fadeAwayMessage.header = 'System Message';
           // this.$router.push("/registration-success");
         } else {
           this.isLoading = false;
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
+          this.fadeAwayMessage.type = 'error';
           this.fadeAwayMessage.message = res.data.msg;
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.header = 'System Message';
         }
       });
 
@@ -581,7 +638,7 @@ export default {
       }, 1000);
     },
     doHome() {
-      this.$router.push("/");
+      this.$router.push('/');
     },
   },
 };
@@ -729,5 +786,70 @@ export default {
   margin-left: 2px;
   font-size: 28px;
   text-align: center;
+}
+.custom-overlay {
+  background: linear-gradient(135deg, #e93175, #d81b60);
+  color: white;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+}
+
+/* SDNHS big stylized text */
+.school-code {
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  text-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* System name */
+.system-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* Script-style tagline */
+.tagline {
+  font-size: 14px;
+  font-style: italic;
+  opacity: 0.9;
+}
+.custom-overlay-light {
+  background: white;
+  color: #e93175;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+}
+
+/* SDNHS stylized */
+.school-code-light {
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: 6px;
+  color: #e93175;
+  text-shadow: 0 0 5px #ffc1dc, 0 0 10px #ff9ecf;
+}
+
+/* System title */
+.system-title-light {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* Tagline */
+.tagline-light {
+  font-size: 14px;
+  font-style: italic;
+  opacity: 0.8;
 }
 </style>

@@ -34,8 +34,7 @@ export class Helper {
     cb(null, join(process.cwd(), process.env.FILE_PATH + 'student_file/'));
   }
 
-  // static esign_filepath(req, file, cb) {
-  //   cb(null, join(process.cwd(), '/../uploadedEsigImg/'));
-  //   cb(null, join(process.cwd(), '/uploadedEsigImg/'));
-  // }
+  static event_files(req, file, cb) {
+    cb(null, join(process.cwd(), process.env.FILE_PATH + 'event_file/'));
+  }
 }

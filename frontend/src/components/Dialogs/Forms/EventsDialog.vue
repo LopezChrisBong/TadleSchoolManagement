@@ -27,7 +27,7 @@
           <!-- Content -->
           <v-card-text class="pa-6" style="max-height: 65vh">
             <v-row dense>
-              <v-col cols="12">
+              <v-col cols="12" md="6">
                 <v-text-field
                   variant="outlined"
                   density="comfortable"
@@ -38,7 +38,21 @@
                   color="#6DB249"
                 ></v-text-field>
               </v-col>
-              <v-col cols="12">
+              <v-col cols="12" md="6">
+                <v-radio-group v-model="isActive" inline>
+                  <v-radio
+                    label="Active"
+                    color="green"
+                    :value="STATUS.ACTIVE"
+                  />
+                  <v-radio
+                    label="Inactive"
+                    color="red"
+                    :value="STATUS.INACTIVE"
+                  />
+                </v-radio-group>
+              </v-col>
+              <v-col cols="12" md="6">
                 <v-menu
                   v-model="menu"
                   :close-on-content-click="false"
@@ -47,7 +61,7 @@
                   <template #activator="{ props }">
                     <v-text-field
                       v-model="formatedDate"
-                      label="Select Date"
+                      label="Start date of event"
                       variant="outlined"
                       density="comfortable"
                       color="pink"
@@ -66,6 +80,44 @@
                     "
                   />
                 </v-menu>
+              </v-col>
+              <v-col cols="12" md="6">
+                <div
+                  v-if="showFileActions"
+                  class="d-flex justify-space-between pa-2"
+                >
+                  <v-btn
+                    color="green"
+                    variant="flat"
+                    class="pa-2 mx-2"
+                    @click="viewFile()"
+                  >
+                    <v-icon start> mdi-eye-outline </v-icon>
+                    View File
+                  </v-btn>
+                  <v-btn
+                    color="primary"
+                    variant="flat"
+                    class="pa-2"
+                    @click="handleUpdateClick"
+                  >
+                    <v-icon start> mdi-pencil-outline </v-icon>
+                    Update File
+                  </v-btn>
+                </div>
+                <div v-else>
+                  <v-file-input
+                    variant="outlined"
+                    v-model="uploadedFile"
+                    @update:modelValue="onFileChange"
+                    density="comfortable"
+                    class="rounded-lg"
+                    label="Event Image(landscape)"
+                    color="pink"
+                    accept=".png, .jpg, .jpeg"
+                    :clearable="false"
+                  />
+                </div>
               </v-col>
               <v-col cols="12">
                 <v-textarea
@@ -134,7 +186,15 @@ export default {
       dialog: false,
       menu: false,
       eventDate: null,
+      isUpdateFile: false,
       formatedDate: null,
+      STATUS: {
+        ACTIVE: 1,
+        INACTIVE: 0,
+      },
+      isActive: 1,
+      eventFile: null,
+      uploadedFile: null,
       eventName: null,
       minDate: new Date().toISOString().slice(0, 10),
       eventDescription: null,
@@ -148,6 +208,9 @@ export default {
     };
   },
   computed: {
+    showFileActions() {
+      return this.action === 'Update' && !this.isUpdateFile;
+    },
     filteredAccessModules() {
       if (!this.verifyModel.assignedModuleID) {
         return this.assigneAccessModulesList;
@@ -184,6 +247,8 @@ export default {
           this.formatedDate = this.formatDate(data.eventDate);
           this.eventDate = data.eventDate;
           this.eventDescription = data.eventDescription;
+          this.eventFile = data.eventFile;
+          this.isActive = data.isActive;
         } else {
           this.eventName = null;
           this.eventDate = null;
@@ -203,10 +268,18 @@ export default {
     closeD() {
       eventBus.emit('closeAddEvenDialog', true);
       this.dialog = false;
+      this.eventFile = null;
+      this.uploadedFile = null;
+      this.isUpdateFile = false;
+      this.eventDescription = null;
+      this.eventDate = null;
+      this.eventName = null;
     },
 
     accept() {
       let filter = this.$store.getters.getFilterSelected;
+      const fd = new FormData();
+      fd.append('file', this.uploadedFile);
       let data = {
         eventDate: this.eventDate,
         eventName: this.eventName,
@@ -214,36 +287,14 @@ export default {
         eventType: this.event,
         schoolYearID: filter,
       };
-      this.axiosCall('/school-events', 'POST', data).then((res) => {
-        if (res.data.status == 201) {
-          this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = 'success';
-          this.fadeAwayMessage.header = 'System Message';
-          this.fadeAwayMessage.message = res.data.msg;
-          this.closeD();
-        } else if (res.data.status == 400) {
-          this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = 'error';
-          this.fadeAwayMessage.header = 'System Message';
-          this.fadeAwayMessage.message = res.data.msg;
-        }
-      });
-    },
-
-    update() {
-      let data = {
-        eventDate: this.eventDate,
-        eventName: this.eventName,
-        eventDescription: this.eventDescription,
-      };
-      console.log(data, this.data.id);
-      this.axiosCall('/school-events/' + this.data.id, 'PATCH', data).then(
-        (res) => {
-          if (res.data.status == 201 || res.data.status == 200) {
+      fd.append('body', JSON.stringify(data));
+      if (!this.uploadedFile) {
+        this.axiosCall('/school-events', 'POST', data).then((res) => {
+          if (res.data.status == 201) {
             this.fadeAwayMessage.show = true;
             this.fadeAwayMessage.type = 'success';
             this.fadeAwayMessage.header = 'System Message';
-            this.fadeAwayMessage.message = 'Successfully updated!!';
+            this.fadeAwayMessage.message = res.data.msg;
             this.closeD();
           } else if (res.data.status == 400) {
             this.fadeAwayMessage.show = true;
@@ -251,8 +302,101 @@ export default {
             this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
           }
-        },
-      );
+        });
+      } else {
+        this.axiosCall('/school-events/addEvent', 'POST', fd).then((res) => {
+          if (res.data.status == 201) {
+            this.fadeAwayMessage.show = true;
+            this.fadeAwayMessage.type = 'success';
+            this.fadeAwayMessage.header = 'System Message';
+            this.fadeAwayMessage.message = res.data.msg;
+            this.closeD();
+          } else if (res.data.status == 400) {
+            this.fadeAwayMessage.show = true;
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
+            this.fadeAwayMessage.message = res.data.msg;
+          }
+        });
+      }
+    },
+
+    update() {
+      const fd = new FormData();
+      fd.append('file', this.uploadedFile);
+      let data = {
+        id: this.data.id,
+        oldFile: this.eventFile,
+        eventDate: this.eventDate,
+        eventName: this.eventName,
+        eventDescription: this.eventDescription,
+        isActive: this.isActive,
+      };
+      fd.append('body', JSON.stringify(data));
+      console.log(data, this.data.id);
+      if (!this.uploadedFile) {
+        this.axiosCall('/school-events/' + this.data.id, 'PATCH', data).then(
+          (res) => {
+            if (res.data.status == 201 || res.data.status == 200) {
+              this.fadeAwayMessage.show = true;
+              this.fadeAwayMessage.type = 'success';
+              this.fadeAwayMessage.header = 'System Message';
+              this.fadeAwayMessage.message = 'Successfully updated!!';
+              this.closeD();
+            } else if (res.data.status == 400) {
+              this.fadeAwayMessage.show = true;
+              this.fadeAwayMessage.type = 'error';
+              this.fadeAwayMessage.header = 'System Message';
+              this.fadeAwayMessage.message = res.data.msg;
+            }
+          },
+        );
+      } else {
+        this.axiosCall('/school-events/update-event-file', 'POST', fd).then(
+          (res) => {
+            if (res.data.status == 201 || res.data.status == 200) {
+              this.fadeAwayMessage.show = true;
+              this.fadeAwayMessage.type = 'success';
+              this.fadeAwayMessage.header = 'System Message';
+              this.fadeAwayMessage.message = 'Successfully updated!!';
+              this.closeD();
+            } else if (res.data.status == 400) {
+              this.fadeAwayMessage.show = true;
+              this.fadeAwayMessage.type = 'error';
+              this.fadeAwayMessage.header = 'System Message';
+              this.fadeAwayMessage.message = res.data.msg;
+            }
+          },
+        );
+      }
+    },
+    onFileChange(file) {
+      this.isUpdateFile = false;
+      this.uploadedFile = file;
+    },
+    handleUpdateClick() {
+      this.isUpdateFile = true;
+      this.uploadedFile = null;
+    },
+    viewFile() {
+      const file = Array.isArray(this.uploadedFile)
+        ? this.uploadedFile[0]
+        : this.uploadedFile;
+
+      if (file) {
+        const fileURL = URL.createObjectURL(file);
+        window.open(fileURL, '_blank');
+
+        setTimeout(() => URL.revokeObjectURL(fileURL), 1000);
+        return;
+      }
+
+      if (this.eventFile) {
+        window.open(
+          `${process.env.VUE_APP_SERVER}/school-events/view/eventFile/${this.eventFile}`,
+          '_blank',
+        );
+      }
     },
   },
 };

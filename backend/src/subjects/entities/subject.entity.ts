@@ -14,6 +14,12 @@ export class Subject {
   @Column({ type: 'varchar' })
   subject_title: string;
 
+  @Column({ type: 'varchar' })
+  semester: string;
+
+  @Column({ type: 'varchar' })
+  senior_level: string;
+
   @Column({ type: 'varchar', nullable: true })
   indicator: string;
 
@@ -34,6 +40,15 @@ export class Subject {
 
   @Column({ type: 'int' })
   status: number;
+
+  @Column({ type: 'int', default: 0 })
+  isSpecialized: number;
+
+  @Column({ type: 'int', nullable: true })
+  strandID: number;
+
+  @Column({ type: 'boolean', default: false })
+  isDelete: boolean;
 
   @CreateDateColumn({
     nullable: false,

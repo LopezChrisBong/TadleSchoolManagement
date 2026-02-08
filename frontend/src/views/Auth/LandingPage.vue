@@ -32,7 +32,7 @@
         <v-col cols="12" md="6" class="text-center">
           <v-img
             src="/img/bgportal.jpg"
-            max-width="480"
+            max-width="580"
             class="mx-auto"
             cover
             rounded="xl"
@@ -40,11 +40,24 @@
         </v-col>
         <v-col cols="12" md="6" class="d-flex justify-center align-center">
           <div>
-            <h1 class="text-pink">SOUTHERN DAVAO NATIONAL HIGH SCHOOL</h1>
+            <p
+              class="text-pink school-code-light"
+              :style="
+                isSmAndUp
+                  ? { fontSize: '42px', fontWeight: '800' }
+                  : {
+                      fontSize: '20px',
+                      fontWeight: '1000',
+                      textAlign: 'center',
+                    }
+              "
+            >
+              SOUTHERN DAVAO NATIONAL HIGH SCHOOL
+            </p>
 
             <p class="hero-subtitle mt-4">
               "Education is the most powerful weapon which you can use to change
-              the world." — Nelson Mandela
+              the world." <br />— Nelson Mandela
             </p>
 
             <v-btn
@@ -52,9 +65,9 @@
               size="large"
               variant="outlined"
               append-icon="mdi-account"
-              class="mt-6"
+              class="mt-6 mx-3"
               rounded="lg"
-              style="width: 300px"
+              style="width: 300px; font-weight: 1000"
               @click="goToDiv()"
             >
               Open Portal
@@ -66,7 +79,7 @@
               append-icon="mdi-calendar"
               class="mt-6 mx-3"
               rounded="lg"
-              style="width: 300px"
+              style="width: 300px; font-weight: 1000"
               @click="goToEvents()"
             >
               EVENTS
@@ -91,7 +104,10 @@
                 {{ getIcon(eventType) }}
               </v-icon>
 
-              <h2 class="font-weight-bold" style="color: #e93175">
+              <h2
+                class="font-weight-bold"
+                style="color: #e93175; text-transform: uppercase"
+              >
                 {{ eventType }}
               </h2>
 
@@ -103,9 +119,22 @@
             </div>
 
             <v-row>
-              <v-col cols="12" md="4" v-for="(event, i) in events" :key="i">
+              <v-col cols="12" v-for="(event, i) in events" :key="i">
                 <v-card rounded="xl" elevation="2" class="event-card">
                   <v-card-text>
+                    <div style="width: 100%" class="mb-3">
+                      <v-img
+                        :src="
+                          event.eventFile
+                            ? event.eventFile
+                            : '/img/returnImg.jpg'
+                        "
+                        max-width="100%"
+                        class="mx-auto"
+                        cover
+                        rounded="xl"
+                      />
+                    </div>
                     <v-chip
                       color="pink"
                       variant="outlined"
@@ -119,15 +148,20 @@
                       {{ event.eventName }}
                     </h3>
 
-                    <p class="text-medium-emphasis mb-0">
+                    <!-- <p class="text-medium-emphasis mb-0">
                       {{ event.eventDescription }}
-                    </p>
+                    </p> -->
                   </v-card-text>
 
                   <v-divider />
 
                   <v-card-actions>
-                    <v-btn variant="text" color="pink" size="small">
+                    <v-btn
+                      variant="text"
+                      color="pink"
+                      size="small"
+                      @click="Event(event)"
+                    >
                       View Details
                     </v-btn>
 
@@ -166,8 +200,13 @@
       </v-container>
     </v-footer>
 
-    <v-dialog v-model="portalDialog" max-width="560">
-      <v-card rounded="2xl" class="portal-dialog">
+    <v-dialog
+      v-if="portalDialog"
+      v-model="portalDialog"
+      max-width="760"
+      :fullscreen="!isSmAndUp"
+    >
+      <v-card :rounded="isSmAndUp ? 'xl' : ''" class="portal-dialog">
         <v-card-title class="text-center py-6">
           <div class="text-h6 font-weight-bold">Choose your portal</div>
           <div class="text-body-2 text-medium-emphasis mt-1">
@@ -189,21 +228,28 @@
               <v-card
                 @click="setActive(i)"
                 rounded="xl"
-                height="190"
-                width="210"
+                height="290"
+                width="310"
                 :elevation="item.active ? 12 : 4"
                 :class="[
-                  'module-card d-flex flex-column align-center justify-center pa-6',
+                  'module-card d-flex flex-column align-center justify-center pa-6 mb-2',
                   item.active ? 'active-card' : 'inactive-card',
                 ]"
               >
-                <v-icon
+                <!-- <v-icon
                   size="68"
                   class="mb-4"
                   :color="item.active ? 'white' : 'pink'"
                 >
                   {{ item.icon }}
-                </v-icon>
+                </v-icon> -->
+                <v-img
+                  :src="item.image"
+                  height="160"
+                  width="100%"
+                  cover
+                  class="mb-1 pa-2"
+                />
 
                 <div
                   class="text-subtitle-1 font-weight-medium text-center"
@@ -245,6 +291,76 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <v-dialog
+      v-model="viewDetailDialog"
+      max-width="760"
+      :fullscreen="!isSmAndUp"
+    >
+      <v-card :rounded="isSmAndUp ? 'xl' : '0'" class="portal-dialog">
+        <!-- HEADER -->
+        <v-card-title class="d-flex align-center px-6 py-4">
+          <v-icon color="pink" size="28" class="mr-3">
+            mdi-calendar-star
+          </v-icon>
+
+          <div>
+            <div class="dialog-title">Event Details</div>
+            <div class="dialog-subtitle">
+              Complete information about this event
+            </div>
+          </div>
+        </v-card-title>
+
+        <v-divider />
+
+        <!-- CONTENT -->
+        <v-card-text class="px-6 py-8">
+          <v-row dense>
+            <!-- TITLE -->
+            <v-col cols="12">
+              <div class="section-label">Title</div>
+              <div class="section-value">{{ detailData.eventName }}</div>
+            </v-col>
+
+            <!-- DESCRIPTION -->
+            <v-col cols="12" class="mt-4">
+              <div class="section-label">Description</div>
+              <div class="section-value">
+                {{ detailData.eventDescription }}
+              </div>
+            </v-col>
+
+            <!-- TIME -->
+            <v-col cols="12" class="mt-4">
+              <div class="section-label">Schedule</div>
+              <div class="section-value d-flex align-center">
+                <v-icon size="18" class="mr-2" color="pink">
+                  mdi-clock-outline
+                </v-icon>
+                {{ formatDate(detailData.eventDate) }} <br />
+                March 15, 2026 · 8:00 AM – 4:00 PM
+              </div>
+            </v-col>
+          </v-row>
+        </v-card-text>
+
+        <v-divider />
+
+        <!-- ACTIONS -->
+        <v-card-actions class="px-6 py-4">
+          <v-spacer />
+          <v-btn
+            variant="outlined"
+            color="pink"
+            rounded="lg"
+            @click="viewDetailDialog = false"
+          >
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-app>
 </template>
 
@@ -254,13 +370,21 @@ export default {
   data() {
     return {
       portalDialog: false,
+      viewDetailDialog: false,
       eventList: [],
       display: useDisplay(),
       modules: [
-        { icon: 'mdi-account-child', label: 'Parents/Guardian', active: false },
+        {
+          icon: 'mdi-account-child',
+          label: 'Parents/Guardian',
+          active: false,
+          image: new URL('@/assets/img/parenting.jpg', import.meta.url).href,
+        },
         {
           icon: 'mdi-human-male-board',
           label: 'Admin/Faculty',
+          image: new URL('@/assets/img/admin_teacher.jpg', import.meta.url)
+            .href,
           active: false,
         },
       ],
@@ -295,6 +419,7 @@ export default {
           text: 'Funds are sent directly to your account.',
         },
       ],
+      detailData: null,
     };
   },
   mounted() {
@@ -328,7 +453,8 @@ export default {
       this.axiosCall('/school-events/getEventsExcepMandatory', 'GET').then(
         (res) => {
           if (res.data) {
-            this.eventList = res.data;
+            let data = res.data;
+            this.eventList = data;
           }
         },
       );
@@ -342,6 +468,11 @@ export default {
       };
       return icons[type] || icons.Default;
     },
+    Event(event) {
+      console.log(event);
+      this.detailData = event;
+      this.viewDetailDialog = true;
+    },
   },
 };
 </script>
@@ -349,6 +480,7 @@ export default {
 <style scoped>
 .hero-section {
   background-color: #ffffff;
+  height: 100vh;
 }
 
 .hero-title {
@@ -393,5 +525,39 @@ export default {
 .active-card {
   background: linear-gradient(135deg, #e93175, #ff6fa5);
   transform: translateY(-8px) scale(1.02);
+}
+.school-code-light {
+  font-weight: 900;
+  letter-spacing: 6px;
+  color: #e93175;
+  text-shadow: 0 0 5px #ffc1dc, 0 0 10px #ff9ecf;
+}
+.portal-dialog {
+  background: #ffffff;
+}
+
+.dialog-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.dialog-subtitle {
+  font-size: 0.85rem;
+  color: #777;
+}
+
+.section-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 4px;
+}
+
+.section-value {
+  font-size: 1rem;
+  color: #333;
+  line-height: 1.6;
 }
 </style>

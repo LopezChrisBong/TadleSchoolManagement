@@ -9,6 +9,12 @@ export class CreateSubjectDto {
   seniorJunior: string;
 
   @ApiProperty()
+  semester: string;
+
+  @ApiProperty()
+  senior_level: string;
+
+  @ApiProperty()
   indicator: string;
 
   @ApiProperty()
@@ -37,4 +43,10 @@ export class CreateSubjectDto {
 
   @ApiProperty()
   school_yearId: number;
+
+  @ApiProperty()
+  isSpecialized: number;
+
+  @ApiProperty()
+  strandID: number;
 }

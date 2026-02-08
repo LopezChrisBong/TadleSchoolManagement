@@ -38,6 +38,10 @@ export class SubjectsService {
         performance_task: createSubjectDto.performance_task,
         quarter_assessment: createSubjectDto.quarter_assessment,
         status: user[0].status,
+        senior_level: createSubjectDto.senior_level,
+        semester: createSubjectDto.semester,
+        strandID: createSubjectDto.strandID,
+        isSpecialized: createSubjectDto.isSpecialized,
       });
 
       await this.dataSource.manager.save(data);
@@ -76,6 +80,7 @@ export class SubjectsService {
         .createQueryBuilder(Subject, 'sub')
 
         .where('status ="' + user[0].status + '"')
+        .andWhere('isDelete != 1')
         .orderBy('created_at', 'DESC')
         .getMany();
       return data;
@@ -204,6 +209,7 @@ export class SubjectsService {
     let data = await this.dataSource.manager
       .createQueryBuilder(Subject, 'sub')
       .where('grade_level = "' + gradeLevel + '"')
+      .andWhere('isDelete != 1')
       .orderBy('subject_title', 'ASC')
       .getMany();
     return data;
@@ -225,7 +231,7 @@ export class SubjectsService {
 
     let data = await this.dataSource.manager
       .createQueryBuilder(Subject, 'sub')
-      // .where('grade_level = "'+gradeLevel+'"')
+      .where('isDelete != 1')
       .orderBy('subject_title', 'ASC')
       .getMany();
     return data;
@@ -333,6 +339,7 @@ export class SubjectsService {
       .select(['*', 'ts.id as subjectListId'])
       .leftJoin(Subject, 'su', 'su.id = ts.subjectId')
       .where('ts.teachersId = "' + id + '"')
+      .andWhere('su.isDelete != 1')
       .getRawMany();
     return data;
   }
@@ -357,9 +364,31 @@ export class SubjectsService {
         writen_works: updateSubjectDto.writen_works,
         performance_task: updateSubjectDto.performance_task,
         quarter_assessment: updateSubjectDto.quarter_assessment,
+        semester: updateSubjectDto.semester,
+        senior_level: updateSubjectDto.senior_level,
+        isSpecialized: updateSubjectDto.isSpecialized,
+        strandID: updateSubjectDto.strandID,
       });
       return {
         msg: 'Updated successfully!',
+        status: HttpStatus.CREATED,
+      };
+    } catch (error) {
+      return {
+        msg: 'Something went wrong!' + error,
+        status: HttpStatus.BAD_REQUEST,
+      };
+    }
+  }
+
+  deleteSubject(id: number, updateSubjectDto: UpdateSubjectDto) {
+    console.log(id);
+    try {
+      this.dataSource.manager.update(Subject, id, {
+        isDelete: true,
+      });
+      return {
+        msg: 'Deleted successfully!',
         status: HttpStatus.CREATED,
       };
     } catch (error) {
