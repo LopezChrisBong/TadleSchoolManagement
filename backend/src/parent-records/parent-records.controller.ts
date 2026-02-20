@@ -87,13 +87,9 @@ export class ParentRecordsController {
     );
   }
 
-  @Get('getPrefectReport/:filter/:tab/:roleID')
-  getPrefectReport(
-    @Param('filter') filter: string,
-    @Param('tab') tab: string,
-    @Param('roleID') roleID: string,
-  ) {
-    return this.parentRecordsService.getPrefectReport(+filter, +tab, +roleID);
+  @Get('getPrefectReport/:filter/:tab')
+  getPrefectReport(@Param('filter') filter: string, @Param('tab') tab: string) {
+    return this.parentRecordsService.getPrefectReport(+filter, +tab);
   }
 
   @Get(':id')

@@ -1,4 +1,4 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateEnrollStudentDto } from './dto/create-enroll-student.dto';
 import { UpdateEnrollStudentDto } from './dto/update-enroll-student.dto';
 import {
@@ -22,6 +22,8 @@ import { UpdateSchoolYearDto } from './dto/update-school-year.dto';
 import { CreateStudentValuesDto } from './dto/create-student-values.dto';
 import { UpdateStudentValuesDto } from './dto/update-student-values.dto';
 import { CreateImportStudentDto } from './dto/create-import-student.dto';
+import { existsSync } from 'fs';
+import { join } from 'path';
 
 @Injectable()
 export class EnrollStudentService {
@@ -59,8 +61,10 @@ export class EnrollStudentService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
     await queryRunner.startTransaction();
+
     try {
       let newStudent = JSON.parse(createImportStudentDto.data);
+      let successCount = 0;
 
       for (let i = 0; i < newStudent.length; i++) {
         let LRN = newStudent[i].lrnNo.replace(/\s/g, '');
@@ -96,7 +100,7 @@ export class EnrollStudentService {
             school_yearId: newStudent[i].school_yearId,
           });
           await queryRunner.manager.save(addStudent);
-
+          successCount++;
           // await  queryRunner.manager.update(EnrollStudent, addStudent.id ,{
           //   school_yearId:newStudent[i].school_yearId,
           //   })
@@ -109,6 +113,7 @@ export class EnrollStudentService {
           });
 
           if (!studentInList) {
+            successCount++;
             let addStudent = queryRunner.manager.create(StudentList, {
               roomId: parseInt(newStudent[i].roomID),
               studentId: studentExist.id,
@@ -117,6 +122,7 @@ export class EnrollStudentService {
             });
             await queryRunner.manager.save(addStudent);
           }
+
           await queryRunner.manager.update(EnrollStudent, studentExist.id, {
             school_yearId: newStudent[i].school_yearId,
             statusEnrolled: 1,
@@ -128,6 +134,7 @@ export class EnrollStudentService {
       return {
         status: HttpStatus.CREATED,
         msg: 'Student list imported successfully!',
+        successCount,
       };
     } catch (err) {
       await queryRunner.rollbackTransaction();
@@ -694,6 +701,33 @@ export class EnrollStudentService {
     return data;
   }
 
+  async getSpecificFacultySchedule(filter: number, id: number) {
+    console.log(filter);
+    let data = await this.dataSource.manager
+      .createQueryBuilder(Availability, 'A')
+      .select([
+        'A.id as id',
+        "CONCAT(times_slot_from, ' - ', times_slot_to) AS time",
+        "IF (!ISNULL(ud.mname)  AND LOWER(ud.mname) != 'n/a', concat(ud.fname, ' ',SUBSTRING(ud.mname, 1, 1) ,'. ',ud.lname) ,concat(ud.fname, ' ', ud.lname)) as name",
+        "MAX(CASE WHEN day = 'Monday' THEN CONCAT('', sub.subject_title, ', ', room.room_section) END) AS Monday",
+        "MAX(CASE WHEN day = 'Tuesday' THEN CONCAT('', sub.subject_title, ', ',  room.room_section) END) AS Tuesday",
+        "MAX(CASE WHEN day = 'Wednesday' THEN CONCAT('', sub.subject_title, ', ',  room.room_section) END) AS Wednesday",
+        "MAX(CASE WHEN day = 'Thursday' THEN CONCAT('', sub.subject_title, ', ',  room.room_section) END) AS Thursday",
+        "MAX(CASE WHEN day = 'Friday' THEN CONCAT('', sub.subject_title, ', ',  room.room_section) END) AS Friday",
+        "MAX(CASE WHEN day = 'Saturday' THEN CONCAT('', sub.subject_title, ', ',  room.room_section) END) AS Saturday",
+      ])
+      .leftJoin(RoomsSection, 'room', 'room.id = A.roomId')
+      .leftJoin(Subject, 'sub', 'sub.id = A.subjectId')
+      .leftJoin(UserDetail, 'ud', 'ud.id = A.teacherID')
+      .where('A.school_yearId = "' + filter + '"')
+      .andWhere('A.teacherID = :id', { id })
+      .groupBy('A.times_slot_from,A.times_slot_to,A.teacherID')
+      .orderBy('A.times_slot_from')
+      .getRawMany();
+    console.log(data);
+    return data;
+  }
+
   async getValuesData(
     filter: number,
     studentID: number,
@@ -794,6 +828,7 @@ export class EnrollStudentService {
         'SQF.quarter as quarter',
         'SQF.semester as semester',
         'S.subject_title as subject_title',
+        'ES.lrnNo as lrnNo',
       ])
       .leftJoin(StudentList, 'SL', 'ES.id = SL.studentId')
       .leftJoin(StudentQuarterFinalGrade, 'SQF', 'SQF.studentID = ES.id')
@@ -1354,5 +1389,22 @@ export class EnrollStudentService {
     let verifyData = parseInt(verify[0].numberVerify);
 
     return { enrolledData, verifyData };
+  }
+
+  getStudentTemplatePath(): string {
+    const filePath = join(
+      // process.cwd(),
+      // 'uploads',
+      // 'templates',
+      // 'student_file/csv_file_import_student.csv',
+      process.cwd(),
+      process.env.FILE_PATH + 'student_file/csv_file_import_student.csv',
+    );
+
+    if (!existsSync(filePath)) {
+      throw new NotFoundException('Template file not found');
+    }
+
+    return filePath;
   }
 }

@@ -58,8 +58,14 @@
       >
         <template v-slot:[`item.report_type`]="{ item }">
           {{
-            item.report_type == 1 ? "Academic Concern" : "Disciplinary Concern"
+            item.report_type == 1 ? 'Academic Concern' : 'Disciplinary Concern'
           }}
+        </template>
+
+        <template v-slot:[`item.tagged`]="{ item }">
+          <span v-for="tag in item.tagged" :key="tag.id">
+            {{ tag.name }}
+          </span>
         </template>
 
         <template v-slot:[`item.actions`]="{ item }">
@@ -127,16 +133,36 @@
                 label="Report Description"
                 row-height="30"
                 rows="3"
+                color="pink"
                 variant="outlined"
                 readonly
                 auto-grow
               ></v-textarea>
             </v-col>
+            <v-col>
+              <div>Tagged students:</div>
+              <div
+                style="
+                  border: 1px pink solid;
+                  padding: 10px;
+                  border-radius: 10px;
+                "
+              >
+                <span v-for="tag in studentReportData.tagged" :key="tag.id">
+                  {{ tag.name }}
+                  <span v-if="studentReportData.tagged.length >= 1">,</span>
+                </span>
+              </div>
+            </v-col>
           </v-row>
         </v-card-text>
         <v-divider></v-divider>
         <v-card-actions>
-          <v-btn color="teal darken-3" outlined @click="reportDialog = false">
+          <v-btn
+            color="teal darken-3"
+            variant="outlined"
+            @click="reportDialog = false"
+          >
             Close
           </v-btn>
           <v-spacer></v-spacer>
@@ -145,9 +171,10 @@
             v-if="tab == 1"
             :color="$vuetify.theme.themes.light.submitBtns"
             class="white--text"
+            variant="flat"
             @click="submitReport()"
           >
-            Submit TO Prefect
+            Report
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -168,19 +195,20 @@
 export default {
   components: {},
   data: () => ({
-    search: "",
+    search: '',
     dialog: false,
     userRoleID: null,
     headers: [
-      { title: "Name", value: "name", align: "start" },
-      { title: "Reported BY:", value: "teacher_name", align: "center" },
-      { title: "Subject", value: "subject_title", align: "center" },
-      { title: "Grade Level", value: "grade_level", align: "center" },
-      { title: "Type", value: "report_type", align: "center" },
+      { title: 'Name', value: 'name', align: 'start' },
+      { title: 'Reported BY:', value: 'teacher_name', align: 'center' },
+      { title: 'Subject', value: 'subject_title', align: 'center' },
+      // { title: 'Grade Level', value: 'grade_level', align: 'center' },
+      { title: 'Type', value: 'report_type', align: 'center' },
+      { title: 'Tagged Student', value: 'tagged', align: 'center' },
       {
-        title: "Actions",
-        value: "actions",
-        align: "center",
+        title: 'Actions',
+        value: 'actions',
+        align: 'center',
         sortable: false,
         width: 100,
       },
@@ -188,7 +216,7 @@ export default {
     studentReportData: [],
     data: [],
     userId: null,
-    activeTab: { id: 1, name: "Reports", active: true },
+    activeTab: { id: 1, name: 'Reports', active: true },
     tab: 1,
     tabList: [],
     loading: false,
@@ -198,9 +226,9 @@ export default {
     filter: null,
     fadeAwayMessage: {
       show: false,
-      type: "success",
-      header: "Successfully Deleted!",
-      message: "",
+      type: 'success',
+      header: 'Successfully Deleted!',
+      message: '',
       top: 10,
     },
   }),
@@ -259,69 +287,50 @@ export default {
       this.filter = this.$store.getters.getFilterSelected;
       if (this.userRoleID == 2) {
         this.tabList = [
-          { id: 1, name: "Reports", active: true },
-          { id: 2, name: "Submitted", active: false },
+          { id: 1, name: 'Reports', active: true },
+          { id: 2, name: 'Submitted', active: false },
         ];
       } else {
         this.tabList = [
-          { id: 1, name: "Adviser", active: true },
-          { id: 2, name: "Parent", active: false },
+          { id: 1, name: 'Adviser', active: true },
+          { id: 2, name: 'Parent', active: false },
         ];
       }
 
       this.loading = false;
-      // console.log("userRoleID", userRoleID);
-      if (this.userRoleID == 6) {
-        console.log("junior");
+
+      let subModules = JSON.parse(this.$store.state.user.user.subModules);
+      let assingedModules = this.$store.state.user.user.assignedModuleID;
+      // if (this.$store.state.user.user.subModules || assingedModules == 23) {
+      //   console.log('true');
+      // } else {
+      //   console.log('false', assingedModules);
+      // }
+      if (this.userRoleID == 2) {
         this.axiosCall(
-          "/parent-records/getPrefectReport/" +
+          '/parent-records/getDisciplinaryReport/' +
             this.filter +
-            "/" +
+            '/' +
             this.tab +
-            "/" +
-            this.userRoleID,
-          "GET",
-        ).then((res) => {
-          if (res) {
-            // console.log(res.data);
-            let data = Array.isArray(res.data) ? res.data : [];
-            data.forEach((element, i) => {
-              data[i].name = this.toTitleCase(element.name);
-            });
-            this.data = data;
-            this.loading = false;
-          }
-        });
-      } else if (this.userRoleID == 7) {
-        console.log("senior");
-        this.axiosCall(
-          "/parent-records/getPrefectReport/" +
-            this.filter +
-            "/" +
-            this.tab +
-            "/" +
-            this.userRoleID,
-          "GET",
-        ).then((res) => {
-          if (res) {
-            // console.log(res.data);
-            let data = Array.isArray(res.data) ? res.data : [];
-            data.forEach((element, i) => {
-              data[i].name = this.toTitleCase(element.name);
-            });
-            this.data = data;
-            this.loading = false;
-          }
-        });
-      } else {
-        this.axiosCall(
-          "/parent-records/getDisciplinaryReport/" +
-            this.filter +
-            "/" +
-            this.tab +
-            "/" +
+            '/' +
             this.userId,
-          "GET",
+          'GET',
+        ).then((res) => {
+          if (res) {
+            // console.log(res.data);
+            let data = Array.isArray(res.data) ? res.data : [];
+            data.forEach((element, i) => {
+              data[i].name = this.toTitleCase(element.name);
+            });
+            this.data = data;
+            this.loading = false;
+          }
+        });
+      } else if (subModules.includes(23) || assingedModules == 23) {
+        console.log('senior');
+        this.axiosCall(
+          '/parent-records/getPrefectReport/' + this.filter + '/' + this.tab,
+          'GET',
         ).then((res) => {
           if (res) {
             // console.log(res.data);
@@ -336,7 +345,7 @@ export default {
       }
     },
     add() {
-      console.log("Love");
+      console.log('Love');
     },
     viewItem(item) {
       this.studentReportData = item;
@@ -345,26 +354,26 @@ export default {
     submitReport() {
       // alert("submitted");
       let data = {
-        status: this.userRoleID == 3 ? 1 : 2,
+        status: this.userRoleID == 2 ? 1 : 2,
       };
       this.axiosCall(
-        "/parent-records/updateStudentReport/" +
+        '/parent-records/updateStudentReport/' +
           this.studentReportData.reportID,
-        "PATCH",
+        'PATCH',
         data,
       ).then((res) => {
         console.log(res);
 
         if (res.data.status == 201) {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "success";
-          this.fadeAwayMessage.header = "Successfully Updated";
+          this.fadeAwayMessage.type = 'success';
+          this.fadeAwayMessage.header = 'Successfully Updated';
           this.reportDialog = false;
           this.initialize();
           // this.$router.go(0);
         } else if (res.data.status == 400) {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
+          this.fadeAwayMessage.type = 'error';
           this.fadeAwayMessage.header = res.data.msg;
         }
       });
@@ -381,13 +390,13 @@ export default {
     },
 
     confirmDelete() {
-      this.axiosCall("/user-details/" + this.SF10Data.id, "DELETE").then(
+      this.axiosCall('/user-details/' + this.SF10Data.id, 'DELETE').then(
         (res) => {
           console.log(res.data);
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "success";
-          this.fadeAwayMessage.header = "System Message";
-          this.fadeAwayMessage.message = "Account deleted successfully!";
+          this.fadeAwayMessage.type = 'success';
+          this.fadeAwayMessage.header = 'System Message';
+          this.fadeAwayMessage.message = 'Account deleted successfully!';
           this.initialize();
         },
       );

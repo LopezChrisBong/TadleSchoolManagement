@@ -212,7 +212,7 @@ export default {
         'Wednesday',
         'Thursday',
         'Friday',
-        'Saturday',
+        // 'Saturday',
       ],
       loading: true,
       headers: [
@@ -237,12 +237,12 @@ export default {
           sortable: false,
         },
         { title: 'Friday', value: 'Friday', align: 'center', sortable: false },
-        {
-          title: 'Saturday',
-          value: 'Saturday',
-          align: 'center',
-          sortable: false,
-        },
+        // {
+        //   title: 'Saturday',
+        //   value: 'Saturday',
+        //   align: 'center',
+        //   sortable: false,
+        // },
       ],
     };
   },

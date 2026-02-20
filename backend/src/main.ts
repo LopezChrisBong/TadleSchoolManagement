@@ -14,20 +14,18 @@ async function bootstrap() {
   var whitelist = [
     'http://localhost:8080',
     'http://localhost:3000',
+    'http://localhost:8081',
+    'http://127.0.0.1:8081',
+    // 'https://SSMS.life:3000',
+    // 'https://SSMS.life:8080',
+    // 'http://SSMS.life:8080',
+    // 'http://SSMS.life:3000',
+    // 'https://SSMS.life',
     'http://localhost',
-    'http://72.62.254.190',
-    'http://72.62.254.190:3000',
-    'http://72.62.254.190:8080',
-    'http://crms.space:8080',
-    'http://crms.space:3000',
-    'http://crms.space',
-    'https://crms.space:8080',
-    'https://crms.space:3000',
-    'https://crms.space',
   ];
   const httpsOptions = {
-    // key: fs.readFileSync(join(__dirname, '../ssl/key.pem')),
-    // cert: fs.readFileSync(join(__dirname, '../ssl/cert.pem')),
+    // key: fs.readFileSync(join(__dirname, '../key.pem')),
+    // cert: fs.readFileSync(join(__dirname, '../certificate.pem')),
   };
 
   const app = await NestFactory.create(AppModule, {
@@ -76,8 +74,7 @@ async function bootstrap() {
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb' }));
 
-  // await app.listen(3000, '0.0.0.0');
-  await app.listen(3000, '127.0.0.1');
+  await app.listen(3000);
   // await app.listen(process.env.NODE_ENV == 'development' ? 3000 : 3005);
 }
 bootstrap();

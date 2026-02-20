@@ -30,5 +30,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   ],
   controllers: [RoomsSectionController],
   providers: [RoomsSectionService],
+  exports: [RoomsSectionService],
 })
 export class RoomsSectionModule {}

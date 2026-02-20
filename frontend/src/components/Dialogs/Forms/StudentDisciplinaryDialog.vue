@@ -26,6 +26,19 @@
           >
             <v-container>
               <v-row>
+                <v-col cols="12" md="4">
+                  <v-text-field
+                    v-model="search"
+                    label="Search"
+                    prepend-inner-icon="mdi-magnify"
+                    variant="outlined"
+                    density="compact"
+                    hide-details
+                    clearable
+                    class="mr-2"
+                    color="primary"
+                  />
+                </v-col>
                 <v-col cols="12">
                   <div class="d-flex justify-space-between align-center">
                     <span class="text-red-lighten-2 text-caption">
@@ -184,6 +197,22 @@
                 auto-grow
               ></v-textarea>
             </v-col>
+            <v-col cols="12">
+              <v-autocomplete
+                v-model="tagStudents"
+                :rules="[formRules.required]"
+                variant="outlined"
+                density="comfortable"
+                class="rounded-lg"
+                multiple
+                item-title="name"
+                item-value="id"
+                label="Report Type"
+                color="pink"
+                :items="filteredStudentList"
+              >
+              </v-autocomplete>
+            </v-col>
           </v-row>
         </v-card-text>
         <v-divider></v-divider>
@@ -222,7 +251,7 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
 export default {
   props: {
     data: null,
@@ -231,9 +260,10 @@ export default {
   data() {
     return {
       studentDataList: [],
+      tagStudents: [],
       edit: true,
       dialog: false,
-      messageSaved: "",
+      messageSaved: '',
       report_type: 1,
       report_description: null,
       studentData: null,
@@ -241,27 +271,27 @@ export default {
       reportDialog: false,
       Option: {},
       filter: null,
-      search: "",
+      search: '',
       currentMonth: new Date(),
       loading: false,
       update: false,
       userRoleID: null,
       tableItems: [],
       headers: [
-        { title: "Student Name", value: "name", align: "start" },
+        { title: 'Student Name', value: 'name', align: 'start' },
         {
-          title: "Action",
-          value: "actions",
-          align: "end",
+          title: 'Action',
+          value: 'actions',
+          align: 'end',
           sortable: false,
           width: 50,
         },
       ],
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
@@ -279,13 +309,21 @@ export default {
         this.dialog = true;
         this.initialize();
         if (data.id) {
-          console.log("Recieve Data", data);
+          console.log('Recieve Data', data);
         }
       },
       deep: true,
     },
   },
-  computed: {},
+  computed: {
+    filteredStudentList() {
+      if (!this.studentData?.id) return this.studentDataList;
+
+      return this.studentDataList.filter(
+        (student) => student.id !== this.studentData.id,
+      );
+    },
+  },
 
   methods: {
     initialize() {
@@ -295,13 +333,13 @@ export default {
     },
     getTaggedStudent() {
       this.axiosCall(
-        "/rooms-section/getMyStudentAttendance/" +
+        '/rooms-section/getMyStudentAttendance/' +
           this.userRoleID +
-          "/" +
+          '/' +
           this.filter +
-          "/" +
+          '/' +
           this.data.roomId,
-        "GET",
+        'GET',
       ).then((res) => {
         // console.log("Data Students", res.data);
         if (res.data) {
@@ -326,27 +364,28 @@ export default {
         report_description: this.report_description,
         grade_level: this.data.grade_level,
         roomID: this.data.roomId,
+        tag_students: JSON.stringify(this.tagStudents),
       };
       //   console.log(data);
-      this.axiosCall("/parent-records/studentReport", "POST", data).then(
+      this.axiosCall('/parent-records/studentReport', 'POST', data).then(
         (res) => {
           //   console.log(res);
           if (res.data.status == 201) {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "success";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'success';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message =
-              "Student " +
+              'Student ' +
               this.studentData.name +
-              " successfully reported to adviser!";
+              ' successfully reported to adviser!';
             // this.attendanceDate = null;
             this.reportDialog = false;
             this.closeD();
             this.dialogConfirmSave = false;
           } else if (res.data.status == 400) {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
           }
         },
@@ -366,7 +405,7 @@ export default {
     },
 
     closeD() {
-      eventBus.emit("closeStudentReportDialog", true);
+      eventBus.emit('closeStudentReportDialog', true);
       this.dialog = false;
     },
   },

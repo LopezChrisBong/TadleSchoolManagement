@@ -77,6 +77,12 @@ export class StudentQuarterFinalGrade {
   })
   semester: string;
 
+  @Column({
+    type: 'boolean',
+    default: false,
+  })
+  isToView: boolean;
+
   @CreateDateColumn({
     nullable: false,
     type: 'datetime',

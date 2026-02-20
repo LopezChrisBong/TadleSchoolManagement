@@ -33,4 +33,7 @@ export class CreateStudentGradeDto {
 
   @ApiProperty()
   data: string;
+
+  @ApiProperty()
+  title: string;
 }

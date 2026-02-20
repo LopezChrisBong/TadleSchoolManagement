@@ -58,6 +58,8 @@ export class UserDetailsService {
         // .where('user.isValidated = 1')
         .where('user.id != 2') //security user ID
         .andWhere('user.isAdminApproved = 0')
+        .andWhere('UD.id != 3')
+        .andWhere('UD.id != 6')
         .getRawMany();
       return data;
     }
@@ -77,6 +79,8 @@ export class UserDetailsService {
       .where('user.id != 2') //security user ID
       .andWhere('user.isAdminApproved = 0')
       // .andWhere('UD.status = "'+user[0].status+'"')
+      .andWhere('UD.id != 3')
+      .andWhere('UD.id != 6')
       .getRawMany();
     return data;
   }
@@ -135,6 +139,8 @@ export class UserDetailsService {
         // .where('user.isValidated = 1')
         .where('user.id != 2') //security user ID
         .andWhere('user.isAdminApproved = 1')
+        .andWhere('user.id != 3')
+        .andWhere('user.id != 34')
         .getRawMany();
       return data;
     }
@@ -155,6 +161,8 @@ export class UserDetailsService {
       .where('user.id != 2') //security user ID
       .andWhere('user.isAdminApproved = 1')
       // .andWhere('UD.status = "'+user[0].status+'"')
+      .andWhere('user.id != 3')
+      .andWhere('user.id != 34')
       .getRawMany();
     return data;
   }

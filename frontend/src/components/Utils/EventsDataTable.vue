@@ -84,7 +84,12 @@
               size="small"
               variant="tonal"
               color="primary"
-              @click="viewItem(item)"
+              @click="
+                viewItem(
+                  item,
+                  this.$store.state.user.id == item.addedBy ? 'Update' : 'View',
+                )
+              "
             >
               <v-icon
                 center
@@ -373,9 +378,9 @@ export default {
       this.addData = [{ id: null }];
       this.action = "Add";
     },
-    viewItem(item) {
+    viewItem(item, action) {
       this.addData = item;
-      this.action = 'Update';
+      this.action = action;
     },
     confirmDelete() {
       this.axiosCall("/school-events/" + this.deleteData.id, "DELETE").then(

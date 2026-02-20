@@ -194,6 +194,78 @@ export class PdfGeneratorController {
     res.end(buffer);
   }
 
+  @Get(
+    '/getStudentSQuizes/:quarter/:semester/:roomID/:subjectID/:filter/:sub_subject/:id',
+  )
+  async getStudentSQuizes(
+    @Res() res,
+    @Param('quarter') quarter: string,
+    @Param('semester') semester: string,
+    @Param('roomID') roomID: string,
+    @Param('subjectID') subjectID: string,
+    @Param('filter') filter: string,
+    @Param('sub_subject') sub_subject: string,
+    @Param('id') id: string,
+  ): Promise<void> {
+    const buffer = await this.pdfGeneratorService.getStudentSQuizes(
+      quarter,
+      semester,
+      +roomID,
+      +subjectID,
+      +filter,
+      +sub_subject,
+      +id,
+    );
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'inline; filename=example.pdf',
+      'Content-Length': buffer.length,
+
+      // prevent cache
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      Pragma: 'no-cache',
+      Expires: 0,
+    });
+
+    res.end(buffer);
+  }
+
+  @Get(
+    '/getMAPEHQuizes/:quarter/:semester/:roomID/:subjectID/:filter/:sub_subject/:id',
+  )
+  async getMAPEHQuizes(
+    @Res() res,
+    @Param('quarter') quarter: string,
+    @Param('semester') semester: string,
+    @Param('roomID') roomID: string,
+    @Param('subjectID') subjectID: string,
+    @Param('filter') filter: string,
+    @Param('sub_subject') sub_subject: string,
+    @Param('id') id: string,
+  ): Promise<void> {
+    const buffer = await this.pdfGeneratorService.getMAPEHQuizes(
+      quarter,
+      semester,
+      +roomID,
+      +subjectID,
+      +filter,
+      +sub_subject,
+      +id,
+    );
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'inline; filename=example.pdf',
+      'Content-Length': buffer.length,
+
+      // prevent cache
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      Pragma: 'no-cache',
+      Expires: 0,
+    });
+
+    res.end(buffer);
+  }
+
   // @Get('getQRCode/:id')
   // async getQRCode(@Res() res, @Param('id') id: string): Promise<void> {
   //   const buffer = await this.pdfGeneratorService.getQRCode(id);
