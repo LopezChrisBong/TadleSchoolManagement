@@ -70,7 +70,7 @@
                       :color="item.average <= 80 ? 'red' : 'green'"
                       variant="flat"
                     >
-                      {{ item.average <= 80 ? "Fail" : "Passed" }}
+                      {{ item.average <= 80 ? 'Fail' : 'Passed' }}
                     </v-chip>
                   </template>
                 </v-data-table></v-col
@@ -88,6 +88,14 @@
               <v-icon size="small">mdi-printer</v-icon>
               Printer All
             </button>
+            <button
+              class="pa-2"
+              @click="printSF9()"
+              style="background-color: blue; color: white; border-radius: 10px"
+            >
+              <v-icon size="small">mdi-printer</v-icon>
+              Printer SF10
+            </button>
             <v-spacer></v-spacer>
             <v-btn color="red" outlined @click="closeD()">
               <v-icon>mdi-close-circle-outline</v-icon>
@@ -95,21 +103,12 @@
             </v-btn>
             <v-btn
               color="#e35e93"
+              variant="flat"
               class="white--text"
-              v-if="action == 'Add'"
-              @click="checkConflict('ADD')"
+              @click="submitToParent()"
             >
               <v-icon>mdi-check-circle</v-icon>
-              Add
-            </v-btn>
-            <v-btn
-              color="#e35e93"
-              class="white--text"
-              v-if="action == 'Update'"
-              @click="checkConflict('UPDATE')"
-            >
-              <v-icon>mdi-check-circle</v-icon>
-              Update
+              Submit to parent
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -130,7 +129,7 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
 export default {
   components: {},
   props: {
@@ -142,16 +141,16 @@ export default {
     return {
       updateID: null,
       dialog: false,
-      quarter: "1st Quarter",
+      quarter: '1st Quarter',
       semester: null,
       studentsGrade: [],
       students: [],
       headers: [],
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
@@ -162,17 +161,17 @@ export default {
     data: {
       handler(data) {
         this.dialog = true;
-        console.log("View Data", data);
+        console.log('View Data', data);
         if (data.id) {
-          data.grade_level == "Grade 11" || data.grade_level == "Grade 12"
-            ? (this.semester = "1st Semester")
-            : (this.semester = "Junior High");
+          data.grade_level == 'Grade 11' || data.grade_level == 'Grade 12'
+            ? (this.semester = '1st Semester')
+            : (this.semester = 'Junior High');
           this.initialize();
           this.updateID = data.id;
         } else {
-          data.grade_level == "Grade 11" || data.grade_level == "Grade 12"
-            ? (this.semester = "1st Semester")
-            : (this.semester = "Junior High");
+          data.grade_level == 'Grade 11' || data.grade_level == 'Grade 12'
+            ? (this.semester = '1st Semester')
+            : (this.semester = 'Junior High');
           this.initialize();
         }
       },
@@ -198,7 +197,7 @@ export default {
         const subject = item.subject_title;
         subjects.add(subject);
         quarters.add(item.quarter);
-        if (this.quarter === "All") {
+        if (this.quarter === 'All') {
           students[item.id][`${subject}_${item.quarter}`] = item.final_grade;
           if (!students[item.id][`${subject}_grades`]) {
             students[item.id][`${subject}_grades`] = [];
@@ -208,7 +207,7 @@ export default {
           students[item.id][subject] = item.final_grade;
         }
       });
-      if (this.quarter === "All") {
+      if (this.quarter === 'All') {
         Object.values(students).forEach((student) => {
           let subjectFinals = [];
 
@@ -226,12 +225,12 @@ export default {
           if (subjectFinals.length > 0) {
             const overallAvg =
               subjectFinals.reduce((a, b) => a + b, 0) / subjectFinals.length;
-            student["average"] = Math.round(parseFloat(overallAvg.toFixed(2)));
+            student['average'] = Math.round(parseFloat(overallAvg.toFixed(2)));
           }
         });
       }
       const subjectAverages = {};
-      if (this.quarter === "All") {
+      if (this.quarter === 'All') {
         subjects.forEach((subject) => {
           const allFinals = Object.values(students)
             .map((s) => s[`${subject}_Final`])
@@ -243,53 +242,53 @@ export default {
         });
         const allSubjectAvgs = Object.values(subjectAverages);
         if (allSubjectAvgs.length > 0) {
-          subjectAverages["average"] =
+          subjectAverages['average'] =
             allSubjectAvgs.reduce((a, b) => a + b, 0) / allSubjectAvgs.length;
         }
       }
 
       this.students = Object.values(students);
       let subjectHeaders = [];
-      if (this.quarter === "All") {
+      if (this.quarter === 'All') {
         subjectHeaders = Array.from(subjects).map((subject) => ({
           title: subject,
-          align: "center",
+          align: 'center',
           children: [
             ...Array.from(quarters).map((q) => ({
               title: q,
               key: `${subject}_${q}`,
-              align: "center",
+              align: 'center',
             })),
             {
-              title: "Final Grade",
+              title: 'Final Grade',
               key: `${subject}_Final`,
-              align: "center",
+              align: 'center',
             },
           ],
         }));
         subjectHeaders.push(
           {
-            title: "Final Average",
-            key: "average",
-            align: "center",
+            title: 'Final Average',
+            key: 'average',
+            align: 'center',
           },
           {
-            title: "Status",
-            key: "status",
-            align: "center",
+            title: 'Status',
+            key: 'status',
+            align: 'center',
           },
         );
       } else {
         subjectHeaders = Array.from(subjects).map((subject) => ({
           title: subject,
           key: subject,
-          align: "center",
+          align: 'center',
         }));
       }
 
       this.headers = [
-        { title: "No.", key: "id", align: "center", width: 20 },
-        { title: "Name", key: "name", align: "center", width: 80 },
+        // { title: 'LRN', key: 'lrnNo', align: 'center', width: 20 },
+        { title: 'Name', key: 'name', align: 'center', width: 80 },
         ...subjectHeaders,
       ];
       // this.subjectAverages = subjectAverages;
@@ -297,15 +296,15 @@ export default {
     },
     getAllStudentsGrade() {
       this.axiosCall(
-        "/enroll-student/getAllStudentsFinalGrade/" +
+        '/enroll-student/getAllStudentsFinalGrade/' +
           this.data.school_yearID +
-          "/" +
+          '/' +
           this.data.roomID +
-          "/" +
+          '/' +
           this.quarter +
-          "/" +
+          '/' +
           this.semester,
-        "GET",
+        'GET',
       ).then((res) => {
         // console.log(res.data);
         if (res.data) {
@@ -316,15 +315,15 @@ export default {
     },
     changeQuarter() {
       this.axiosCall(
-        "/enroll-student/getAllStudentsFinalGrade/" +
+        '/enroll-student/getAllStudentsFinalGrade/' +
           this.data.school_yearID +
-          "/" +
+          '/' +
           this.data.roomID +
-          "/" +
+          '/' +
           this.quarter +
-          "/" +
+          '/' +
           this.semester,
-        "GET",
+        'GET',
       ).then((res) => {
         // console.log(res.data);
         if (res.data) {
@@ -336,22 +335,67 @@ export default {
     printData() {
       window.open(
         process.env.VUE_APP_SERVER +
-          "/pdf-generator/getAllStudentsFinalGrade/" +
+          '/pdf-generator/getAllStudentsFinalGrade/' +
           this.data.school_yearID +
-          "/" +
+          '/' +
           this.data.roomID +
-          "/" +
+          '/' +
           this.quarter +
-          "/" +
+          '/' +
           this.semester +
-          "/" +
+          '/' +
           this.data.grade_level +
-          "",
-        "_blank",
+          '',
+        '_blank',
       );
     },
+    printSF9() {
+      let filter = this.$store.getters.getFilterSelected;
+      let userID = this.$store.state.user.id;
+      console.log(userID, filter);
+      window.open(
+        process.env.VUE_APP_SERVER +
+          '/pdf-generator/getSchoolForm10/' +
+          filter +
+          '/' +
+          userID +
+          '',
+        '_blank',
+      );
+    },
+    submitToParent() {
+      let filter = this.$store.getters.getFilterSelected;
+      let allData = {
+        filter: filter,
+        quarter: this.quarter,
+        semester: this.semester,
+        roomID: this.data.roomID,
+      };
+      let data = {
+        data: allData,
+      };
+      this.axiosCall(
+        '/rooms-section/updateParentToView/' + this.data.roomID,
+        'PATCH',
+        data,
+      ).then((res) => {
+        console.log(res.data);
+        if (res.data.status == 200) {
+          this.closeD();
+          this.fadeAwayMessage.show = true;
+          this.fadeAwayMessage.type = 'success';
+          this.fadeAwayMessage.header = 'System Message';
+          this.fadeAwayMessage.message = 'Successfully submitted.';
+        } else {
+          this.fadeAwayMessage.show = true;
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
+          this.fadeAwayMessage.message = res.data.msg;
+        }
+      });
+    },
     closeD() {
-      eventBus.emit("closeStudentGradeDialog", false);
+      eventBus.emit('closeStudentGradeDialog', false);
       this.dialog = false;
     },
   },

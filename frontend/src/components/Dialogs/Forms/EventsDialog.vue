@@ -106,17 +106,31 @@
                   </v-btn>
                 </div>
                 <div v-else>
-                  <v-file-input
-                    variant="outlined"
-                    v-model="uploadedFile"
-                    @update:modelValue="onFileChange"
-                    density="comfortable"
-                    class="rounded-lg"
-                    label="Event Image(landscape)"
-                    color="pink"
-                    accept=".png, .jpg, .jpeg"
-                    :clearable="false"
-                  />
+                  <div v-if="action == 'View'">
+                    <v-btn
+                      color="green"
+                      variant="flat"
+                      block
+                      class="pa-2 mx-2"
+                      @click="viewFile()"
+                    >
+                      <v-icon start> mdi-eye-outline </v-icon>
+                      View File
+                    </v-btn>
+                  </div>
+                  <div v-else>
+                    <v-file-input
+                      variant="outlined"
+                      v-model="uploadedFile"
+                      @update:modelValue="onFileChange"
+                      density="comfortable"
+                      class="rounded-lg"
+                      label="Event Image(landscape)"
+                      color="pink"
+                      accept=".png, .jpg, .jpeg"
+                      :clearable="false"
+                    />
+                  </div>
                 </div>
               </v-col>
               <v-col cols="12">

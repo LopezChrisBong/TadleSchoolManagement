@@ -26,5 +26,8 @@ export class CreateStudentReportDisciplinaryDto {
   grade_level: string;
 
   @ApiProperty()
+  tag_students: string;
+
+  @ApiProperty()
   status: number;
 }

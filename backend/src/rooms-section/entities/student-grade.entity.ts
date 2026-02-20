@@ -75,6 +75,12 @@ export class StudentGrade {
   })
   semester: string;
 
+  @Column({
+    type: 'longtext',
+    nullable: false,
+  })
+  title: string;
+
   @CreateDateColumn({
     nullable: false,
     type: 'datetime',

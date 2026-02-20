@@ -3,9 +3,10 @@ import { PdfGeneratorService } from './pdf-generator.service';
 import { PdfGeneratorController } from './pdf-generator.controller';
 
 import { MailService } from 'src/mail/mail.service';
+import { RoomsSectionModule } from 'src/rooms-section/rooms-section.module';
 
 @Module({
-  // imports:[IpcrTargetModule],
+  imports: [RoomsSectionModule],
   controllers: [PdfGeneratorController],
   providers: [PdfGeneratorService, MailService],
 })

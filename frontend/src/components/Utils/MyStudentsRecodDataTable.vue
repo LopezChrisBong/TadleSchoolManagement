@@ -16,18 +16,23 @@
       </v-col>
       <v-spacer></v-spacer>
       <v-col cols="12" md="12" class="flex-items" style="overflow: auto">
-        <v-tab
-          v-for="tab in tabList"
-          :key="tab.id"
-          :value="tab.id"
-          @click="changeTab(tab)"
-          :class="[
-            ' pa-3 mx-3 transition-all',
-            tab.active ? 'bg-pink-lighten-1 text-white' : 'bg-grey-lighten-4',
-          ]"
-          rounded="lg"
-          >{{ tab.subject_title }}</v-tab
-        >
+        <v-tabs v-model="tab">
+          <v-tab
+            v-for="item in tabList"
+            :key="item.id"
+            :value="item.id"
+            @click="changeTab(item)"
+            :class="[
+              'pa-3 mx-3 transition-all',
+              tab === item.id
+                ? 'bg-pink-lighten-1 text-white'
+                : 'bg-grey-lighten-4',
+            ]"
+            rounded="lg"
+          >
+            {{ item.subject_title }}
+          </v-tab>
+        </v-tabs>
       </v-col>
     </v-row>
     <v-card class="ma-5 dt-container" elevation="1">
@@ -124,10 +129,10 @@
   </div>
 </template>
 <script>
-import eventBus from "@/eventBus";
-import StudentDisciplinaryDialog from "../../components/Dialogs/Forms/StudentDisciplinaryDialog.vue";
-import StudentAttendanceDialog from "../../components/Dialogs/Forms/StudentAttendanceDialog.vue";
-import ViewStudentClassRecordFialog from "../Dialogs/Views/ViewStudentClassRecordDialog.vue";
+import eventBus from '@/eventBus';
+import StudentDisciplinaryDialog from '../../components/Dialogs/Forms/StudentDisciplinaryDialog.vue';
+import StudentAttendanceDialog from '../../components/Dialogs/Forms/StudentAttendanceDialog.vue';
+import ViewStudentClassRecordFialog from '../Dialogs/Views/ViewStudentClassRecordDialog.vue';
 export default {
   components: {
     StudentDisciplinaryDialog,
@@ -135,14 +140,14 @@ export default {
     ViewStudentClassRecordFialog,
   },
   data: () => ({
-    search: "",
+    search: '',
     reportData: null,
     headers: [
-      { title: "Class Name", value: "room_section", align: "start" },
+      { title: 'Class Name', value: 'room_section', align: 'start' },
       {
-        title: "Actions",
-        value: "actions",
-        align: "center",
+        title: 'Actions',
+        value: 'actions',
+        align: 'center',
         sortable: false,
         width: 200,
       },
@@ -172,29 +177,29 @@ export default {
     dialogConfirmDelete: false,
     fadeAwayMessage: {
       show: false,
-      type: "success",
-      header: "Successfully Deleted!",
-      message: "",
+      type: 'success',
+      header: 'Successfully Deleted!',
+      message: '',
       top: 10,
     },
   }),
 
   mounted() {
     this.initialize();
-    eventBus.on("closeStudentAttendanceDialog", () => {
+    eventBus.on('closeStudentAttendanceDialog', () => {
       this.initialize();
     });
-    eventBus.on("closeStudentClassRecordDialog", () => {
+    eventBus.on('closeStudentClassRecordDialog', () => {
       this.initialize();
     });
-    eventBus.on("closeStudentReportDialog", () => {
+    eventBus.on('closeStudentReportDialog', () => {
       this.initialize();
     });
   },
   beforeUnmount() {
-    eventBus.off("closeStudentAttendanceDialog");
-    eventBus.off("closeStudentClassRecordDialog");
-    eventBus.off("closeStudentReportDialog");
+    eventBus.off('closeStudentAttendanceDialog');
+    eventBus.off('closeStudentClassRecordDialog');
+    eventBus.off('closeStudentReportDialog');
   },
 
   watch: {
@@ -229,48 +234,52 @@ export default {
       await this.getMyClassRecord(); // Now it's safe to run
     },
     async getMySubjectList() {
-      const res = await this.axiosCall("/subjects/getMySubjects", "GET");
+      const res = await this.axiosCall('/subjects/getMySubjects', 'GET');
 
       if (res.data && res.data.length > 0) {
         let data = res.data;
 
-        // Flatten if needed
         if (Array.isArray(data[0])) {
           data = data[0];
         }
 
-        // Format titles + mark first as active
-        data = data.map((item, index) => ({
+        data = data.map((item) => ({
           ...item,
           subject_title: this.toTitleCase(item.subject_title),
-          active: index === 0, //  mark first as active
         }));
-        // console.log(data);
-        //  Set first tab values
-        this.tab = data[0].id;
-        this.activeTab = data[0];
+
         this.tabList = data;
+
+        if (!this.tab) {
+          this.tab = data[0].id;
+          this.activeTab = data[0];
+        } else {
+          const found = data.find((d) => d.id === this.tab);
+          if (found) {
+            this.activeTab = found;
+          }
+        }
       }
     },
     getMyClassRecord() {
       let filter = this.$store.getters.getFilterSelected;
       this.axiosCall(
-        "/subjects/getMyClassRecord/" + filter + "/" + this.tab,
-        "GET",
+        '/subjects/getMyClassRecord/' + filter + '/' + this.tab,
+        'GET',
       ).then((res) => {
         if (res.data.status != 500 && Array.isArray(res.data)) {
           res.data.forEach((element, i) => {
             res.data[i].room_section = this.toUpperCaseData(
-              element.room_section || "",
+              element.room_section || '',
             );
           });
           this.data = res.data;
         } else {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
           this.fadeAwayMessage.message =
-            "Please set your prefered subject in profile tab!";
+            'Please set your prefered subject in profile tab!';
         }
       });
     },
@@ -292,17 +301,17 @@ export default {
     // },
     editItem(item) {
       this.attendanceData = item;
-      this.action = "Verify";
+      this.action = 'Verify';
     },
 
     viewItem(item) {
       console.log(item);
       this.viewData = item;
-      this.action = "View";
+      this.action = 'View';
     },
     reportItem(item) {
       this.reportData = item;
-      this.action = "View";
+      this.action = 'View';
     },
     // confirmDelete() {
     //   this.axiosCall("/request-type/" + this.deleteData.id, "DELETE").then(

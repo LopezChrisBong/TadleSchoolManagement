@@ -1,43 +1,68 @@
 <template>
   <div>
     <v-row class="mx-2 mt-3">
-      <v-col cols="12" md="6" class="flex-items">
+      <v-col cols="12" md="8" class="flex-items">
         <!-- <v-tabs v-model="activeTab" color="#147452" align-tabs="left">
             <v-tab v-for="tab in tabList" :key="tab.id" @click="changeTab(tab)">{{
               tab.name
             }}</v-tab>
           </v-tabs> -->
-        <v-btn
-          class="white--text ml-2 rounded-lg"
-          :color="$vuetify.theme.themes.light.submitBtns"
-          v-if="this.$store.state.user.user.isAdminApproved == 1"
-          @click="underLoad()"
-        >
-          <v-icon left> mdi-clipboard-list-outline </v-icon>
-          List of Underload & Overload
-        </v-btn>
+        <v-row>
+          <v-col cols="12" md="6">
+            <v-btn
+              class="white--text ml-2 rounded-lg"
+              :color="$vuetify.theme.themes.light.submitBtns"
+              v-if="this.$store.state.user.user.isAdminApproved == 1"
+              @click="underLoad()"
+            >
+              <v-icon left> mdi-clipboard-list-outline </v-icon>
+              List of Underload & Overload
+            </v-btn></v-col
+          >
+          <v-col cols="12" md="6">
+            <v-text-field
+              v-model="search"
+              label="Search"
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              density="compact"
+              hide-details
+              clearable
+              class="mr-2"
+              color="primary"
+            />
+          </v-col>
+        </v-row>
       </v-col>
-      <v-spacer></v-spacer>
-      <v-col cols="12" md="6" class="d-flex justify-space-between">
-        <v-text-field
-          v-model="search"
-          label="Search"
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          density="compact"
-          hide-details
-          clearable
-          class="mr-2"
-          color="primary"
-        />
-        <v-btn
-          class="white--text ml-2 rounded-lg"
-          :color="$vuetify.theme.themes.light.submitBtns"
-          @click="printDialog = true"
-        >
-          <v-icon left> mdi-printer-outline </v-icon>
-          Print
-        </v-btn>
+      <v-col cols="12" md="4" class="flex-items mt-5">
+        <v-row>
+          <v-col cols="12" md="8">
+            <v-autocomplete
+              v-model="teacher"
+              :rules="[formRules.required]"
+              :items="TeachersList"
+              item-title="name"
+              @update:modelValue="changeTeacher"
+              item-value="id"
+              label="Faculty"
+              variant="outlined"
+              density="compact"
+              prepend-inner-icon="mdi-account-tie"
+              clearable
+            />
+          </v-col>
+          <v-col cols="12" md="4">
+            <v-btn
+              class="white--text rounded-lg"
+              :color="$vuetify.theme.themes.light.submitBtns"
+              @click="printDialog = true"
+            >
+              <v-icon left> mdi-printer-outline </v-icon>
+              Print
+            </v-btn></v-col
+          >
+        </v-row>
+
         <!-- <v-btn
           class="white--text ml-2 rounded-lg"
           :color="$vuetify.theme.themes.light.submitBtns"
@@ -85,9 +110,9 @@
             class="my-1"
           >
             <v-icon start size="18">{{
-              tab === 1 ? "mdi-check" : "mdi-eye"
+              tab === 1 ? 'mdi-check' : 'mdi-eye'
             }}</v-icon>
-            {{ tab === 1 ? "Verify" : "View" }}
+            {{ tab === 1 ? 'Verify' : 'View' }}
           </v-btn>
           <v-btn
             v-if="tab === 1"
@@ -105,7 +130,7 @@
 
         <template #no-data>
           <v-alert type="info" border="start" color="white">
-            No users found.
+            Select faculty to see schedule.
           </v-alert>
         </template>
       </v-data-table>
@@ -190,11 +215,11 @@
   </div>
 </template>
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
 export default {
   components: {},
   data: () => ({
-    search: "",
+    search: '',
     taggingData: null,
     fullname: null,
     applicantData: null,
@@ -202,52 +227,52 @@ export default {
     teacher: null,
     headers: [
       {
-        title: "Time",
-        value: "time",
-        align: "start",
-        valign: "start",
+        title: 'Time',
+        value: 'time',
+        align: 'start',
+        valign: 'start',
         sortable: false,
       },
       {
-        title: "Faculty Name",
-        value: "name",
-        align: "start",
-        valign: "start",
+        title: 'Faculty Name',
+        value: 'name',
+        align: 'start',
+        valign: 'start',
         sortable: false,
       },
       {
-        title: "Monday",
-        value: "Monday",
-        align: "center",
-        valign: "center",
+        title: 'Monday',
+        value: 'Monday',
+        align: 'center',
+        valign: 'center',
         sortable: false,
       },
       {
-        title: "Tuesday",
-        value: "Tuesday",
-        align: "center",
-        valign: "center",
+        title: 'Tuesday',
+        value: 'Tuesday',
+        align: 'center',
+        valign: 'center',
         sortable: false,
       },
       {
-        title: "Wednesday",
-        value: "Wednesday",
-        align: "center",
-        valign: "center",
+        title: 'Wednesday',
+        value: 'Wednesday',
+        align: 'center',
+        valign: 'center',
         sortable: false,
       },
       {
-        title: "Thursday",
-        value: "Thursday",
-        align: "center",
-        valign: "center",
+        title: 'Thursday',
+        value: 'Thursday',
+        align: 'center',
+        valign: 'center',
         sortable: false,
       },
       {
-        title: "Friday",
-        value: "Friday",
-        align: "center",
-        valign: "center",
+        title: 'Friday',
+        value: 'Friday',
+        align: 'center',
+        valign: 'center',
         sortable: false,
       },
       // {
@@ -272,17 +297,17 @@ export default {
     printData: [],
     verified: [],
     perPageChoices: [
-      { text: "5", value: 5 },
-      { text: "10", value: 10 },
-      { text: "20", value: 20 },
-      { text: "50", value: 50 },
-      { text: "100", value: 100 },
-      { text: "250", value: 250 },
-      { text: "500", value: 500 },
+      { text: '5', value: 5 },
+      { text: '10', value: 10 },
+      { text: '20', value: 20 },
+      { text: '50', value: 50 },
+      { text: '100', value: 100 },
+      { text: '250', value: 250 },
+      { text: '500', value: 500 },
     ],
-    activeTab: { id: 1, name: "Tracks" },
+    activeTab: { id: 1, name: 'Tracks' },
     tab: 1,
-    tabList: [{ id: 1, name: "Tracks" }],
+    tabList: [{ id: 1, name: 'Tracks' }],
     coreTimeData: null,
     designationData: null,
     totalCount: 0,
@@ -304,38 +329,38 @@ export default {
     JobPostPrint: false,
     fadeAwayMessage: {
       show: false,
-      type: "success",
-      header: "Successfully Deleted!",
-      message: "",
+      type: 'success',
+      header: 'Successfully Deleted!',
+      message: '',
       top: 10,
     },
     yearList: [],
     monthsList: [
-      { id: 0, name: "All" },
-      { id: 1, name: "January" },
-      { id: 2, name: "February" },
-      { id: 3, name: "March" },
-      { id: 4, name: "April" },
-      { id: 5, name: "May" },
-      { id: 6, name: "June" },
-      { id: 7, name: "July" },
-      { id: 8, name: "August" },
-      { id: 9, name: "September" },
-      { id: 10, name: "October" },
-      { id: 11, name: "November" },
-      { id: 12, name: "December" },
+      { id: 0, name: 'All' },
+      { id: 1, name: 'January' },
+      { id: 2, name: 'February' },
+      { id: 3, name: 'March' },
+      { id: 4, name: 'April' },
+      { id: 5, name: 'May' },
+      { id: 6, name: 'June' },
+      { id: 7, name: 'July' },
+      { id: 8, name: 'August' },
+      { id: 9, name: 'September' },
+      { id: 10, name: 'October' },
+      { id: 11, name: 'November' },
+      { id: 12, name: 'December' },
     ],
   }),
 
   mounted() {
     this.initialize();
-    eventBus.on("closeAddTrackDialog", () => {
+    eventBus.on('closeAddTrackDialog', () => {
       this.initialize();
     });
   },
 
   beforeUnmount() {
-    eventBus.off("closeAddTrackDialog");
+    eventBus.off('closeAddTrackDialog');
   },
 
   watch: {
@@ -370,7 +395,7 @@ export default {
   methods: {
     tag(item) {
       this.taggingData = item;
-      this.action = "Tag";
+      this.action = 'Tag';
     },
 
     printJobApplicants() {
@@ -385,26 +410,30 @@ export default {
     initialize() {
       // this.handleAllChanges();
       this.getRoleTeachers();
-      this.loading = true;
-      let filter = this.$store.getters.getFilterSelected;
-      this.axiosCall("/enroll-student/FacultySchedule/" + filter, "GET").then(
-        (res) => {
-          if (res) {
-            this.data = res.data;
-            this.loading = false;
-          }
-        },
-      );
+      // this.loading = true;
+      // let filter = this.$store.getters.getFilterSelected;
+      // this.axiosCall(
+      //   '/enroll-student/getSpecificFacultySchedule/' +
+      //     filter +
+      //     '/' +
+      //     this.teacher,
+      //   'GET',
+      // ).then((res) => {
+      //   if (res) {
+      //     this.data = res.data;
+      //     this.loading = false;
+      //   }
+      // });
     },
     underLoad() {
       // alert("underload faculty");
       let filter = this.$store.getters.getFilterSelected;
       window.open(
         process.env.VUE_APP_SERVER +
-          "/pdf-generator/getAllUnderLoadFaculty/" +
+          '/pdf-generator/getAllUnderLoadFaculty/' +
           filter +
-          "",
-        "_blank",
+          '',
+        '_blank',
       );
     },
     changeTab(tab) {
@@ -421,46 +450,59 @@ export default {
     },
     add() {
       this.coreTimeData = [{ id: null }];
-      this.action = "Add";
+      this.action = 'Add';
     },
     editItem(item) {
       console.log(this.tab, item);
       this.coreTimeData = item;
-      this.action = "Update";
+      this.action = 'Update';
     },
 
     getRoleTeachers() {
       this.axiosCall(
-        "/user-details/getAllVerifiedUser/TeachingRoleSched",
-        "GET",
+        '/user-details/getAllVerifiedUser/TeachingRoleSched',
+        'GET',
       ).then((res) => {
-        console.log("Teacher Role", res.data);
+        console.log('Teacher Role', res.data);
         this.TeachersList = res.data;
       });
     },
 
     printMySched() {
-      console.log("User", this.teacher);
+      console.log('User', this.teacher);
       if (this.teacher == null) {
         this.fadeAwayMessage.show = true;
-        this.fadeAwayMessage.type = "error";
-        this.fadeAwayMessage.header = "System Message";
-        this.fadeAwayMessage.message = "Please select teacher to generate!";
+        this.fadeAwayMessage.type = 'error';
+        this.fadeAwayMessage.header = 'System Message';
+        this.fadeAwayMessage.message = 'Please select teacher to generate!';
       } else {
         this.printDialog = false;
         let filter = this.$store.getters.getFilterSelected;
         window.open(
           process.env.VUE_APP_SERVER +
-            "/pdf-generator/getMySchedule/" +
+            '/pdf-generator/getMySchedule/' +
             this.teacher +
-            "/" +
+            '/' +
             filter +
-            "",
-          "_blank", // <- This is what makes it open in a new window.
+            '',
+          '_blank', // <- This is what makes it open in a new window.
         );
       }
     },
 
+    changeTeacher(data) {
+      let filter = this.$store.getters.getFilterSelected;
+      this.axiosCall(
+        '/enroll-student/getSpecificFacultySchedule/' + filter + '/' + data,
+        'GET',
+      ).then((res) => {
+        if (res) {
+          this.data = res.data;
+          this.loading = false;
+        }
+      });
+      // alert(data);
+    },
     // deleteItem() {
     //   this.axiosCall("/rooms-section/" + this.deleteData.id, "DELETE").then(
     //     (res) => {

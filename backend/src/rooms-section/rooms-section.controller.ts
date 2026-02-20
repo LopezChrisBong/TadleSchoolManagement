@@ -147,7 +147,7 @@ export class RoomsSectionController {
   }
 
   @Get(
-    'getAllGradeByQuarter/:quarter/:semester/:roomID/:subjectID/:type/:getAllGradeByQuarter/:sub_subject',
+    'getAllGradeByQuarter/:quarter/:semester/:roomID/:subjectID/:type/:filter/:sub_subject',
   )
   getAllGradeByQuarter(
     @Param('quarter') quarter: string,
@@ -155,7 +155,7 @@ export class RoomsSectionController {
     @Param('roomID') roomID: string,
     @Param('subjectID') subjectID: string,
     @Param('type') type: string,
-    @Param('getAllGradeByQuarter') getAllGradeByQuarter: string,
+    @Param('filter') filter: string,
     @Param('sub_subject') sub_subject: string,
   ) {
     return this.roomsSectionService.getAllGradeByQuarter(
@@ -164,19 +164,38 @@ export class RoomsSectionController {
       +roomID,
       +subjectID,
       +type,
-      +getAllGradeByQuarter,
+      +filter,
       +sub_subject,
     );
   }
 
-  @Get('getAllAttendanceWholeSemester/:roomID/:subjectID')
+  @Get('getAllAttendanceWholeSemester/:roomID/:subjectID/:filter')
   getAllAttendanceWholeSemester(
     @Param('roomID') roomID: string,
     @Param('subjectID') subjectID: string,
+    @Param('filter') filter: string,
   ) {
     return this.roomsSectionService.getAllAttendanceWholeSemester(
       +roomID,
       +subjectID,
+      +filter,
+    );
+  }
+
+  @Get('conflictDayTime/:teacherID/:subjectID/:timeFrom/:timeTo/:days')
+  conflictDayTime(
+    @Param('teacherID') teacherID: string,
+    @Param('subjectID') subjectID: string,
+    @Param('timeFrom') timeFrom: string,
+    @Param('timeTo') timeTo: string,
+    @Param('days') days: string,
+  ) {
+    return this.roomsSectionService.conflictDayTime(
+      +teacherID,
+      +subjectID,
+      timeFrom,
+      timeTo,
+      days,
     );
   }
 
@@ -352,6 +371,17 @@ export class RoomsSectionController {
   ) {
     return this.roomsSectionService.updateAttendance(
       date,
+      updateStudentAttendanceDto,
+    );
+  }
+
+  @Patch('updateParentToView/:id')
+  updateParentToView(
+    @Param('id') id: string,
+    @Body() updateStudentAttendanceDto: UpdateStudentAttendanceDto,
+  ) {
+    return this.roomsSectionService.updateParentToView(
+      +id,
       updateStudentAttendanceDto,
     );
   }

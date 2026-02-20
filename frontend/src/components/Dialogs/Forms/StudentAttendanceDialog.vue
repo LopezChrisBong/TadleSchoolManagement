@@ -278,7 +278,7 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
 export default {
   props: {
     data: null,
@@ -289,14 +289,14 @@ export default {
       studentAttendace: [],
       edit: true,
       dialog: false,
-      messageSaved: "",
+      messageSaved: '',
       ratingPeriodBeginMenu: false,
       dialogConfirmSave: false,
       attendanceDate: null,
       attendanceDialog: false,
       Option: {},
       filter: null,
-      search: "",
+      search: '',
       currentMonth: new Date(),
       loading: false,
       update: false,
@@ -304,20 +304,20 @@ export default {
       headerSemester: [],
       tableItems: [],
       headers: [
-        { title: "Student Name", value: "name", align: "start" },
+        { title: 'Student Name', value: 'name', align: 'start' },
         {
-          title: "Attendance",
-          value: "attendance",
-          align: "center",
+          title: 'Attendance',
+          value: 'attendance',
+          align: 'center',
           sortable: false,
           width: 600,
         },
       ],
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
@@ -335,7 +335,7 @@ export default {
         this.dialog = true;
         this.initialize();
         if (data.id) {
-          console.log("Recieve Data", data);
+          console.log('Recieve Data', data);
         }
       },
       deep: true,
@@ -343,14 +343,14 @@ export default {
   },
   computed: {
     currentMonthLabel() {
-      return this.currentMonth.toLocaleString("default", {
-        month: "long",
-        year: "numeric",
+      return this.currentMonth.toLocaleString('default', {
+        month: 'long',
+        year: 'numeric',
       });
     },
     filteredHeaders() {
       return this.headerSemester.filter((header) => {
-        if (header.key === "student_name") return true;
+        if (header.key === 'student_name') return true;
         const date = new Date(header.key);
         return (
           date.getMonth() === this.currentMonth.getMonth() &&
@@ -363,7 +363,7 @@ export default {
       return this.tableItems.map((item) => {
         const newItem = {};
         allowedKeys.forEach((key) => {
-          newItem[key] = item[key] ?? ""; // Keep value if exists
+          newItem[key] = item[key] ?? ''; // Keep value if exists
         });
         return newItem;
       });
@@ -392,15 +392,15 @@ export default {
     },
     getTaggedStudent() {
       this.axiosCall(
-        "/rooms-section/getMyStudentAttendance/" +
+        '/rooms-section/getMyStudentAttendance/' +
           this.userRoleID +
-          "/" +
+          '/' +
           this.filter +
-          "/" +
+          '/' +
           this.data.roomId,
-        "GET",
+        'GET',
       ).then((res) => {
-        console.log("Data Students", res.data);
+        console.log('Data Students', res.data);
         if (res.data) {
           this.studentAttendace = res.data;
         }
@@ -409,9 +409,9 @@ export default {
     saveAttendance() {
       if (this.attendanceDate == null) {
         this.fadeAwayMessage.show = true;
-        this.fadeAwayMessage.type = "error";
-        this.fadeAwayMessage.header = "System Message";
-        this.fadeAwayMessage.message = "Please select date before saving!";
+        this.fadeAwayMessage.type = 'error';
+        this.fadeAwayMessage.header = 'System Message';
+        this.fadeAwayMessage.message = 'Please select date before saving!';
       } else {
         // alert(this.studentAttendace[0].attendance);
         this.dialogConfirmSave = true;
@@ -429,28 +429,28 @@ export default {
         teacherID: userId,
       };
       console.log(data);
-      this.axiosCall("/rooms-section/studentAttendance", "POST", data).then(
+      this.axiosCall('/rooms-section/studentAttendance', 'POST', data).then(
         (res) => {
           console.log(res);
           if (res.data.status == 201) {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "success";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'success';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
             // this.attendanceDate = null;
             this.changeDate();
             this.dialogConfirmSave = false;
           } else if (res.data.status == 400) {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
           }
         },
       );
     },
     updateAttendance() {
-      console.log("updated");
+      console.log('updated');
       let data = {
         data: JSON.stringify(this.studentAttendace),
         // attendanceDate: this.formatDate3(this.attendanceDate),
@@ -458,9 +458,9 @@ export default {
       };
       console.log(data);
       this.axiosCall(
-        "/rooms-section/updateAttendance/" +
+        '/rooms-section/updateAttendance/' +
           this.formatDate3(this.attendanceDate),
-        "PATCH",
+        'PATCH',
         data,
       ).then((res) => {
         console.log(res.data);
@@ -468,15 +468,15 @@ export default {
           this.changeDate();
           this.dialogConfirmSave = false;
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "success";
-          this.fadeAwayMessage.header = "System Message";
-          this.fadeAwayMessage.message = "Successfully updated attendance!";
+          this.fadeAwayMessage.type = 'success';
+          this.fadeAwayMessage.header = 'System Message';
+          this.fadeAwayMessage.message = 'Successfully updated attendance!';
 
           // location.reload();
         } else if (res.data.status == 400) {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
           this.fadeAwayMessage.message = res.data.msg;
         }
       });
@@ -484,9 +484,9 @@ export default {
     save(id) {
       if (this.attendanceDate == null) {
         this.fadeAwayMessage.show = true;
-        this.fadeAwayMessage.type = "error";
-        this.fadeAwayMessage.header = "System Message";
-        this.fadeAwayMessage.message = "Please select date before saving!";
+        this.fadeAwayMessage.type = 'error';
+        this.fadeAwayMessage.header = 'System Message';
+        this.fadeAwayMessage.message = 'Please select date before saving!';
       } else {
         console.log(id);
       }
@@ -504,23 +504,23 @@ export default {
     changeDate() {
       console.log(this.data.subjectId, this.data.roomId);
       this.axiosCall(
-        "/rooms-section/getAllAttendanceByDate/" +
+        '/rooms-section/getAllAttendanceByDate/' +
           this.formatDate3(this.attendanceDate) +
-          "/" +
+          '/' +
           this.data.roomId +
-          "/" +
+          '/' +
           this.data.subjectId,
-        "GET",
+        'GET',
       ).then((res) => {
-        console.log("Data Students", res.data);
+        console.log('Data Students', res.data);
 
         if (res.data && Array.isArray(res.data) && res.data.length > 0) {
           this.studentAttendace = res.data;
           this.edit = false;
           this.messageSaved =
-            "Attendance for " +
+            'Attendance for ' +
             this.formatDate(this.attendanceDate) +
-            " has already been recorded. Only attendance within 2 days before the current date can be updated.";
+            ' has already been recorded. Only attendance within 2 days before the current date can be updated.';
           if (this.isWithinThreeDaysBeforeToday(this.attendanceDate)) {
             this.update = true;
           } else {
@@ -535,13 +535,17 @@ export default {
     },
 
     getAllAttendanceSemester() {
+      let filter = this.$store.getters.getFilterSelected;
       this.axiosCall(
-        "/rooms-section/getAllAttendanceWholeSemester/" +
+        '/rooms-section/getAllAttendanceWholeSemester/' +
           this.data.roomId +
-          "/" +
-          this.data.subjectId,
-        "GET",
+          '/' +
+          this.data.subjectId +
+          '/' +
+          filter,
+        'GET',
       ).then((res) => {
+        console.log('getAllAttendanceWholeSemester', res.data);
         let data = res.data;
         this.changeData(data);
       });
@@ -551,15 +555,15 @@ export default {
       let updated = data.map((row) => {
         let newRow = { ...row };
         for (let key in newRow) {
-          if (key !== "student_name" && key !== "subject") {
+          if (key !== 'student_name' && key !== 'subject') {
             newRow[key] =
-              newRow[key] === "0"
-                ? { text: "❌", cls: "text-h5 red--text" }
-                : newRow[key] === "1"
-                ? { text: "✅", cls: "text-h5 green--text" }
-                : newRow[key] === "2"
-                ? { text: "◩", cls: "text-h4 orange--text" }
-                : { text: "◪", cls: "text-h4 blue--text" };
+              newRow[key] === '0'
+                ? { text: '❌', cls: 'text-h5 red--text' }
+                : newRow[key] === '1'
+                ? { text: '✅', cls: 'text-h5 green--text' }
+                : newRow[key] === '2'
+                ? { text: '◩', cls: 'text-h4 orange--text' }
+                : { text: '◪', cls: 'text-h4 blue--text' };
           }
         }
         return newRow;
@@ -569,7 +573,7 @@ export default {
       const dates = Array.from(
         new Set(
           rawData.flatMap((r) =>
-            Object.keys(r).filter((k) => k !== "student_name"),
+            Object.keys(r).filter((k) => k !== 'student_name'),
           ),
         ),
       );
@@ -578,10 +582,10 @@ export default {
         const name = row.student_name;
         if (!grouped[name]) {
           grouped[name] = { student_name: name };
-          dates.forEach((date) => (grouped[name][date] = "")); // empty default
+          dates.forEach((date) => (grouped[name][date] = '')); // empty default
         }
         Object.entries(row).forEach(([key, value]) => {
-          if (key !== "student_name") {
+          if (key !== 'student_name') {
             grouped[name][key] = value;
           }
         });
@@ -589,9 +593,9 @@ export default {
       const tableItems = Object.values(grouped);
       const headers = [
         {
-          title: "Name",
-          key: "student_name",
-          align: "start",
+          title: 'Name',
+          key: 'student_name',
+          align: 'start',
           sortable: false,
           width: 100,
         },
@@ -620,7 +624,7 @@ export default {
       return current >= sixMonthsAgo && current <= today;
     },
     closeD() {
-      eventBus.emit("closeStudentAttendanceDialog", true);
+      eventBus.emit('closeStudentAttendanceDialog', true);
       this.currentMonth = new Date();
       this.attendanceDate = null;
       this.dialog = false;

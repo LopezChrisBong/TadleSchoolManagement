@@ -5,8 +5,8 @@
         <h2 style="text-transform: uppercase">
           {{
             classData
-              ? classData.grade_level + "-" + classData.room_section
-              : ""
+              ? classData.grade_level + '-' + classData.room_section
+              : ''
           }}
         </h2>
         <v-spacer></v-spacer>
@@ -24,8 +24,8 @@
     <v-card class="ma-5 dt-container" elevation="1">
       <v-data-table
         :headers="headers"
-        :items="sortedItems"
-        :group-by="[{ key: 'day', order: 'asc' }]"
+        :items="data"
+        :group-by="[{ key: 'dayOrder', order: 'asc' }]"
         :items-per-page="50"
         :search="search"
         @update:options="options"
@@ -72,7 +72,20 @@
                   variant="outlined"
                 ></v-btn>
 
-                <span class="ms-4">Days: {{ item.value }}</span>
+                <span class="ms-4"
+                  >Days:
+                  {{
+                    item.value == 1
+                      ? 'Monday'
+                      : item.value == 2
+                      ? 'Tuesday'
+                      : item.value == 3
+                      ? 'Wednesday'
+                      : item.value == 4
+                      ? ' Thursday'
+                      : 'Friday'
+                  }}</span
+                >
               </div>
             </td>
           </tr>
@@ -131,54 +144,54 @@
   </div>
 </template>
 <script>
-import eventBus from "@/eventBus";
-import ClassroomProgramDialog from "../../components/Dialogs/Forms/ClassroomProgramDialog.vue";
-import AddFacultyLoadingDialog from "../../components/Dialogs/Forms/AddFacultyLoadingDialog.vue";
+import eventBus from '@/eventBus';
+import ClassroomProgramDialog from '../../components/Dialogs/Forms/ClassroomProgramDialog.vue';
+import AddFacultyLoadingDialog from '../../components/Dialogs/Forms/AddFacultyLoadingDialog.vue';
 export default {
   components: {
     ClassroomProgramDialog,
     AddFacultyLoadingDialog,
   },
   data: () => ({
-    search: "",
+    search: '',
     addFacultyLoadData: null,
     dayOrder: [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
     ],
     headers: [
       {
-        align: "start",
-        key: "day",
+        align: 'start',
+        key: 'day',
         width: 250,
         sortable: false,
       },
       {
-        title: "Time",
-        key: "time",
+        title: 'Time',
+        key: 'time',
         width: 200,
         sortable: false,
       },
       {
-        title: "Faculty Name",
-        key: "name",
+        title: 'Faculty Name',
+        key: 'name',
         width: 200,
         sortable: false,
       },
       {
-        title: "Subject",
-        key: "subject_title",
+        title: 'Subject',
+        key: 'subject_title',
         width: 200,
         sortable: false,
       },
       {
-        title: "Action",
-        key: "action",
+        title: 'Action',
+        key: 'action',
         width: 200,
         sortable: false,
       },
@@ -186,24 +199,24 @@ export default {
     data: [],
     verified: [],
     perPageChoices: [
-      { text: "5", value: 5 },
-      { text: "10", value: 10 },
-      { text: "20", value: 20 },
-      { text: "50", value: 50 },
-      { text: "100", value: 100 },
-      { text: "250", value: 250 },
-      { text: "500", value: 500 },
+      { text: '5', value: 5 },
+      { text: '10', value: 10 },
+      { text: '20', value: 20 },
+      { text: '50', value: 50 },
+      { text: '100', value: 100 },
+      { text: '250', value: 250 },
+      { text: '500', value: 500 },
     ],
     grade: null,
-    activeTab: { id: 1, name: "Grade 7", active: true },
+    activeTab: { id: 1, name: 'Grade 7', active: true },
     tab: 1,
     tabList: [
-      { id: 1, name: "Grade 7", active: true },
-      { id: 2, name: "Grade 8", active: false },
-      { id: 3, name: "Grade 9", active: false },
-      { id: 4, name: "Grade 10", active: false },
-      { id: 5, name: "Grade 11", active: false },
-      { id: 6, name: "Grade 12", active: false },
+      { id: 1, name: 'Grade 7', active: true },
+      { id: 2, name: 'Grade 8', active: false },
+      { id: 3, name: 'Grade 9', active: false },
+      { id: 4, name: 'Grade 10', active: false },
+      { id: 5, name: 'Grade 11', active: false },
+      { id: 6, name: 'Grade 12', active: false },
     ],
     sectionData: null,
     filter: null,
@@ -220,31 +233,13 @@ export default {
     confirmDialog: false,
     fadeAwayMessage: {
       show: false,
-      type: "success",
-      header: "Successfully Deleted!",
-      message: "",
+      type: 'success',
+      header: 'Successfully Deleted!',
+      message: '',
       top: 10,
     },
   }),
   computed: {
-    sortedItems() {
-      return [...this.filteredItems].sort((a, b) => {
-        const aIndex = this.dayOrder.indexOf(a.day);
-        const bIndex = this.dayOrder.indexOf(b.day);
-
-        const safeA = aIndex === -1 ? 99 : aIndex;
-        const safeB = bIndex === -1 ? 99 : bIndex;
-
-        return safeA - safeB;
-      });
-    },
-    // Filtered data based on selected category
-    filteredItems() {
-      if (!this.section) {
-        return this.data; // Show all items if no category is selected
-      }
-      return this.data.filter((item) => item.roomId === this.section);
-    },
     filterYear() {
       return this.$store.getters.getFilterSelected;
     },
@@ -252,7 +247,7 @@ export default {
 
   mounted() {
     this.initialize();
-    eventBus.on("closeAddScheduleDialog", () => {
+    eventBus.on('closeAddScheduleDialog', () => {
       this.getClassroom(this.section);
     });
     // eventBus.on("closeMyDesignationDialog", () => {
@@ -260,7 +255,7 @@ export default {
     // });
   },
   beforeUnmount() {
-    eventBus.off("closeAddScheduleDialog");
+    eventBus.off('closeAddScheduleDialog');
     // eventBus.off("closeMyDesignationDialog");
   },
 
@@ -293,15 +288,15 @@ export default {
 
     getMyAdvisorySection() {
       this.axiosCall(
-        "/rooms-section/getMyAdvisorySection/" + this.$store.state.user.id,
-        "GET",
+        '/rooms-section/getMyAdvisorySection/' + this.$store.state.user.id,
+        'GET',
       ).then((res) => {
         if (res) {
           this.classData = res.data;
-          console.log("Classroom", this.classData.room_section);
+          console.log('Classroom', this.classData.room_section);
           this.getClassroom();
         } else {
-          alert("no advisory");
+          alert('no advisory');
         }
       });
     },
@@ -310,16 +305,35 @@ export default {
       this.loading = true;
       let filter = this.$store.getters.getFilterSelected;
       this.axiosCall(
-        "/enroll-student/getClassProgramm/" +
+        '/enroll-student/getClassProgramm/' +
           this.classData.grade_level +
-          "/" +
+          '/' +
           this.classData.id +
-          "/" +
+          '/' +
           filter,
-        "GET",
+        'GET',
       ).then((res) => {
         if (res) {
           this.data = res.data;
+          const dayOrderMap = {
+            Monday: 1,
+            Tuesday: 2,
+            Wednesday: 3,
+            Thursday: 4,
+            Friday: 5,
+          };
+
+          this.data = res.data
+            .map((item) => ({
+              ...item,
+              dayOrder: dayOrderMap[item.day] ?? 99,
+            }))
+            .sort((a, b) => {
+              if (a.dayOrder !== b.dayOrder) {
+                return a.dayOrder - b.dayOrder;
+              }
+              return 0;
+            });
           this.loading = false;
         }
       });
@@ -336,39 +350,39 @@ export default {
     add() {
       let filter = this.$store.getters.getFilterSelected;
       this.addFacultyLoadData = [{ id: null }];
-      this.action = "Add";
+      this.action = 'Add';
       this.filter = filter;
     },
     editItem(item) {
       let filter = this.$store.getters.getFilterSelected;
       this.sectionData = item;
-      this.action = "Update";
+      this.action = 'Update';
       this.filter = filter;
     },
 
     viewItem(item) {
       this.sectionData = item;
-      this.action = "View";
+      this.action = 'View';
     },
 
     deleteItem() {
       this.axiosCall(
-        "/enroll-student/deleteAvailabilitySchedule/" + this.deleteData.availId,
-        "DELETE",
+        '/enroll-student/deleteAvailabilitySchedule/' + this.deleteData.availId,
+        'DELETE',
       ).then((res) => {
         if (res.data.status == 200) {
           this.dialog = false;
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "success";
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.type = 'success';
+          this.fadeAwayMessage.header = 'System Message';
           this.fadeAwayMessage.message = res.data.msg;
           this.confirmDialog = false;
           this.initialize();
         } else if (res.data.status == 400) {
           this.confirmDialog = false;
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
           this.fadeAwayMessage.message = res.data.msg;
         }
       });

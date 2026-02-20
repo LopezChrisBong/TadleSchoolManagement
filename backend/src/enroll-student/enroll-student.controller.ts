@@ -177,6 +177,14 @@ export class EnrollStudentController {
     return this.enrollStudentService.FacultySchedule(+filter, curr_user);
   }
 
+  @Get('getSpecificFacultySchedule/:filter/:id')
+  getSpecificFacultySchedule(
+    @Param('filter') filter: string,
+    @Param('id') id: string,
+  ) {
+    return this.enrollStudentService.getSpecificFacultySchedule(+filter, +id);
+  }
+
   @Get('getSchoolYear')
   getSchoolYear() {
     return this.enrollStudentService.getSchoolYear();
@@ -339,5 +347,16 @@ export class EnrollStudentController {
   @Delete('deleteAvailabilitySchedule/:id')
   remove(@Param('id') id: string) {
     return this.enrollStudentService.remove(+id);
+  }
+
+  @Get('student-template')
+  downloadStudentTemplate(): StreamableFile {
+    const filePath = this.enrollStudentService.getStudentTemplatePath();
+    const file = createReadStream(filePath);
+
+    return new StreamableFile(file, {
+      type: 'text/csv',
+      disposition: 'attachment; filename="csv_file_import_student.csv"',
+    });
   }
 }

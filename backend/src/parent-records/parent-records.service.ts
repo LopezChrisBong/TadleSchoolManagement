@@ -60,6 +60,8 @@ export class ParentRecordsService {
     createStudentReportDisciplinaryDto: CreateStudentReportDisciplinaryDto,
   ) {
     // console.log(createStudentReportDisciplinaryDto)
+    let parsed = JSON.parse(createStudentReportDisciplinaryDto.tag_students);
+    let tagged = Array.isArray(parsed) ? parsed : [parsed];
     try {
       let data = this.dataSource.manager.create(StudentReportDisciplinary, {
         studentID: createStudentReportDisciplinaryDto.studentID,
@@ -71,6 +73,7 @@ export class ParentRecordsService {
         grade_level: createStudentReportDisciplinaryDto.grade_level,
         report_description:
           createStudentReportDisciplinaryDto.report_description,
+        tag_students: JSON.stringify(tagged),
       });
       await this.dataSource.manager.save(data);
       return {
@@ -307,6 +310,7 @@ export class ParentRecordsService {
         'SRD.report_description as report_description',
         'S.subject_title as subject_title',
         'RS.room_section as room_section',
+        'SRD.tag_students as tag_students',
       ])
       .leftJoin(StudentReportDisciplinary, 'SRD', 'SRD.studentID = ES.id')
       .leftJoin(RoomsSection, 'RS', 'RS.id = SRD.roomID')
@@ -323,14 +327,54 @@ export class ParentRecordsService {
       data.andWhere('SRD.status != 0');
       data.orderBy('SRD.created_at', 'DESC');
     }
-    // .getRawMany();
     const results = await data.getRawMany();
-    // console.log(results)
-    return results;
+
+    if (!results.length) return results;
+
+    let allTaggedIds: number[] = [];
+
+    results.forEach((r) => {
+      if (r.tag_students) {
+        const parsed = JSON.parse(r.tag_students);
+        allTaggedIds.push(...parsed.map((id) => Number(id)));
+      }
+    });
+
+    allTaggedIds = [...new Set(allTaggedIds)];
+
+    let taggedStudentsMap = {};
+
+    if (allTaggedIds.length > 0) {
+      const taggedStudents = await this.dataSource
+        .createQueryBuilder(EnrollStudent, 'ES')
+        .select(['ES.id as id', "CONCAT(ES.fname, ' ', ES.lname) as name"])
+        .where('ES.id IN (:...ids)', { ids: allTaggedIds })
+        .getRawMany();
+
+      taggedStudents.forEach((s) => {
+        taggedStudentsMap[s.id] = s;
+      });
+    }
+
+    const finalResults = results.map((r) => {
+      let tagged = [];
+
+      if (r.tag_students) {
+        const parsed = JSON.parse(r.tag_students);
+        tagged = parsed.map((id) => taggedStudentsMap[id]).filter(Boolean);
+      }
+
+      return {
+        ...r,
+        tagged,
+      };
+    });
+    // console.log(finalResults[0].tagged);
+    return finalResults;
   }
 
-  async getPrefectReport(filter: number, tab: number, roleID: number) {
-    console.log(filter, tab, roleID);
+  async getPrefectReport(filter: number, tab: number) {
+    console.log(filter, tab);
     const data = this.dataSource.manager
       .createQueryBuilder(EnrollStudent, 'ES')
       .select([
@@ -352,6 +396,7 @@ export class ParentRecordsService {
         'SRD.report_description as report_description',
         'S.subject_title as subject_title',
         'RS.room_section as room_section',
+        'SRD.tag_students as tag_students',
       ])
       .leftJoin(StudentReportDisciplinary, 'SRD', 'SRD.studentID = ES.id')
       .leftJoin(RoomsSection, 'RS', 'RS.id = SRD.roomID')
@@ -360,15 +405,15 @@ export class ParentRecordsService {
       // .where('ES.statusEnrolled != 0')
       .where('SRD.school_yearID = :filter', { filter });
 
-    if (roleID == 6) {
-      data.andWhere('SRD.grade_level IN (:...grades)', {
-        grades: ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'],
-      });
-    } else if (roleID == 7) {
-      data.andWhere('SRD.grade_level IN (:...grades)', {
-        grades: ['Grade 11', 'Grade 12'],
-      });
-    }
+    // if (roleID == 6) {
+    //   data.andWhere('SRD.grade_level IN (:...grades)', {
+    //     grades: ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'],
+    //   });
+    // } else if (roleID == 7) {
+    //   data.andWhere('SRD.grade_level IN (:...grades)', {
+    //     grades: ['Grade 11', 'Grade 12'],
+    //   });
+    // }
     if (tab == 1) {
       data.andWhere('SRD.status = 1');
       data.orderBy('SRD.created_at', 'DESC');
@@ -378,8 +423,49 @@ export class ParentRecordsService {
     }
     // .getRawMany();
     const results = await data.getRawMany();
-    // console.log(results)
-    return results;
+
+    if (!results.length) return results;
+
+    let allTaggedIds: number[] = [];
+
+    results.forEach((r) => {
+      if (r.tag_students) {
+        const parsed = JSON.parse(r.tag_students);
+        allTaggedIds.push(...parsed.map((id) => Number(id)));
+      }
+    });
+
+    allTaggedIds = [...new Set(allTaggedIds)];
+
+    let taggedStudentsMap = {};
+
+    if (allTaggedIds.length > 0) {
+      const taggedStudents = await this.dataSource
+        .createQueryBuilder(EnrollStudent, 'ES')
+        .select(['ES.id as id', "CONCAT(ES.fname, ' ', ES.lname) as name"])
+        .where('ES.id IN (:...ids)', { ids: allTaggedIds })
+        .getRawMany();
+
+      taggedStudents.forEach((s) => {
+        taggedStudentsMap[s.id] = s;
+      });
+    }
+
+    const finalResults = results.map((r) => {
+      let tagged = [];
+
+      if (r.tag_students) {
+        const parsed = JSON.parse(r.tag_students);
+        tagged = parsed.map((id) => taggedStudentsMap[id]).filter(Boolean);
+      }
+
+      return {
+        ...r,
+        tagged,
+      };
+    });
+    // console.log(finalResults[0].tagged);
+    return finalResults;
   }
 
   async getMyChildrenAttendance(studentID: number, school_yearID: number) {
@@ -448,8 +534,8 @@ export class ParentRecordsService {
       .leftJoin(Subject, 'S', 'S.id = SQF.subjectID')
       .where('SQF.school_yearID = :filter', { filter })
       // .andWhere('SQF.roomID = :roomID', { roomID })
-      .andWhere('SQF.studentID = :studentID', { studentID });
-    // .andWhere('ES.grade_level = :gradeLevel', { gradeLevel })
+      .andWhere('SQF.studentID = :studentID', { studentID })
+      .andWhere('SQF.isToView = 1');
     // .andWhere('ES.statusEnrolled = 1');
     let newData = await query.getRawMany();
 

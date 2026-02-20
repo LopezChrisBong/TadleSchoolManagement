@@ -13,6 +13,7 @@ import {
   StudentGrade,
   TransmutedGrade,
   StudentQuarterFinalGrade,
+  Availability,
 } from 'src/entities';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -213,6 +214,7 @@ export class RoomsSectionService {
           semester: createStudentGradeDto.semester,
           highest_posible_score: createStudentGradeDto.highest_posible_score,
           type: createStudentGradeDto.type,
+          title: createStudentGradeDto.title,
         });
         await this.dataSource.manager.save(saveData);
       }
@@ -357,7 +359,7 @@ export class RoomsSectionService {
     school_yearID: number,
     sub_subject: number,
   ) {
-    console.log(semester, quarter, roomID, subjectID);
+    // console.log(semester, quarter, roomID, subjectID);
     let query = this.dataSource.manager
       .createQueryBuilder()
       .select([
@@ -369,6 +371,7 @@ export class RoomsSectionService {
         'SG.highest_posible_score as SG_highest_posible_score',
         'SG.school_yearID as SG_school_yearID',
         'SG.type as SG_type',
+        'SG.title as SG_title',
         "CONCAT('Quiz ', ROW_NUMBER() OVER(PARTITION BY SG.studentID, SG.subjectID, SG.type ORDER BY SG.created_at ASC)) as quiz_label",
         "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname, ' ', SUBSTRING(ES.mname, 1, 1), '. ', ES.lname), CONCAT(ES.fname, ' ', ES.lname)) as name",
       ])
@@ -395,7 +398,7 @@ export class RoomsSectionService {
     //   grouped[row.quiz_label].push(row);
     // });
 
-    // console.log("program", data);
+    // console.log('program', data);
     return data;
   }
 
@@ -408,7 +411,34 @@ export class RoomsSectionService {
     return data;
   }
 
-  async getAllAttendanceWholeSemester(roomID: number, subjectID: number) {
+  async conflictDayTime(
+    teacherID: number,
+    subjectID: number,
+    timeFrom: string,
+    timeTo: string,
+    days: string, // "Mon,Tue,Wed"
+  ) {
+    const conflict = await this.dataSource.manager.findBy(Availability, {
+      teacherID,
+      subjectId: subjectID,
+      times_slot_from: timeFrom,
+      times_slot_to: timeTo,
+    });
+
+    const dayArray = days.split(',').map((d) => d.trim());
+
+    const conflictingDays = conflict
+      .map((c) => c.day)
+      .filter((day) => dayArray.includes(day));
+    // console.log(conflictingDays);
+    return conflictingDays;
+  }
+
+  async getAllAttendanceWholeSemester(
+    roomID: number,
+    subjectID: number,
+    filter: number,
+  ) {
     console.log('Semester Attendance', roomID, subjectID);
     // Step 1: Get distinct attendance dates for this room & subject
     const dates = await this.dataSource.query(
@@ -435,18 +465,32 @@ export class RoomsSectionService {
 
     // Step 3: Build and run final pivot query
     const sql = `
-    SELECT 
-      CONCAT(s.fname, ' ', s.lname) AS student_name,
-      ${dateColumns}
-    FROM student_attendance a
-    JOIN enroll_student s ON a.studentID = s.id
-    WHERE a.roomID = ? AND a.subjectID = ? AND s.statusEnrolled = 1
-    GROUP BY s.id, s.fname, s.lname
-    ORDER BY student_name
-  `;
+      SELECT 
+        CONCAT(s.fname, ' ', s.lname) AS student_name,
+        ${dateColumns}
+      FROM student_attendance a
+      INNER JOIN enroll_student s 
+        ON a.studentID = s.id
+      INNER JOIN student_list sl
+        ON sl.studentId = s.id
+        AND sl.roomId = ?
+        AND sl.school_yearId = ?
+      WHERE 
+        a.roomID = ?
+        AND a.subjectID = ?
+        AND s.statusEnrolled = 1
+      GROUP BY s.id, s.fname, s.lname
+      ORDER BY student_name
+    `;
+
     // console.log(await this.dataSource.query(sql, [roomID, subjectID]));
 
-    return this.dataSource.query(sql, [roomID, subjectID]);
+    return this.dataSource.query(sql, [
+      roomID, // sl.roomId
+      filter, // sl.school_yearId
+      roomID, // a.roomID
+      subjectID, // a.subjectID
+    ]);
   }
 
   async findAll(gradeLevel: string) {
@@ -635,7 +679,7 @@ export class RoomsSectionService {
         .getRawMany();
 
       data = data.map((data) =>
-        Object.assign(Object.assign({}, data), { attendance: false }),
+        Object.assign(Object.assign({}, data), { attendance: 1 }),
       );
       // console.log(data)
       return data;
@@ -1185,6 +1229,47 @@ export class RoomsSectionService {
     } catch (error) {
       return {
         msg: 'Something went wrong! ' + error,
+        status: HttpStatus.BAD_REQUEST,
+      };
+    }
+  }
+
+  async updateParentToView(
+    id: number,
+    updateStudentAttendanceDto: UpdateStudentAttendanceDto,
+  ) {
+    let item = updateStudentAttendanceDto;
+    let parsedData =
+      typeof item.data === 'string' ? JSON.parse(item.data) : item.data;
+    console.log(parsedData.roomID);
+    try {
+      const result = await this.dataSource.manager.update(
+        StudentQuarterFinalGrade,
+        {
+          roomID: parsedData.roomID,
+          school_yearID: parsedData.filter,
+          quarter: parsedData.quarter,
+          semester: parsedData.semester,
+        },
+        {
+          isToView: true,
+        },
+      );
+
+      if (result.affected === 0) {
+        return {
+          msg: 'No records found to update!',
+          status: HttpStatus.NOT_FOUND,
+        };
+      }
+
+      return {
+        msg: 'Updated successfully!',
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      return {
+        msg: 'Something went wrong! ' + error.message,
         status: HttpStatus.BAD_REQUEST,
       };
     }

@@ -35,6 +35,9 @@ export class StudentReportDisciplinary {
   @Column({ type: 'int', nullable: false })
   subjectID: number;
 
+  @Column({ type: 'longtext', nullable: true })
+  tag_students: string;
+
   @Column({ type: 'int', default: false })
   status: number;
 

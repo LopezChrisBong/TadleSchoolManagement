@@ -96,7 +96,7 @@
               <v-col cols="12" class="d-flex">
                 <v-text-field
                   v-model="searchLRN"
-                  label="Search Student"
+                  label="Search LRN"
                   variant="outlined"
                   density="compact"
                   class="mx-2"
@@ -201,17 +201,17 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
-import ViewMyChildrenAttendanceDialog from "../../components/Dialogs/Views/ViewMyChildrenAttendanceDialog.vue";
-import ViewMyChildrenClassrecodDialog from "../../components/Dialogs/Views/ViewMyChildrenClassrecodDialog.vue";
+import eventBus from '@/eventBus';
+import ViewMyChildrenAttendanceDialog from '../../components/Dialogs/Views/ViewMyChildrenAttendanceDialog.vue';
+import ViewMyChildrenClassrecodDialog from '../../components/Dialogs/Views/ViewMyChildrenClassrecodDialog.vue';
 export default {
   components: {
     ViewMyChildrenAttendanceDialog,
     ViewMyChildrenClassrecodDialog,
   },
   data: () => ({
-    search: "",
-    searchLRN: "",
+    search: '',
+    searchLRN: '',
     selectedStudentID: null,
     addData: null,
     studentAttendanceData: null,
@@ -220,11 +220,11 @@ export default {
     action: null,
     dialog: false,
     headers: [
-      { title: "Name", value: "name", align: "start" },
+      { title: 'Name', value: 'name', align: 'start' },
       {
-        title: "Actions",
-        value: "actions",
-        align: "center",
+        title: 'Actions',
+        value: 'actions',
+        align: 'center',
         sortable: false,
         width: 100,
       },
@@ -235,25 +235,25 @@ export default {
     enrolledStudentData: [],
     fadeAwayMessage: {
       show: false,
-      type: "success",
-      header: "Successfully Deleted!",
-      message: "",
+      type: 'success',
+      header: 'Successfully Deleted!',
+      message: '',
       top: 10,
     },
   }),
 
   mounted() {
     this.initialize();
-    eventBus.on("closeMyChildrenAttendanceDialog", () => {
+    eventBus.on('closeMyChildrenAttendanceDialog', () => {
       this.initialize();
     });
-    eventBus.on("closeMyChildrenGradeDialog", () => {
+    eventBus.on('closeMyChildrenGradeDialog', () => {
       this.initialize();
     });
   },
   beforeUnmount() {
-    eventBus.off("closeMyChildrenAttendanceDialog");
-    eventBus.off("closeMyChildrenGradeDialog");
+    eventBus.off('closeMyChildrenAttendanceDialog');
+    eventBus.off('closeMyChildrenGradeDialog');
   },
   watch: {
     filterYear: {
@@ -283,7 +283,7 @@ export default {
     initialize() {
       this.filter = this.$store.getters.getFilterSelected;
       this.loading = false;
-      this.axiosCall("/parent-records/getMyChildrenList", "GET").then((res) => {
+      this.axiosCall('/parent-records/getMyChildrenList', 'GET').then((res) => {
         if (res) {
           // console.log(res.data);
           let data = res.data;
@@ -296,7 +296,7 @@ export default {
       });
     },
     getEnrolledStudent() {
-      this.axiosCall("/parent-records", "GET").then((res) => {
+      this.axiosCall('/parent-records', 'GET').then((res) => {
         if (res) {
           let data = res.data;
           data.forEach((element, i) => {
@@ -308,16 +308,16 @@ export default {
     },
     add() {
       this.dialog = true;
-      this.action = "Add";
+      this.action = 'Add';
       this.enrolledStudentData = [];
       // this.getEnrolledStudent();
     },
     save() {
       if (this.studentID == null) {
         this.fadeAwayMessage.show = true;
-        this.fadeAwayMessage.type = "error";
-        this.fadeAwayMessage.header = "System Message";
-        this.fadeAwayMessage.message = "Please select student before saving!";
+        this.fadeAwayMessage.type = 'error';
+        this.fadeAwayMessage.header = 'System Message';
+        this.fadeAwayMessage.message = 'Please select student before saving!';
       } else {
         let userDetailID = this.$store.state.user.id;
         let data = {
@@ -326,19 +326,19 @@ export default {
           parentID: userDetailID,
         };
         console.log(data);
-        this.axiosCall("/parent-records/", "POST", data).then((res) => {
+        this.axiosCall('/parent-records/', 'POST', data).then((res) => {
           console.log(res.data);
           if (res.data.status == 201) {
             this.closeD();
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "success";
-            this.fadeAwayMessage.header = "System Message";
-            this.fadeAwayMessage.message = "Successfully updated!!";
+            this.fadeAwayMessage.type = 'success';
+            this.fadeAwayMessage.header = 'System Message';
+            this.fadeAwayMessage.message = 'Successfully updated!!';
             this.initialize();
           } else if (res.data.status == 400) {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
           }
         });
@@ -351,14 +351,14 @@ export default {
       this.selectedStudentID = null;
     },
     studentAttendance(item) {
-      console.log("attendance", item);
+      console.log('attendance', item);
       this.studentAttendanceData = item;
-      this.action = "View";
+      this.action = 'View';
     },
     classRecord(item) {
-      console.log("classrecord", item);
+      console.log('classrecord', item);
       this.studentGradeData = item;
-      this.action = "View";
+      this.action = 'View';
     },
 
     // confirmDelete() {
@@ -374,16 +374,16 @@ export default {
     //   );
     // },
     searchStudentLrn() {
-      if (this.searchLRN === "") {
+      if (this.searchLRN === '') {
         this.fadeAwayMessage.show = true;
-        this.fadeAwayMessage.type = "error";
-        this.fadeAwayMessage.header = "System Message";
-        this.fadeAwayMessage.message = "Empty statement!";
+        this.fadeAwayMessage.type = 'error';
+        this.fadeAwayMessage.header = 'System Message';
+        this.fadeAwayMessage.message = 'Empty statement!';
       } else {
         this.isLoading = true;
         this.axiosCall(
-          "/parent-records/searchStudentData/" + this.searchLRN,
-          "GET",
+          '/parent-records/searchStudentData/' + this.searchLRN,
+          'GET',
         ).then((res) => {
           if (res) {
             console.log(res.data);

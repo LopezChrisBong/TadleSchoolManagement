@@ -14,6 +14,7 @@ import {
   EnrollStudent,
   RoomsSection,
   SchoolYear,
+  StudentGrade,
   StudentList,
   StudentQuarterFinalGrade,
   Subject,
@@ -23,6 +24,7 @@ import {
 } from 'src/entities';
 import { join } from 'path';
 import { log } from 'console';
+import { RoomsSectionService } from 'src/rooms-section/rooms-section.service';
 // import { scale } from 'pdfkit';
 // import {
 //   computeTotal,
@@ -317,7 +319,10 @@ hbs.registerHelper('divide', function (a, b) {
 
 @Injectable()
 export class PdfGeneratorService {
-  constructor(private dataSource: DataSource) {}
+  constructor(
+    private dataSource: DataSource,
+    private roomsSectionService: RoomsSectionService,
+  ) {}
 
   async compile(templatename, data) {
     // //development
@@ -434,8 +439,8 @@ export class PdfGeneratorService {
     // console.log(data);
     try {
       const browser = await puppeteer.launch({
-        headless: 'new',
-        args: ['--no-sandbox'],
+        // headless: 'new',
+        // args: ['--no-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -766,8 +771,8 @@ export class PdfGeneratorService {
     ];
     try {
       const browser = await puppeteer.launch({
-        headless: 'new',
-        args: ['--no-sandbox'],
+        // headless: 'new',
+        // args: ['--no-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -883,8 +888,8 @@ export class PdfGeneratorService {
     ];
     try {
       const browser = await puppeteer.launch({
-        headless: 'new',
-        args: ['--no-sandbox'],
+        // headless: 'new',
+        // args: ['--no-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -1046,8 +1051,8 @@ export class PdfGeneratorService {
     ];
     try {
       const browser = await puppeteer.launch({
-        headless: 'new',
-        args: ['--no-sandbox'],
+        // headless: 'new',
+        // args: ['--no-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -1212,8 +1217,8 @@ export class PdfGeneratorService {
     ];
     try {
       const browser = await puppeteer.launch({
-        headless: 'new',
-        args: ['--no-sandbox'],
+        // headless: 'new',
+        // args: ['--no-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -1440,8 +1445,8 @@ export class PdfGeneratorService {
     ];
     try {
       const browser = await puppeteer.launch({
-        headless: 'new',
-        args: ['--no-sandbox'],
+        // headless: 'new',
+        // args: ['--no-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -1699,6 +1704,508 @@ export class PdfGeneratorService {
 
     return Object.values(students);
   }
+
+  async getStudentSQuizes(
+    quarter: string,
+    semester: string,
+    roomID: number,
+    subjectID: number,
+    school_yearID: number,
+    sub_subject: number,
+    id: number,
+  ) {
+    let writenWorks = await this.roomsSectionService.getAllGradeByQuarter(
+      quarter,
+      semester,
+      roomID,
+      subjectID,
+      1,
+      school_yearID,
+      sub_subject,
+    );
+
+    let performanceTask = await this.roomsSectionService.getAllGradeByQuarter(
+      quarter,
+      semester,
+      roomID,
+      subjectID,
+      2,
+      school_yearID,
+      sub_subject,
+    );
+
+    let quarterlyAssessment =
+      await this.roomsSectionService.getAllGradeByQuarter(
+        quarter,
+        semester,
+        roomID,
+        subjectID,
+        3,
+        school_yearID,
+        sub_subject,
+      );
+
+    let generateGrade = await this.roomsSectionService.getGeneratedGrade(
+      roomID,
+      school_yearID,
+      quarter,
+      semester,
+      subjectID,
+      sub_subject ? JSON.stringify(sub_subject) : 'noData',
+    );
+
+    let combineData = Object.assign(
+      { writenWorks: writenWorks },
+      { performanceTask: performanceTask },
+      { quarterlyAssessment: quarterlyAssessment },
+      { generateGrade: generateGrade },
+    );
+    const writtenHeaders = [
+      ...new Set(
+        combineData.writenWorks.map((w) =>
+          w.SG_title && w.SG_title.trim() !== ''
+            ? w.SG_title + ' (' + w.SG_highest_posible_score + ')'
+            : w.quiz_label + ' (' + w.SG_highest_posible_score + ')',
+        ),
+      ),
+    ];
+
+    const performanceHeaders = [
+      ...new Set(
+        combineData.performanceTask.map((p) =>
+          p.SG_title && p.SG_title.trim() !== ''
+            ? p.SG_title + ' (' + p.SG_highest_posible_score + ')'
+            : p.quiz_label + ' (' + p.SG_highest_posible_score + ')',
+        ),
+      ),
+    ];
+
+    const quarterlyHeaders = [
+      ...new Set(
+        combineData.quarterlyAssessment.map((q) =>
+          q.SG_title && q.SG_title.trim() !== ''
+            ? q.SG_title + ' (' + q.SG_highest_posible_score + ')'
+            : q.quiz_label + ' (' + q.SG_highest_posible_score + ')',
+        ),
+      ),
+    ];
+
+    const studentsMap = new Map<number, any>();
+
+    function initStudent(id: number, name: string) {
+      studentsMap.set(id, {
+        name,
+        writtenWorks: new Array(writtenHeaders.length).fill(''),
+        performanceTasks: new Array(performanceHeaders.length).fill(''),
+        quarterlyAssessment: new Array(quarterlyHeaders.length).fill(''),
+      });
+    }
+
+    for (const ww of combineData.writenWorks) {
+      if (!studentsMap.has(ww.SG_studentID)) {
+        initStudent(ww.SG_studentID, ww.name);
+      }
+
+      // const label =
+      //   ww.SG_title && ww.SG_title.trim() !== '' ? ww.SG_title : ww.quiz_label;
+      const label =
+        (ww.SG_title && ww.SG_title.trim() !== ''
+          ? ww.SG_title
+          : ww.quiz_label) +
+        ' (' +
+        ww.SG_highest_posible_score +
+        ')';
+      const index = writtenHeaders.indexOf(label);
+      studentsMap.get(ww.SG_studentID).writtenWorks[index] = ww.SG_quarterScore;
+    }
+
+    for (const pt of combineData.performanceTask) {
+      if (!studentsMap.has(pt.SG_studentID)) {
+        initStudent(pt.SG_studentID, pt.name);
+      }
+      // const label =
+      //   pt.SG_title && pt.SG_title.trim() !== '' ? pt.SG_title : pt.quiz_label;
+      const label =
+        (pt.SG_title && pt.SG_title.trim() !== ''
+          ? pt.SG_title
+          : pt.quiz_label) +
+        ' (' +
+        pt.SG_highest_posible_score +
+        ')';
+      const index = performanceHeaders.indexOf(label);
+      studentsMap.get(pt.SG_studentID).performanceTasks[index] =
+        pt.SG_quarterScore;
+    }
+
+    for (const qa of combineData.quarterlyAssessment) {
+      if (!studentsMap.has(qa.SG_studentID)) {
+        initStudent(qa.SG_studentID, qa.name);
+      }
+      // const label =
+      //   qa.SG_title && qa.SG_title.trim() !== '' ? qa.SG_title : qa.quiz_label;
+      const label =
+        (qa.SG_title && qa.SG_title.trim() !== ''
+          ? qa.SG_title
+          : qa.quiz_label) +
+        ' (' +
+        qa.SG_highest_posible_score +
+        ')';
+      const index = quarterlyHeaders.indexOf(label);
+      studentsMap.get(qa.SG_studentID).quarterlyAssessment[index] =
+        qa.SG_quarterScore;
+    }
+
+    // Grades
+    for (const g of combineData.generateGrade) {
+      const student = studentsMap.get(Number(g.studentID));
+      if (!student) continue;
+
+      student.initialGrade = g.initial_grade;
+      student.quarterlyGrade = g.transmuted_grade;
+    }
+
+    const students = Array.from(studentsMap.values());
+
+    for (const student of students) {
+      if (!student.quarterlyAssessment.length) {
+        student.quarterlyAssessment = ['No data!'];
+      }
+    }
+
+    let schoolYear = await this.dataSource.manager
+      .createQueryBuilder(SchoolYear, 'SY')
+      .select([
+        // "*",
+        "CONCAT(school_year_from, ' - ', school_year_to) AS school_year",
+        "CONCAT(school_year_from, '-06-01') as startDate,CONCAT(school_year_to, '-05-31') as endDate",
+      ])
+      .where('SY.id = :school_yearID', { school_yearID })
+      .getRawOne();
+
+    let subject = await this.dataSource.manager
+      .createQueryBuilder(Subject, 's')
+      .where('s.id = :subjectID', { subjectID })
+      .getOne();
+
+    let teacher = await this.dataSource.manager
+      .createQueryBuilder(UserDetail, 'ud')
+      .where('ud.id = :id', { id })
+      .getOne();
+    let roomData = await this.dataSource.manager
+      .createQueryBuilder(RoomsSection, 'rs')
+      .where('rs.id = :roomID', { roomID })
+      .getOne();
+    // console.log('subjectID', combineData);
+    let curDate = new Date();
+    let headerImg = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/header.png',
+    );
+    // let footerImg = join(process.cwd(), '/static/img/deped.png');
+    const data = [
+      {
+        header_img: this.base64_encode(headerImg, 'headerfooter'),
+        // footer_img: this.base64_encode(footerImg, 'headerfooter'),
+        writtenHeaders: writtenHeaders,
+        performanceHeaders: performanceHeaders,
+        quarterlyHeaders: quarterlyHeaders,
+        schoolYear: schoolYear,
+        subject: subject,
+        students: students,
+        teacher,
+        roomData,
+        curDate: this.formatDate(curDate),
+      },
+    ];
+    try {
+      const browser = await puppeteer.launch({
+        // headless: 'new',
+        // args: ['--no-sandbox'],
+      });
+      const page = await browser.newPage();
+      // compile(template_name, data)
+      const content = await this.compile('student-quizes', data);
+      await page.setContent(content);
+
+      const buffer = await page.pdf({
+        format: 'legal',
+        margin: {
+          top: '0.20in',
+          left: '0.10in',
+          bottom: '0.20in',
+          right: '0.10in',
+        },
+        landscape: true,
+        printBackground: true,
+      });
+      await browser.close();
+      return buffer;
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async getMAPEHQuizes(
+    quarter: string,
+    semester: string,
+    roomID: number,
+    subjectID: number,
+    school_yearID: number,
+    sub_subject: number,
+    id: number,
+  ) {
+    let writenWorks = await this.roomsSectionService.getAllGradeByQuarter(
+      quarter,
+      semester,
+      roomID,
+      subjectID,
+      1,
+      school_yearID,
+      sub_subject,
+    );
+
+    let performanceTask = await this.roomsSectionService.getAllGradeByQuarter(
+      quarter,
+      semester,
+      roomID,
+      subjectID,
+      2,
+      school_yearID,
+      sub_subject,
+    );
+
+    let quarterlyAssessment =
+      await this.roomsSectionService.getAllGradeByQuarter(
+        quarter,
+        semester,
+        roomID,
+        subjectID,
+        3,
+        school_yearID,
+        sub_subject,
+      );
+
+    let grade = await this.roomsSectionService.getGeneratedGrade(
+      roomID,
+      school_yearID,
+      quarter,
+      semester,
+      subjectID,
+      sub_subject ? JSON.stringify(sub_subject) : 'noData',
+    );
+    //  let generateGrade = grade.slice(-2);
+    let generateGrade;
+    if (sub_subject == 1) {
+      generateGrade = grade.slice(0, 2);
+    } else if (sub_subject == 2) {
+      generateGrade = grade.slice(2, 4);
+    } else if (sub_subject == 3) {
+      generateGrade = grade.slice(4, 6);
+    } else if (sub_subject == 4) {
+      generateGrade = grade.slice(6, 8);
+    }
+
+    let combineData = Object.assign(
+      { writenWorks: writenWorks },
+      { performanceTask: performanceTask },
+      { quarterlyAssessment: quarterlyAssessment },
+      { generateGrade: generateGrade },
+    );
+    const writtenHeaders = [
+      ...new Set(
+        combineData.writenWorks.map((w) =>
+          w.SG_title && w.SG_title.trim() !== ''
+            ? w.SG_title + ' (' + w.SG_highest_posible_score + ')'
+            : w.quiz_label + ' (' + w.SG_highest_posible_score + ')',
+        ),
+      ),
+    ];
+
+    const performanceHeaders = [
+      ...new Set(
+        combineData.performanceTask.map((p) =>
+          p.SG_title && p.SG_title.trim() !== ''
+            ? p.SG_title + ' (' + p.SG_highest_posible_score + ')'
+            : p.quiz_label + ' (' + p.SG_highest_posible_score + ')',
+        ),
+      ),
+    ];
+
+    const quarterlyHeaders = [
+      ...new Set(
+        combineData.quarterlyAssessment.map((q) =>
+          q.SG_title && q.SG_title.trim() !== ''
+            ? q.SG_title + ' (' + q.SG_highest_posible_score + ')'
+            : q.quiz_label + ' (' + q.SG_highest_posible_score + ')',
+        ),
+      ),
+    ];
+
+    const studentsMap = new Map<number, any>();
+
+    function initStudent(id: number, name: string) {
+      studentsMap.set(id, {
+        name,
+        writtenWorks: new Array(writtenHeaders.length).fill(''),
+        performanceTasks: new Array(performanceHeaders.length).fill(''),
+        quarterlyAssessment: new Array(quarterlyHeaders.length).fill(''),
+      });
+    }
+
+    for (const ww of combineData.writenWorks) {
+      if (!studentsMap.has(ww.SG_studentID)) {
+        initStudent(ww.SG_studentID, ww.name);
+      }
+
+      // const label =
+      //   ww.SG_title && ww.SG_title.trim() !== '' ? ww.SG_title : ww.quiz_label;
+      const label =
+        (ww.SG_title && ww.SG_title.trim() !== ''
+          ? ww.SG_title
+          : ww.quiz_label) +
+        ' (' +
+        ww.SG_highest_posible_score +
+        ')';
+      const index = writtenHeaders.indexOf(label);
+      studentsMap.get(ww.SG_studentID).writtenWorks[index] = ww.SG_quarterScore;
+    }
+
+    for (const pt of combineData.performanceTask) {
+      if (!studentsMap.has(pt.SG_studentID)) {
+        initStudent(pt.SG_studentID, pt.name);
+      }
+      // const label =
+      //   pt.SG_title && pt.SG_title.trim() !== '' ? pt.SG_title : pt.quiz_label;
+      const label =
+        (pt.SG_title && pt.SG_title.trim() !== ''
+          ? pt.SG_title
+          : pt.quiz_label) +
+        ' (' +
+        pt.SG_highest_posible_score +
+        ')';
+      const index = performanceHeaders.indexOf(label);
+      studentsMap.get(pt.SG_studentID).performanceTasks[index] =
+        pt.SG_quarterScore;
+    }
+
+    for (const qa of combineData.quarterlyAssessment) {
+      if (!studentsMap.has(qa.SG_studentID)) {
+        initStudent(qa.SG_studentID, qa.name);
+      }
+      // const label =
+      //   qa.SG_title && qa.SG_title.trim() !== '' ? qa.SG_title : qa.quiz_label;
+      const label =
+        (qa.SG_title && qa.SG_title.trim() !== ''
+          ? qa.SG_title
+          : qa.quiz_label) +
+        ' (' +
+        qa.SG_highest_posible_score +
+        ')';
+      const index = quarterlyHeaders.indexOf(label);
+      studentsMap.get(qa.SG_studentID).quarterlyAssessment[index] =
+        qa.SG_quarterScore;
+    }
+
+    // Grades
+    for (const g of combineData.generateGrade) {
+      const student = studentsMap.get(Number(g.studentID));
+      if (!student) continue;
+
+      student.initialGrade = g.initial_grade;
+      student.quarterlyGrade = g.transmuted_grade;
+    }
+
+    const students = Array.from(studentsMap.values());
+
+    for (const student of students) {
+      if (!student.quarterlyAssessment.length) {
+        student.quarterlyAssessment = ['No data!'];
+      }
+    }
+
+    let schoolYear = await this.dataSource.manager
+      .createQueryBuilder(SchoolYear, 'SY')
+      .select([
+        // "*",
+        "CONCAT(school_year_from, ' - ', school_year_to) AS school_year",
+        "CONCAT(school_year_from, '-06-01') as startDate,CONCAT(school_year_to, '-05-31') as endDate",
+      ])
+      .where('SY.id = :school_yearID', { school_yearID })
+      .getRawOne();
+
+    let subject = await this.dataSource.manager
+      .createQueryBuilder(Subject, 's')
+      .where('s.id = :subjectID', { subjectID })
+      .getOne();
+
+    let teacher = await this.dataSource.manager
+      .createQueryBuilder(UserDetail, 'ud')
+      .where('ud.id = :id', { id })
+      .getOne();
+    let roomData = await this.dataSource.manager
+      .createQueryBuilder(RoomsSection, 'rs')
+      .where('rs.id = :roomID', { roomID })
+      .getOne();
+    // console.log('subjectID', combineData);
+    let curDate = new Date();
+    let headerImg = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/header.png',
+    );
+    // let footerImg = join(process.cwd(), '/static/img/deped.png');
+    const data = [
+      {
+        header_img: this.base64_encode(headerImg, 'headerfooter'),
+        // footer_img: this.base64_encode(footerImg, 'headerfooter'),
+        writtenHeaders: writtenHeaders,
+        performanceHeaders: performanceHeaders,
+        quarterlyHeaders: quarterlyHeaders,
+        schoolYear: schoolYear,
+        subject: subject,
+        students: students,
+        teacher,
+        roomData,
+        sub_subject:
+          sub_subject == 1
+            ? 'Music'
+            : sub_subject == 2
+              ? 'Art'
+              : sub_subject == 3
+                ? 'Physical Education'
+                : sub_subject == 4
+                  ? 'Health'
+                  : '',
+        curDate: this.formatDate(curDate),
+      },
+    ];
+    try {
+      const browser = await puppeteer.launch({
+        // headless: 'new',
+        // args: ['--no-sandbox'],
+      });
+      const page = await browser.newPage();
+      // compile(template_name, data)
+      const content = await this.compile('student-quizes', data);
+      await page.setContent(content);
+
+      const buffer = await page.pdf({
+        format: 'legal',
+        margin: {
+          top: '0.20in',
+          left: '0.10in',
+          bottom: '0.20in',
+          right: '0.10in',
+        },
+        landscape: true,
+        printBackground: true,
+      });
+      await browser.close();
+      return buffer;
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
   // async getQRCode(id: string) {
   //   let d = await QRCode.toDataURL(id)
   //     .then((url) => {

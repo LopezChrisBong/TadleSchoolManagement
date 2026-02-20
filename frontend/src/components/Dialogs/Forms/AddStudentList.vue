@@ -30,7 +30,19 @@
                   v-model="csv_file"
                 ></v-file-input>
               </v-col>
-              <v-col cols="12">
+              <v-col cols="8">
+                <div class="d-flex justify-left align-center">
+                  Please
+                  <a
+                    :href="apiUrl + '/enroll-student/student-template'"
+                    download
+                    >download template</a
+                  >
+                  before uploading the Students File.
+                </div>
+              </v-col>
+
+              <v-col cols="12" v-if="csv_results.data">
                 <v-card
                   class="my-5 dt-container"
                   elevation="1"
@@ -43,7 +55,7 @@
                     :items-per-page="10"
                   >
                     <template v-slot:[`item.Transferred`]="{ item }">
-                      {{ item.Transferred == 0 ? "No" : "Yes" }}
+                      {{ item.Transferred == 0 ? 'No' : 'Yes' }}
                     </template>
                   </v-data-table>
                 </v-card>
@@ -87,8 +99,8 @@
 </template>
 
 <script>
-import Papa from "papaparse";
-import eventBus from "@/eventBus";
+import Papa from 'papaparse';
+import eventBus from '@/eventBus';
 export default {
   components: {},
   props: {
@@ -108,96 +120,100 @@ export default {
       parsed: false,
       headers: [
         {
-          title: "First Name",
-          value: "First Name",
-          align: "start",
-          valign: "start",
+          title: 'First Name',
+          value: 'First Name',
+          align: 'start',
+          valign: 'start',
         },
         {
-          title: "Middle Name",
-          value: "Middle Name",
-          align: "start",
-          valign: "start",
+          title: 'Middle Name',
+          value: 'Middle Name',
+          align: 'start',
+          valign: 'start',
         },
         {
-          title: "Last Name",
-          value: "Last Name",
-          align: "start",
-          valign: "start",
+          title: 'Last Name',
+          value: 'Last Name',
+          align: 'start',
+          valign: 'start',
         },
         {
-          title: "Suffix",
-          value: "Suffix",
-          align: "start",
-          valign: "start",
+          title: 'Suffix',
+          value: 'Suffix',
+          align: 'start',
+          valign: 'start',
         },
         {
-          title: "Birth Date",
-          value: "Birthdate",
-          align: "center",
-          valign: "cener",
+          title: 'Birth Date',
+          value: 'Birthdate',
+          align: 'center',
+          valign: 'cener',
         },
         {
-          title: "Sex",
-          value: "Sex",
-          align: "center",
-          valign: "cener",
+          title: 'Sex',
+          value: 'Sex',
+          align: 'center',
+          valign: 'cener',
         },
         {
-          title: "Level",
-          value: "Level",
-          align: "center",
-          valign: "cener",
+          title: 'Level',
+          value: 'Level',
+          align: 'center',
+          valign: 'cener',
         },
         {
-          title: "Transferred",
-          value: "Transferred",
-          align: "center",
-          valign: "cener",
+          title: 'Transferred',
+          value: 'Transferred',
+          align: 'center',
+          valign: 'cener',
         },
         {
-          title: "Nationality",
-          value: "Nationality",
-          align: "center",
-          valign: "cener",
-        },
-
-        {
-          title: "Grade",
-          value: "Grade",
-          align: "end",
-          valign: "end",
-        },
-        {
-          title: "Mobile Number",
-          value: "Mobile Number",
-          align: "end",
-          valign: "end",
+          title: 'Nationality',
+          value: 'Nationality',
+          align: 'center',
+          valign: 'cener',
         },
 
         {
-          title: "LRN No.",
-          value: "LRN No.",
-          align: "end",
-          valign: "end",
+          title: 'Grade',
+          value: 'Grade',
+          align: 'end',
+          valign: 'end',
+        },
+        {
+          title: 'Mobile Number',
+          value: 'Mobile Number',
+          align: 'end',
+          valign: 'end',
+        },
+
+        {
+          title: 'LRN',
+          value: 'LRN',
+          align: 'end',
+          valign: 'end',
         },
       ],
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
   },
 
-  computed: {},
+  computed: {
+    apiUrl() {
+      return process.env.VUE_APP_SERVER;
+    },
+  },
   watch: {
     data: {
       handler(data) {
         this.dialog = true;
-        console.log("View Data", data);
+        console.log('View Data', data);
         if (data.id) {
           this.initialize();
         } else {
@@ -224,18 +240,18 @@ export default {
     save() {
       this.isLoading = true;
       const headerMap = {
-        "First Name": "fname",
-        "Last Name": "lname",
-        "Middle Name": "mname",
-        Suffix: "suffix",
-        Birthdate: "bdate",
-        Sex: "sex",
-        Level: "seniorJunior",
-        Transferred: "transfered",
-        Nationality: "isFilipino",
-        Grade: "grade_level",
-        "Mobile Number": "mobile_no",
-        "LRN No.": "lrnNo",
+        'First Name': 'fname',
+        'Last Name': 'lname',
+        'Middle Name': 'mname',
+        Suffix: 'suffix',
+        Birthdate: 'bdate',
+        Sex: 'sex',
+        Level: 'seniorJunior',
+        Transferred: 'transfered',
+        Nationality: 'isFilipino',
+        Grade: 'grade_level',
+        'Mobile Number': 'mobile_no',
+        LRN: 'lrnNo',
       };
 
       const formattedData = this.csv_results.data.map((row) => {
@@ -305,32 +321,51 @@ export default {
           ...formattedRow,
         };
       });
-      console.log(formattedData);
-      let data = {
-        data: JSON.stringify(formattedData),
-      };
-      // console.log("FINAL PAYLOAD:", data);
-      this.axiosCall("/enroll-student/importStudent", "POST", data).then(
-        (res) => {
-          if (res.data.status == 201 || res.data.status == 200) {
-            this.isLoading = false;
-            this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "success";
-            this.fadeAwayMessage.header = "System Message Enrollment";
-            this.fadeAwayMessage.message = res.data.msg;
-            this.closeD();
-          } else {
-            this.isLoading = false;
-            this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
-            this.fadeAwayMessage.message = res.data.msg;
-          }
-        },
+
+      const allHaveLRN = formattedData.every(
+        (student) => student.lrnNo && student.lrnNo.toString().trim() !== '',
       );
+      if (!allHaveLRN) {
+        // throw new BadRequestException('Some students have missing LRN number.');
+        // console.log('Some students have missing LRN number');
+        this.isLoading = false;
+        this.fadeAwayMessage.show = true;
+        this.fadeAwayMessage.type = 'error';
+        this.fadeAwayMessage.header = 'System Message';
+        this.fadeAwayMessage.message = 'Some students have missing LRN number';
+      } else {
+        let data = {
+          data: JSON.stringify(formattedData),
+        };
+        console.log('FINAL PAYLOAD:', data);
+        this.axiosCall('/enroll-student/importStudent', 'POST', data).then(
+          (res) => {
+            console.log(res.data.successCount);
+            if (res.data.status == 201 || res.data.status == 200) {
+              this.isLoading = false;
+              this.fadeAwayMessage.show = true;
+              this.fadeAwayMessage.type = 'success';
+              this.fadeAwayMessage.header =
+                res.data.successCount == 0
+                  ? 'No new students were added. They may already be assigned to this or another section.'
+                  : `Successfully added ${res.data.successCount} student${
+                      res.data.successCount > 1 ? 's' : ''
+                    }.`;
+              this.fadeAwayMessage.message = res.data.msg;
+              this.closeD();
+            } else {
+              this.isLoading = false;
+              this.fadeAwayMessage.show = true;
+              this.fadeAwayMessage.type = 'error';
+              this.fadeAwayMessage.header = 'System Message';
+              this.fadeAwayMessage.message = res.data.msg;
+            }
+          },
+        );
+      }
     },
     closeD() {
-      eventBus.emit("closeStudentDataList", false);
+      eventBus.emit('closeStudentDataList', false);
       this.csv_file = null;
       this.csv_results = [];
       this.dialog = false;

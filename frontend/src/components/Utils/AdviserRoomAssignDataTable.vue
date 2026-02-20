@@ -46,6 +46,7 @@
         :headers="headers"
         :search="search"
         :items-per-page="10"
+        :group-by="[{ key: 'sex', order: 'asc' }]"
         :loading="loading"
         loading-text="Loading users..."
         class="rounded"
@@ -189,10 +190,10 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
-import StudentGoodMoralDialog from "../../components/Dialogs/Forms/StudentGoodMoralDialog.vue";
-import AddStudentList from "../../components/Dialogs/Forms/AddStudentList.vue";
-import ViewStudentFinalGradeDialog from "../../components/Dialogs/Views/ViewStudentFinalGradeDialog.vue";
+import eventBus from '@/eventBus';
+import StudentGoodMoralDialog from '../../components/Dialogs/Forms/StudentGoodMoralDialog.vue';
+import AddStudentList from '../../components/Dialogs/Forms/AddStudentList.vue';
+import ViewStudentFinalGradeDialog from '../../components/Dialogs/Views/ViewStudentFinalGradeDialog.vue';
 export default {
   components: {
     StudentGoodMoralDialog,
@@ -200,7 +201,7 @@ export default {
     ViewStudentFinalGradeDialog,
   },
   data: () => ({
-    search: "",
+    search: '',
     dialog: false,
     userRoleID: null,
     filter: null,
@@ -208,11 +209,13 @@ export default {
     studentDataListed: null,
     student_activeList: [],
     headers: [
-      { title: "Name", value: "name", align: "start" },
+      { title: 'Last Name', value: 'lname', align: 'start', sortable: true },
+      { title: 'First Name', value: 'fname', align: 'start' },
+      // { title: 'Name', value: 'name', align: 'start' },
       {
-        title: "Actions",
-        value: "actions",
-        align: "center",
+        title: 'Actions',
+        value: 'actions',
+        align: 'center',
         sortable: false,
         width: 200,
       },
@@ -234,31 +237,31 @@ export default {
     dialogConfirmDrop: false,
     fadeAwayMessage: {
       show: false,
-      type: "success",
-      header: "Successfully Deleted!",
-      message: "",
+      type: 'success',
+      header: 'Successfully Deleted!',
+      message: '',
       top: 10,
     },
   }),
 
   mounted() {
     this.initialize();
-    eventBus.on("closeStudentBehaviorStatementDialog", () => {
+    eventBus.on('closeStudentBehaviorStatementDialog', () => {
       this.initialize();
     });
 
-    eventBus.on("closeStudentDataList", () => {
+    eventBus.on('closeStudentDataList', () => {
       this.initialize();
     });
 
-    eventBus.on("closeStudentGradeDialog", () => {
+    eventBus.on('closeStudentGradeDialog', () => {
       this.initialize();
     });
   },
   beforeUnmount() {
-    eventBus.off("closeStudentBehaviorStatementDialog");
-    eventBus.off("closeStudentDataList");
-    eventBus.off("closeStudentGradeDialog");
+    eventBus.off('closeStudentBehaviorStatementDialog');
+    eventBus.off('closeStudentDataList');
+    eventBus.off('closeStudentGradeDialog');
   },
   watch: {
     options: {
@@ -271,8 +274,7 @@ export default {
       handler(newData, oldData) {
         if (oldData != newData) {
           this.initialize();
-          // this.getTaggedStudent();
-          // this.getAlreadyGenerate();
+          this.getTaggedStudent();
         }
       },
       deep: true,
@@ -296,15 +298,15 @@ export default {
     valuesItem(item) {
       console.log(item);
       this.updateData = item;
-      this.action = "Add";
+      this.action = 'Add';
     },
     getEnrolledStudent(grade) {
       this.axiosCall(
-        "/enroll-student/AddClassStudent/EnrolledStudent/" +
+        '/enroll-student/AddClassStudent/EnrolledStudent/' +
           grade +
-          "/" +
+          '/' +
           this.filterYear,
-        "GET",
+        'GET',
       ).then((res) => {
         if (res.data) {
           let data = res.data;
@@ -317,19 +319,16 @@ export default {
     },
     getTaggedStudent() {
       this.axiosCall(
-        "/rooms-section/getMyClassList/" +
+        '/rooms-section/getMyClassList/' +
           this.userRoleID +
-          "/" +
+          '/' +
           this.filterYear,
-        "GET",
+        'GET',
       ).then((res) => {
         if (res.data && Array.isArray(res.data) && res.data.length > 0) {
           let data = res.data;
           //   console.log("Data Value", data);
-          console.log("Grade Level", res.data[0].grade_level);
-          this.getEnrolledStudent(res.data[0].grade_level);
-          this.grade = res.data[0].grade_level;
-          this.classID = res.data[0].roomID;
+          console.log('Grade Level', res.data[0].grade_level);
           if (data[0].name != null) {
             for (let i = 0; i < data.length; i++) {
               data[i].name = this.toTitleCase(data[i].name);
@@ -338,13 +337,16 @@ export default {
             this.data = data;
           }
           this.room_name = data[0].room_name;
+          this.grade = res.data[0].grade_level;
+          this.classID = res.data[0].roomID;
+          this.getEnrolledStudent(res.data[0].grade_level);
         } else {
           this.edit = false;
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
           this.fadeAwayMessage.message =
-            "Please contact admin to set you room advisory!";
+            'Please contact admin to set you room advisory!';
         }
       });
     },
@@ -363,7 +365,7 @@ export default {
       this.studentDataListed = [
         { id: null, roomID: this.classID, grade_level: this.grade },
       ];
-      this.action = "Add";
+      this.action = 'Add';
       // this.dialog = true;
     },
     save() {
@@ -372,34 +374,34 @@ export default {
           classID: this.classID,
           stundent_list: JSON.stringify(this.studentData),
         };
-        console.log("Add Student", data);
+        console.log('Add Student', data);
 
         this.axiosCall(
-          "/rooms-section/addMyStudentClassRoom",
-          "POST",
+          '/rooms-section/addMyStudentClassRoom',
+          'POST',
           data,
         ).then((res) => {
           console.log(res);
           if (res.data.status == 201) {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "success";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'success';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
             this.dialog = false;
             this.studentData = [];
             this.initialize();
           } else {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
           }
         });
       } else {
         this.fadeAwayMessage.show = true;
-        this.fadeAwayMessage.type = "error";
-        this.fadeAwayMessage.header = "System Message";
-        this.fadeAwayMessage.message = "Cannot save without student tagged!";
+        this.fadeAwayMessage.type = 'error';
+        this.fadeAwayMessage.header = 'System Message';
+        this.fadeAwayMessage.message = 'Cannot save without student tagged!';
       }
     },
     viewFinalGrade() {
@@ -409,41 +411,41 @@ export default {
         roomID: this.classID,
         school_yearID: this.filterYear,
       };
-      this.action = "View";
+      this.action = 'View';
     },
     viewStudentAchievements(item) {
       // console.log("print", item.grade_level);
       window.open(
         process.env.VUE_APP_SERVER +
-          "/pdf-generator/getStudentAchievements/" +
+          '/pdf-generator/getStudentAchievements/' +
           item.studentId +
-          "/" +
+          '/' +
           this.classID +
-          "/" +
+          '/' +
           this.filterYear +
-          "/" +
+          '/' +
           item.grade_level +
-          "",
-        "_blank",
+          '',
+        '_blank',
       );
     },
     async confirmDelete() {
       this.axiosCall(
-        "/rooms-section/removeMyStudent/" + this.deleteData.id,
-        "DELETE",
+        '/rooms-section/removeMyStudent/' + this.deleteData.id,
+        'DELETE',
       ).then((res) => {
         if (res.data.status == 200) {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "success";
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.type = 'success';
+          this.fadeAwayMessage.header = 'System Message';
           this.fadeAwayMessage.message = res.data.msg;
           this.dialogConfirmDelete = false;
-          location.reload();
+          this.getTaggedStudent();
           this.studentData = [];
         } else {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
           this.fadeAwayMessage.message = res.data.msg;
         }
       });
@@ -454,22 +456,22 @@ export default {
         statusEnrolled: 2,
       };
       this.axiosCall(
-        "/enroll-student/updateDropStudent/" + this.dropData.studentId,
-        "PATCH",
+        '/enroll-student/updateDropStudent/' + this.dropData.studentId,
+        'PATCH',
         data,
       ).then((res) => {
         if (res.data.status == 200) {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "success";
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.type = 'success';
+          this.fadeAwayMessage.header = 'System Message';
           this.fadeAwayMessage.message = res.data.msg;
           this.initialize();
           this.dialogConfirmDrop = false;
           location.reload();
         } else {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
           this.fadeAwayMessage.message = res.data.msg;
         }
       });

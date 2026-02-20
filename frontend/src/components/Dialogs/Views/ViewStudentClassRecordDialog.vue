@@ -81,6 +81,18 @@
                     color="green"
                   ></v-text-field>
                 </v-col>
+                <v-col cols="12" md="3" class="d-flex">
+                  <v-text-field
+                    v-model="title"
+                    label="Title"
+                    :maxlength="25"
+                    variant="outlined"
+                    counter
+                    density="compact"
+                    style="max-width: 300px"
+                    color="green"
+                  ></v-text-field>
+                </v-col>
                 <v-col
                   cols="12"
                   md="3"
@@ -123,8 +135,17 @@
                       >Generate Grade</v-btn
                     >
                     <v-btn color="green" @click="openQuizList()" class="mx-2">
-                      <v-icon size="18">mdi-eye</v-icon>View Quiz List</v-btn
+                      <v-icon size="18">mdi-eye</v-icon>Quizes</v-btn
                     >
+                    <v-btn
+                      @click="openStudentsQuiz()"
+                      v-if="data ? data.subjectId != 6 : ''"
+                    >
+                      <v-icon size="18">mdi-printer</v-icon>Print</v-btn
+                    >
+                    <v-btn @click="openMAPEHQuiz()" v-else>
+                      <v-icon size="18">mdi-printer</v-icon>Print
+                    </v-btn>
                   </div>
 
                   <v-data-table
@@ -199,8 +220,8 @@
         <v-divider />
 
         <v-card-text class="text-body-1">
-          Are you sure you want to <strong>save</strong> this
-          {{ tab != 4 ? "quiz" : "exam" }}?
+          Are you sure you want to <strong>submit</strong> this grade?
+          <!-- {{ tab != 4 ? 'quiz' : 'exam' }}? -->
         </v-card-text>
 
         <v-card-actions class="justify-end">
@@ -261,10 +282,10 @@
                     class="pa-2"
                     >{{
                       item.transmuted_grade >= 80
-                        ? "Passed"
+                        ? 'Passed'
                         : item.transmuted_grade >= 75
-                        ? "Warning"
-                        : "At-Risk"
+                        ? 'Warning'
+                        : 'At-Risk'
                     }}</v-chip
                   >
                 </template>
@@ -345,10 +366,10 @@
                     class="pa-2"
                     >{{
                       item.transmuted_grade >= 80
-                        ? "Passed"
+                        ? 'Passed'
                         : item.transmuted_grade >= 75
-                        ? "Warning"
-                        : "At-Risk"
+                        ? 'Warning'
+                        : 'At-Risk'
                     }}</v-chip
                   >
                 </template>
@@ -501,7 +522,7 @@
             v-if="edit"
             @click="editQuizListData()"
           >
-            {{ editQuizData == false ? "Edit" : "Return" }}
+            {{ editQuizData == false ? 'Edit' : 'Return' }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -539,25 +560,26 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
+
 export default {
   props: {
     data: Object,
     action: String,
   },
-  components: {},
   data() {
     return {
-      groupBy: [{ key: "name", order: "ASD" }],
-      sortBy: [{ key: "name", order: "ASD" }],
+      groupBy: [{ key: 'name', order: 'ASD' }],
+      sortBy: [{ key: 'name', order: 'ASD' }],
       readonly: true,
       dialog: false,
       sub_subject: null,
       gradeData: [],
       newData: [],
       confirmDialog: false,
-      savedata: "save",
-      quarter: "1st Quarter",
+      title: null,
+      savedata: 'save',
+      quarter: '1st Quarter',
       semester: null,
       gradesDialog: false,
       dinominator: null,
@@ -576,77 +598,77 @@ export default {
       editScoreData: false,
       decisionData: [],
       headersMapeh: [
-        { title: "Subject", key: "subject_title" },
-        { title: "Written Works", key: "ww_weighted" },
-        { title: "Performance Task", key: "pt_weighted" },
-        { title: "Quarterly Assessment", key: "qa_weighted" },
-        { title: "Initial Grade", key: "initial_grade" },
-        { title: "Final Grade", key: "transmuted_grade" },
-        { title: "Status", key: "status" },
+        { title: 'Subject', key: 'subject_title' },
+        { title: 'Written Works', key: 'ww_weighted' },
+        { title: 'Performance Task', key: 'pt_weighted' },
+        { title: 'Quarterly Assessment', key: 'qa_weighted' },
+        { title: 'Initial Grade', key: 'initial_grade' },
+        { title: 'Final Grade', key: 'transmuted_grade' },
+        { title: 'Status', key: 'status' },
       ],
       activeTab: {
         id: 1,
-        name: "For Verification",
+        name: 'For Verification',
         active: true,
       },
       tab: 1,
       tabList: [
-        { id: 1, name: "Written Works", active: true },
-        { id: 2, name: "Performance Tasks", active: false },
-        { id: 3, name: "Quarterly Assessment", active: false },
+        { id: 1, name: 'Written Works', active: true },
+        { id: 2, name: 'Performance Tasks', active: false },
+        { id: 3, name: 'Quarterly Assessment', active: false },
       ],
       items: [],
       quizLabels: [],
       headersQuizList: [],
       headers: [
-        { title: "Name", align: "start", sortable: false, key: "name" },
+        { title: 'Name', align: 'start', sortable: false, key: 'name' },
         {
-          title: "Score",
-          align: "center",
+          title: 'Score',
+          align: 'center',
           sortable: false,
-          key: "quarterScore",
-          width: "200",
+          key: 'quarterScore',
+          width: '200',
         },
       ],
       headers1: [
-        { title: "Name", align: "start", sortable: false, key: "name" },
+        { title: 'Name', align: 'start', sortable: false, key: 'name' },
         {
-          title: "Recommendation",
-          align: "center",
+          title: 'Recommendation',
+          align: 'center',
           sortable: false,
-          key: "records",
+          key: 'records',
         },
         {
-          title: "Score",
-          align: "center",
+          title: 'Score',
+          align: 'center',
           sortable: false,
-          key: "quarterScore",
-          width: "200",
+          key: 'quarterScore',
+          width: '200',
         },
       ],
       headersGenerated: [
-        { title: "Name", align: "start", sortable: false, key: "name" },
-        { title: "Status", align: "center", sortable: false, key: "status" },
+        { title: 'Name', align: 'start', sortable: false, key: 'name' },
+        { title: 'Status', align: 'center', sortable: false, key: 'status' },
         {
-          title: "Initial Grade",
-          align: "end",
+          title: 'Initial Grade',
+          align: 'end',
           sortable: false,
-          key: "initial_grade",
-          width: "200",
+          key: 'initial_grade',
+          width: '200',
         },
         {
-          title: "Final Grade",
-          align: "end",
+          title: 'Final Grade',
+          align: 'end',
           sortable: false,
-          key: "transmuted_grade",
-          width: "80",
+          key: 'transmuted_grade',
+          width: '80',
         },
       ],
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
@@ -657,10 +679,10 @@ export default {
         this.dialog = true;
         this.initialize();
         if (data.id) {
-          console.log("Love", data);
-          data.grade_level == "Grade 11" || data.grade_level == "Grade 12"
-            ? (this.semester = "1st Semester")
-            : (this.semester = "Junior High");
+          console.log('Love', data);
+          data.grade_level == 'Grade 11' || data.grade_level == 'Grade 12'
+            ? (this.semester = '1st Semester')
+            : (this.semester = 'Junior High');
           this.subSubjectList =
             data.sub_subject != null ? JSON.parse(data.sub_subject) : [];
           this.sub_subject =
@@ -704,19 +726,19 @@ export default {
         semester: this.semester,
         // school_yearID: this.filter,
       };
-      console.log("saveQuiz", data);
+      console.log('saveQuiz', data);
       this.axiosCall(
-        "/rooms-section/updateStudentGrade/" + item.studentID,
-        "PATCH",
+        '/rooms-section/updateStudentGrade/' + item.studentID,
+        'PATCH',
         data,
       ).then((res) => {
         console.log(res.data);
         if (res.data.status == 200) {
           this.dialogConfirmSave = false;
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "success";
-          this.fadeAwayMessage.header = "System Message";
-          this.fadeAwayMessage.message = "Successfully updated scores!";
+          this.fadeAwayMessage.type = 'success';
+          this.fadeAwayMessage.header = 'System Message';
+          this.fadeAwayMessage.message = 'Successfully updated scores!';
           this.quizListDialog = false;
           this.editScoreData = false;
           this.editQuizData = false;
@@ -724,8 +746,8 @@ export default {
           // location.reload();
         } else if (res.data.status == 400) {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
           this.fadeAwayMessage.message = res.data.msg;
         }
       });
@@ -743,28 +765,28 @@ export default {
       // });
 
       this.editScoreData = true;
-      console.log("Editing:", item);
+      console.log('Editing:', item);
     },
     openGeneratedGrade() {
       this.gradesDialog = true;
-      let subjectID = this.sub_subject == null ? "noData" : this.sub_subject;
+      let subjectID = this.sub_subject == null ? 'noData' : this.sub_subject;
       console.log(this.sub_subject);
       this.axiosCall(
-        "/rooms-section/getGeneratedGrade/" +
+        '/rooms-section/getGeneratedGrade/' +
           this.data.roomId +
-          "/" +
+          '/' +
           this.filter +
-          "/" +
+          '/' +
           this.quarter +
-          "/" +
+          '/' +
           this.semester +
-          "/" +
+          '/' +
           this.data.subjectId +
-          "/" +
+          '/' +
           subjectID,
-        "GET",
+        'GET',
       ).then((res) => {
-        console.log("Data Grades", res.data);
+        console.log('Data Grades', res.data);
         if (res.data) {
           this.gradeData = res.data;
         }
@@ -773,30 +795,30 @@ export default {
     openQuizList() {
       this.quizListDialog = true;
       if (this.quarter == null) {
-        this.type = "info";
+        this.type = 'info';
         this.message =
-          "Please select quarter of semester to view grades, thank you!";
+          'Please select quarter of semester to view grades, thank you!';
         this.showAlert = true;
         setTimeout(() => (this.showAlert = false), 3000);
       } else {
         this.axiosCall(
-          "/rooms-section/getAllGradeByQuarter/" +
+          '/rooms-section/getAllGradeByQuarter/' +
             this.quarter +
-            "/" +
+            '/' +
             this.semester +
-            "/" +
+            '/' +
             this.data.roomId +
-            "/" +
+            '/' +
             this.data.subjectId +
-            "/" +
+            '/' +
             this.tab +
-            "/" +
+            '/' +
             this.filter +
-            "/" +
+            '/' +
             this.sub_subject,
-          "GET",
+          'GET',
         ).then((res) => {
-          console.log("Data Students", res.data);
+          console.log('Data Students', res.data);
           // if (res.data && Array.isArray(res.data) && res.data.length > 0) {
           // this.studentList = res.data;
           this.buildTable(res.data);
@@ -810,14 +832,14 @@ export default {
     },
     getColor(grade) {
       if (grade < 80) {
-        this.status = "Warning";
-        return "warning";
+        this.status = 'Warning';
+        return 'warning';
       } else if (grade < 75) {
-        this.status = "At-Risk";
-        return "error";
+        this.status = 'At-Risk';
+        return 'error';
       } else {
-        this.status = "Passed";
-        return "success";
+        this.status = 'Passed';
+        return 'success';
       }
     },
     changeTab(tab) {
@@ -836,48 +858,107 @@ export default {
 
     getTaggedStudent() {
       this.axiosCall(
-        "/rooms-section/getMyStudentClassRecords/" +
+        '/rooms-section/getMyStudentClassRecords/' +
           this.userRoleID +
-          "/" +
+          '/' +
           this.filter +
-          "/" +
+          '/' +
           this.data.roomId,
-        "GET",
+        'GET',
       ).then((res) => {
-        console.log("Data Students", res.data);
+        console.log('Data Students', res.data);
         if (res.data) {
           this.studentList = res.data;
         }
       });
     },
+    // buildTable(data) {
+    //   this.headersQuizList = [
+    //     { title: 'Name', align: 'start', sortable: false, key: 'name' },
+    //   ];
+
+    //   // unique quiz labels
+    //   this.quizLabels = [...new Set(data.map((r) => r.quiz_label))];
+
+    //   this.quizLabels.forEach((quiz) => {
+    //     const normalizedKey = quiz.replace(/\s+/g, ''); // "Quiz 1" -> "Quiz1"
+    //     this.headersQuizList.push({
+    //       // title: quiz, // show "Quiz 1" in header
+    //       title: 'Scores / Denominator', // show "Quiz 1" in header
+    //       align: 'center',
+    //       sortable: false,
+    //       key: normalizedKey, // but data key is "Quiz1"
+    //     });
+    //   });
+
+    //   this.headersQuizList.push({
+    //     title: 'Action',
+    //     align: 'end',
+    //     sortable: false,
+    //     key: 'actions',
+    //     width: 40,
+    //   });
+
+    //   // build items
+    //   const students = {};
+    //   data.forEach((r) => {
+    //     if (!students[r.SG_studentID]) {
+    //       students[r.SG_studentID] = {
+    //         name: r.name,
+    //         studentID: r.SG_studentID,
+    //         roomID: r.SG_roomID,
+    //         school_yearID: r.SG_school_yearID,
+    //         subjectID: r.SG_subjectID,
+    //       };
+    //     }
+
+    //     const normalizedKey = r.quiz_label.replace(/\s+/g, ''); // same normalization
+    //     students[r.SG_studentID][normalizedKey] = {
+    //       id: r.SG_id,
+    //       value: r.SG_quarterScore,
+    //       max: r.SG_highest_posible_score,
+    //     };
+    //   });
+
+    //   this.items = Object.values(students);
+
+    //   // console.log("Headers:", this.headersQuizList);
+    //   console.log('Items:', this.items);
+    // },
+
     buildTable(data) {
       this.headersQuizList = [
-        { title: "Name", align: "start", sortable: false, key: "name" },
+        { title: 'Name', align: 'start', sortable: false, key: 'name' },
       ];
 
-      // unique quiz labels
+      // Get unique quiz labels
       this.quizLabels = [...new Set(data.map((r) => r.quiz_label))];
 
       this.quizLabels.forEach((quiz) => {
-        const normalizedKey = quiz.replace(/\s+/g, ""); // "Quiz 1" -> "Quiz1"
+        const normalizedKey = quiz.replace(/\s+/g, '');
+
+        // Find one record for this quiz to get the title
+        const quizRecord = data.find((r) => r.quiz_label === quiz);
+
         this.headersQuizList.push({
-          // title: quiz, // show "Quiz 1" in header
-          title: "Scores / Denominator", // show "Quiz 1" in header
-          align: "center",
+          title: quizRecord?.SG_title?.trim()
+            ? quizRecord.SG_title // use SG_title if exists
+            : quiz, // fallback to Quiz 1, Quiz 2...
+          align: 'center',
           sortable: false,
-          key: normalizedKey, // but data key is "Quiz1"
+          key: normalizedKey,
         });
       });
 
       this.headersQuizList.push({
-        title: "Action",
-        align: "end",
+        title: 'Action',
+        align: 'end',
         sortable: false,
-        key: "actions",
+        key: 'actions',
         width: 40,
       });
 
-      // build items
+      // Build items
       const students = {};
       data.forEach((r) => {
         if (!students[r.SG_studentID]) {
@@ -890,7 +971,8 @@ export default {
           };
         }
 
-        const normalizedKey = r.quiz_label.replace(/\s+/g, ""); // same normalization
+        const normalizedKey = r.quiz_label.replace(/\s+/g, '');
+
         students[r.SG_studentID][normalizedKey] = {
           id: r.SG_id,
           value: r.SG_quarterScore,
@@ -900,36 +982,36 @@ export default {
 
       this.items = Object.values(students);
 
-      // console.log("Headers:", this.headersQuizList);
-      console.log("Items:", this.items);
+      console.log('Headers:', this.headersQuizList);
+      console.log('Items:', this.items);
     },
     checkConflict() {
       this.axiosCall(
-        "/rooms-section/getConflictQuarterGrade/" +
+        '/rooms-section/getConflictQuarterGrade/' +
           this.semester +
-          "/" +
+          '/' +
           this.filter +
-          "/" +
+          '/' +
           this.quarter +
-          "/" +
+          '/' +
           this.data.roomId +
-          "/" +
+          '/' +
           this.data.subjectId,
-        "GET",
+        'GET',
       ).then((res) => {
         if (res.data) {
           this.conflictData = res.data.count_gen;
-          console.log("Conflict", res.data.count_gen);
+          console.log('Conflict', res.data.count_gen);
 
           if (res.data.count_gen == 0) {
             this.edit = true;
           } else {
             this.edit = false;
-            this.type = "info";
+            this.type = 'info';
             this.message =
-              "The " +
+              'The ' +
               this.quarter +
-              " is already submited no changes will be added!";
+              ' is already submited no changes will be added!';
             this.showAlert = true;
             setTimeout(() => (this.showAlert = false), 10000);
           }
@@ -939,17 +1021,17 @@ export default {
 
     changeQuarter() {
       this.axiosCall(
-        "/rooms-section/getConflictQuarterGrade/" +
+        '/rooms-section/getConflictQuarterGrade/' +
           this.semester +
-          "/" +
+          '/' +
           this.filter +
-          "/" +
+          '/' +
           this.quarter +
-          "/" +
+          '/' +
           this.data.roomId +
-          "/" +
+          '/' +
           this.data.subjectId,
-        "GET",
+        'GET',
       ).then((res) => {
         if (res.data) {
           this.conflictData = res.data.count_gen;
@@ -958,11 +1040,11 @@ export default {
             this.edit = true;
           } else {
             this.edit = false;
-            this.type = "info";
+            this.type = 'info';
             this.message =
-              "The " +
+              'The ' +
               this.quarter +
-              " is already submited no changes will be added!";
+              ' is already submited no changes will be added!';
             this.showAlert = true;
             setTimeout(() => (this.showAlert = false), 10000);
           }
@@ -974,7 +1056,7 @@ export default {
         (student) =>
           student.quarterScore !== null &&
           student.quarterScore !== undefined &&
-          student.quarterScore !== "",
+          student.quarterScore !== '',
       );
     },
     editItem(data) {
@@ -983,14 +1065,14 @@ export default {
 
     save() {
       if (this.quarter == null || this.dinominator == null) {
-        this.type = "error";
-        this.message = "Please give value on field highest posible score!";
+        this.type = 'error';
+        this.message = 'Please give value on field highest posible score!';
         this.showAlert = true;
         setTimeout(() => (this.showAlert = false), 3000);
       } else if (!this.checkAllGrades()) {
-        this.type = "error";
+        this.type = 'error';
         this.message =
-          "Some student have no score given please check before saving!";
+          'Some student have no score given please check before saving!';
         this.showAlert = true;
         setTimeout(() => (this.showAlert = false), 5000);
       } else {
@@ -1003,18 +1085,18 @@ export default {
         this.newData = this.getTransformData(this.gradeData);
         // console.log("New Data", this.newData);
       } else {
-        console.log("OldData", this.gradeData);
+        console.log('OldData', this.gradeData);
       }
 
       if (this.gradeData.length <= 0 && this.newData.length <= 0) {
         console.log(this.newData.length);
         this.fadeAwayMessage.show = true;
-        this.fadeAwayMessage.type = "error";
-        this.fadeAwayMessage.header = "System Message";
-        this.fadeAwayMessage.message = "No data to submit!";
+        this.fadeAwayMessage.type = 'error';
+        this.fadeAwayMessage.header = 'System Message';
+        this.fadeAwayMessage.message = 'No data to submit!';
       } else {
-        console.log("submitted");
-        this.savedata = "submit";
+        console.log('submitted');
+        this.savedata = 'submit';
         this.confirmDialog = true;
       }
     },
@@ -1045,11 +1127,11 @@ export default {
             };
           }
 
-          if (subject_title === "MAPEH") {
+          if (subject_title === 'MAPEH') {
             acc[studentID].MAPEH.initial_grade = initial_grade;
             acc[studentID].MAPEH.transmuted_grade = transmuted_grade;
           } else if (
-            ["Music", "Arts", "Physical Education", "Health"].includes(
+            ['Music', 'Arts', 'Physical Education', 'Health'].includes(
               subject_title,
             )
           ) {
@@ -1080,20 +1162,20 @@ export default {
         school_yearID: this.filter,
         teacherID: userId,
       };
-      console.log("Submitttt", data);
-      this.axiosCall("/rooms-section/quarterFinalGrade", "POST", data).then(
+      console.log('Submitttt', data);
+      this.axiosCall('/rooms-section/quarterFinalGrade', 'POST', data).then(
         (res) => {
           console.log(res);
           if (res.data.status == 201) {
             this.closeD();
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "success";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'success';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
           } else if (res.data.status == 400) {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
           }
         },
@@ -1108,15 +1190,16 @@ export default {
         semester: this.semester,
         highest_posible_score: this.dinominator,
         type: this.tab,
+        title: this.title,
       };
       console.log(data);
-      this.axiosCall("/rooms-section/studentGrade", "POST", data).then(
+      this.axiosCall('/rooms-section/studentGrade', 'POST', data).then(
         (res) => {
           console.log(res);
           if (res.data.status == 201) {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "success";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'success';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
             this.confirmDialog = false;
             this.getTaggedStudent();
@@ -1126,18 +1209,18 @@ export default {
             }
           } else if (res.data.status == 400) {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
           }
         },
       );
     },
     closeD() {
-      eventBus.emit("closeStudentClassRecordDialog", true);
+      eventBus.emit('closeStudentClassRecordDialog', true);
 
       this.studentList = [];
-      this.quarter = "1st Quarter";
+      this.quarter = '1st Quarter';
       this.dialog = false;
       this.confirmDialog = false;
       this.dinominator = null;
@@ -1148,7 +1231,7 @@ export default {
       this.tab = 1;
       this.activeTab = {
         id: 1,
-        name: "For Verification",
+        name: 'For Verification',
         active: true,
       };
 
@@ -1158,24 +1241,24 @@ export default {
       }));
     },
     decisionSupport() {
-      let subjectID = this.sub_subject == null ? "noData" : this.sub_subject;
+      let subjectID = this.sub_subject == null ? 'noData' : this.sub_subject;
       console.log(this.sub_subject);
       this.axiosCall(
-        "/rooms-section/getGeneratedGrade/" +
+        '/rooms-section/getGeneratedGrade/' +
           this.data.roomId +
-          "/" +
+          '/' +
           this.filter +
-          "/" +
+          '/' +
           this.quarter +
-          "/" +
+          '/' +
           this.semester +
-          "/" +
+          '/' +
           this.data.subjectId +
-          "/" +
+          '/' +
           subjectID,
-        "GET",
+        'GET',
       ).then((res) => {
-        console.log("decisionData", res.data);
+        console.log('decisionData', res.data);
         if (res.data) {
           this.decisionData = res.data;
         }
@@ -1202,10 +1285,54 @@ export default {
       //   grade * 100,
       // );
       if (remaining <= 0) {
-        return "Passed";
+        return 'Passed';
       }
       return `Student is below 75<br>
-        Required score needed: ${grade.toFixed(0)} / ${this.dinominator}`;
+        Suggested score needed: ${grade.toFixed(0)} / ${this.dinominator}`;
+    },
+    openStudentsQuiz() {
+      // alert('1');
+      // let filter = this.$store.getters.getFilterSelected;
+      window.open(
+        process.env.VUE_APP_SERVER +
+          '/pdf-generator/getStudentSQuizes/' +
+          this.quarter +
+          '/' +
+          this.semester +
+          '/' +
+          this.data.roomId +
+          '/' +
+          this.data.subjectId +
+          '/' +
+          this.filter +
+          '/' +
+          this.sub_subject +
+          '/' +
+          this.userRoleID +
+          '',
+        '_blank',
+      );
+    },
+    openMAPEHQuiz() {
+      window.open(
+        process.env.VUE_APP_SERVER +
+          '/pdf-generator/getMAPEHQuizes/' +
+          this.quarter +
+          '/' +
+          this.semester +
+          '/' +
+          this.data.roomId +
+          '/' +
+          this.data.subjectId +
+          '/' +
+          this.filter +
+          '/' +
+          this.sub_subject +
+          '/' +
+          this.userRoleID +
+          '',
+        '_blank',
+      );
     },
   },
 };
