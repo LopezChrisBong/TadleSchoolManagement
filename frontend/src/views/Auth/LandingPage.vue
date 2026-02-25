@@ -1,6 +1,11 @@
 <template>
   <v-app>
-    <v-app-bar elevation="3" class="top-bot">
+    <v-app-bar
+      elevation="1"
+      class="top-bot"
+      color="white"
+      style="border-bottom: 1px solid #f0f0f0"
+    >
       <v-container fluid>
         <div
           class="d-flex align-center justify-space-between flex-wrap"
@@ -61,28 +66,25 @@
             </p>
 
             <v-btn
-              color="#e93175"
+              color="pink"
               size="large"
-              variant="outlined"
-              append-icon="mdi-account"
-              class="mt-6 mx-3"
-              rounded="lg"
-              style="width: 300px; font-weight: 1000"
+              rounded="xl"
+              elevation="2"
+              class="mt-6 mx-2 px-8"
               @click="goToDiv()"
             >
               Open Portal
             </v-btn>
+
             <v-btn
-              color="#e93175"
+              color="pink"
+              variant="outlined"
               size="large"
-              variant="flat"
-              append-icon="mdi-calendar"
-              class="mt-6 mx-3"
-              rounded="lg"
-              style="width: 300px; font-weight: 1000"
+              rounded="xl"
+              class="mt-6 mx-2 px-8"
               @click="goToEvents()"
             >
-              EVENTS
+              View Events
             </v-btn>
           </div>
         </v-col>
@@ -119,27 +121,31 @@
             </div>
 
             <v-row>
-              <v-col cols="12" v-for="(event, i) in events" :key="i">
+              <v-col
+                cols="12"
+                sm="6"
+                md="4"
+                v-for="(event, i) in events"
+                :key="i"
+              >
                 <v-card rounded="xl" elevation="2" class="event-card">
                   <v-card-text>
-                    <div style="width: 100%" class="mb-3">
+                    <div class="event-image-wrapper">
                       <v-img
                         :src="
                           event.eventFile
                             ? event.eventFile
                             : '/img/returnImg.jpg'
                         "
-                        max-width="100%"
-                        class="mx-auto"
+                        height="200"
                         cover
-                        rounded="xl"
                       />
                     </div>
                     <v-chip
                       color="pink"
                       variant="outlined"
                       size="small"
-                      class="mb-3"
+                      class="my-3"
                     >
                       {{ formatDate(event.eventDate) }}
                     </v-chip>
@@ -479,8 +485,10 @@ export default {
 
 <style scoped>
 .hero-section {
-  background-color: #ffffff;
-  height: 100vh;
+  background: linear-gradient(135deg, #fff0f6, #ffffff);
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
 }
 
 .hero-title {
@@ -511,11 +519,13 @@ export default {
 
 .module-card {
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.3s ease;
+  border: 1px solid #f2f2f2;
 }
 
 .module-card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 30px rgba(233, 49, 117, 0.15);
 }
 
 .inactive-card {
@@ -527,10 +537,9 @@ export default {
   transform: translateY(-8px) scale(1.02);
 }
 .school-code-light {
-  font-weight: 900;
-  letter-spacing: 6px;
+  font-weight: 800;
+  letter-spacing: 4px;
   color: #e93175;
-  text-shadow: 0 0 5px #ffc1dc, 0 0 10px #ff9ecf;
 }
 .portal-dialog {
   background: #ffffff;
@@ -559,5 +568,26 @@ export default {
   font-size: 1rem;
   color: #333;
   line-height: 1.6;
+}
+.event-card {
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
+}
+
+.event-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(233, 49, 117, 0.15);
+}
+.event-image-wrapper {
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.event-image-wrapper img {
+  transition: transform 0.4s ease;
+}
+
+.event-card:hover img {
+  transform: scale(1.08);
 }
 </style>

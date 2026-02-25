@@ -1,152 +1,197 @@
 <template>
-  <v-container fluid>
-    <v-row>
-      <v-col cols="12" md="8">
-        <v-row>
-          <!-- <v-col v-for="(course, i) in courses" :key="i" cols="12" md="4">
-            <v-card :color="course.color" class="pa-4" dark>
-              <h3 style="text-transform: uppercase">{{ course.title }}</h3>
-              <v-divider class="my-2"></v-divider>
-              <v-btn
-                variant="outlined"
-                size="small"
-                class="mr-2"
-                color="white"
-                @click="goStudentRecords()"
-                block
-              >
-                <v-icon size="18" class="mr-1">mdi-eye</v-icon> View Classes
-              </v-btn>
-            </v-card>
-          </v-col> -->
-          <v-col cols="12">
-            <h3 style="text-transform: uppercase">My Schedule</h3>
-            <v-data-table
-              :headers="headers"
-              :items="schedule"
-              hide-default-footer
-              dense
-              class="rounded"
-            >
-              <template v-slot:item="{ item }">
-                <tr>
-                  <td>
-                    <v-chip
-                      color="grey lighten-2"
-                      text-color="black"
-                      small
-                      label
-                    >
-                      {{ item.time }}
-                    </v-chip>
-                  </td>
+  <v-container fluid class="pa-6 dashboard-bg">
+    <!-- HEADER -->
+    <v-row class="mb-6" align="center" justify="space-between">
+      <v-col cols="12" md="6">
+        <div class="text-h5 font-weight-bold">Advisor Dashboard</div>
 
-                  <td v-for="day in weekDays" :key="day" class="text-center">
-                    <v-chip
-                      style="font-size: 12px"
-                      v-if="item[day]"
-                      :color="getChipColor(item[day])"
-                      dark
-                      small
-                      label
-                    >
-                      {{ item[day] }}
-                    </v-chip>
+        <div class="d-flex align-center mt-3">
+          <v-avatar size="50" class="me-3">
+            <v-img src="https://i.pravatar.cc/100?img=5" />
+          </v-avatar>
 
-                    <v-chip
-                      v-else
-                      color="grey lighten-3"
-                      text-color="grey"
-                      small
-                      outlined
-                      label
-                    >
-                      —
-                    </v-chip>
-                  </td>
-                </tr>
-              </template>
+          <div>
+            <div class="font-weight-medium">Mrs. Santos</div>
+            <div class="text-caption text-grey">
+              Adviser of: Grade 8 - Section A
+            </div>
+            <div class="text-caption text-grey">
+              School Year: 2023–2024 | Quarter: Q3
+            </div>
+          </div>
+        </div>
+      </v-col>
 
-              <template #no-data>
-                <v-alert type="info" border="start" color="white">
-                  No schedule found.
-                </v-alert>
-              </template>
-            </v-data-table>
-          </v-col>
-          <v-col cols="12">
-            <h3 style="text-transform: uppercase">Student At-Risk</h3>
-            <v-data-table
-              :headers="studentHeaders"
-              :items="studentList"
-              class="elevation-1"
-            >
-              <template v-slot:[`item.feeStatus`]="{ item }">
-                <v-chip
-                  :color="
-                    item.feeStatus == 1
-                      ? 'orange'
-                      : item.feeStatus == 2
-                      ? 'green'
-                      : 'red'
-                  "
-                  dark
-                  small
-                >
-                  <span>
-                    {{
-                      item.feeStatus == 1
-                        ? 'Warning'
-                        : item.feeStatus == 2
-                        ? 'Passed'
-                        : 'At-risk'
-                    }}</span
-                  >
-                </v-chip>
-              </template>
-            </v-data-table>
-          </v-col>
-        </v-row>
+      <v-col cols="12" md="3" class="text-md-right mt-4 mt-md-0">
+        <v-btn color="amber-darken-2" size="large" rounded="lg" elevation="2">
+          Submit Class Report →
+        </v-btn>
+      </v-col>
+    </v-row>
+
+    <!-- STATS CARDS -->
+    <v-row class="mb-6" dense>
+      <v-col cols="12" md="4">
+        <v-card class="pa-4 stat-card" elevation="2">
+          <div class="text-h6 font-weight-bold">37</div>
+          <div class="text-caption">Total Students</div>
+        </v-card>
       </v-col>
 
       <v-col cols="12" md="4">
-        <v-card rounded="xl" elevation="2">
-          <v-card-title class="d-flex align-center">
-            <v-icon class="mr-2" color="primary"> mdi-calendar-clock </v-icon>
-            <span class="font-weight-bold">Upcoming Events</span>
+        <v-card class="pa-4 stat-card red-light" elevation="2">
+          <div class="text-h6 font-weight-bold">5 At-Risk</div>
+          <div class="text-caption">Students</div>
+        </v-card>
+      </v-col>
+
+      <v-col cols="12" md="4">
+        <v-card class="pa-4 stat-card orange-light" elevation="2">
+          <div class="text-h6 font-weight-bold">2 LARDO</div>
+          <div class="text-caption">Students</div>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <v-row dense>
+      <!-- LEFT COLUMN -->
+      <v-col cols="12" md="8">
+        <!-- AT RISK TABLE -->
+        <v-card class="mb-6" elevation="2">
+          <v-card-title class="font-weight-bold">
+            At-Risk Students
+            <v-spacer />
+            <v-text-field
+              v-model="search"
+              density="compact"
+              placeholder="Search"
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              hide-details
+              style="max-width: 220px"
+            />
           </v-card-title>
 
-          <v-divider />
-
-          <v-list density="comfortable">
-            <template
-              v-for="(events, eventType) in eventList.event"
-              :key="eventType"
-            >
-              <v-list-subheader
-                class="text-primary font-weight-bold text-uppercase"
-              >
-                {{ eventType }}
-              </v-list-subheader>
-              <v-list-item
-                v-for="(event, i) in events"
-                :key="`${eventType}-${i}`"
-                rounded="lg"
-                class="mb-1"
-              >
-                <template #prepend>
-                  <v-avatar size="10" :color="getEventColor(eventType)" />
-                </template>
-
-                <v-list-item-title class="font-weight-medium">
-                  {{ event.eventName }}
-                </v-list-item-title>
-
-                <v-list-item-subtitle class="text-medium-emphasis">
-                  {{ formatDate(event.eventDate) }}
-                </v-list-item-subtitle>
-              </v-list-item>
+          <v-data-table
+            :headers="headers"
+            :items="students"
+            :search="search"
+            density="comfortable"
+          >
+            <template v-slot:[`item.risk`]="{ item }">
+              <v-chip :color="riskColor(item.risk)" size="small" variant="flat">
+                {{ item.risk }}
+              </v-chip>
             </template>
+
+            <template v-slot:[`item.action`]="{ item }">
+              <v-btn
+                size="small"
+                :color="item.remedial ? 'green' : 'red'"
+                variant="flat"
+              >
+                {{ item.remedial ? 'Counsel' : 'Report' }}
+              </v-btn>
+            </template>
+          </v-data-table>
+        </v-card>
+
+        <!-- BOTTOM ROW -->
+        <v-row dense>
+          <v-col cols="12" md="6">
+            <v-card class="pa-4 mb-6" elevation="2">
+              <div class="font-weight-bold mb-3">
+                Upcoming Remedial Sessions
+              </div>
+              <div v-for="(s, i) in remedials" :key="i" class="mb-2">
+                <v-icon size="18" class="me-2">mdi-calendar</v-icon>
+                {{ s }}
+              </div>
+            </v-card>
+          </v-col>
+
+          <v-col cols="12" md="6">
+            <v-card class="pa-4 mb-6" elevation="2">
+              <div class="font-weight-bold mb-3">Important Reminders</div>
+              <div v-for="(r, i) in reminders" :key="i" class="mb-2">
+                <v-icon size="18" class="me-2">mdi-bell</v-icon>
+                {{ r }}
+              </div>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <!-- REPORT BUTTONS -->
+        <v-card class="pa-4 mb-6" elevation="2">
+          <div class="font-weight-bold mb-3">Report Generation</div>
+
+          <v-row dense>
+            <v-col cols="12" md="3">
+              <v-btn block color="blue">SF2: Attendance</v-btn>
+            </v-col>
+            <v-col cols="12" md="3">
+              <v-btn block color="indigo">Class Record</v-btn>
+            </v-col>
+            <v-col cols="12" md="3">
+              <v-btn block color="deep-purple">SF9: Report Card</v-btn>
+            </v-col>
+            <v-col cols="12" md="3">
+              <v-btn block color="cyan">SF10: Student Record</v-btn>
+            </v-col>
+          </v-row>
+        </v-card>
+      </v-col>
+
+      <!-- RIGHT COLUMN -->
+      <v-col cols="12" md="4">
+        <!-- MISBEHAVIOR -->
+        <v-card class="mb-6" elevation="2">
+          <v-card-title class="font-weight-bold">
+            Student Misbehavior Reports
+          </v-card-title>
+
+          <v-list density="compact">
+            <v-list-item
+              v-for="(m, i) in misbehavior"
+              :key="i"
+              class="border-bottom"
+            >
+              <v-list-item-title>
+                {{ m.name }}
+              </v-list-item-title>
+
+              <v-chip size="x-small" color="red" variant="flat">
+                Pending
+              </v-chip>
+            </v-list-item>
+          </v-list>
+        </v-card>
+
+        <!-- ALERTS -->
+        <v-card class="mb-6" elevation="2">
+          <v-card-title class="font-weight-bold">
+            At-Risk & LARDO Alerts
+          </v-card-title>
+
+          <v-list density="compact">
+            <v-list-item v-for="(a, i) in alerts" :key="i">
+              <v-icon color="orange" class="me-2">mdi-alert</v-icon>
+              {{ a }}
+            </v-list-item>
+          </v-list>
+        </v-card>
+
+        <!-- NOTIFICATIONS -->
+        <v-card elevation="2">
+          <v-card-title class="font-weight-bold">
+            Recent Notifications
+          </v-card-title>
+
+          <v-list density="compact">
+            <v-list-item v-for="(n, i) in notifications" :key="i">
+              <v-icon size="18" class="me-2">mdi-information</v-icon>
+              {{ n }}
+            </v-list-item>
           </v-list>
         </v-card>
       </v-col>
@@ -154,169 +199,93 @@
   </v-container>
 </template>
 
-<script>
-export default {
-  name: 'TeacherDashboard',
+<script setup>
+import { ref } from 'vue';
 
-  data() {
-    return {
-      selectedDate: new Date(),
-      search: '',
-      eventList: { event: {} },
-      subjects: [],
-      subjectColorMap: {
-        English: 'indigo',
-        Math: 'cyan',
-        MAPEH: 'deep-orange',
-        Science: 'red',
-        Technology: 'blue',
-      },
-      schedule: [],
-      studentHeaders: [
-        { title: 'Student Name', value: 'name' },
-        { title: 'Parents', value: 'parents' },
-        { title: 'Phone', value: 'phone' },
-        { title: 'Class', value: 'class' },
-        { title: 'Grade', value: 'grade' },
-        { title: 'Status', value: 'feeStatus' },
-      ],
-      studentList: [
-        {
-          name: 'Selva Raj',
-          parents: 'Muthu Kumar',
-          phone: '9600',
-          class: '7th',
-          grade: 'F+',
-          feeStatus: 0,
-        },
-        {
-          name: 'Malar',
-          parents: 'Muthu Kumar',
-          phone: '7550',
-          class: '10th',
-          grade: 'D+',
-          feeStatus: 1,
-        },
-        {
-          name: 'Vinoth',
-          parents: 'Deva Raj',
-          phone: '9600',
-          class: '7th',
-          grade: 'D+',
-          feeStatus: 1,
-        },
-      ],
-      weekDays: [
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        // 'Saturday',
-      ],
-      loading: true,
-      headers: [
-        { title: 'Time', value: 'time', align: 'start', sortable: false },
-        { title: 'Monday', value: 'Monday', align: 'center', sortable: false },
-        {
-          title: 'Tuesday',
-          value: 'Tuesday',
-          align: 'center',
-          sortable: false,
-        },
-        {
-          title: 'Wednesday',
-          value: 'Wednesday',
-          align: 'center',
-          sortable: false,
-        },
-        {
-          title: 'Thursday',
-          value: 'Thursday',
-          align: 'center',
-          sortable: false,
-        },
-        { title: 'Friday', value: 'Friday', align: 'center', sortable: false },
-        // {
-        //   title: 'Saturday',
-        //   value: 'Saturday',
-        //   align: 'center',
-        //   sortable: false,
-        // },
-      ],
-    };
+const search = ref('');
+
+const headers = [
+  { title: 'LRN', key: 'lrn' },
+  { title: 'Student Name', key: 'name' },
+  { title: 'Risk Level', key: 'risk' },
+  { title: 'Reason', key: 'reason' },
+  { title: 'Remedial', key: 'remedial' },
+  { title: 'Action', key: 'action' },
+];
+
+const students = ref([
+  {
+    lrn: '1885338',
+    name: 'John Dela Cruz',
+    risk: 'Low',
+    reason: 'Low Scores',
+    remedial: true,
   },
-
-  computed: {
-    courses() {
-      return this.subjects.map((subject, index) => ({
-        title: subject.subject_title,
-        color:
-          this.subjectColorMap[subject.subject_title] ||
-          this.fallbackColor(index),
-        raw: subject,
-      }));
-    },
+  {
+    lrn: '1885339',
+    name: 'Mia Santiago',
+    risk: 'Moderate',
+    reason: 'Frequent Absences',
+    remedial: false,
   },
-
-  mounted() {
-    this.getEventsWithMandatory();
-    this.getSubject();
-    this.getMySchedules();
+  {
+    lrn: '1885340',
+    name: 'Alex Reyes',
+    risk: 'High',
+    reason: 'Low Scores',
+    remedial: true,
   },
+]);
 
-  methods: {
-    getChipColor(text) {
-      if (!text) return 'grey';
-      if (text.includes('Math')) return 'cyan';
-      if (text.includes('English')) return 'indigo';
-      if (text.includes('MAPEH')) return 'deep-orange';
-      if (text.includes('Technology')) return 'blue';
-      return 'primary';
-    },
-    fallbackColor(index) {
-      const colors = ['purple', 'teal', 'orange', 'pink', 'green'];
-      return colors[index % colors.length];
-    },
+const remedials = ref(['Ferdinand Lim – 3:30 PM', 'Mia Santiago – 4:30 PM']);
 
-    getEventColor(type) {
-      return (
-        { Academic: 'green', Celebration: 'orange', Mandatory: 'red' }[type] ||
-        'grey'
-      );
-    },
+const reminders = ref([
+  'Submit class report by 5 PM',
+  'Plan counseling for Alex Reyes',
+]);
 
-    getEventsWithMandatory() {
-      this.axiosCall('/school-events/getEventsWithMandatory', 'GET').then(
-        (res) => {
-          if (res.data) this.eventList = res.data;
-        },
-      );
-    },
+const misbehavior = ref([
+  { name: 'Katrina Dela Cruz' },
+  { name: 'James Robles' },
+  { name: 'Louis Gutierrez' },
+]);
 
-    getSubject() {
-      const userID = this.$store.state.user.id;
-      this.axiosCall(`/subjects/getSubjectTaagged/${userID}`, 'GET').then(
-        (res) => {
-          if (res.data) this.subjects = res.data;
-        },
-      );
-    },
-    goStudentRecords() {
-      this.$router.push('students-records');
-    },
+const alerts = ref([
+  'LARDO Alert: Louis skipped 5 days',
+  'At-Risk: Mia low scores in English',
+]);
 
-    getMySchedules() {
-      let filter = this.$store.getters.getFilterSelected;
-      this.axiosCall('/enroll-student/MySchedule/' + filter, 'GET').then(
-        (res) => {
-          if (res) {
-            this.schedule = res.data;
-            this.loading = false;
-          }
-        },
-      );
-    },
-  },
+const notifications = ref([
+  'Alex reported to Prefect',
+  'Louis flagged as LARDO',
+  'Counseling session tomorrow',
+]);
+
+const riskColor = (risk) => {
+  if (risk === 'High') return 'red';
+  if (risk === 'Moderate') return 'orange';
+  return 'green';
 };
 </script>
+<style scoped>
+.dashboard-bg {
+  background: #f5f6fa;
+  min-height: 100vh;
+}
+
+.stat-card {
+  border-radius: 14px;
+}
+
+.red-light {
+  background: #ffebee;
+}
+
+.orange-light {
+  background: #fff3e0;
+}
+
+.border-bottom {
+  border-bottom: 1px solid #eee;
+}
+</style>

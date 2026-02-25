@@ -5,7 +5,7 @@
       <v-app-bar-nav-icon @click="drawer = !drawer" />
       <v-toolbar-title>
         {{
-          $vuetify.display.smAndUp ? "School Management System" : "SMS"
+          $vuetify.display.smAndUp ? 'School Management System' : 'SMS'
         }}</v-toolbar-title
       >
       <v-spacer />
@@ -20,277 +20,176 @@
           >
             <v-btn icon v-bind="props">
               <v-icon :color="hasUnread ? 'white' : 'white'">
-                {{ hasUnread ? "mdi-bell-ring" : "mdi-bell-outline" }}
+                {{ hasUnread ? 'mdi-bell-ring' : 'mdi-bell-outline' }}
               </v-icon>
             </v-btn>
           </v-badge>
         </template>
 
-        <v-card width="360" max-height="600" class="overflow-y-auto rounded-lg">
-          <v-card-title class="d-flex justify-space-between align-center px-4">
-            <div class="text-h6">Notifications</div>
-            <!-- <v-btn icon variant="plain" @click="closeMenu"
-              ><v-icon>mdi-dots-horizontal</v-icon></v-btn
-            > -->
+        <v-card
+          width="380"
+          max-height="650"
+          class="overflow-y-auto rounded-xl elevation-8"
+        >
+          <!-- HEADER -->
+          <v-card-title class="d-flex align-center px-5 py-4">
+            <v-icon class="me-2" color="primary">mdi-bell-outline</v-icon>
+            <span class="text-h6 font-weight-bold">Notifications</span>
           </v-card-title>
 
-          <!-- <v-tabs v-model="notifTab" grow>
-            <v-tab>All</v-tab>
-            <v-tab>Unread</v-tab>
-          </v-tabs> -->
-          <v-card-text>
-            <!-- LARDO Notification -->
-            <div v-if="lardoNotification.length" class="px-4 pt-2">
-              <div
-                class="text-subtitle-1 font-weight-medium d-flex justify-space-between"
-              >
-                LARDO Notification .....
-                <!-- <v-btn
-                  variant="text"
-                  class="text-pink text-caption"
-                  @click="goTolardoNotification"
-                  >See all</v-btn
-                > -->
-              </div>
+          <v-divider />
 
-              <div
+          <v-card-text class="pa-4">
+            <!-- LARDO Notification -->
+            <div v-if="lardoNotification.length" class="mb-6">
+              <div class="section-title">LARDO Notification</div>
+
+              <v-card
                 v-for="(req, i) in limitLardoAdviser"
                 :key="'req-' + i"
-                class="d-flex mb-4"
+                class="notif-card"
               >
-                <v-avatar size="48" class="me-3">
-                  <v-icon>mdi-account-circle-outline</v-icon>
-                  <!-- <v-img :src="req.avatar" /> -->
-                </v-avatar>
-                <div class="flex-grow-1">
-                  <div class="text-body-2 font-weight-medium">
-                    {{ req.student_name }}
+                <div class="d-flex align-start">
+                  <v-avatar size="42" class="me-3">
+                    <v-icon>mdi-account</v-icon>
+                  </v-avatar>
+
+                  <div class="flex-grow-1">
+                    <div class="text-body-2 font-weight-medium">
+                      {{ req.student_name }}
+                    </div>
+
+                    <div class="text-caption text-grey-darken-1 mb-2">
+                      {{ req.remarks }}
+                    </div>
+
+                    <v-btn
+                      size="small"
+                      color="primary"
+                      variant="flat"
+                      @click="openLardoNotification(req)"
+                    >
+                      View
+                    </v-btn>
                   </div>
-                  <div class="text-caption mb-1">
-                    {{ req.remarks }}
-                  </div>
-                  <v-btn
-                    size="small"
-                    class="me-2"
-                    color="primary"
-                    @click="openLardoNotification(req)"
-                    >View</v-btn
-                  >
-                  <!--
-                <v-btn
-                  size="small"
-                  variant="outlined"
-                  @click="deleteRequest(req)"
-                  >Delete</v-btn
-                > -->
+
+                  <v-badge v-if="!req.read" color="error" dot />
                 </div>
-                <v-icon color="#dc0b70" v-if="!req.read" size="24" class="mt-2"
-                  >mdi-numeric-1-circle</v-icon
-                >
-              </div>
+              </v-card>
             </div>
 
-            <!-- LARDO Notification for faculty -->
-            <div v-if="lardoNotificationForFaculty.length" class="px-4 pt-2">
-              <div
-                class="text-subtitle-1 font-weight-medium d-flex justify-space-between"
-              >
-                LARDO Notification .....
-                <!-- <v-btn
-                  variant="text"
-                  class="text-pink text-caption"
-                  @click="goTolardoNotification"
-                  >See all</v-btn
-                > -->
-              </div>
+            <!-- LARDO Faculty -->
+            <div v-if="lardoNotificationForFaculty.length" class="mb-6">
+              <div class="section-title">LARDO Notification</div>
 
-              <div
+              <v-card
                 v-for="(req, i) in limitLardoFaculty"
                 :key="'req-' + i"
-                class="d-flex mb-4"
+                class="notif-card"
               >
-                <v-avatar size="48" class="me-3">
-                  <v-icon>mdi-account-circle-outline</v-icon>
-                  <!-- <v-img :src="req.avatar" /> -->
-                </v-avatar>
-                <div class="flex-grow-1">
-                  <div class="text-body-2 font-weight-medium">
-                    {{ req.student_name }}
+                <div class="d-flex align-start">
+                  <v-avatar size="42" class="me-3">
+                    <v-icon>mdi-account</v-icon>
+                  </v-avatar>
+
+                  <div class="flex-grow-1">
+                    <div class="text-body-2 font-weight-medium">
+                      {{ req.student_name }}
+                    </div>
+
+                    <div class="text-caption text-grey-darken-1 mb-2">
+                      {{ req.remarks }}
+                    </div>
+
+                    <v-btn
+                      size="small"
+                      color="primary"
+                      variant="flat"
+                      @click="openLardoFacultyNotification(req)"
+                    >
+                      View
+                    </v-btn>
                   </div>
-                  <div class="text-caption mb-1">
-                    {{ req.remarks }}
-                  </div>
-                  <v-btn
-                    size="small"
-                    class="me-2"
-                    color="primary"
-                    @click="openLardoFacultyNotification(req)"
-                    >View</v-btn
-                  >
-                  <!--
-                <v-btn
-                  size="small"
-                  variant="outlined"
-                  @click="deleteRequest(req)"
-                  >Delete</v-btn
-                > -->
+
+                  <v-badge v-if="!req.read" color="error" dot />
                 </div>
-                <v-icon color="#dc0b70" v-if="!req.read" size="24" class="mt-2"
-                  >mdi-numeric-1-circle</v-icon
-                >
-              </div>
+              </v-card>
             </div>
 
-            <!-- At-Risk Notification -->
-            <div v-if="atRiskNotification.length" class="px-4">
-              <div
-                class="text-subtitle-1 font-weight-medium d-flex justify-space-between mb-2"
-              >
-                At-Risk Notification .....
-                <!-- <v-btn
-                  variant="text"
-                  class="text-pink text-caption"
-                  @click="goToNotifications"
-                  >See all</v-btn
-                > -->
-              </div>
+            <!-- At Risk Adviser -->
+            <div v-if="atRiskNotification.length" class="mb-6">
+              <div class="section-title">At-Risk Notification</div>
 
-              <v-list density="compact" class="pa-0">
-                <v-list-item
-                  v-for="(notif, index) in limitAtRiskAdviser"
-                  :key="'notif-' + index"
-                  @click="openAdviserNotification(notif)"
-                  class="hover:bg-grey-lighten-3 rounded-lg"
-                >
-                  <template #prepend>
-                    <v-avatar size="36">
-                      <v-icon>mdi-account-circle-outline</v-icon>
-                      <!-- <v-img :src="notif.avatar" /> -->
-                    </v-avatar>
-                    <v-icon
-                      v-if="!notif.read"
-                      color="#dc0b70"
-                      size="24"
-                      style="margin-top: -2.1rem; margin-left: -0.7rem"
-                      >mdi-numeric-1-circle</v-icon
-                    >
-                  </template>
-                  <v-list-item-content>
-                    <v-list-item-title class="text-body-2">
+              <v-card
+                v-for="(notif, index) in limitAtRiskAdviser"
+                :key="'notif-' + index"
+                class="notif-card clickable"
+                @click="openAdviserNotification(notif)"
+              >
+                <div class="d-flex align-start">
+                  <v-avatar size="42" class="me-3">
+                    <v-icon>mdi-alert-circle-outline</v-icon>
+                  </v-avatar>
+
+                  <div class="flex-grow-1">
+                    <div class="text-body-2 font-weight-medium">
                       {{ notif.student_name }}
-                    </v-list-item-title>
-                    <div class="text-caption grey--text">
+                    </div>
+                    <div class="text-caption text-grey-darken-1">
                       {{ notif.remarks }}
                     </div>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
-            </div>
+                  </div>
 
-            <!-- At-Risk Notification for faculty-->
-            <div v-if="atRiskNotificationForFaculty.length" class="px-4">
-              <div
-                class="text-subtitle-1 font-weight-medium d-flex justify-space-between mb-2"
-              >
-                At-Risk Notification .....
-                <!-- <v-btn
-                  variant="text"
-                  class="text-pink text-caption"
-                  @click="goToNotifications"
-                  >See all</v-btn
-                > -->
-              </div>
-
-              <v-list density="compact" class="pa-0">
-                <v-list-item
-                  v-for="(notif, index) in limitAtRiskFaculty"
-                  :key="'notif-' + index"
-                  @click="openFacultyNotification(notif)"
-                  class="hover:bg-grey-lighten-3 rounded-lg"
-                >
-                  <template #prepend>
-                    <v-avatar size="36">
-                      <v-icon>mdi-account-circle-outline</v-icon>
-                      <!-- <v-img :src="notif.avatar" /> -->
-                    </v-avatar>
-                    <v-icon
-                      v-if="!notif.read"
-                      color="#dc0b70"
-                      size="24"
-                      style="margin-top: -2.1rem; margin-left: -0.7rem"
-                      >mdi-numeric-1-circle</v-icon
-                    >
-                  </template>
-                  <v-list-item-content>
-                    <v-list-item-title class="text-body-2">
-                      {{ notif.student_name }}
-                    </v-list-item-title>
-                    <div class="text-caption grey--text">
-                      {{ notif.remarks }}
-                    </div>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
+                  <v-badge v-if="!notif.read" color="error" dot />
+                </div>
+              </v-card>
             </div>
 
             <!-- Parent Notification -->
-            <div v-if="parentNotification.length" class="px-4">
-              <div
-                class="text-subtitle-1 font-weight-medium d-flex justify-space-between mb-2"
-              >
-                Parent Notification .....
-                <!-- <v-btn
-                  variant="text"
-                  class="text-pink text-caption"
-                  @click="goToNotifications"
-                  >See all</v-btn
-                > -->
-              </div>
+            <div v-if="parentNotification.length" class="mb-4">
+              <div class="section-title">Parent Notification</div>
 
-              <v-list density="compact" class="pa-0">
-                <v-list-item
-                  v-for="(notif, index) in limitParentNotification"
-                  :key="'notif-' + index"
-                  @click="openParentNotification(notif)"
-                  class="hover:bg-grey-lighten-3 rounded-lg"
-                >
-                  <template #prepend>
-                    <v-avatar size="36">
-                      <v-icon>mdi-account-circle-outline</v-icon>
-                      <!-- <v-img :src="notif.avatar" /> -->
-                    </v-avatar>
-                    <v-icon
-                      v-if="!notif.read"
-                      color="#dc0b70"
-                      size="24"
-                      style="margin-top: -2.1rem; margin-left: -0.7rem"
-                      >mdi-numeric-1-circle</v-icon
-                    >
-                  </template>
-                  <v-list-item-content>
-                    <v-list-item-title class="text-body-2">
+              <v-card
+                v-for="(notif, index) in limitParentNotification"
+                :key="'notif-' + index"
+                class="notif-card clickable"
+                @click="openParentNotification(notif)"
+              >
+                <div class="d-flex align-start">
+                  <v-avatar size="42" class="me-3">
+                    <v-icon>mdi-account-child-outline</v-icon>
+                  </v-avatar>
+
+                  <div class="flex-grow-1">
+                    <div class="text-body-2 font-weight-medium">
                       {{ notif.student_name }}
-                    </v-list-item-title>
-                    <div class="text-caption grey--text">
-                      Finale Grade of:{{ notif.transmuted_grade }}
                     </div>
-                    <div class="text-caption grey--text">
-                      Ramarks: {{ notif.remarks }}
+
+                    <div class="text-caption text-grey-darken-1">
+                      Grade: {{ notif.transmuted_grade }}
                     </div>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
+
+                    <div class="text-caption text-grey-darken-1">
+                      Remarks: {{ notif.remarks }}
+                    </div>
+                  </div>
+
+                  <v-badge v-if="!notif.read" color="error" dot />
+                </div>
+              </v-card>
             </div>
           </v-card-text>
-          <v-card-actions class="pa-5 d-flex justify-center">
-            <!-- <v-spacer></v-spacer> -->
+
+          <v-divider />
+
+          <v-card-actions class="pa-4">
             <v-btn
-              color="#e35e93"
-              class="white--text"
               block
+              rounded="lg"
+              color="primary"
+              variant="flat"
               @click="showAllNotifDialog = true"
             >
-              <!-- <v-icon>mdi-check-circle</v-icon> -->
               View All Notification
             </v-btn>
           </v-card-actions>
@@ -498,275 +397,202 @@
       </v-container>
     </v-main>
     <!-- Notification Dialog -->
-    <v-dialog v-model="showAllNotifDialog" scrollable max-width="600">
-      <v-card>
-        <v-card-title>All Notifications</v-card-title>
-        <v-divider />
-        <v-card-text>
-          <!-- <v-list>
-            <v-list-item v-for="(notif, index) in notifications" :key="index">
-              <v-list-item-title>{{ notif.title }}</v-list-item-title>
-              <v-list-item-subtitle
-                >{{ notif.date }} {{ notif.read }}</v-list-item-subtitle
-              >
-            </v-list-item>
-          </v-list> -->
-          <!-- LARDO Notification -->
-          <div v-if="lardoNotification.length" class="px-4 pt-2">
-            <div
-              class="text-subtitle-1 font-weight-medium d-flex justify-space-between"
-            >
-              LARDO Notification
-              <!-- <v-btn
-                variant="text"
-                class="text-pink text-caption"
-                @click="goTolardoNotification"
-                >See all</v-btn
-              > -->
-            </div>
+    <v-dialog v-model="showAllNotifDialog" scrollable max-width="650">
+      <v-card class="rounded-xl elevation-10">
+        <!-- HEADER -->
+        <v-card-title class="d-flex align-center px-6 py-4">
+          <v-icon class="me-2" color="primary"> mdi-bell-outline </v-icon>
+          <span class="text-h6 font-weight-bold"> All Notifications </span>
+          <v-spacer />
+          <v-btn icon variant="text" @click="showAllNotifDialog = false">
+            <v-icon>mdi-close</v-icon>
+          </v-btn>
+        </v-card-title>
 
-            <div
+        <v-divider />
+
+        <v-card-text class="pa-6">
+          <!-- LARDO Notification -->
+          <div v-if="lardoNotification.length" class="mb-8">
+            <div class="section-title">LARDO Notification</div>
+
+            <v-card
               v-for="(req, i) in lardoNotification"
               :key="'req-' + i"
-              class="d-flex mb-4"
+              class="notif-card"
             >
-              <v-avatar size="48" class="me-3">
-                <v-icon>mdi-account-circle-outline</v-icon>
-                <!-- <v-img :src="req.avatar" /> -->
-              </v-avatar>
+              <div class="d-flex align-start">
+                <v-avatar size="44" class="me-3">
+                  <v-icon>mdi-account</v-icon>
+                </v-avatar>
 
-              <div class="flex-grow-1">
-                <div class="text-body-2 font-weight-medium">
-                  {{ req.student_name }}
-                </div>
-                <div class="text-caption mb-1">
-                  {{ req.remarks }}
+                <div class="flex-grow-1">
+                  <div class="text-body-2 font-weight-medium">
+                    {{ req.student_name }}
+                  </div>
+
+                  <div class="text-caption text-grey-darken-1 mb-2">
+                    {{ req.remarks }}
+                  </div>
+
+                  <v-btn
+                    size="small"
+                    color="primary"
+                    variant="flat"
+                    @click="openLardoNotification(req)"
+                  >
+                    View
+                  </v-btn>
                 </div>
 
-                <v-btn
-                  size="small"
-                  class="me-2"
-                  color="primary"
-                  @click="openLardoNotification(req)"
-                  >View</v-btn
-                >
-                <!--
-                <v-btn
-                  size="small"
-                  variant="outlined"
-                  @click="deleteRequest(req)"
-                  >Delete</v-btn
-                > -->
+                <v-badge v-if="!req.read" color="error" dot />
               </div>
-              <v-icon color="#dc0b70" v-if="!req.read" size="24" class="mt-2"
-                >mdi-numeric-1-circle</v-icon
-              >
-            </div>
+            </v-card>
           </div>
 
-          <!-- LARDO Notification for faculty -->
-          <div v-if="lardoNotificationForFaculty.length" class="px-4 pt-2">
-            <div
-              class="text-subtitle-1 font-weight-medium d-flex justify-space-between"
-            >
-              LARDO Notification
-              <!-- <v-btn
-                variant="text"
-                class="text-pink text-caption"
-                @click="goTolardoNotification"
-                >See all</v-btn
-              > -->
-            </div>
+          <!-- LARDO Faculty -->
+          <div v-if="lardoNotificationForFaculty.length" class="mb-8">
+            <div class="section-title">LARDO Notification</div>
 
-            <div
+            <v-card
               v-for="(req, i) in lardoNotificationForFaculty"
               :key="'req-' + i"
-              class="d-flex mb-4"
+              class="notif-card"
             >
-              <v-avatar size="48" class="me-3">
-                <v-icon>mdi-account-circle-outline</v-icon>
-                <!-- <v-img :src="req.avatar" /> -->
-              </v-avatar>
-              <v-icon color="#dc0b70" v-if="!req.read" size="24" class="mt-2"
-                >mdi-numeric-1-circle</v-icon
-              >
-              <div class="flex-grow-1">
-                <div class="text-body-2 font-weight-medium">
-                  {{ req.student_name }}
+              <div class="d-flex align-start">
+                <v-avatar size="44" class="me-3">
+                  <v-icon>mdi-account</v-icon>
+                </v-avatar>
+
+                <div class="flex-grow-1">
+                  <div class="text-body-2 font-weight-medium">
+                    {{ req.student_name }}
+                  </div>
+
+                  <div class="text-caption text-grey-darken-1 mb-2">
+                    {{ req.remarks }}
+                  </div>
+
+                  <v-btn
+                    size="small"
+                    color="primary"
+                    variant="flat"
+                    @click="openLardoFacultyNotification(req)"
+                  >
+                    View
+                  </v-btn>
                 </div>
-                <div class="text-caption mb-1">
-                  {{ req.remarks }}
-                </div>
-                <v-btn
-                  size="small"
-                  class="me-2"
-                  color="primary"
-                  @click="openLardoFacultyNotification(req)"
-                  >View</v-btn
-                >
-                <!--
-                <v-btn
-                  size="small"
-                  variant="outlined"
-                  @click="deleteRequest(req)"
-                  >Delete</v-btn
-                > -->
+
+                <v-badge v-if="!req.read" color="error" dot />
               </div>
-              <v-icon color="#dc0b70" v-if="!req.read" size="24" class="mt-2"
-                >mdi-numeric-1-circle</v-icon
-              >
-            </div>
+            </v-card>
           </div>
 
-          <!-- At-Risk Notification -->
-          <div v-if="atRiskNotification.length" class="px-4">
-            <div
-              class="text-subtitle-1 font-weight-medium d-flex justify-space-between mb-2"
-            >
-              At-Risk Notification
-              <!-- <v-btn
-                variant="text"
-                class="text-pink text-caption"
-                @click="goToNotifications"
-                >See all</v-btn
-              > -->
-            </div>
+          <!-- At-Risk Adviser -->
+          <div v-if="atRiskNotification.length" class="mb-8">
+            <div class="section-title">At-Risk Notification</div>
 
-            <v-list density="compact" class="pa-0">
-              <v-list-item
-                v-for="(notif, index) in atRiskNotification"
-                :key="'notif-' + index"
-                @click="openAdviserNotification(notif)"
-                class="hover:bg-grey-lighten-3 rounded-lg"
-              >
-                <template #prepend>
-                  <v-avatar size="36">
-                    <v-icon>mdi-account-circle-outline</v-icon>
-                    <!-- <v-img :src="notif.avatar" /> -->
-                  </v-avatar>
-                  <v-icon
-                    v-if="!notif.read"
-                    color="#dc0b70"
-                    size="24"
-                    style="margin-top: -1.5rem; margin-left: -0.7rem"
-                    >mdi-numeric-1-circle</v-icon
-                  >
-                </template>
-                <v-list-item-content>
-                  <v-list-item-title class="text-body-2">
+            <v-card
+              v-for="(notif, index) in atRiskNotification"
+              :key="'notif-' + index"
+              class="notif-card clickable"
+              @click="openAdviserNotification(notif)"
+            >
+              <div class="d-flex align-start">
+                <v-avatar size="44" class="me-3">
+                  <v-icon>mdi-alert-circle-outline</v-icon>
+                </v-avatar>
+
+                <div class="flex-grow-1">
+                  <div class="text-body-2 font-weight-medium">
                     {{ notif.student_name }}
-                  </v-list-item-title>
-                  <div class="text-caption grey--text">
+                  </div>
+                  <div class="text-caption text-grey-darken-1">
                     {{ notif.remarks }}
                   </div>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
+                </div>
+
+                <v-badge v-if="!notif.read" color="error" dot />
+              </div>
+            </v-card>
           </div>
 
-          <!-- At-Risk Notification for faculty-->
-          <div v-if="atRiskNotificationForFaculty.length" class="px-4">
-            <div
-              class="text-subtitle-1 font-weight-medium d-flex justify-space-between mb-2"
-            >
-              At-Risk Notification
-              <!-- <v-btn
-                variant="text"
-                class="text-pink text-caption"
-                @click="goToNotifications"
-                >See all</v-btn
-              > -->
-            </div>
+          <!-- At-Risk Faculty -->
+          <div v-if="atRiskNotificationForFaculty.length" class="mb-8">
+            <div class="section-title">At-Risk Notification</div>
 
-            <v-list density="compact" class="pa-0">
-              <v-list-item
-                v-for="(notif, index) in atRiskNotificationForFaculty"
-                :key="'notif-' + index"
-                @click="openFacultyNotification(notif)"
-                class="hover:bg-grey-lighten-3 rounded-lg"
-              >
-                <template #prepend>
-                  <v-avatar size="36">
-                    <v-icon>mdi-account-circle-outline</v-icon>
-                    <!-- <v-img :src="notif.avatar" /> -->
-                  </v-avatar>
-                  <v-icon
-                    v-if="!notif.read"
-                    color="#dc0b70"
-                    size="24"
-                    style="margin-top: -1.5rem; margin-left: -0.7rem"
-                    >mdi-numeric-1-circle</v-icon
-                  >
-                </template>
-                <v-list-item-content>
-                  <v-list-item-title class="text-body-2">
+            <v-card
+              v-for="(notif, index) in atRiskNotificationForFaculty"
+              :key="'notif-' + index"
+              class="notif-card clickable"
+              @click="openFacultyNotification(notif)"
+            >
+              <div class="d-flex align-start">
+                <v-avatar size="44" class="me-3">
+                  <v-icon>mdi-alert-circle-outline</v-icon>
+                </v-avatar>
+
+                <div class="flex-grow-1">
+                  <div class="text-body-2 font-weight-medium">
                     {{ notif.student_name }}
-                  </v-list-item-title>
-                  <div class="text-caption grey--text">
+                  </div>
+                  <div class="text-caption text-grey-darken-1">
                     {{ notif.remarks }}
                   </div>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
+                </div>
+
+                <v-badge v-if="!notif.read" color="error" dot />
+              </div>
+            </v-card>
           </div>
 
           <!-- Parent Notification -->
-          <div v-if="parentNotification.length" class="px-4">
-            <div
-              class="text-subtitle-1 font-weight-medium d-flex justify-space-between mb-2"
-            >
-              Parent Notification
-              <!-- <v-btn
-                variant="text"
-                class="text-pink text-caption"
-                @click="goToNotifications"
-                >See all</v-btn
-              > -->
-            </div>
+          <div v-if="parentNotification.length" class="mb-4">
+            <div class="section-title">Parent Notification</div>
 
-            <v-list density="compact" class="pa-0">
-              <v-list-item
-                v-for="(notif, index) in parentNotification"
-                :key="'notif-' + index"
-                @click="openParentNotification(notif)"
-                class="hover:bg-grey-lighten-3 rounded-lg"
-              >
-                <template #prepend>
-                  <v-avatar size="36">
-                    <v-icon>mdi-account-circle-outline</v-icon>
-                    <!-- <v-img :src="notif.avatar" /> -->
-                  </v-avatar>
-                  <v-icon
-                    v-if="!notif.read"
-                    color="#dc0b70"
-                    size="24"
-                    style="margin-top: -1.5rem; margin-left: -0.7rem"
-                    >mdi-numeric-1-circle</v-icon
-                  >
-                </template>
-                <v-list-item-content>
-                  <v-list-item-title class="text-body-2">
+            <v-card
+              v-for="(notif, index) in parentNotification"
+              :key="'notif-' + index"
+              class="notif-card clickable"
+              @click="openParentNotification(notif)"
+            >
+              <div class="d-flex align-start">
+                <v-avatar size="44" class="me-3">
+                  <v-icon>mdi-account-child-outline</v-icon>
+                </v-avatar>
+
+                <div class="flex-grow-1">
+                  <div class="text-body-2 font-weight-medium">
                     {{ notif.student_name }}
-                  </v-list-item-title>
-                  <div class="text-caption grey--text">
-                    Finale Grade of:{{ notif.transmuted_grade }}
                   </div>
-                  <div class="text-caption grey--text">
-                    Ramarks: {{ notif.remarks }}
+
+                  <div class="text-caption text-grey-darken-1">
+                    Final Grade: {{ notif.transmuted_grade }}
                   </div>
-                </v-list-item-content>
-              </v-list-item>
-            </v-list>
+
+                  <div class="text-caption text-grey-darken-1">
+                    Remarks: {{ notif.remarks }}
+                  </div>
+                </div>
+
+                <v-badge v-if="!notif.read" color="error" dot />
+              </div>
+            </v-card>
           </div>
         </v-card-text>
-        <v-card-actions>
+
+        <v-divider />
+
+        <v-card-actions class="pa-4">
           <v-spacer />
           <v-btn
             color="primary"
-            variant="text"
+            variant="flat"
+            rounded="lg"
             @click="showAllNotifDialog = false"
-            >Close</v-btn
           >
+            Close
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -881,7 +707,7 @@
 
 <script>
 export default {
-  name: "NavbarPage",
+  name: 'NavbarPage',
   data() {
     return {
       drawer: true,
@@ -894,29 +720,29 @@ export default {
       selectedDate: new Date().toISOString().substr(0, 10),
       menu: [
         {
-          title: "Dashboard",
-          icon: "mdi-view-dashboard",
+          title: 'Dashboard',
+          icon: 'mdi-view-dashboard',
           active: true,
-          items: ["Dashboard 1", "Dashboard 2"],
+          items: ['Dashboard 1', 'Dashboard 2'],
         },
         {
-          title: "Apps",
-          icon: "mdi-apps",
+          title: 'Apps',
+          icon: 'mdi-apps',
           active: false,
-          items: ["Chat", "Calendar"],
+          items: ['Chat', 'Calendar'],
         },
         {
-          title: "UI Elements",
-          icon: "mdi-palette",
+          title: 'UI Elements',
+          icon: 'mdi-palette',
           active: false,
-          items: ["Buttons", "Avatars"],
+          items: ['Buttons', 'Avatars'],
         },
       ],
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
       mini: false,
@@ -1057,14 +883,14 @@ export default {
       this.selectedIndex = index;
     },
     loadYearForFilter() {
-      this.axiosCall("/enroll-student/getSchoolYear", "GET").then((res) => {
+      this.axiosCall('/enroll-student/getSchoolYear', 'GET').then((res) => {
         if (res) {
           this.selectedFilter = res.data[0].id;
           const activeYear = res.data.find((item) => item.status === 1);
           if (activeYear) {
             this.selectedFilter = activeYear.id;
           }
-          this.$store.commit("setFilterSelected", this.selectedFilter);
+          this.$store.commit('setFilterSelected', this.selectedFilter);
           let data = res.data;
           this.filterYears = data;
         }
@@ -1072,7 +898,7 @@ export default {
     },
     changeFilter(newValue) {
       // this.$store.commit("setFilterSelected", this.selectedFilter);
-      this.$store.commit("setFilterSelected", newValue);
+      this.$store.commit('setFilterSelected', newValue);
       // let filter = this.$store.getters.getFilterSelected;
       // console.log(filter);
       // alert(filter);
@@ -1082,12 +908,12 @@ export default {
       notif.read = true;
       this.showAllNotifDialog = false;
       if (notif.route) {
-        this.axiosCall("/notification/" + notif.id, "PATCH", { read: 1 }).then(
+        this.axiosCall('/notification/' + notif.id, 'PATCH', { read: 1 }).then(
           (res) => {
             console.log(res);
             if (notif.route) {
               // this.$router.push(notif.route);
-              this.$router.push("/" + this.userType + notif.route);
+              this.$router.push('/' + this.userType + notif.route);
             }
           },
         );
@@ -1100,14 +926,14 @@ export default {
       this.showAllNotifDialog = false;
       if (notif.route) {
         this.axiosCall(
-          "/notification/updateAtRiskAdviser/" + notif.id,
-          "PATCH",
+          '/notification/updateAtRiskAdviser/' + notif.id,
+          'PATCH',
           { read: 1 },
         ).then((res) => {
           console.log(res);
           if (notif.route) {
             // this.$router.push(notif.route);
-            this.$router.push("/" + this.userType + notif.route);
+            this.$router.push('/' + this.userType + notif.route);
           }
         });
 
@@ -1120,14 +946,14 @@ export default {
       this.showAllNotifDialog = false;
       if (notif.route) {
         this.axiosCall(
-          "/notification/updateAtRiskFaculty/" + notif.id,
-          "PATCH",
+          '/notification/updateAtRiskFaculty/' + notif.id,
+          'PATCH',
           { read: 1 },
         ).then((res) => {
           console.log(res);
           if (notif.route) {
             // this.$router.push(notif.route);
-            this.$router.push("/" + this.userType + notif.route);
+            this.$router.push('/' + this.userType + notif.route);
           }
         });
 
@@ -1140,14 +966,14 @@ export default {
       this.showAllNotifDialog = false;
       if (notif.route) {
         this.axiosCall(
-          "/notification/updateLardoAdviser/" + notif.id,
-          "PATCH",
+          '/notification/updateLardoAdviser/' + notif.id,
+          'PATCH',
           { read: 1 },
         ).then((res) => {
           console.log(res);
           if (notif.route) {
             // this.$router.push(notif.route);
-            this.$router.push("/" + this.userType + notif.route);
+            this.$router.push('/' + this.userType + notif.route);
           }
         });
 
@@ -1159,14 +985,14 @@ export default {
       this.showAllNotifDialog = false;
       if (notif.route) {
         this.axiosCall(
-          "/notification/updateLardoFaculty/" + notif.id,
-          "PATCH",
+          '/notification/updateLardoFaculty/' + notif.id,
+          'PATCH',
           { read: 1 },
         ).then((res) => {
           console.log(res);
           if (notif.route) {
             // this.$router.push(notif.route);
-            this.$router.push("/" + this.userType + notif.route);
+            this.$router.push('/' + this.userType + notif.route);
           }
         });
 
@@ -1178,16 +1004,16 @@ export default {
       const match = this.userRoleList.find(
         (r) => parseInt(r.id) === parseInt(id),
       );
-      return match ? match.description : "";
+      return match ? match.description : '';
     },
     openMobileNav() {
       this.drawer = true;
     },
     loadImg() {
-      this.axiosCall("/user-details/getUserProfileImg", "GET").then((res) => {
+      this.axiosCall('/user-details/getUserProfileImg', 'GET').then((res) => {
         this.profImg =
           process.env.VUE_APP_SERVER +
-          "/user-details/getProfileImg/" +
+          '/user-details/getProfileImg/' +
           res.data.profile_img;
       });
     },
@@ -1196,33 +1022,33 @@ export default {
         this.$store.state.user.usertype.description.toLowerCase();
       const roleID = this.$store.state.user.user.user_roleID;
       const path =
-        roleID === 5 ? "/superadmin/profile" : `/${userType}/profile`;
+        roleID === 5 ? '/superadmin/profile' : `/${userType}/profile`;
       this.$router.push(path);
     },
     getCurrentDate() {
       const cur_date = new Date();
       const month = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
       ];
       const day = [
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
       ];
       return `${day[cur_date.getDay()]}, ${
         month[cur_date.getMonth()]
@@ -1230,34 +1056,34 @@ export default {
     },
     formatAMPM(date) {
       let hours = date.getHours();
-      const minutes = date.getMinutes().toString().padStart(2, "0");
-      const ampm = hours >= 12 ? "pm" : "am";
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'pm' : 'am';
       hours = hours % 12 || 12;
       return `${hours}:${minutes} ${ampm}`;
     },
     closeNav() {
       this.drawer = false;
-      this.$emit("closeNav");
+      this.$emit('closeNav');
     },
     loadMenu(userType, userRole) {
       this.openGroups = this.links.map((link) => !!link.subLink && false);
-      this.axiosCall("/assigned-modules/getMyAssignedModules/my", "GET").then(
+      this.axiosCall('/assigned-modules/getMyAssignedModules/my', 'GET').then(
         (resp) => {
           this.selectedModuleId = resp.data.id;
           // console.log("getMyAssignedModules", resp.data.id);
           this.links = JSON.parse(resp.data.assign_mods);
           switch (userType) {
             case 1:
-              this.userType = "admin";
+              this.userType = 'admin';
               break;
             case 2:
-              this.userType = userRole === 4 ? "superadmin" : "employee";
+              this.userType = userRole === 4 ? 'superadmin' : 'employee';
               break;
             case 3:
-              this.userType = "parent";
+              this.userType = 'parent';
               break;
             case 4:
-              this.userType = "teacher";
+              this.userType = 'teacher';
               break;
           }
         },
@@ -1266,10 +1092,10 @@ export default {
 
     getLardoNotification() {
       this.axiosCall(
-        "/notification/getLardoStudent/" + this.userId,
-        "GET",
+        '/notification/getLardoStudent/' + this.userId,
+        'GET',
       ).then((res) => {
-        console.log("Lardo", res.data);
+        console.log('Lardo', res.data);
         if (this.userModule == 21) {
           this.lardoNotification = res.data;
         }
@@ -1278,10 +1104,10 @@ export default {
 
     getLardoNotificationForFaculty() {
       this.axiosCall(
-        "/notification/getLardoStudentForFaculty/" + this.userId,
-        "GET",
+        '/notification/getLardoStudentForFaculty/' + this.userId,
+        'GET',
       ).then((res) => {
-        console.log("Lardo", res.data);
+        console.log('Lardo', res.data);
         if (this.userModule != 21) {
           this.lardoNotificationForFaculty = res.data;
         }
@@ -1290,10 +1116,10 @@ export default {
 
     getAtRiskNotification() {
       this.axiosCall(
-        "/notification/getAtRiskStudent/" + this.userId,
-        "GET",
+        '/notification/getAtRiskStudent/' + this.userId,
+        'GET',
       ).then((res) => {
-        console.log("At-Risk", res.data);
+        console.log('At-Risk', res.data);
         if (this.userModule == 21) {
           this.atRiskNotification = res.data;
         }
@@ -1302,10 +1128,10 @@ export default {
 
     getAtRiskNotificationForFaculty() {
       this.axiosCall(
-        "/notification/getAtRiskStudentForFaculty/" + this.userId,
-        "GET",
+        '/notification/getAtRiskStudentForFaculty/' + this.userId,
+        'GET',
       ).then((res) => {
-        console.log("At-Risk", res.data);
+        console.log('At-Risk', res.data);
         if (this.userModule != 21) {
           this.atRiskNotificationForFaculty = res.data;
         }
@@ -1313,15 +1139,15 @@ export default {
     },
     getParentNotification() {
       this.axiosCall(
-        "/notification/getParentNotification/" + this.userId,
-        "GET",
+        '/notification/getParentNotification/' + this.userId,
+        'GET',
       ).then((res) => {
-        console.log("Parent", res.data);
+        console.log('Parent', res.data);
         this.parentNotification = res.data;
       });
     },
     getAccessControlAssignedModules() {
-      this.axiosCall("/assigned-modules/getSpecificModules", "GET").then(
+      this.axiosCall('/assigned-modules/getSpecificModules', 'GET').then(
         (res) => {
           // console.log("AssignedM", res.data);
           let data = res.data;
@@ -1341,8 +1167,8 @@ export default {
         assignedModuleID: this.newRoleData.id,
       };
       this.axiosCall(
-        "/auth/changeAssignedModule/Role/" + userID,
-        "POST",
+        '/auth/changeAssignedModule/Role/' + userID,
+        'POST',
         data,
       ).then((res) => {
         if (res.data.status == 200) {
@@ -1352,8 +1178,8 @@ export default {
           this.isLoading = false;
           this.fadeAwayMessage.message = res.data.msg;
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
         }
       });
     },
@@ -1448,5 +1274,51 @@ export default {
 
 .v-list-item:hover {
   transform: translateX(2px);
+}
+.section-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: #555;
+}
+
+.notif-card {
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  transition: all 0.2s ease;
+  cursor: default;
+}
+
+.notif-card.clickable {
+  cursor: pointer;
+}
+
+.notif-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+.section-title {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 14px;
+  color: #555;
+}
+
+.notif-card {
+  padding: 16px;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  transition: all 0.2s ease;
+  cursor: default;
+}
+
+.notif-card.clickable {
+  cursor: pointer;
+}
+
+.notif-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
 }
 </style>
