@@ -14,6 +14,7 @@ import {
   TransmutedGrade,
   StudentQuarterFinalGrade,
   Availability,
+  Subject,
 } from 'src/entities';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -197,8 +198,196 @@ export class RoomsSectionService {
     // console.log(genCount[0].count_gen)
     return genCount[0].count_gen;
   }
+  ////Normal Subkect
+  async computeNormalSubject(
+    studentID: number,
+    subjectID: number,
+    schoolYearID: number,
+    quarter: string,
+  ) {
+    console.log('studentID', studentID);
+    const subject = await this.dataSource
+      .getRepository(Subject)
+      .findOne({ where: { id: subjectID } });
 
-  async studentGrade(createStudentGradeDto: CreateStudentGradeDto) {
+    if (!subject) throw new Error('Subject not found');
+
+    const grades = await this.dataSource
+      .getRepository(StudentGrade)
+      .createQueryBuilder('g')
+      .select([
+        'g.type as type',
+        'SUM(g.quarterScore) as totalScore',
+        'SUM(g.highest_posible_score) as totalHighest',
+      ])
+      .where('g.studentID = :studentID', { studentID })
+      .andWhere('g.subjectID = :subjectID', { subjectID })
+      .andWhere('g.school_yearID = :schoolYearID', { schoolYearID })
+      .andWhere('g.quarter = :quarter', { quarter })
+      .groupBy('g.type')
+      .getRawMany();
+
+    let ww = 0;
+    let pt = 0;
+    let qa = 0;
+
+    for (const g of grades) {
+      const percentage = (Number(g.totalScore) / Number(g.totalHighest)) * 100;
+
+      if (g.type == 1) ww = percentage;
+      if (g.type == 2) pt = percentage;
+      if (g.type == 3) qa = percentage;
+    }
+
+    const total =
+      (ww * subject.writen_works) / 100 +
+      (pt * subject.performance_task) / 100 +
+      (qa * subject.quarter_assessment) / 100;
+
+    const status = total < 75 ? 'At-Risk' : 'Passed';
+
+    await this.dataSource.query(
+      `
+    INSERT INTO student_subject_summary
+    (studentID, subjectID, school_yearID, quarter,
+     written_percentage, performance_percentage, assessment_percentage,
+     total_grade, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON DUPLICATE KEY UPDATE
+      written_percentage = VALUES(written_percentage),
+      performance_percentage = VALUES(performance_percentage),
+      assessment_percentage = VALUES(assessment_percentage),
+      total_grade = VALUES(total_grade),
+      status = VALUES(status)
+    `,
+      [studentID, subjectID, schoolYearID, quarter, ww, pt, qa, total, status],
+    );
+
+    return { total, status };
+  }
+  async recomputeStudentGrade(
+    studentID: number,
+    subjectID: number,
+    schoolYearID: number,
+    quarter: string,
+  ) {
+    const subject = await this.dataSource
+      .getRepository(Subject)
+      .findOne({ where: { id: subjectID } });
+
+    if (!subject) throw new Error('Subject not found');
+
+    const hasSubSubject = subject.sub_subject && subject.sub_subject !== '[]';
+
+    //  NORMAL SUBJECT
+    if (!hasSubSubject) {
+      return await this.computeNormalSubject(
+        studentID,
+        subjectID,
+        schoolYearID,
+        quarter,
+      );
+    }
+
+    //  MAPEH SUBJECT
+    const subSubjects = JSON.parse(subject.sub_subject);
+
+    let totalMapeh = 0;
+    let totalWW = 0;
+    let totalPT = 0;
+    let totalQA = 0;
+
+    for (const sub of subSubjects) {
+      const grades = await this.dataSource
+        .getRepository(StudentGrade)
+        .createQueryBuilder('g')
+        .select([
+          'g.type as type',
+          'SUM(g.quarterScore) as totalScore',
+          'SUM(g.highest_posible_score) as totalHighest',
+        ])
+        .where('g.studentID = :studentID', { studentID })
+        .andWhere('g.subjectID = :subjectID', { subjectID })
+        .andWhere('g.school_yearID = :schoolYearID', { schoolYearID })
+        .andWhere('g.quarter = :quarter', { quarter })
+        .andWhere('g.sub_subject = :sub', { sub: sub.id })
+        .groupBy('g.type')
+        .getRawMany();
+
+      let ww = 0;
+      let pt = 0;
+      let qa = 0;
+
+      for (const g of grades) {
+        let percentage = 0;
+
+        if (Number(g.totalHighest) > 0) {
+          percentage = (Number(g.totalScore) / Number(g.totalHighest)) * 100;
+        }
+
+        if (g.type == 1) ww = percentage;
+        if (g.type == 2) pt = percentage;
+        if (g.type == 3) qa = percentage;
+      }
+
+      const subTotal =
+        (ww * subject.writen_works) / 100 +
+        (pt * subject.performance_task) / 100 +
+        (qa * subject.quarter_assessment) / 100;
+
+      totalWW += ww;
+      totalPT += pt;
+      totalQA += qa;
+      totalMapeh += subTotal;
+    }
+
+    const avgWW = Number((totalWW / subSubjects.length).toFixed(2));
+    const avgPT = Number((totalPT / subSubjects.length).toFixed(2));
+    const avgQA = Number((totalQA / subSubjects.length).toFixed(2));
+
+    const finalGrade = Number((totalMapeh / subSubjects.length).toFixed(2));
+
+    const status =
+      finalGrade < 61.59
+        ? 'At-Risk'
+        : finalGrade < 67.99
+          ? 'Warning'
+          : 'Passed';
+
+    await this.dataSource.query(
+      `
+  INSERT INTO student_subject_summary
+  (studentID, subjectID, school_yearID, quarter,
+   written_percentage, performance_percentage, assessment_percentage,
+   total_grade, status)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  ON DUPLICATE KEY UPDATE
+    written_percentage = VALUES(written_percentage),
+    performance_percentage = VALUES(performance_percentage),
+    assessment_percentage = VALUES(assessment_percentage),
+    total_grade = VALUES(total_grade),
+    status = VALUES(status)
+  `,
+      [
+        studentID,
+        subjectID,
+        schoolYearID,
+        quarter,
+        avgWW,
+        avgPT,
+        avgQA,
+        finalGrade,
+        status,
+      ],
+    );
+
+    return { total: finalGrade, status };
+  }
+
+  async studentGrade(
+    createStudentGradeDto: CreateStudentGradeDto,
+    curr_user: any,
+  ) {
     let data = JSON.parse(createStudentGradeDto.data);
     console.log(createStudentGradeDto.sub_subject);
     try {
@@ -217,7 +406,25 @@ export class RoomsSectionService {
           title: createStudentGradeDto.title,
         });
         await this.dataSource.manager.save(saveData);
+        await this.recomputeStudentGrade(
+          data[i].studentId,
+          createStudentGradeDto.subjectID,
+          data[i].school_yearId,
+          createStudentGradeDto.quarter,
+        );
+        await this.dataSource.query(
+          `CALL sp_check_early_warning(?, ?, ?, ?, ?, ?)`,
+          [
+            data[i].studentId,
+            createStudentGradeDto.subjectID,
+            data[i].school_yearId,
+            data[i].roomId,
+            createStudentGradeDto.quarter,
+            curr_user.userdetail.id,
+          ],
+        );
       }
+
       return {
         msg: 'Save successfully!',
         status: HttpStatus.CREATED,

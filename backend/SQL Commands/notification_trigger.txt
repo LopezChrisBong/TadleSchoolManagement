@@ -1,3 +1,5 @@
+DROP TRIGGER IF EXISTS trg_after_insert_grade;
+
 DELIMITER $$
 
 CREATE TRIGGER trg_after_insert_grade
