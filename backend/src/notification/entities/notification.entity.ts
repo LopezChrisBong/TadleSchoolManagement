@@ -20,7 +20,7 @@ export class Notification {
   @Column({ type: 'int', nullable: false })
   parentID: number;
 
-  @Column({ type: 'int', nullable: false })
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   transmuted_grade: number;
 
   @Column({ type: 'int', nullable: false })
@@ -35,8 +35,14 @@ export class Notification {
   @Column({ type: 'varchar', nullable: false })
   remarks: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', nullable: true })
   subject_title: string;
+
+  @Column({ type: 'varchar', nullable: false })
+  quarter: string;
+
+  @Column({ type: 'int', nullable: true })
+  subjectID: string;
 
   @CreateDateColumn({
     nullable: false,

@@ -1,0 +1,19 @@
+CREATE TABLE student_subject_summary (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    studentID INT NOT NULL,
+    subjectID INT NOT NULL,
+    school_yearID INT NOT NULL,
+    quarter VARCHAR(50) NOT NULL,
+
+    written_percentage DECIMAL(10,2),
+    performance_percentage DECIMAL(10,2),
+    assessment_percentage DECIMAL(10,2),
+
+    total_grade DECIMAL(10,2),
+    status VARCHAR(20),
+
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    UNIQUE KEY unique_summary (studentID, subjectID, school_yearID, quarter)
+);

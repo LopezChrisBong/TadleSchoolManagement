@@ -1,0 +1,69 @@
+DROP TRIGGER IF EXISTS trg_after_update_grade;
+
+DELIMITER $$
+
+CREATE DEFINER=`root`@`localhost`
+TRIGGER trg_after_update_grade
+AFTER UPDATE ON student_quarter_final_grade
+FOR EACH ROW
+BEGIN
+    DECLARE v_student_name VARCHAR(255);
+    DECLARE v_remarks VARCHAR(50);
+    DECLARE v_subject_title VARCHAR(255);
+
+    -- Only trigger when isToView changes from FALSE to TRUE
+    IF NEW.isToView = TRUE AND OLD.isToView = FALSE THEN
+
+        -- Determine remarks based on transmuted grade
+        IF NEW.transmuted_grade >= 80 THEN
+            SET v_remarks = 'Passing Grade';
+        ELSEIF NEW.transmuted_grade >= 75 AND NEW.transmuted_grade < 80 THEN
+            SET v_remarks = 'At-Risk to Fail';
+        ELSE
+            SET v_remarks = 'Fail to Pass';
+        END IF;
+
+        -- Get student name
+        SELECT CONCAT(fname, ' ', LEFT(mname,1), '. ', lname)
+        INTO v_student_name
+        FROM enroll_student
+        WHERE id = NEW.studentID
+        LIMIT 1;
+
+        -- Get subject title
+        SELECT sj.subject_title
+        INTO v_subject_title
+        FROM subject sj
+        WHERE sj.id = NEW.subjectID
+        LIMIT 1;
+
+        -- Insert notifications for parents
+        INSERT INTO notification (
+            studentID,
+            student_name,
+            parentID,
+            transmuted_grade,
+            school_yearID,
+            route,
+            `read`,
+            remarks,
+            subject_title
+        )
+        SELECT
+            NEW.studentID,
+            v_student_name,
+            pr.parentID,
+            NEW.transmuted_grade,
+            NEW.school_yearID,
+            '/parent-children',
+            FALSE,
+            v_remarks,
+            v_subject_title
+        FROM parent_record pr
+        WHERE pr.studentID = NEW.studentID;
+
+    END IF;
+
+END$$
+
+DELIMITER ;

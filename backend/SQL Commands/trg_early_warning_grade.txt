@@ -1,0 +1,114 @@
+✅ 1️⃣ ADD REQUIRED INDEXES (VERY IMPORTANT)
+
+Run this FIRST:
+
+CREATE INDEX idx_grade_lookup 
+ON student_grade (roomID, school_yearID, studentID, subjectID, quarter, type);
+
+CREATE INDEX idx_summary_lookup 
+ON student_subject_summary (studentID, subjectID, school_yearID, quarter, status);
+
+CREATE INDEX idx_notification_check
+ON notification (studentID, school_yearID, remarks);
+
+
+✅ 2️⃣ OPTIMIZED TRIGGER
+DROP TRIGGER IF EXISTS trg_early_warning_grade;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_early_warning_grade
+AFTER INSERT ON student_grade
+FOR EACH ROW
+BEGIN
+
+    DECLARE v_count INT DEFAULT 0;
+    DECLARE v_student_name VARCHAR(255);
+
+    -- Only process Written Works & Performance
+    IF NEW.type IN (1,2) THEN
+
+        -- Get student full name (safe for NULL middle name)
+        SELECT 
+            CONCAT(
+                fname, ' ',
+                IFNULL(CONCAT(LEFT(mname,1), '. '), ''),
+                lname,
+                IFNULL(CONCAT(' ', suffix), '')
+            )
+        INTO v_student_name
+        FROM enroll_student
+        WHERE id = NEW.studentID
+        LIMIT 1;
+
+        -- Count assessments
+        SELECT COUNT(1)
+        INTO v_count
+        FROM student_grade
+        WHERE roomID = NEW.roomID
+          AND school_yearID = NEW.school_yearID
+          AND studentID = NEW.studentID
+          AND subjectID = NEW.subjectID
+          AND quarter = NEW.quarter
+          AND type IN (1,2);
+
+        -- Trigger after 3rd assessment
+        IF v_count >= 3 THEN
+
+            -- Check if student is still At-Risk
+            IF EXISTS (
+                SELECT 1
+                FROM student_subject_summary
+                WHERE studentID = NEW.studentID
+                  AND subjectID = NEW.subjectID
+                  AND school_yearID = NEW.school_yearID
+                  AND quarter = NEW.quarter
+                  AND status = 'At-Risk'
+            ) THEN
+
+                -- Prevent duplicate early warnings
+                IF NOT EXISTS (
+                    SELECT 1 FROM notification
+                    WHERE studentID = NEW.studentID
+                      AND subjectID = NEW.subjectID
+                      AND school_yearID = NEW.school_yearID
+                      AND quarter = NEW.quarter
+                      AND remarks = 'Early Warning: At-Risk after 3 assessments'
+                ) THEN
+
+                    -- Insert notification with student name
+                    INSERT INTO notification (
+                        studentID,
+                        student_name,
+                        parentID,
+                        subjectID,
+                        quarter,
+                        school_yearID,
+                        route,
+                        `read`,
+                        remarks
+                    )
+                    SELECT
+                        NEW.studentID,
+                        v_student_name,
+                        pr.parentID,
+                        NEW.subjectID,
+                        NEW.quarter,
+                        NEW.school_yearID,
+                        '/parent-children',
+                        FALSE,
+                        'Early Warning: At-Risk after 3 assessments'
+                    FROM parent_record pr
+                    WHERE pr.studentID = NEW.studentID;
+
+                END IF;
+
+            END IF;
+
+        END IF;
+
+    END IF;
+
+END$$
+
+DELIMITER ;

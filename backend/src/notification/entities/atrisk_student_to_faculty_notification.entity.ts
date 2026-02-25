@@ -20,7 +20,7 @@ export class AtRiskStudentForFacultyNotification {
   @Column({ type: 'int', nullable: false })
   teacherID: number;
 
-  @Column({ type: 'int', nullable: false })
+  @Column({ type: 'decimal', precision: 5, scale: 2, nullable: true })
   transmuted_grade: number;
 
   @Column({ type: 'int', nullable: false })
@@ -41,8 +41,11 @@ export class AtRiskStudentForFacultyNotification {
   @Column({ type: 'varchar', nullable: false })
   room_name: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', nullable: true })
   subject_title: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  quarter: string;
 
   @CreateDateColumn({
     nullable: false,

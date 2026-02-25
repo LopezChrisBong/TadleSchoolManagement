@@ -77,7 +77,7 @@ export class StudentGrade {
 
   @Column({
     type: 'longtext',
-    nullable: false,
+    nullable: true,
   })
   title: string;
 

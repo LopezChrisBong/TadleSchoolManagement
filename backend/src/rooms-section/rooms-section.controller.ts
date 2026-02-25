@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  Headers,
 } from '@nestjs/common';
 import { RoomsSectionService } from './rooms-section.service';
 import { CreateRoomsSectionDto } from './dto/create-rooms-section.dto';
@@ -25,6 +26,7 @@ import { UpdateTransmutedGradeDto } from './dto/update-transmuted-grade.dto';
 import { CreateStudentQuarterFinalGradeDto } from './dto/create-student-quarter-final-grade.dto';
 import { UpdateStudentGradeDto } from './dto/update-student-grade.dto';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { currentUser } from 'src/shared/jwtDecode';
 
 @Controller('rooms-section')
 export class RoomsSectionController {
@@ -55,8 +57,16 @@ export class RoomsSectionController {
   }
 
   @Post('studentGrade')
-  studentGrade(@Body() createStudentGradeDto: CreateStudentGradeDto) {
-    return this.roomsSectionService.studentGrade(createStudentGradeDto);
+  studentGrade(
+    @Body() createStudentGradeDto: CreateStudentGradeDto,
+    @Headers() headers,
+  ) {
+    var head_str = headers.authorization;
+    const curr_user = currentUser(head_str);
+    return this.roomsSectionService.studentGrade(
+      createStudentGradeDto,
+      curr_user,
+    );
   }
 
   @Post('addTrack')
