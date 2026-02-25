@@ -1,206 +1,265 @@
 <template>
-  <v-container fluid class="pa-6 bg-white-lighten-4">
-    <!-- Header Stats -->
-    <v-row>
-      <v-col
-        cols="12"
-        md="4"
-        class="dt-container"
-        elevation="0"
-        v-for="card in headerCards"
-        :key="card.title"
-      >
-        <v-card class="pa-3" outlined>
-          <v-row align="center">
-            <v-col cols="3">
-              <v-icon size="36">{{ card.icon }}</v-icon>
-            </v-col>
-            <v-col cols="9">
-              <div class="text-subtitle-2">{{ card.title }}</div>
-              <div class="text-h6 font-weight-bold">{{ card.value }}</div>
-            </v-col>
-          </v-row>
+  <v-container fluid class="dashboard pa-6">
+    <!-- ================= TOP STATS ================= -->
+    <v-row dense class="mb-6">
+      <v-col cols="12" md="4">
+        <v-card class="stat-card green-card">
+          <div class="stat-number">812</div>
+          <div class="stat-label">JHS Students</div>
         </v-card>
       </v-col>
 
-      <!-- Attendance Section -->
+      <v-col cols="12" md="4">
+        <v-card class="stat-card blue-card">
+          <div class="stat-number">357</div>
+          <div class="stat-label">SHS Students</div>
+        </v-card>
+      </v-col>
 
-      <v-col
-        cols="12"
-        md="4"
-        v-for="attendance in attendanceData"
-        :key="attendance.title"
-      >
-        <v-card class="pa-3" outlined>
-          <div class="text-subtitle-1 font-weight-medium mb-2">
-            {{ attendance.title }}
-          </div>
-          <div class="d-flex justify-space-between">
-            <div>
-              Present No. <strong>{{ attendance.present }}</strong>
-            </div>
-            <div>
-              Absent No. <strong>{{ attendance.absent }}</strong>
-            </div>
-          </div>
+      <v-col cols="12" md="4">
+        <v-card class="stat-card red-card">
+          <div class="stat-number">45</div>
+          <div class="stat-label">At-Risk Students (Total: 71)</div>
         </v-card>
       </v-col>
     </v-row>
 
-    <!-- Student Directory -->
-    <v-card class="pa-4 my-4">
-      <div class="text-h6 mb-4">Student Directory of At-Risk and Warning</div>
-      <v-data-table
-        :headers="studentHeaders"
-        :items="studentList"
-        class="elevation-1"
-      >
-        <template v-slot:[`item.feeStatus`]="{ item }">
-          <v-chip
-            :color="
-              item.feeStatus == 1
-                ? 'orange'
-                : item.feeStatus == 2
-                ? 'green'
-                : 'red'
-            "
-            dark
-            small
-          >
-            <span>
-              {{
-                item.feeStatus == 1
-                  ? "Warning"
-                  : item.feeStatus == 2
-                  ? "Passed"
-                  : "At-risk"
-              }}</span
-            >
-          </v-chip>
-        </template>
-      </v-data-table>
-    </v-card>
+    <v-row dense>
+      <!-- ================= LEFT SIDE ================= -->
+      <v-col cols="12" md="8">
+        <!-- ===== Donut Charts Row ===== -->
+        <v-row dense class="mb-6">
+          <v-col cols="12" md="6">
+            <v-card class="pa-4">
+              <div class="section-title">At-Risk Overview (JHS)</div>
 
-    <!-- Bottom Panels -->
-    <!-- <v-row>
-      <v-col cols="6">
-        <v-card class="pa-4">
-          <div class="text-h6 mb-4">Fees Collection</div>
-          <canvas id="fees-chart"></canvas>
+              <v-progress-circular
+                model-value="71"
+                :size="140"
+                :width="18"
+                color="orange"
+                class="my-4"
+              >
+                71
+              </v-progress-circular>
+
+              <div class="legend">
+                <div><span class="dot green"></span> Low 29</div>
+                <div><span class="dot orange"></span> Moderate 24</div>
+                <div><span class="dot red"></span> High 18</div>
+              </div>
+            </v-card>
+          </v-col>
+
+          <v-col cols="12" md="6">
+            <v-card class="pa-4">
+              <div class="section-title">At-Risk Overview (SHS)</div>
+
+              <v-progress-circular
+                model-value="27"
+                :size="140"
+                :width="18"
+                color="deep-orange"
+                class="my-4"
+              >
+                27
+              </v-progress-circular>
+
+              <div class="legend">
+                <div><span class="dot green"></span> Low 12</div>
+                <div><span class="dot orange"></span> Moderate 8</div>
+                <div><span class="dot red"></span> High 7</div>
+              </div>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <!-- ===== Student Management ===== -->
+        <v-card>
+          <v-card-title class="d-flex justify-space-between align-center">
+            <div class="section-title">Student Management</div>
+
+            <v-btn size="small" color="amber-darken-2">
+              Assign Adviser and Teacher →
+            </v-btn>
+          </v-card-title>
+
+          <v-data-table
+            :headers="headers"
+            :items="students"
+            density="comfortable"
+          >
+            <template v-slot:[`item.status`]="{ item }">
+              <v-chip size="small" color="red" variant="flat">
+                {{ item.status }}
+              </v-chip>
+            </template>
+
+            <template v-slot:[`item.risk`]="{ item }">
+              <v-chip size="small" :color="riskColor(item.risk)" variant="flat">
+                {{ item.risk }}
+              </v-chip>
+            </template>
+
+            <template v-slot:[`item.actions`]>
+              <v-btn size="x-small" variant="text">View</v-btn>
+              <v-btn size="x-small" color="blue">Edit</v-btn>
+            </template>
+          </v-data-table>
         </v-card>
       </v-col>
 
-      <v-col cols="6">
-        <v-card class="pa-4 mb-4">
-          <div class="text-h6 mb-2">Class Wise Performance</div>
-          <div class="text-subtitle-1">
-            Attendance Average: <strong>95%</strong>
-          </div>
-          <div class="text-subtitle-1">
-            Edu. Grade Average: <strong>B+</strong>
-          </div>
+      <!-- ================= RIGHT SIDEBAR ================= -->
+      <v-col cols="12" md="4">
+        <!-- Quick Access -->
+        <v-card class="mb-6 pa-4">
+          <div class="section-title mb-4">Quick Access</div>
+
+          <v-btn block class="mb-2" variant="outlined">Manage Classes</v-btn>
+          <v-btn block class="mb-2" variant="outlined">Manage Teachers</v-btn>
+          <v-btn block class="mb-2" variant="outlined">View SF2 & SF10</v-btn>
+          <v-btn block color="orange">Generate Summary Reports</v-btn>
         </v-card>
 
+        <!-- Announcements -->
+        <v-card class="mb-6 pa-4">
+          <div class="section-title mb-3">Announcements</div>
+
+          <v-list density="compact">
+            <v-list-item>
+              <v-icon class="me-2" color="orange">mdi-bullhorn</v-icon>
+              Parent Meeting – Friday 3PM
+            </v-list-item>
+            <v-list-item>
+              <v-icon class="me-2" color="blue">mdi-file</v-icon>
+              Submit class reports by Feb 29
+            </v-list-item>
+          </v-list>
+        </v-card>
+
+        <!-- At-Risk & LARDO Students -->
         <v-card class="pa-4">
-          <div class="text-h6 mb-2">Upcoming Activities</div>
-          <v-list dense>
-            <v-list-item v-for="event in upcomingEvents" :key="event.title">
-              <v-list-item-content>
-                <v-list-item-title>{{ event.title }}</v-list-item-title>
-                <v-list-item-subtitle
-                  >{{ event.date }} • {{ event.time }}</v-list-item-subtitle
-                >
-              </v-list-item-content>
+          <div class="section-title mb-3">At-Risk & LARDO Students</div>
+
+          <v-list density="compact">
+            <v-list-item v-for="(s, i) in sidebarStudents" :key="i">
+              <v-list-item-title>
+                {{ s.name }}
+              </v-list-item-title>
+              <v-btn size="x-small" variant="text">View</v-btn>
             </v-list-item>
           </v-list>
         </v-card>
       </v-col>
-    </v-row> -->
+    </v-row>
   </v-container>
 </template>
+<script setup>
+import { ref } from 'vue';
 
-<script>
-// import Chart from "chart.js/auto";
+const headers = [
+  { title: 'LRN', key: 'lrn' },
+  { title: 'Student Name', key: 'name' },
+  { title: 'Status', key: 'status' },
+  { title: 'At-Risk Status', key: 'risk' },
+  { title: 'Adviser', key: 'adviser' },
+  { title: 'Actions', key: 'actions' },
+];
 
-export default {
-  name: "DashboardPage",
-  data() {
-    return {
-      headerCards: [
-        {
-          title: "Total Enrolled Students",
-          value: "5,252",
-          icon: "mdi-school",
-        },
-        { title: "Total Teachers", value: "132", icon: "mdi-account-tie" },
-        // { title: "Working Staff", value: "38", icon: "mdi-account-group" },
-        // { title: "This Month Events", value: "15", icon: "mdi-calendar" },
-      ],
-      attendanceData: [
-        { title: "Student Attendance", present: 4752, absent: 437 },
-        // { title: "Teachers Attendance", present: 132, absent: 4 },
-        // { title: "Staff Attendance", present: 32, absent: 6 },
-      ],
-      studentHeaders: [
-        { title: "Student Name", value: "name" },
-        { title: "Parents Names", value: "parents" },
-        { title: "Phone", value: "phone" },
-        { title: "Class", value: "class" },
-        { title: "Grade", value: "grade" },
-        { title: "Status", value: "feeStatus" },
-      ],
-      studentList: [
-        {
-          name: "Selva Raj",
-          parents: "Muthu Kumar",
-          phone: "9600778090",
-          class: "7th",
-          grade: "F+",
-          feeStatus: "0",
-        },
-        {
-          name: "Malar",
-          parents: "Muthu Kumar",
-          phone: "7550364512",
-          class: "10th",
-          grade: "D+",
-          feeStatus: "1",
-        },
-        {
-          name: "Vinoth",
-          parents: "Deva Raj",
-          phone: "9600779080",
-          class: "7th",
-          grade: "D+",
-          feeStatus: "1",
-        },
-      ],
-      // upcomingEvents: [
-      //   {
-      //     title: "Student Counselling",
-      //     date: "8-10 July 2021",
-      //     time: "11 AM - 12 PM",
-      //   },
-      //   {
-      //     title: "Teachers Meeting",
-      //     date: "8-10 July 2021",
-      //     time: "4 PM - 5 PM",
-      //   },
-      // ],
-    };
+const students = ref([
+  {
+    lrn: '1885338',
+    name: 'John Dela Cruz',
+    status: 'Under Monitoring',
+    risk: 'Low',
+    adviser: 'Mrs. Santos',
   },
-  mounted() {},
-  methods: {
-    initialize() {
-      console.log("initialize");
-    },
+  {
+    lrn: '1885339',
+    name: 'Ferdinand Lim',
+    status: 'High',
+    risk: 'High',
+    adviser: 'Mrs. Santos',
   },
+  {
+    lrn: '1885340',
+    name: 'Mia Santiago',
+    status: 'Under Monitoring',
+    risk: 'Low',
+    adviser: 'Mrs. Santos',
+  },
+]);
+
+const sidebarStudents = ref([
+  { name: 'John Dela Cruz' },
+  { name: 'Mia Santiago' },
+  { name: 'Alex Reyes' },
+]);
+
+const riskColor = (risk) => {
+  if (risk === 'High') return 'red';
+  if (risk === 'Moderate') return 'orange';
+  return 'green';
 };
 </script>
-
 <style scoped>
-.v-card {
-  border-radius: 16px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+.dashboard {
+  /* background: #f4f6f9; */
+  min-height: 100vh;
+}
+
+.stat-card {
+  padding: 20px;
+  border-radius: 12px;
+}
+
+.stat-number {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.stat-label {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.green-card {
+  background: #e8f5e9;
+}
+.blue-card {
+  background: #e3f2fd;
+}
+.red-card {
+  background: #ffebee;
+}
+.grey-card {
+  background: #eceff1;
+}
+
+.section-title {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.legend {
+  font-size: 13px;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.green {
+  background: green;
+}
+.orange {
+  background: orange;
+}
+.red {
+  background: red;
 }
 </style>

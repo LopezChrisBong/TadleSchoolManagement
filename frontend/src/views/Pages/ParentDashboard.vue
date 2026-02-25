@@ -1,241 +1,209 @@
 <template>
-  <v-container fluid>
-    <!-- Charts -->
+  <v-container fluid class="pa-6 grey-lighten-4 fill-height">
     <v-row>
-      <!-- Donut -->
-      <!-- <v-col cols="12" md="4">
-        <v-card>
-          <v-card-title>Students by Grade and Gender</v-card-title>
-          <v-card-text>
-            <Doughnut :data="donutData" :options="chartOptions" />
-          </v-card-text>
-        </v-card>
-      </v-col> -->
-
-      <!-- Participation -->
-
-      <!-- Gauges -->
-      <v-col cols="12" md="8">
-        <v-row>
-          <v-col cols="12">
-            <v-card>
-              <v-card-title>Average Subject Grade</v-card-title>
-              <v-card-text>
-                <v-row>
-                  <v-col
-                    cols="12"
-                    md="3"
-                    v-for="subject in subjects"
-                    :key="subject.name"
-                    class="mb-4 d-flex justify-center align-center border rounded-lg"
-                  >
-                    <p class="pa-3">{{ subject.name }} - {{ subject.score }}</p>
-                    <v-progress-circular
-                      :model-value="subject.score"
-                      color="primary"
-                      size="80"
-                      width="8"
-                    >
-                      {{ subject.score }}
-                    </v-progress-circular></v-col
-                  >
-                </v-row>
-              </v-card-text>
-            </v-card>
-          </v-col>
-          <v-col cols="12">
-            <v-card>
-              <v-card-title
-                >Student Participation Rate by Subjects</v-card-title
-              >
-              <v-card-text>
-                <Bar
-                  :data="barHorizontalData"
-                  :options="barHorizontalOptions"
-                />
-              </v-card-text>
-            </v-card>
-          </v-col>
-        </v-row>
-      </v-col>
-      <!--School Events-->
+      <!-- LEFT COLUMN -->
       <v-col cols="12" md="4">
-        <!-- Calendar -->
-        <!-- <v-card class="mb-4">
-          <v-date-picker v-model="selectedDate" color="primary" />
-        </v-card> -->
+        <!-- Student Profile -->
+        <v-card class="pa-4 rounded-xl mb-4 elevation-3">
+          <div class="text-h6 font-weight-bold mb-4">Student Profile</div>
 
-        <!-- Upcoming Events -->
-        <v-card>
-          <v-card-title>Upcoming Events</v-card-title>
-          <v-divider></v-divider>
-          <v-list>
-            <v-list-item v-for="(event, i) in events" :key="i">
-              <v-list-item-icon>
-                <v-icon :color="event.color">mdi-circle</v-icon>
-              </v-list-item-icon>
-              <v-list-item-content>
-                <v-list-item-title>{{ event.title }}</v-list-item-title>
-                <v-list-item-subtitle
-                  >{{ event.date }} - {{ event.time }}</v-list-item-subtitle
-                >
-              </v-list-item-content>
+          <div class="d-flex align-center">
+            <v-avatar size="70" class="me-4">
+              <v-img src="https://i.pravatar.cc/100" />
+            </v-avatar>
+
+            <div>
+              <div class="font-weight-bold text-body-1">John Dela Cruz</div>
+              <div class="text-caption">LRN: 123456789012</div>
+              <div class="text-caption">Grade: 8 - Section A</div>
+              <div class="text-caption">Adviser: Mrs. Santos</div>
+              <div class="text-caption">School Year: 2023–2024</div>
+              <div class="text-caption">Quarter: Q3</div>
+            </div>
+          </div>
+        </v-card>
+
+        <!-- Academic Performance -->
+        <v-card class="pa-4 rounded-xl elevation-3 mb-4">
+          <div class="text-h6 font-weight-bold mb-4">Academic Performance</div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-space-between text-caption">
+              <span>Math</span>
+              <span class="text-red">62%</span>
+            </div>
+            <v-progress-linear
+              model-value="62"
+              color="red"
+              height="8"
+              rounded
+            />
+          </div>
+
+          <div class="mb-3">
+            <div class="d-flex justify-space-between text-caption">
+              <span>Science</span>
+              <span class="text-orange">74%</span>
+            </div>
+            <v-progress-linear
+              model-value="74"
+              color="orange"
+              height="8"
+              rounded
+            />
+          </div>
+
+          <div>
+            <div class="d-flex justify-space-between text-caption">
+              <span>English</span>
+              <span class="text-green">88%</span>
+            </div>
+            <v-progress-linear
+              model-value="88"
+              color="green"
+              height="8"
+              rounded
+            />
+          </div>
+        </v-card>
+
+        <!-- Reports -->
+        <v-card class="pa-4 rounded-xl elevation-3">
+          <div class="text-h6 font-weight-bold mb-4">Reports</div>
+
+          <v-list density="compact">
+            <v-list-item title="SF9: Report Card" subtitle="Q3">
+              <template #append>
+                <v-btn size="small" variant="text">View</v-btn>
+              </template>
+            </v-list-item>
+
+            <v-list-item title="Attendance Record" subtitle="Jan – Mar">
+              <template #append>
+                <v-btn size="small" variant="text">View</v-btn>
+              </template>
             </v-list-item>
           </v-list>
         </v-card>
       </v-col>
 
-      <!-- Exam Results -->
-      <!-- <v-col cols="12" md="6">
-        <v-card>
-          <v-card-title>Examination Results by Subject</v-card-title>
-          <v-card-text>
-            <Bar :data="examResultsData" :options="examResultsOptions" />
-          </v-card-text>
+      <!-- RIGHT COLUMN -->
+      <v-col cols="12" md="8">
+        <!-- Attendance Overview -->
+        <v-card class="pa-6 rounded-xl mb-4 elevation-3">
+          <div class="text-h6 font-weight-bold mb-4">Attendance Overview</div>
+
+          <v-row align="center">
+            <v-col cols="12" md="4" class="text-center">
+              <v-progress-circular
+                model-value="78"
+                size="130"
+                width="15"
+                color="green"
+              >
+                78%
+              </v-progress-circular>
+            </v-col>
+
+            <v-col cols="12" md="8">
+              <v-chip color="green" class="me-2">25 Present</v-chip>
+              <v-chip color="orange" class="me-2">8 Absences</v-chip>
+              <v-chip color="yellow-darken-2">3 Late</v-chip>
+
+              <div class="mt-4">
+                <v-alert type="error" density="compact" variant="tonal">
+                  LARDO ALERT
+                </v-alert>
+              </div>
+            </v-col>
+          </v-row>
         </v-card>
-      </v-col> -->
+
+        <v-row>
+          <!-- Alert & Discipline -->
+          <v-col cols="12" md="6">
+            <v-card class="pa-4 rounded-xl elevation-3">
+              <div class="text-h6 font-weight-bold mb-3">
+                Alert & Discipline Status
+              </div>
+
+              <v-alert type="error" variant="flat" class="mb-3">
+                Learner At-Risk of Dropping Out
+              </v-alert>
+
+              <div class="text-caption">Risk Level: <strong>High</strong></div>
+              <div class="text-caption">
+                Reason: <strong>5 Consecutive Absences</strong>
+              </div>
+              <div class="text-caption">
+                Status: <strong>Under Monitoring</strong>
+              </div>
+            </v-card>
+          </v-col>
+
+          <!-- Discipline Case -->
+          <v-col cols="12" md="6">
+            <v-card class="pa-4 rounded-xl elevation-3">
+              <div class="text-h6 font-weight-bold mb-3">Discipline Case</div>
+
+              <v-timeline density="compact">
+                <v-timeline-item dot-color="blue">
+                  Academic Concern
+                </v-timeline-item>
+                <v-timeline-item dot-color="grey"> Reported </v-timeline-item>
+                <v-timeline-item dot-color="grey"> Counseled </v-timeline-item>
+                <v-timeline-item dot-color="red">
+                  Referred to Prefect
+                </v-timeline-item>
+              </v-timeline>
+
+              <v-btn color="error" block class="mt-3"> Under Ongoing </v-btn>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <!-- Announcements -->
+          <v-col cols="12" md="6">
+            <v-card class="pa-4 rounded-xl elevation-3">
+              <div class="text-h6 font-weight-bold mb-3">Announcements</div>
+
+              <v-list density="compact">
+                <v-list-item
+                  title="Parent Meeting"
+                  subtitle="Reminder: Friday at 3PM"
+                />
+                <v-list-item
+                  title="Field Trip Update"
+                  subtitle="Rescheduled to March 10"
+                />
+              </v-list>
+            </v-card>
+          </v-col>
+
+          <!-- Recent Notifications -->
+          <v-col cols="12" md="6">
+            <v-card class="pa-4 rounded-xl elevation-3">
+              <div class="text-h6 font-weight-bold mb-3">
+                Recent Notifications
+              </div>
+
+              <v-list density="compact">
+                <v-list-item title="At-Risk of Failing in Math" />
+                <v-list-item title="5 Consecutive Absences" />
+                <v-list-item title="Arrived 15 minutes late today" />
+                <v-list-item title="New Announcement Posted" />
+              </v-list>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-col>
     </v-row>
   </v-container>
 </template>
-
-<script>
-import {
-  Chart as ChartJS,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-} from 'chart.js';
-import {
-  // Doughnut,
-  Bar,
-} from 'vue-chartjs';
-
-ChartJS.register(
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement,
-  BarElement,
-  CategoryScale,
-  LinearScale,
-);
-
-export default {
-  components: {
-    // Doughnut,
-    Bar,
-  },
-  data() {
-    return {
-      selectedDate: new Date(),
-      events: [
-        {
-          title: 'Applied Science Homework',
-          date: 'Feb 2',
-          time: '11:30 - 12:30',
-          color: 'red',
-        },
-        {
-          title: 'Technology Exam',
-          date: 'Feb 3',
-          time: '11:30 - 12:30',
-          color: 'orange',
-        },
-        {
-          title: 'AI Workshop',
-          date: 'Feb 5',
-          time: '11:30 - 12:30',
-          color: 'cyan',
-        },
-        {
-          title: 'UX Design Conference',
-          date: 'Feb 8',
-          time: '11:30 - 12:30',
-          color: 'green',
-        },
-      ],
-      selectedYear: '2024',
-      years: ['2023', '2024', '2025'],
-      selectedGrade: 'All',
-      grades: ['All', 'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5'],
-      totalStudents: 300,
-      subjects: [
-        { name: 'Arts', score: 84.37 },
-        { name: 'English', score: 84.05 },
-        { name: 'Maths', score: 81.86 },
-        { name: 'Phys. Ed', score: 84.76 },
-        { name: 'Science', score: 79.36 },
-      ],
-      donutData: {
-        labels: ['Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5'],
-        datasets: [
-          {
-            data: [22.3, 19.3, 23.0, 14.8, 20.6],
-            backgroundColor: [
-              '#f87171',
-              '#fbbf24',
-              '#34d399',
-              '#60a5fa',
-              '#a78bfa',
-            ],
-          },
-        ],
-      },
-      barHorizontalData: {
-        labels: ['English', 'Arts', 'Maths', 'Phys. Ed', 'Science'],
-        datasets: [
-          {
-            label: 'Participation Rate (%)',
-            data: [98.5, 97.2, 96.7, 93.8, 92.5],
-            backgroundColor: '#60a5fa',
-          },
-        ],
-      },
-      barHorizontalOptions: {
-        indexAxis: 'y',
-        responsive: true,
-        plugins: {
-          legend: { display: false },
-        },
-      },
-      examResultsData: {
-        labels: ['Phys. Ed', 'Arts', 'English', 'Science', 'Maths'],
-        datasets: [
-          {
-            label: 'Pass',
-            data: [220, 180, 170, 160, 150],
-            backgroundColor: '#34d399',
-          },
-          {
-            label: 'Fail',
-            data: [20, 40, 50, 30, 35],
-            backgroundColor: '#f87171',
-          },
-          {
-            label: 'Not attended',
-            data: [10, 15, 20, 15, 10],
-            backgroundColor: '#a3a3a3',
-          },
-        ],
-      },
-      examResultsOptions: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'top' },
-        },
-      },
-      chartOptions: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'bottom' },
-        },
-      },
-    };
-  },
-  methods: {},
-};
-</script>
+<script></script>
+<style scoped>
+.fill-height {
+  min-height: 100vh;
+}
+</style>
