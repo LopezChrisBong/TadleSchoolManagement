@@ -263,6 +263,19 @@
           </v-row>
         </v-card-text>
         <v-divider></v-divider>
+        <v-card-actions class="pa-5">
+          <v-spacer></v-spacer>
+          <v-btn
+            class="mx-2"
+            x-small
+            variant="outlined"
+            color="blue"
+            @click="printSF2()"
+          >
+            <v-icon>mdi-printer</v-icon>
+            Print
+          </v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
 
@@ -628,6 +641,25 @@ export default {
       this.currentMonth = new Date();
       this.attendanceDate = null;
       this.dialog = false;
+    },
+    printSF2() {
+      let filter = this.$store.getters.getFilterSelected;
+      let format = this.formatDate(this.currentMonth, 'M')?.toString();
+      window.open(
+        process.env.VUE_APP_SERVER +
+          '/pdf-generator/getSchoolForm2/' +
+          filter +
+          '/' +
+          this.data.roomId +
+          '/' +
+          this.data.subjectId +
+          '/' +
+          format +
+          '/' +
+          this.$store.state.user.id +
+          '',
+        '_blank',
+      );
     },
   },
 };

@@ -10,7 +10,13 @@
       >
       <v-spacer />
       <!-- notification -->
-      <v-menu location="bottom end" offset-y transition="scale-transition">
+      <v-menu
+        v-model="notifMenu"
+        location="bottom end"
+        offset-y
+        transition="scale-transition"
+        :close-on-content-click="false"
+      >
         <template #activator="{ props }">
           <v-badge
             :content="unreadCount > 99 ? '99+' : unreadCount"
@@ -40,8 +46,40 @@
           <v-divider />
 
           <v-card-text class="pa-4">
+            <div
+              class="d-flex pa-2"
+              v-if="$store.state.user.user.assignedModuleID != 22"
+            >
+              <v-row>
+                <v-col cols="12" md="6">
+                  <v-btn
+                    block
+                    :color="status === 'Lardo' ? 'blue' : 'grey'"
+                    dark
+                    @click="status = 'Lardo'"
+                  >
+                    Lardo
+                  </v-btn>
+                </v-col>
+
+                <v-col cols="12" md="6">
+                  <v-btn
+                    block
+                    :color="status === 'At-Risk' ? 'blue' : 'grey'"
+                    dark
+                    @click="status = 'At-Risk'"
+                  >
+                    At-Risk
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </div>
             <!-- LARDO Notification -->
-            <div v-if="lardoNotification.length" class="mb-6">
+            <div
+              v-if="lardoNotification.length"
+              class="mb-6"
+              v-show="status === 'Lardo'"
+            >
               <div class="section-title">LARDO Notification</div>
 
               <v-card
@@ -62,7 +100,10 @@
                     <div class="text-caption text-grey-darken-1 mb-2">
                       {{ req.remarks }}
                     </div>
-
+                    <div class="pt-3">
+                      <strong> Decision Support Recommendation:</strong>
+                    </div>
+                    <div>{{ req.recommendation }}</div>
                     <v-btn
                       size="small"
                       color="primary"
@@ -79,7 +120,11 @@
             </div>
 
             <!-- LARDO Faculty -->
-            <div v-if="lardoNotificationForFaculty.length" class="mb-6">
+            <div
+              v-if="lardoNotificationForFaculty.length"
+              class="mb-6"
+              v-show="status === 'Lardo'"
+            >
               <div class="section-title">LARDO Notification</div>
 
               <v-card
@@ -100,7 +145,10 @@
                     <div class="text-caption text-grey-darken-1 mb-2">
                       {{ req.remarks }}
                     </div>
-
+                    <div class="pt-3">
+                      <strong> Decision Support Recommendation:</strong>
+                    </div>
+                    <div>{{ req.recommendation }}</div>
                     <v-btn
                       size="small"
                       color="primary"
@@ -117,7 +165,11 @@
             </div>
 
             <!-- At Risk Adviser -->
-            <div v-if="atRiskNotification.length" class="mb-6">
+            <div
+              v-if="atRiskNotification.length"
+              class="mb-6"
+              v-show="status === 'At-Risk'"
+            >
               <div class="section-title">At-Risk Notification</div>
 
               <v-card
@@ -142,12 +194,16 @@
 
                   <v-badge v-if="!notif.read" color="error" dot />
                 </div>
+                <div class="pt-3">
+                  <strong> Decision Support Recommendation:</strong>
+                </div>
+                <div>{{ notif.recommendation }}</div>
               </v-card>
             </div>
 
             <!-- Parent Notification -->
             <div v-if="parentNotification.length" class="mb-4">
-              <div class="section-title">Parent Notification</div>
+              <!-- <div class="section-title">Parent Notification</div> -->
 
               <v-card
                 v-for="(notif, index) in limitParentNotification"
@@ -188,7 +244,10 @@
               rounded="lg"
               color="primary"
               variant="flat"
-              @click="showAllNotifDialog = true"
+              @click="
+                showAllNotifDialog = true;
+                notifMenu = false;
+              "
             >
               View All Notification
             </v-btn>
@@ -412,8 +471,40 @@
         <v-divider />
 
         <v-card-text class="pa-6">
+          <div
+            class="d-flex pa-2"
+            v-if="$store.state.user.user.assignedModuleID != 22"
+          >
+            <v-row>
+              <v-col cols="12" md="6">
+                <v-btn
+                  block
+                  :color="status === 'Lardo' ? 'blue' : 'grey'"
+                  dark
+                  @click="status = 'Lardo'"
+                >
+                  Lardo
+                </v-btn>
+              </v-col>
+
+              <v-col cols="12" md="6">
+                <v-btn
+                  block
+                  :color="status === 'At-Risk' ? 'blue' : 'grey'"
+                  dark
+                  @click="status = 'At-Risk'"
+                >
+                  At-Risk
+                </v-btn>
+              </v-col>
+            </v-row>
+          </div>
           <!-- LARDO Notification -->
-          <div v-if="lardoNotification.length" class="mb-8">
+          <div
+            v-if="lardoNotification.length"
+            class="mb-8"
+            v-show="status === 'Lardo'"
+          >
             <div class="section-title">LARDO Notification</div>
 
             <v-card
@@ -435,6 +526,10 @@
                     {{ req.remarks }}
                   </div>
 
+                  <div class="pt-3">
+                    <strong> Decision Support Recommendation:</strong>
+                  </div>
+                  <div>{{ req.recommendation }}</div>
                   <v-btn
                     size="small"
                     color="primary"
@@ -451,7 +546,11 @@
           </div>
 
           <!-- LARDO Faculty -->
-          <div v-if="lardoNotificationForFaculty.length" class="mb-8">
+          <div
+            v-if="lardoNotificationForFaculty.length"
+            class="mb-8"
+            v-show="status === 'Lardo'"
+          >
             <div class="section-title">LARDO Notification</div>
 
             <v-card
@@ -473,6 +572,10 @@
                     {{ req.remarks }}
                   </div>
 
+                  <div class="pt-3">
+                    <strong> Decision Support Recommendation:</strong>
+                  </div>
+                  <div>{{ req.recommendation }}</div>
                   <v-btn
                     size="small"
                     color="primary"
@@ -489,7 +592,11 @@
           </div>
 
           <!-- At-Risk Adviser -->
-          <div v-if="atRiskNotification.length" class="mb-8">
+          <div
+            v-if="atRiskNotification.length"
+            class="mb-8"
+            v-show="status === 'At-Risk'"
+          >
             <div class="section-title">At-Risk Notification</div>
 
             <v-card
@@ -514,6 +621,10 @@
 
                 <v-badge v-if="!notif.read" color="error" dot />
               </div>
+              <div class="pt-3">
+                <strong> Decision Support Recommendation:</strong>
+              </div>
+              <div>{{ notif.recommendation }}</div>
             </v-card>
           </div>
 
@@ -543,12 +654,16 @@
 
                 <v-badge v-if="!notif.read" color="error" dot />
               </div>
+              <div class="pt-3">
+                <strong> Decision Support Recommendation:</strong>
+              </div>
+              <div>{{ notif.recommendation }}</div>
             </v-card>
           </div>
 
           <!-- Parent Notification -->
           <div v-if="parentNotification.length" class="mb-4">
-            <div class="section-title">Parent Notification</div>
+            <!-- <div class="section-title">Parent Notification</div> -->
 
             <v-card
               v-for="(notif, index) in parentNotification"
@@ -711,6 +826,8 @@ export default {
   data() {
     return {
       drawer: true,
+      status: 'Lardo',
+      notifMenu: false,
       logoutDialog: false,
       assignedModuleDialog: false,
       selectedModuleId: null,
@@ -905,6 +1022,7 @@ export default {
     },
 
     openParentNotification(notif) {
+      this.notifMenu = false;
       notif.read = true;
       this.showAllNotifDialog = false;
       if (notif.route) {
@@ -923,6 +1041,7 @@ export default {
     },
     openAdviserNotification(notif) {
       notif.read = true;
+      this.notifMenu = false;
       this.showAllNotifDialog = false;
       if (notif.route) {
         this.axiosCall(
@@ -943,6 +1062,7 @@ export default {
 
     openFacultyNotification(notif) {
       notif.read = true;
+      this.notifMenu = false;
       this.showAllNotifDialog = false;
       if (notif.route) {
         this.axiosCall(
@@ -963,6 +1083,7 @@ export default {
 
     openLardoNotification(notif) {
       notif.read = true;
+      this.notifMenu = false;
       this.showAllNotifDialog = false;
       if (notif.route) {
         this.axiosCall(
@@ -982,6 +1103,7 @@ export default {
     },
     openLardoFacultyNotification(notif) {
       notif.read = true;
+      this.notifMenu = false;
       this.showAllNotifDialog = false;
       if (notif.route) {
         this.axiosCall(

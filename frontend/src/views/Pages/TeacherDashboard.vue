@@ -1,7 +1,7 @@
 <template>
   <v-container fluid class="pa-6 dashboard-bg">
     <!-- HEADER -->
-    <v-row class="mb-6" align="center" justify="space-between">
+    <!-- <v-row class="mb-6" align="center" justify="space-between">
       <v-col cols="12" md="6">
         <div class="text-h5 font-weight-bold">Advisor Dashboard</div>
 
@@ -27,28 +27,34 @@
           Submit Class Report →
         </v-btn>
       </v-col>
-    </v-row>
+    </v-row> -->
 
     <!-- STATS CARDS -->
     <v-row class="mb-6" dense>
       <v-col cols="12" md="4">
         <v-card class="pa-4 stat-card" elevation="2">
-          <div class="text-h6 font-weight-bold">37</div>
+          <div class="text-h6 font-weight-bold">
+            {{ studentCount ? studentCount : 0 }}
+          </div>
           <div class="text-caption">Total Students</div>
         </v-card>
       </v-col>
 
       <v-col cols="12" md="4">
         <v-card class="pa-4 stat-card red-light" elevation="2">
-          <div class="text-h6 font-weight-bold">5 At-Risk</div>
-          <div class="text-caption">Students</div>
+          <div class="text-h6 font-weight-bold">
+            {{ atRiskCount ? atRiskCount : 0 }} At-Risk
+          </div>
+          <div class="text-caption">Student/s</div>
         </v-card>
       </v-col>
 
       <v-col cols="12" md="4">
         <v-card class="pa-4 stat-card orange-light" elevation="2">
-          <div class="text-h6 font-weight-bold">2 LARDO</div>
-          <div class="text-caption">Students</div>
+          <div class="text-h6 font-weight-bold">
+            {{ lardoCount ? lardoCount : 0 }} LARDO
+          </div>
+          <div class="text-caption">Student/s</div>
         </v-card>
       </v-col>
     </v-row>
@@ -74,30 +80,55 @@
 
           <v-data-table
             :headers="headers"
-            :items="students"
+            :items="atRiskStudents"
             :search="search"
             density="comfortable"
           >
-            <template v-slot:[`item.risk`]="{ item }">
-              <v-chip :color="riskColor(item.risk)" size="small" variant="flat">
-                {{ item.risk }}
+            <template v-slot:[`item.transmuted_grade`]="{ item }">
+              <v-chip
+                :color="riskColor(item.transmuted_grade)"
+                size="small"
+                variant="flat"
+              >
+                {{
+                  item.transmuted_grade <= 75
+                    ? 'High Risk'
+                    : item.transmuted_grade <= 80
+                    ? 'Moderate'
+                    : 'Passed'
+                }}
               </v-chip>
+            </template>
+            <template v-slot:[`item.grade`]="{ item }">
+              {{ item.transmuted_grade }}
             </template>
 
             <template v-slot:[`item.action`]="{ item }">
               <v-btn
                 size="small"
-                :color="item.remedial ? 'green' : 'red'"
+                :color="
+                  item.transmuted_grade <= 75
+                    ? 'red'
+                    : item.transmuted_grade <= 80
+                    ? 'orange'
+                    : 'green'
+                "
                 variant="flat"
               >
-                {{ item.remedial ? 'Counsel' : 'Report' }}
+                {{
+                  item.transmuted_grade <= 75
+                    ? 'Report'
+                    : item.transmuted_grade <= 80
+                    ? 'Counsel'
+                    : 'None'
+                }}
               </v-btn>
             </template>
           </v-data-table>
         </v-card>
 
         <!-- BOTTOM ROW -->
-        <v-row dense>
+        <!-- <v-row dense>
           <v-col cols="12" md="6">
             <v-card class="pa-4 mb-6" elevation="2">
               <div class="font-weight-bold mb-3">
@@ -119,24 +150,48 @@
               </div>
             </v-card>
           </v-col>
-        </v-row>
+        </v-row> -->
 
         <!-- REPORT BUTTONS -->
         <v-card class="pa-4 mb-6" elevation="2">
-          <div class="font-weight-bold mb-3">Report Generation</div>
+          <div class="font-weight-bold mb-3">Report</div>
 
           <v-row dense>
             <v-col cols="12" md="3">
-              <v-btn block color="blue">SF2: Attendance</v-btn>
+              <v-btn
+                :to="'/' + 'employee/students-records'"
+                router
+                block
+                color="blue"
+                >SF2: Attendance</v-btn
+              >
             </v-col>
             <v-col cols="12" md="3">
-              <v-btn block color="indigo">Class Record</v-btn>
+              <v-btn
+                :to="'/' + 'employee/students-records'"
+                router
+                block
+                color="indigo"
+                >Class Record</v-btn
+              >
             </v-col>
             <v-col cols="12" md="3">
-              <v-btn block color="deep-purple">SF9: Report Card</v-btn>
+              <v-btn
+                :to="'/' + 'employee/students-records'"
+                router
+                block
+                color="deep-purple"
+                >SF9: Report Card</v-btn
+              >
             </v-col>
             <v-col cols="12" md="3">
-              <v-btn block color="cyan">SF10: Student Record</v-btn>
+              <v-btn
+                :to="'/' + 'employee/students-records'"
+                router
+                block
+                color="cyan"
+                >SF10: Student Record</v-btn
+              >
             </v-col>
           </v-row>
         </v-card>
@@ -152,7 +207,7 @@
 
           <v-list density="compact">
             <v-list-item
-              v-for="(m, i) in misbehavior"
+              v-for="(m, i) in misbehaveList"
               :key="i"
               class="border-bottom"
             >
@@ -160,8 +215,12 @@
                 {{ m.name }}
               </v-list-item-title>
 
-              <v-chip size="x-small" color="red" variant="flat">
-                Pending
+              <v-chip
+                size="x-small"
+                :color="m.status == 0 ? 'red' : 'green'"
+                variant="flat"
+              >
+                {{ m.status == 0 ? 'Pending' : 'Resolve' }}
               </v-chip>
             </v-list-item>
           </v-list>
@@ -174,15 +233,19 @@
           </v-card-title>
 
           <v-list density="compact">
-            <v-list-item v-for="(a, i) in alerts" :key="i">
+            <v-list-item v-for="(a, i) in alertStudents" :key="i">
               <v-icon color="orange" class="me-2">mdi-alert</v-icon>
-              {{ a }}
+              {{
+                a.transmuted_grade
+                  ? 'At-Risk:' + a.name + ', ' + a.remarks
+                  : 'Lardo:' + a.name + ', ' + a.remarks
+              }}
             </v-list-item>
           </v-list>
         </v-card>
 
         <!-- NOTIFICATIONS -->
-        <v-card elevation="2">
+        <!-- <v-card elevation="2">
           <v-card-title class="font-weight-bold">
             Recent Notifications
           </v-card-title>
@@ -193,78 +256,115 @@
               {{ n }}
             </v-list-item>
           </v-list>
-        </v-card>
+        </v-card> -->
       </v-col>
     </v-row>
   </v-container>
 </template>
 
-<script setup>
-import { ref } from 'vue';
+<script>
+export default {
+  data() {
+    return {
+      search: '',
+      roomList: [],
+      atRiskCount: null,
+      studentCount: null,
+      lardoCount: null,
+      atRiskStudents: [],
+      alertStudents: [],
+      misbehaveList: [],
+      headers: [
+        { title: 'LRN', key: 'lrn' },
+        { title: 'Student Name', key: 'name' },
+        { title: 'Risk Level', key: 'transmuted_grade' },
+        { title: 'Remarks', key: 'remarks' },
+        { title: 'Grade', key: 'grade' },
+        { title: 'Action', key: 'action' },
+      ],
 
-const search = ref('');
+      students: [
+        {
+          lrn: '1885338',
+          name: 'John Dela Cruz',
+          risk: 'Low',
+          reason: 'Low Scores',
+          remedial: true,
+        },
+        {
+          lrn: '1885339',
+          name: 'Mia Santiago',
+          risk: 'Moderate',
+          reason: 'Frequent Absences',
+          remedial: false,
+        },
+        {
+          lrn: '1885340',
+          name: 'Alex Reyes',
+          risk: 'High',
+          reason: 'Low Scores',
+          remedial: true,
+        },
+      ],
 
-const headers = [
-  { title: 'LRN', key: 'lrn' },
-  { title: 'Student Name', key: 'name' },
-  { title: 'Risk Level', key: 'risk' },
-  { title: 'Reason', key: 'reason' },
-  { title: 'Remedial', key: 'remedial' },
-  { title: 'Action', key: 'action' },
-];
+      remedials: ['Ferdinand Lim – 3:30 PM', 'Mia Santiago – 4:30 PM'],
 
-const students = ref([
-  {
-    lrn: '1885338',
-    name: 'John Dela Cruz',
-    risk: 'Low',
-    reason: 'Low Scores',
-    remedial: true,
+      reminders: [
+        // 'Submit class report by 5 PM',
+        'Submit class report on time',
+        // 'Plan counseling for Alex Reyes',
+      ],
+
+      alerts: [
+        'LARDO Alert: Louis skipped 5 days',
+        'At-Risk: Mia low scores in English',
+      ],
+
+      notifications: [
+        'Alex reported to Prefect',
+        'Louis flagged as LARDO',
+        'Counseling session tomorrow',
+      ],
+    };
   },
-  {
-    lrn: '1885339',
-    name: 'Mia Santiago',
-    risk: 'Moderate',
-    reason: 'Frequent Absences',
-    remedial: false,
+  mounted() {
+    this.initialize();
   },
-  {
-    lrn: '1885340',
-    name: 'Alex Reyes',
-    risk: 'High',
-    reason: 'Low Scores',
-    remedial: true,
+  watch: {
+    '$store.getters.getFilterSelected'() {
+      this.initialize();
+    },
   },
-]);
+  methods: {
+    initialize() {
+      this.getFacultyDashboardData();
+    },
+    riskColor(risk) {
+      if (risk <= 75) return 'red';
+      if (risk <= 80) return 'orange';
+      return 'green';
+    },
 
-const remedials = ref(['Ferdinand Lim – 3:30 PM', 'Mia Santiago – 4:30 PM']);
+    getFacultyDashboardData() {
+      let filter = this.$store.getters.getFilterSelected;
+      this.axiosCall(
+        '/enroll-student/getFacultyDashboardData/' + filter,
+        'GET',
+      ).then((res) => {
+        if (res) {
+          this.roomList = res.data.data;
+          this.studentCount = res.data.studentCount;
+          this.atRiskCount = res.data.atRiskCount;
+          this.lardoCount = res.data.lardoCount;
+          this.atRiskStudents = res.data.atRiskStudents;
+          this.misbehaveList = res.data.misbehaveList;
+          this.alertStudents = res.data.alertStudents;
 
-const reminders = ref([
-  'Submit class report by 5 PM',
-  'Plan counseling for Alex Reyes',
-]);
-
-const misbehavior = ref([
-  { name: 'Katrina Dela Cruz' },
-  { name: 'James Robles' },
-  { name: 'Louis Gutierrez' },
-]);
-
-const alerts = ref([
-  'LARDO Alert: Louis skipped 5 days',
-  'At-Risk: Mia low scores in English',
-]);
-
-const notifications = ref([
-  'Alex reported to Prefect',
-  'Louis flagged as LARDO',
-  'Counseling session tomorrow',
-]);
-
-const riskColor = (risk) => {
-  if (risk === 'High') return 'red';
-  if (risk === 'Moderate') return 'orange';
-  return 'green';
+          console.log('getFacultyDashboardData', res.data);
+        }
+      });
+    },
+  },
 };
 </script>
 <style scoped>

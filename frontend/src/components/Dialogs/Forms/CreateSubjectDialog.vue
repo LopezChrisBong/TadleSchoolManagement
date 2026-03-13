@@ -96,7 +96,7 @@
                   type="number"
                 ></v-text-field>
               </v-col>
-              <v-col cols="12" md="6" v-if="grade_level == 'Senior High'">
+              <!-- <v-col cols="12" md="6" v-if="grade_level == 'Senior High'">
                 <v-card
                   variant="outlined"
                   rounded="lg"
@@ -118,11 +118,13 @@
                     hide-details
                   />
                 </v-card>
-              </v-col>
+              </v-col> -->
               <v-col
                 cols="12"
                 md="6"
-                v-if="isSpecialized == 1 && grade_level == 'Senior High'"
+                v-if="
+                  indicator == 'SPECIALIZED' && grade_level == 'Senior High'
+                "
               >
                 <v-autocomplete
                   v-model="strandID"
@@ -379,7 +381,7 @@ export default {
             quarter_assessment: this.quarterAssessment,
             semester: this.semester,
             senior_level: this.senior_level,
-            isSpecialized: this.isSpecialized,
+            isSpecialized: this.indicator == 'SPECIALIZED' ? 1 : 0,
             strandID: this.strandID,
           };
           console.log(data);

@@ -34,16 +34,16 @@
     <!-- HERO SECTION -->
     <v-container fluid class="hero-section py-16 mt-15">
       <v-row align="center" justify="center">
-        <v-col cols="12" md="6" class="text-center">
+        <v-col cols="12" md="7" class="text-center">
           <v-img
-            src="/img/bgportal.jpg"
-            max-width="580"
+            src="/img/landingpage.jpg"
+            max-width="780"
             class="mx-auto"
             cover
             rounded="xl"
           />
         </v-col>
-        <v-col cols="12" md="6" class="d-flex justify-center align-center">
+        <v-col cols="12" md="5" class="d-flex justify-center align-center">
           <div>
             <p
               class="text-pink school-code-light"
@@ -71,12 +71,13 @@
               rounded="xl"
               elevation="2"
               class="mt-6 mx-2 px-8"
+              :block="!isSmAndUp"
               @click="goToDiv()"
             >
               Open Portal
             </v-btn>
 
-            <v-btn
+            <!-- <v-btn
               color="pink"
               variant="outlined"
               size="large"
@@ -85,14 +86,14 @@
               @click="goToEvents()"
             >
               View Events
-            </v-btn>
+            </v-btn> -->
           </div>
         </v-col>
       </v-row>
     </v-container>
     <v-divider color="black"></v-divider>
     <!--EVENTS-->
-    <div style="background-color: #f3f3f3; width: 100%" id="events">
+    <!-- <div style="background-color: #f3f3f3; width: 100%" id="events">
       <v-container class="py-12">
         <v-row>
           <v-col
@@ -153,10 +154,6 @@
                     <h3 class="mb-2 font-weight-medium">
                       {{ event.eventName }}
                     </h3>
-
-                    <!-- <p class="text-medium-emphasis mb-0">
-                      {{ event.eventDescription }}
-                    </p> -->
                   </v-card-text>
 
                   <v-divider />
@@ -181,29 +178,60 @@
           </v-col>
         </v-row>
       </v-container>
-    </div>
+    </div> -->
 
     <!-- FOOTER -->
     <v-divider color="black"></v-divider>
     <v-footer class="py-2">
-      <v-container>
-        <v-row>
-          <v-col cols="12" md="4">
+      <v-row>
+        <v-col cols="12" md="4" class="px-12">
+          <div class="text-center">
             <strong>MISSION</strong>
-            <p class="text-grey mt-2">MISSION WORDS</p>
-          </v-col>
+          </div>
+          <div class="text-justify">
+            <p class="text-grey mt-2">
+              To protect and promote the right of every Filipino to quality,
+              equitable, culture-based, and complete basic education where:
+              Students learn in a child-friendly, gender-sensitive, safe, and
+              motivating environment. Teachers facilitate learning and
+              constantly nurture every learner. Administrators and staff, as
+              stewards of the institution, ensure an enabling and supportive
+              environment for effective learning to happen. Family, community,
+              and other stakeholders are actively engaged and share
+              responsibility for developing life-long learners.
+            </p>
+          </div>
+        </v-col>
 
-          <v-col cols="12" md="4">
+        <v-col cols="12" md="4" class="px-12">
+          <div class="text-center">
             <strong>VISSION</strong>
-            <p class="text-grey">VISSION WORDS</p>
-          </v-col>
+          </div>
+          <div class="text-justify">
+            <p class="text-grey">
+              We dream of Filipinos who passionately love their country and
+              whose values and competencies enable them to realize their full
+              potential and contribute meaningfully to building the nation. As a
+              learner-centered public institution, the Department of Education
+              continuously improves itself to better serve its stakeholders.
+            </p>
+          </div>
+        </v-col>
 
-          <v-col cols="12" md="4">
+        <v-col cols="12" md="4" class="px-12">
+          <div class="text-center">
             <strong>CORE VALUES</strong>
-            <p class="text-grey mt-2">CORE WORDS</p>
-          </v-col>
-        </v-row>
-      </v-container>
+          </div>
+
+          <div class="text-center">
+            <p class="text-grey mt-2">
+              Maka-Diyos <br />
+              Maka-tao <br />Makakalikasan <br />
+              Makabansa
+            </p>
+          </div>
+        </v-col>
+      </v-row>
     </v-footer>
 
     <v-dialog

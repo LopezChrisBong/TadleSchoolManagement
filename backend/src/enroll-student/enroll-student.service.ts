@@ -2,11 +2,14 @@ import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateEnrollStudentDto } from './dto/create-enroll-student.dto';
 import { UpdateEnrollStudentDto } from './dto/update-enroll-student.dto';
 import {
+  AtRiskStudentForFacultyNotification,
   Availability,
   EnrollStudent,
+  LardoStudentForFacultyNotification,
   RoomsSection,
   StudentList,
   StudentQuarterFinalGrade,
+  StudentReportDisciplinary,
   StudentValues,
   Subject,
   UserDetail,
@@ -681,7 +684,7 @@ export class EnrollStudentService {
     let data = await this.dataSource.manager
       .createQueryBuilder(Availability, 'A')
       .select([
-        'A.id as id',
+        'MIN(A.id) as id',
         "CONCAT(times_slot_from, ' - ', times_slot_to) AS time",
         "IF (!ISNULL(ud.mname)  AND LOWER(ud.mname) != 'n/a', concat(ud.fname, ' ',SUBSTRING(ud.mname, 1, 1) ,'. ',ud.lname) ,concat(ud.fname, ' ', ud.lname)) as name",
         "MAX(CASE WHEN day = 'Monday' THEN CONCAT('', sub.subject_title, ', ', room.room_section) END) AS Monday",
@@ -695,7 +698,16 @@ export class EnrollStudentService {
       .leftJoin(Subject, 'sub', 'sub.id = A.subjectId')
       .leftJoin(UserDetail, 'ud', 'ud.id = A.teacherID')
       .where('A.school_yearId = "' + filter + '"')
-      .groupBy('A.times_slot_from,A.times_slot_to,A.teacherID')
+      .groupBy(
+        `
+          A.times_slot_from,
+          A.times_slot_to,
+          A.teacherID,
+          ud.fname,
+          ud.mname,
+          ud.lname
+        `,
+      )
       .orderBy('A.times_slot_from')
       .getRawMany();
     return data;
@@ -706,7 +718,7 @@ export class EnrollStudentService {
     let data = await this.dataSource.manager
       .createQueryBuilder(Availability, 'A')
       .select([
-        'A.id as id',
+        'MIN(A.id) as id',
         "CONCAT(times_slot_from, ' - ', times_slot_to) AS time",
         "IF (!ISNULL(ud.mname)  AND LOWER(ud.mname) != 'n/a', concat(ud.fname, ' ',SUBSTRING(ud.mname, 1, 1) ,'. ',ud.lname) ,concat(ud.fname, ' ', ud.lname)) as name",
         "MAX(CASE WHEN day = 'Monday' THEN CONCAT('', sub.subject_title, ', ', room.room_section) END) AS Monday",
@@ -719,9 +731,18 @@ export class EnrollStudentService {
       .leftJoin(RoomsSection, 'room', 'room.id = A.roomId')
       .leftJoin(Subject, 'sub', 'sub.id = A.subjectId')
       .leftJoin(UserDetail, 'ud', 'ud.id = A.teacherID')
-      .where('A.school_yearId = "' + filter + '"')
+      .where('A.school_yearId = :filter', { filter })
       .andWhere('A.teacherID = :id', { id })
-      .groupBy('A.times_slot_from,A.times_slot_to,A.teacherID')
+      .groupBy(
+        `
+          A.times_slot_from,
+          A.times_slot_to,
+          A.teacherID,
+          ud.fname,
+          ud.mname,
+          ud.lname
+        `,
+      )
       .orderBy('A.times_slot_from')
       .getRawMany();
     console.log(data);
@@ -845,6 +866,178 @@ export class EnrollStudentService {
     let data = await query.getRawMany();
     // console.log(data);
     return data;
+  }
+
+  async getFacultyDashboardData(curr_user: any, filter: number) {
+    // Get rooms handled by teacher
+    const rooms = await this.dataSource
+      .createQueryBuilder(RoomsSection, 'RS')
+      .select([
+        'RS.id as id',
+        'RS.room_section as room_section',
+        'RS.grade_level as grade_level',
+      ])
+      .innerJoin(Availability, 'av', 'av.roomId = RS.id')
+      .where('av.teacherID = :teacherID', {
+        teacherID: curr_user.userdetail.id,
+      })
+      .andWhere('av.school_yearId = :filter', { filter })
+      .groupBy('RS.id')
+      .getRawMany();
+
+    const roomIds = rooms.map((r) => r.id);
+
+    if (!roomIds.length) {
+      return {
+        data: [],
+        studentCount: 0,
+        atRiskCount: 0,
+        lardoCount: 0,
+        atRiskStudents: [],
+        misbehaveList: [],
+        lardoStudents: [],
+        alertStudents: [],
+      };
+    }
+
+    // Get all students in those rooms
+    const students = await this.dataSource
+      .createQueryBuilder(StudentList, 'sl')
+      .where('sl.roomId IN (:...roomIds)', { roomIds })
+      .getMany();
+
+    const studentIds = students.map((s) => s.studentId);
+    const studentCount = students.length;
+
+    if (!studentIds.length) {
+      return {
+        data: rooms,
+        studentCount,
+        atRiskCount: 0,
+        lardoCount: 0,
+        atRiskStudents: [],
+        misbehaveList: [],
+        lardoStudents: [],
+        alertStudents: [],
+      };
+    }
+
+    //  Get At Risk Students (single query)
+    const atRiskStudents = await this.dataSource
+      .createQueryBuilder(EnrollStudent, 'ES')
+      .select([
+        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
+        'ES.id as id',
+        'ES.lrnNo as lrn',
+        'risk.remarks as remarks',
+        'risk.transmuted_grade as transmuted_grade',
+        'risk.subject_title as subject_title',
+      ])
+      .innerJoin(
+        AtRiskStudentForFacultyNotification,
+        'risk',
+        'ES.id = risk.studentID',
+      )
+      .where('risk.studentID IN (:...studentIds)', { studentIds })
+      .andWhere('risk.school_yearID = :filter', { filter })
+      .groupBy('ES.id')
+      .getRawMany();
+
+    // Get LARDO Students (single query)
+    const lardoStudents = await this.dataSource
+      .createQueryBuilder(EnrollStudent, 'ES')
+      .select([
+        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
+        'ES.id as id',
+        'ES.lrnNo as lrn',
+        'report.remarks as remarks',
+        'report.subject_title as subject_title',
+      ])
+      .innerJoin(
+        LardoStudentForFacultyNotification,
+        'report',
+        'ES.id = report.studentID',
+      )
+      .where('report.studentID IN (:...studentIds)', { studentIds })
+      .andWhere('report.school_yearID = :filter', { filter })
+      .groupBy('ES.id')
+      .getRawMany();
+
+    //  Get Misbehaving Students
+    const misbehaveList = await this.dataSource
+      .createQueryBuilder(EnrollStudent, 'ES')
+      .select([
+        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
+        'ES.id as id',
+        'ES.lrnNo as lrn',
+        'report.status as status',
+      ])
+      .innerJoin(
+        StudentReportDisciplinary,
+        'report',
+        'ES.id = report.studentID',
+      )
+      .where('report.studentID IN (:...studentIds)', { studentIds })
+      .andWhere('report.school_yearID = :filter', { filter })
+      .groupBy('ES.id')
+      .getRawMany();
+
+    const atRiskCount = atRiskStudents.length;
+    const lardoCount = lardoStudents.length;
+
+    const alertStudents = [...lardoStudents, ...atRiskStudents];
+
+    return {
+      data: rooms,
+      studentCount,
+      atRiskCount,
+      lardoCount,
+      atRiskStudents,
+      misbehaveList,
+      lardoStudents,
+      alertStudents,
+    };
+  }
+
+  async getAdminDashboardData(filter: string) {
+    let junior = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'];
+    let senior = ['Grade 11', 'Grade 12'];
+    let studentEnrolled = await this.dataSource.manager.findBy(EnrollStudent, {
+      statusEnrolled: 1,
+      school_yearId: filter,
+    });
+
+    let juniorCount = 0;
+    let seniorCount = 0;
+
+    for (let i = 0; i < studentEnrolled.length; i++) {
+      if (junior.includes(studentEnrolled[i].grade_level)) {
+        juniorCount += 1;
+      } else if (senior.includes(studentEnrolled[i].grade_level)) {
+        seniorCount += 1;
+      }
+    }
+
+    let atRisk = await this.dataSource.manager
+      .createQueryBuilder(AtRiskStudentForFacultyNotification, 'risk')
+      .select([
+        'risk.*',
+        'es.lrnNo as lrn',
+        "IF (!ISNULL(ud.mname)  AND LOWER(ud.mname) != 'n/a', concat(ud.fname, ' ',SUBSTRING(ud.mname, 1, 1) ,'. ',ud.lname) ,concat(ud.fname, ' ', ud.lname)) as adviser",
+      ])
+      .leftJoin(StudentList, 'sl', 'sl.studentId = risk.studentID')
+      .leftJoin(RoomsSection, 'rs', 'rs.id = sl.roomId')
+      .leftJoin(UserDetail, 'ud', 'ud.id = rs.teacherId')
+      .leftJoin(EnrollStudent, 'es', 'es.id = risk.studentID')
+      .where('risk.school_yearID = :filter', { filter })
+      .getRawMany();
+    console.log(atRisk);
+    return {
+      juniorCount: juniorCount,
+      seniorCount: seniorCount,
+      atRisk: atRisk,
+      riskCout: atRisk.length,
+    };
   }
 
   async getSchoolYear() {

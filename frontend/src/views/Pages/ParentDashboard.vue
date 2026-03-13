@@ -8,18 +8,45 @@
           <div class="text-h6 font-weight-bold mb-4">Student Profile</div>
 
           <div class="d-flex align-center">
-            <v-avatar size="70" class="me-4">
-              <v-img src="https://i.pravatar.cc/100" />
-            </v-avatar>
+            <v-carousel
+              height="150"
+              hide-delimiter-background
+              show-arrows
+              v-if="studentList.length"
+            >
+              <template v-slot:prev="{ props }">
+                <v-btn color="white" variant="text" @click="props.onClick"
+                  ><v-icon size="30">mdi-arrow-left</v-icon>
+                </v-btn>
+              </template>
+              <template v-slot:next="{ props }">
+                <v-btn color="white" variant="text" @click="props.onClick"
+                  ><v-icon size="30">mdi-arrow-right</v-icon>
+                </v-btn>
+              </template>
+              <v-carousel-item v-for="(slide, i) in studentList" :key="i">
+                <v-sheet :color="colors[i]" height="100%">
+                  <div class="d-flex align-center">
+                    <v-avatar size="90" class="ml-15 mr-2">
+                      <v-img src="https://i.pravatar.cc/100" />
+                    </v-avatar>
 
-            <div>
-              <div class="font-weight-bold text-body-1">John Dela Cruz</div>
-              <div class="text-caption">LRN: 123456789012</div>
-              <div class="text-caption">Grade: 8 - Section A</div>
-              <div class="text-caption">Adviser: Mrs. Santos</div>
-              <div class="text-caption">School Year: 2023–2024</div>
-              <div class="text-caption">Quarter: Q3</div>
-            </div>
+                    <div>
+                      <div class="font-weight-bold text-body-1">
+                        {{ slide.name }}
+                      </div>
+                      <div class="text-caption">LRN: {{ slide.lrnNo }}</div>
+                      <div class="text-caption">
+                        Grade: {{ slide.grade_level }}
+                      </div>
+                      <div class="text-caption">Adviser: Mrs. Santos</div>
+                      <div class="text-caption">School Year: 2023–2024</div>
+                      <div class="text-caption">Quarter: Q3</div>
+                    </div>
+                  </div>
+                </v-sheet>
+              </v-carousel-item>
+            </v-carousel>
           </div>
         </v-card>
 
@@ -201,7 +228,41 @@
     </v-row>
   </v-container>
 </template>
-<script></script>
+<script>
+export default {
+  data: () => ({
+    studentList: [],
+    colors: [
+      'indigo',
+      'warning',
+      'pink darken-2',
+      'red lighten-1',
+      'deep-purple accent-4',
+    ],
+  }),
+  mounted() {
+    this.initialize();
+  },
+  methods: {
+    initialize() {
+      console.log('1');
+      this.getMyStudent();
+    },
+    getMyStudent() {
+      this.axiosCall('/parent-records/getMyChildrenList', 'GET').then((res) => {
+        if (res) {
+          // console.log(res.data);
+          let data = res.data;
+          data.forEach((element, i) => {
+            data[i].name = this.toTitleCase(element.name);
+          });
+          this.studentList = data;
+        }
+      });
+    },
+  },
+};
+</script>
 <style scoped>
 .fill-height {
   min-height: 100vh;

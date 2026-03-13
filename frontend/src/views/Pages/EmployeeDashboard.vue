@@ -24,6 +24,7 @@ export default {
     this.user_roleID = this.$store.state.user.user.user_roleID;
     console.log('USer', this.$store.state.user.user.user_roleID);
   },
+
   methods: {},
 };
 </script>

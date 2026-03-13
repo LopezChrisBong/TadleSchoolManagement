@@ -18,7 +18,7 @@
               rounded="xl"
             />
             <h2 class="text-center mx-3 mb-5">
-              Welcome to <span class="text-pink"> CRMS </span>
+              Welcome to <span class="text-pink"> CMS </span>
             </h2>
             <!-- <h2 class="text-start">Sign In</h2> -->
 
@@ -272,9 +272,7 @@
               <div class="school-code-light mb-2">SDNHS</div>
 
               <!-- SYSTEM NAME -->
-              <div class="system-title-light mb-3">
-                Class Record Management System
-              </div>
+              <div class="system-title-light mb-3">Class Management System</div>
 
               <!-- TAGLINE -->
               <div class="tagline-light mb-6">
@@ -320,9 +318,7 @@
               <div class="school-code mb-2">SDNHS</div>
 
               <!-- SYSTEM NAME -->
-              <div class="system-title mb-3">
-                Class Record Management System
-              </div>
+              <div class="system-title mb-3">Class Management System</div>
 
               <!-- TAGLINE -->
               <div class="tagline mb-6">

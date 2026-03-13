@@ -56,6 +56,21 @@ export class EnrollStudentController {
     return this.enrollStudentService.importStudent(createImportStudentDto);
   }
 
+  @Get('getFacultyDashboardData/:filter')
+  getFacultyDashboardData(@Headers() headers, @Param('filter') filter: string) {
+    var head_str = headers.authorization;
+    const curr_user = currentUser(head_str);
+    return this.enrollStudentService.getFacultyDashboardData(
+      curr_user,
+      +filter,
+    );
+  }
+
+  @Get('getAdminDashboardData/:filter')
+  getAdminDashboardData(@Param('filter') filter: string) {
+    return this.enrollStudentService.getAdminDashboardData(filter);
+  }
+
   @Post('studentValues')
   studentValues(@Body() createStudentValuesDto: CreateStudentValuesDto) {
     return this.enrollStudentService.studentValues(createStudentValuesDto);

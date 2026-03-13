@@ -52,30 +52,76 @@
         .small {
             font-size: 9px;
         }
+        .headerImg { 
+          position: fixed; top: 0px; left: 0px; right: 0px; height: 100px; } 
     </style>
 </head>
 <body>
     {{#each this}}
 <div class="header">
-    <h2>CLASS RECORD</h2>
+    <h2>{{#ifCond semester "Junior High"}}
+      Junior High School Class Record
+       {{else}}
+      Senior High Shool Class Record
+       {{/ifCond}}
+       </h2>
 </div>
 
-<table class="info-table">
+<table style="width: 100%;">
     <tr>
-        <td><strong>Region: </strong> REGION XI</td>
-        <td><strong>Division: </strong> {{division}}</td>
-        <td><strong>School ID: </strong> 316401</td>
-        <td><strong>School Year: </strong> {{schoolYear.school_year}}</td>
+        <td style="width:20%">
+         <div class="headerImg">     
+          <img
+            style='position:fixed; top:0; left:80px; '
+            src='data:image/png;base64, {{edukasyon}}'
+            width='5%'
+            alt=''
+          />
+          </div>
+        </td>
+        <td style="width:60%">
+          <div style="display: flex; padding-left:10px;padding-righ:10px">
+             <div style="font-size:12px;text-align:center">REGION: </div><div style="border: 1px solid black; padding-left:30px; padding-right:30px;text-align:center; margin-left:2px; margin-right:20px; padding-top:5px, padding-bottom:5px">XI</div>
+             <div style="font-size:12px;text-align:center">DEVISION: </div><div style="border: 1px solid black; padding-left:30px; padding-right:30px;text-align:center; margin-left:2px; margin-right:20px">PANABO</div>
+          </div>
+          <div style="display: flex; padding-left:10px;padding-righ:10px">
+            <div style="font-size:12px;text-align:center">SCHOOL NAME: </div> <div style="border: 1px solid black; padding-left:30px; padding-right:30px;text-align:center; margin-left:2px; margin-right:20px">Southern Davao National High School</div>
+            <div style="font-size:12px;text-align:center">SCHOOL ID: </div> <div style="border: 1px solid black; padding-left:30px; padding-right:30px;text-align:center; margin-left:2px; margin-right:20px">316401</div>
+            <div style="font-size:12px;text-align:center">SCHOOL YEAR: </div> <div style="border: 1px solid black; padding-left:30px; padding-right:30px;text-align:center; margin-left:2px; margin-right:20px"> {{schoolYear.school_year}}</div>
+          </div>
+        
+        </td>
+        <td style="width:20%">  
+          <div>         
+            <div class="headerImg">     
+          <img
+            style='position:fixed; top:0; right:80px; '
+            src='data:image/png;base64, {{deped}}'
+            width='10%'
+            alt=''
+          />
+          </div>
+          </div>
+        </td>
+    </tr>
+  </table>
+  <table class="info-table">
+        <tr>
+        <td rowspan="2" style="text-align: center;"><strong>{{quarter}}</strong></td>
+        <td rowspan="2" > <div style="display: flex; "><strong>GRADE & SECTION: </strong> <span>{{roomData.grade_level}} {{roomData.room_section}}</span></div></td>
+        <td><strong>TEACHER: </strong> <span style="text-transform: capitalize;">{{teacher.fname}} {{teacher.mname}} {{teacher.lname}}</span></td>
+        <td><strong>SUBJECT: </strong> {{subject.subject_title}} {{sub_subject}}</td>
     </tr>
     <tr>
-         <td colspan="2"><strong>Subject: </strong> {{subject.subject_title}} {{sub_subject}}</td>
-        <td><strong>Grade & Section: </strong>{{roomData.grade_level}} {{roomData.room_section}}</td>
-        <td><strong>Teacher: </strong> <span style="text-transform: capitalize;">{{teacher.fname}} {{teacher.mname}} {{teacher.lname}}</span></td>
+      <td><strong>SEMESTER:</strong>
+      {{#ifCond semester "Junior High"}}
+       {{else}}
+       {{semester}}
+       {{/ifCond}}
+      </td>
+      <td><strong>TRACK:</strong> {{track.tracks_name}}</td>
     </tr>
-    <tr>
-         <td colspan="4"><strong>School Name: </strong>Southern Davao National High School</td>
-    </tr>
-</table>
+  </table>
 
 <table class="main-table" >
   <thead>
@@ -104,7 +150,11 @@
   </thead>
 
   <tbody>
-    {{#each students}}
+    <tr>
+        <td colspan="100%" style="text-align: start; padding-left:90px;"><strong>Male</strong></td>
+    </tr>
+    {{#if studentMale}}
+    {{#each studentMale}}
       <tr>
         <td class="left">{{name}}</td>
 
@@ -125,6 +175,40 @@
         <td>{{quarterlyGrade}}</td>
       </tr>
     {{/each}}
+    {{else}}
+      <td colspan="100%" style="text-align: center;"><strong>No Data!</strong></td>
+    {{/if}}
+
+
+      <tr>
+       <td colspan="100%" style="text-align: start; padding-left:90px;"> <strong>Female</strong></td>
+    </tr>
+
+    {{#if studentFemale}}
+    {{#each studentFemale}}
+      <tr>
+        <td class="left">{{name}}</td>
+
+        {{#each writtenWorks}}
+          <td>{{this}}</td>
+        {{/each}}
+
+        {{#each performanceTasks}}
+          <td>{{this}}</td>
+        {{/each}}
+
+        
+        {{#each quarterlyAssessment}}
+          <td>{{this}}</td>
+        {{/each}}
+
+        <td>{{initialGrade}}</td>
+        <td>{{quarterlyGrade}}</td>
+      </tr>
+    {{/each}}
+    {{else}}
+         <td colspan="100%" style="text-align: center;"><strong>No Data!</strong></td>
+    {{/if}}
   </tbody>
 </table>
 

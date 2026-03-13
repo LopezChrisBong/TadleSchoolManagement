@@ -997,7 +997,7 @@ export class PdfGeneratorService {
       .select([
         'A.*',
         'A.id as id',
-        'UD.education as education',
+        // 'UD.education as education',
         "IF (!ISNULL(UD.mname) AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ', SUBSTRING(UD.mname, 1, 1), '. ', UD.lname), concat(UD.fname, ' ', UD.lname)) as name",
       ])
       .leftJoin(Availability, 'A', 'A.teacherID = UD.id')
@@ -1088,7 +1088,7 @@ export class PdfGeneratorService {
     attendanceDate: string,
     teacherID: number,
   ) {
-    // console.log(filter,roomID,subjectID,date)
+    console.log(school_yearID, roomID, subjectID, attendanceDate, teacherID);
     let attendance;
     let rawData;
     let month;
@@ -1196,7 +1196,7 @@ export class PdfGeneratorService {
           return '';
         });
       });
-      console.log(updatedRow);
+      // console.log(updatedRow);
     }
 
     let headerImg = join(
@@ -1792,9 +1792,10 @@ export class PdfGeneratorService {
 
     const studentsMap = new Map<number, any>();
 
-    function initStudent(id: number, name: string) {
+    function initStudent(id: number, name: string, sex: string) {
       studentsMap.set(id, {
         name,
+        sex,
         writtenWorks: new Array(writtenHeaders.length).fill(''),
         performanceTasks: new Array(performanceHeaders.length).fill(''),
         quarterlyAssessment: new Array(quarterlyHeaders.length).fill(''),
@@ -1803,7 +1804,7 @@ export class PdfGeneratorService {
 
     for (const ww of combineData.writenWorks) {
       if (!studentsMap.has(ww.SG_studentID)) {
-        initStudent(ww.SG_studentID, ww.name);
+        initStudent(ww.SG_studentID, ww.name, ww.SG_sex);
       }
 
       // const label =
@@ -1821,7 +1822,7 @@ export class PdfGeneratorService {
 
     for (const pt of combineData.performanceTask) {
       if (!studentsMap.has(pt.SG_studentID)) {
-        initStudent(pt.SG_studentID, pt.name);
+        initStudent(pt.SG_studentID, pt.name, pt.SG_sex);
       }
       // const label =
       //   pt.SG_title && pt.SG_title.trim() !== '' ? pt.SG_title : pt.quiz_label;
@@ -1839,7 +1840,7 @@ export class PdfGeneratorService {
 
     for (const qa of combineData.quarterlyAssessment) {
       if (!studentsMap.has(qa.SG_studentID)) {
-        initStudent(qa.SG_studentID, qa.name);
+        initStudent(qa.SG_studentID, qa.name, qa.SG_sex);
       }
       // const label =
       //   qa.SG_title && qa.SG_title.trim() !== '' ? qa.SG_title : qa.quiz_label;
@@ -1896,24 +1897,58 @@ export class PdfGeneratorService {
       .where('rs.id = :roomID', { roomID })
       .getOne();
     // console.log('subjectID', combineData);
+
+    let track;
+    if (roomData.strandId) {
+      track = await this.dataSource
+        .createQueryBuilder(AddStrand, 'strand')
+        .select([
+          'track.tracks_name AS tracks_name',
+          'strand.strand_name AS strand_name',
+        ])
+        .leftJoin(AddTracks, 'track', 'track.id = strand.trackId')
+        .where('strand.id = :roomStrand', { roomStrand: roomData.strandId })
+        .getRawOne();
+    }
+
+    let studentMale = [];
+    let studentFemale = [];
+    for (let i = 0; i < students.length; i++) {
+      if (students[i].sex == 'Male') {
+        studentMale.push(students[i]);
+      } else {
+        studentFemale.push(students[i]);
+      }
+    }
+
     let curDate = new Date();
-    let headerImg = join(
+
+    let edukasyon = join(
       process.cwd(),
-      process.env.FILE_PATH + 'static/img/header.png',
+      process.env.FILE_PATH + 'static/img/edukasyon.png',
     );
-    // let footerImg = join(process.cwd(), '/static/img/deped.png');
+    let deped = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/deped.png',
+    );
+
     const data = [
       {
-        header_img: this.base64_encode(headerImg, 'headerfooter'),
-        // footer_img: this.base64_encode(footerImg, 'headerfooter'),
+        edukasyon: this.base64_encode(edukasyon, 'headerfooter'),
+        deped: this.base64_encode(deped, 'headerfooter'),
         writtenHeaders: writtenHeaders,
         performanceHeaders: performanceHeaders,
         quarterlyHeaders: quarterlyHeaders,
         schoolYear: schoolYear,
         subject: subject,
         students: students,
+        studentMale,
+        studentFemale,
         teacher,
         roomData,
+        quarter,
+        semester,
+        track,
         curDate: this.formatDate(curDate),
       },
     ];
@@ -2043,9 +2078,10 @@ export class PdfGeneratorService {
 
     const studentsMap = new Map<number, any>();
 
-    function initStudent(id: number, name: string) {
+    function initStudent(id: number, name: string, sex: string) {
       studentsMap.set(id, {
         name,
+        sex,
         writtenWorks: new Array(writtenHeaders.length).fill(''),
         performanceTasks: new Array(performanceHeaders.length).fill(''),
         quarterlyAssessment: new Array(quarterlyHeaders.length).fill(''),
@@ -2054,7 +2090,7 @@ export class PdfGeneratorService {
 
     for (const ww of combineData.writenWorks) {
       if (!studentsMap.has(ww.SG_studentID)) {
-        initStudent(ww.SG_studentID, ww.name);
+        initStudent(ww.SG_studentID, ww.name, ww.SG_sex);
       }
 
       // const label =
@@ -2072,7 +2108,7 @@ export class PdfGeneratorService {
 
     for (const pt of combineData.performanceTask) {
       if (!studentsMap.has(pt.SG_studentID)) {
-        initStudent(pt.SG_studentID, pt.name);
+        initStudent(pt.SG_studentID, pt.name, pt.SG_sex);
       }
       // const label =
       //   pt.SG_title && pt.SG_title.trim() !== '' ? pt.SG_title : pt.quiz_label;
@@ -2090,7 +2126,7 @@ export class PdfGeneratorService {
 
     for (const qa of combineData.quarterlyAssessment) {
       if (!studentsMap.has(qa.SG_studentID)) {
-        initStudent(qa.SG_studentID, qa.name);
+        initStudent(qa.SG_studentID, qa.name, qa.SG_sex);
       }
       // const label =
       //   qa.SG_title && qa.SG_title.trim() !== '' ? qa.SG_title : qa.quiz_label;
@@ -2146,23 +2182,39 @@ export class PdfGeneratorService {
       .createQueryBuilder(RoomsSection, 'rs')
       .where('rs.id = :roomID', { roomID })
       .getOne();
-    // console.log('subjectID', combineData);
+
+    let studentMale = [];
+    let studentFemale = [];
+    for (let i = 0; i < students.length; i++) {
+      if (students[i].sex == 'Male') {
+        studentMale.push(students[i]);
+      } else {
+        studentFemale.push(students[i]);
+      }
+    }
     let curDate = new Date();
-    let headerImg = join(
+    let edukasyon = join(
       process.cwd(),
-      process.env.FILE_PATH + 'static/img/header.png',
+      process.env.FILE_PATH + 'static/img/edukasyon.png',
     );
-    // let footerImg = join(process.cwd(), '/static/img/deped.png');
+    let deped = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/deped.png',
+    );
     const data = [
       {
-        header_img: this.base64_encode(headerImg, 'headerfooter'),
-        // footer_img: this.base64_encode(footerImg, 'headerfooter'),
+        edukasyon: this.base64_encode(edukasyon, 'headerfooter'),
+        deped: this.base64_encode(deped, 'headerfooter'),
         writtenHeaders: writtenHeaders,
         performanceHeaders: performanceHeaders,
         quarterlyHeaders: quarterlyHeaders,
         schoolYear: schoolYear,
         subject: subject,
         students: students,
+        studentMale,
+        studentFemale,
+        quarter,
+        semester,
         teacher,
         roomData,
         sub_subject:
