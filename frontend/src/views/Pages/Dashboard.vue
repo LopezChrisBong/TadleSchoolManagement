@@ -1,34 +1,31 @@
 <template>
   <v-container fluid class="dashboard pa-6">
-    <!-- ================= TOP STATS ================= -->
     <v-row dense class="mb-6">
       <v-col cols="12" md="4">
         <v-card class="stat-card green-card">
-          <div class="stat-number">812</div>
+          <div class="stat-number">{{ juniorCount ? juniorCount : 0 }}</div>
           <div class="stat-label">JHS Students</div>
         </v-card>
       </v-col>
 
       <v-col cols="12" md="4">
         <v-card class="stat-card blue-card">
-          <div class="stat-number">357</div>
+          <div class="stat-number">{{ seniorCount ? seniorCount : 0 }}</div>
           <div class="stat-label">SHS Students</div>
         </v-card>
       </v-col>
 
       <v-col cols="12" md="4">
         <v-card class="stat-card red-card">
-          <div class="stat-number">45</div>
+          <div class="stat-number">{{ riskCout ? riskCout : 0 }}</div>
           <div class="stat-label">At-Risk Students (Total: 71)</div>
         </v-card>
       </v-col>
     </v-row>
 
     <v-row dense>
-      <!-- ================= LEFT SIDE ================= -->
       <v-col cols="12" md="8">
-        <!-- ===== Donut Charts Row ===== -->
-        <v-row dense class="mb-6">
+        <!-- <v-row dense class="mb-6">
           <v-col cols="12" md="6">
             <v-card class="pa-4">
               <div class="section-title">At-Risk Overview (JHS)</div>
@@ -72,32 +69,29 @@
               </div>
             </v-card>
           </v-col>
-        </v-row>
+        </v-row> -->
 
-        <!-- ===== Student Management ===== -->
         <v-card>
           <v-card-title class="d-flex justify-space-between align-center">
             <div class="section-title">Student Management</div>
 
-            <v-btn size="small" color="amber-darken-2">
+            <!-- <v-btn size="small" color="amber-darken-2">
               Assign Adviser and Teacher →
-            </v-btn>
+            </v-btn> -->
           </v-card-title>
 
           <v-data-table
             :headers="headers"
-            :items="students"
+            :items="atRisk"
             density="comfortable"
           >
-            <template v-slot:[`item.status`]="{ item }">
-              <v-chip size="small" color="red" variant="flat">
-                {{ item.status }}
-              </v-chip>
-            </template>
-
-            <template v-slot:[`item.risk`]="{ item }">
-              <v-chip size="small" :color="riskColor(item.risk)" variant="flat">
-                {{ item.risk }}
+            <template v-slot:[`item.transmuted_grade`]="{ item }">
+              <v-chip
+                size="small"
+                :color="riskColor(item.transmuted_grade)"
+                variant="flat"
+              >
+                {{ item.transmuted_grade }}
               </v-chip>
             </template>
 
@@ -109,19 +103,16 @@
         </v-card>
       </v-col>
 
-      <!-- ================= RIGHT SIDEBAR ================= -->
       <v-col cols="12" md="4">
-        <!-- Quick Access -->
-        <v-card class="mb-6 pa-4">
+        <!-- <v-card class="mb-6 pa-4">
           <div class="section-title mb-4">Quick Access</div>
 
           <v-btn block class="mb-2" variant="outlined">Manage Classes</v-btn>
           <v-btn block class="mb-2" variant="outlined">Manage Teachers</v-btn>
           <v-btn block class="mb-2" variant="outlined">View SF2 & SF10</v-btn>
           <v-btn block color="orange">Generate Summary Reports</v-btn>
-        </v-card>
+        </v-card> -->
 
-        <!-- Announcements -->
         <v-card class="mb-6 pa-4">
           <div class="section-title mb-3">Announcements</div>
 
@@ -137,8 +128,7 @@
           </v-list>
         </v-card>
 
-        <!-- At-Risk & LARDO Students -->
-        <v-card class="pa-4">
+        <!-- <v-card class="pa-4">
           <div class="section-title mb-3">At-Risk & LARDO Students</div>
 
           <v-list density="compact">
@@ -149,57 +139,67 @@
               <v-btn size="x-small" variant="text">View</v-btn>
             </v-list-item>
           </v-list>
-        </v-card>
+        </v-card> -->
       </v-col>
     </v-row>
   </v-container>
 </template>
-<script setup>
-import { ref } from 'vue';
+<script>
+export default {
+  data() {
+    return {
+      headers: [
+        { title: 'LRN', key: 'lrn' },
+        { title: 'Student Name', key: 'student_name' },
+        // { title: 'Status', key: 'status' },
+        { title: 'At-Risk Grade', key: 'transmuted_grade' },
+        { title: 'Adviser', key: 'adviser' },
+        { title: 'Grade', key: 'grade_level' },
+        { title: 'Section', key: 'room_name' },
+      ],
 
-const headers = [
-  { title: 'LRN', key: 'lrn' },
-  { title: 'Student Name', key: 'name' },
-  { title: 'Status', key: 'status' },
-  { title: 'At-Risk Status', key: 'risk' },
-  { title: 'Adviser', key: 'adviser' },
-  { title: 'Actions', key: 'actions' },
-];
+      // sidebarStudents: [
+      //   { name: 'John Dela Cruz' },
+      //   { name: 'Mia Santiago' },
+      //   { name: 'Alex Reyes' },
+      // ],
 
-const students = ref([
-  {
-    lrn: '1885338',
-    name: 'John Dela Cruz',
-    status: 'Under Monitoring',
-    risk: 'Low',
-    adviser: 'Mrs. Santos',
+      juniorCount: null,
+      seniorCount: null,
+      riskCout: null,
+      atRisk: [],
+    };
   },
-  {
-    lrn: '1885339',
-    name: 'Ferdinand Lim',
-    status: 'High',
-    risk: 'High',
-    adviser: 'Mrs. Santos',
+  mounted() {
+    this.initialize();
   },
-  {
-    lrn: '1885340',
-    name: 'Mia Santiago',
-    status: 'Under Monitoring',
-    risk: 'Low',
-    adviser: 'Mrs. Santos',
+  methods: {
+    initialize() {
+      this.getFacultyDashboardData();
+    },
+    riskColor(risk) {
+      if (risk <= 75) return 'red';
+      if (risk <= 80) return 'orange';
+      return 'green';
+    },
+
+    getFacultyDashboardData() {
+      let filter = this.$store.getters.getFilterSelected;
+      this.axiosCall(
+        '/enroll-student/getAdminDashboardData/' + filter,
+        'GET',
+      ).then((res) => {
+        if (res) {
+          this.juniorCount = res.data.juniorCount;
+          this.seniorCount = res.data.seniorCount;
+          this.atRisk = res.data.atRisk;
+          this.riskCout = res.data.riskCout;
+
+          console.log('getAdminDashboardData', res.data);
+        }
+      });
+    },
   },
-]);
-
-const sidebarStudents = ref([
-  { name: 'John Dela Cruz' },
-  { name: 'Mia Santiago' },
-  { name: 'Alex Reyes' },
-]);
-
-const riskColor = (risk) => {
-  if (risk === 'High') return 'red';
-  if (risk === 'Moderate') return 'orange';
-  return 'green';
 };
 </script>
 <style scoped>

@@ -51,7 +51,9 @@ export class NotificationService {
       .orderBy('LSN.read', 'ASC')
       .getRawMany();
 
-    // console.log('Lardo', data)
+    for (let i = 0; i < data.length; i++) {
+      Object.assign(data[i], { recommendation: 'Parent Counceling' });
+    }
     return data;
   }
 
@@ -64,7 +66,10 @@ export class NotificationService {
       .orderBy('LSN.read', 'ASC')
       .getRawMany();
 
-    // console.log('Lardo', data)
+    for (let i = 0; i < data.length; i++) {
+      Object.assign(data[i], { recommendation: 'Parent Counceling' });
+    }
+
     return data;
   }
 
@@ -77,7 +82,17 @@ export class NotificationService {
       .orderBy('ARS.read', 'ASC')
       .getRawMany();
 
-    // console.log('At Risk', data)
+    for (let i = 0; i < data.length; i++) {
+      console.log(data[i].transmuted_grade);
+      if (data[i].transmuted_grade < 70) {
+        Object.assign(data[i], {
+          recommendation: 'Remedial Class + Parent Meeting',
+        });
+      } else {
+        Object.assign(data[i], { recommendation: 'Teacher Consultation' });
+      }
+    }
+    // console.log(data);
     return data;
   }
 
@@ -90,7 +105,16 @@ export class NotificationService {
       .orderBy('ARS.read', 'ASC')
       .getRawMany();
 
-    // console.log('At Risk', data)
+    for (let i = 0; i < data.length; i++) {
+      console.log(data[i].transmuted_grade);
+      if (data[i].transmuted_grade < 70) {
+        Object.assign(data[i], {
+          recommendation: 'Remedial Class + Parent Meeting',
+        });
+      } else {
+        Object.assign(data[i], { recommendation: 'Teacher Consultation' });
+      }
+    }
     return data;
   }
 
@@ -102,7 +126,7 @@ export class NotificationService {
       .orderBy('N.read', 'ASC')
       .getRawMany();
 
-    // console.log('Notif Parent', data)
+    console.log(data);
     return data;
   }
 

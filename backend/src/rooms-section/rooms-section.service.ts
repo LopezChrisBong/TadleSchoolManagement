@@ -579,6 +579,7 @@ export class RoomsSectionService {
         'SG.school_yearID as SG_school_yearID',
         'SG.type as SG_type',
         'SG.title as SG_title',
+        'ES.sex as SG_sex',
         "CONCAT('Quiz ', ROW_NUMBER() OVER(PARTITION BY SG.studentID, SG.subjectID, SG.type ORDER BY SG.created_at ASC)) as quiz_label",
         "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname, ' ', SUBSTRING(ES.mname, 1, 1), '. ', ES.lname), CONCAT(ES.fname, ' ', ES.lname)) as name",
       ])
@@ -920,6 +921,7 @@ export class RoomsSectionService {
         .andWhere('RS.id = :roomID', { roomID: roomID })
         .andWhere('ES.statusEnrolled = 1')
         .getRawMany();
+      // console.log(data);
       return data;
     } catch (error) {
       return {
@@ -986,7 +988,7 @@ export class RoomsSectionService {
         }
         // }
       }
-      // console.log(grades)
+      // console.log(grades);
       return grades;
     } else {
       const result = await this.dataSource.query(
@@ -1040,7 +1042,7 @@ export class RoomsSectionService {
           }
         }
       }
-      // console.log('Not Mapeh', grades)
+      // console.log('Not Mapeh', result[0]);
 
       return grades;
     }

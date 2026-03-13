@@ -7,7 +7,7 @@
           <v-card-title class="d-flex align-center justify-space-between">
             <div>
               <div class="text-h6 font-weight-bold">
-                {{ action == "Verify" ? "Enroll" : action }} Student
+                {{ action == 'Verify' ? 'Enroll' : action }} Student
               </div>
               <!-- <div class="text-caption text-grey">
                 Assign modules and permissions
@@ -217,7 +217,7 @@
               @click="accept()"
             >
               <v-icon>mdi-check-circle</v-icon>
-              {{ action == "Verify" ? "Enroll" : "Update" }}
+              {{ action == 'Verify' ? 'Enroll' : 'Update' }}
             </v-btn>
 
             <v-btn
@@ -247,7 +247,7 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
 export default {
   props: {
     data: null,
@@ -263,23 +263,23 @@ export default {
         schoo_yearId: null,
       },
       seniorJunior: null,
-      passedList: ["Yes", "No"],
+      passedList: ['Yes', 'No'],
       userRoleList: [],
       usertypeList: [],
       year_fromList: [],
-      seniorJuniorList: ["Junior High", "Senior High"],
-      juniorList: ["Grade 7", "Grade 8", "Grade 9", "Grade 10"],
+      seniorJuniorList: ['Junior High', 'Senior High'],
+      juniorList: ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'],
       elementaryList: [
-        "Kinder 1",
-        "Kinder 2",
-        "Grade 1",
-        "Grade 2",
-        "Grade 3",
-        "Grade 4",
-        "Grade 5",
-        "Grade 6",
+        'Kinder 1',
+        'Kinder 2',
+        'Grade 1',
+        'Grade 2',
+        'Grade 3',
+        'Grade 4',
+        'Grade 5',
+        'Grade 6',
       ],
-      seniorList: ["Grade 11", "Grade 12"],
+      seniorList: ['Grade 11', 'Grade 12'],
       assignedModulesList: [],
       changepicture: null,
       changeGoodMoral: null,
@@ -301,9 +301,9 @@ export default {
       deleteFileArray: [],
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
@@ -315,7 +315,7 @@ export default {
         this.initialize();
         this.$refs.UserVerifyFormref.resetValidation();
         if (data.id) {
-          console.log("Love", data);
+          console.log('Love', data);
           this.verifyModel.id = data.id;
           this.seniorJunior = data.seniorJunior;
           this.picture = data.picture;
@@ -336,8 +336,8 @@ export default {
           if (!this.goodMoralOldValue) {
             this.deleteFileArray.push(oldValue);
             this.arrayFileIndex[3] = newValue;
-            console.log("Update goodMoral", this.arrayFileIndex);
-            console.log("deleteFileArray", this.deleteFileArray);
+            console.log('Update goodMoral', this.arrayFileIndex);
+            console.log('deleteFileArray', this.deleteFileArray);
             this.goodMoralOldValue = oldValue;
             this.changeGoodMoral = newValue;
           } else {
@@ -348,7 +348,7 @@ export default {
                 this.arrayFileIndex[3] = newValue;
                 this.deleteFileArray.indexOf(this.goodMoralOldValue) === -1
                   ? this.deleteFileArray.push(this.goodMoralOldValue)
-                  : console.log("This item already exists");
+                  : console.log('This item already exists');
                 // console.log("deleteFileArray", this.deleteFileArray);
 
                 console.log(this.arrayFileIndex);
@@ -365,7 +365,7 @@ export default {
           this.deleteFileArray.indexOf(this.goodMoralOldValue),
           1,
         );
-        console.log("deleteFileArray", this.deleteFileArray);
+        console.log('deleteFileArray', this.deleteFileArray);
       }
     },
 
@@ -375,8 +375,8 @@ export default {
           if (!this.pictureOldValue) {
             this.deleteFileArray.push(oldValue);
             this.arrayFileIndex[0] = newValue;
-            console.log("Update goodMoral", this.arrayFileIndex);
-            console.log("deleteFileArray", this.deleteFileArray);
+            console.log('Update goodMoral', this.arrayFileIndex);
+            console.log('deleteFileArray', this.deleteFileArray);
             this.pictureOldValue = oldValue;
             this.changepicture = newValue;
           } else {
@@ -387,7 +387,7 @@ export default {
                 this.arrayFileIndex[0] = newValue;
                 this.deleteFileArray.indexOf(this.pictureOldValue) === -1
                   ? this.deleteFileArray.push(this.pictureOldValue)
-                  : console.log("This item already exists");
+                  : console.log('This item already exists');
                 // console.log("deleteFileArray", this.deleteFileArray);
 
                 console.log(this.arrayFileIndex);
@@ -404,7 +404,7 @@ export default {
           this.deleteFileArray.indexOf(this.pictureOldValue),
           1,
         );
-        console.log("deleteFileArray", this.deleteFileArray);
+        console.log('deleteFileArray', this.deleteFileArray);
       }
     },
 
@@ -414,8 +414,8 @@ export default {
           if (!this.schoolCardOldValue) {
             this.deleteFileArray.push(oldValue);
             this.arrayFileIndex[1] = newValue;
-            console.log("Update goodMoral", this.arrayFileIndex);
-            console.log("deleteFileArray", this.deleteFileArray);
+            console.log('Update goodMoral', this.arrayFileIndex);
+            console.log('deleteFileArray', this.deleteFileArray);
             this.schoolCardOldValue = oldValue;
             this.changeschoolCard = newValue;
           } else {
@@ -426,7 +426,7 @@ export default {
                 this.arrayFileIndex[1] = newValue;
                 this.deleteFileArray.indexOf(this.schoolCardOldValue) === -1
                   ? this.deleteFileArray.push(this.schoolCardOldValue)
-                  : console.log("This item already exists");
+                  : console.log('This item already exists');
                 // console.log("deleteFileArray", this.deleteFileArray);
 
                 console.log(this.arrayFileIndex);
@@ -443,7 +443,7 @@ export default {
           this.deleteFileArray.indexOf(this.schoolCardOldValue),
           1,
         );
-        console.log("deleteFileArray", this.deleteFileArray);
+        console.log('deleteFileArray', this.deleteFileArray);
       }
     },
 
@@ -453,8 +453,8 @@ export default {
           if (!this.birthPSAOldValue) {
             this.deleteFileArray.push(oldValue);
             this.arrayFileIndex[2] = newValue;
-            console.log("Update goodMoral", this.arrayFileIndex);
-            console.log("deleteFileArray", this.deleteFileArray);
+            console.log('Update goodMoral', this.arrayFileIndex);
+            console.log('deleteFileArray', this.deleteFileArray);
             this.birthPSAOldValue = oldValue;
             this.changebirthPSA = newValue;
           } else {
@@ -465,7 +465,7 @@ export default {
                 this.arrayFileIndex[2] = newValue;
                 this.deleteFileArray.indexOf(this.birthPSAOldValue) === -1
                   ? this.deleteFileArray.push(this.birthPSAOldValue)
-                  : console.log("This item already exists");
+                  : console.log('This item already exists');
                 // console.log("deleteFileArray", this.deleteFileArray);
 
                 console.log(this.arrayFileIndex);
@@ -482,7 +482,7 @@ export default {
           this.deleteFileArray.indexOf(this.birthPSAOldValue),
           1,
         );
-        console.log("deleteFileArray", this.deleteFileArray);
+        console.log('deleteFileArray', this.deleteFileArray);
       }
     },
   },
@@ -508,20 +508,21 @@ export default {
     //   this.verifyModel.year_to = data + 1;
     // },
     getUserType() {
-      this.axiosCall("/user-type/getAllUsertype", "GET").then((res) => {
+      this.axiosCall('/user-type/getAllUsertype', 'GET').then((res) => {
         if (res.data) {
-          console.log("UserList", res.data);
+          console.log('UserList', res.data);
           this.usertypeList = res.data;
         }
       });
     },
     closeD() {
-      eventBus.emit("closeAccountsVerificationDialog", true);
+      eventBus.emit('closeAccountsVerificationDialog', true);
       this.dialog = false;
       this.edit = false;
     },
     accept() {
       if (this.$refs.UserVerifyFormref.validate()) {
+        let filter = this.$store.getters.getFilterSelected;
         let data = {
           id: this.verifyModel.id,
           grade_level: this.verifyModel.grade_level,
@@ -530,28 +531,28 @@ export default {
           schoolCard: this.verifyModel.schoolCard,
           picture: this.verifyModel.picture,
           seniorJunior: this.seniorJunior,
-          schoo_yearId: this.verifyModel.schoo_yearId,
-          update_type: this.action == "Verify" ? 1 : 2,
+          schoo_yearId: filter,
+          update_type: this.action == 'Verify' ? 1 : 2,
           statusEnrolled: true,
         };
 
         this.axiosCall(
-          "/enroll-student/updateEnrolledStudent",
-          "POST",
+          '/enroll-student/updateEnrolledStudent',
+          'POST',
           data,
         ).then((res) => {
           if (res.data.status == 200) {
             this.dialog = false;
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "success";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'success';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
             this.closeD();
           } else if (res.data.status == 400) {
             this.dialog = false;
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
             this.$refs.PositionFormref.reset();
             this.closeD();
@@ -561,16 +562,16 @@ export default {
     },
 
     updateWithFile() {
-      this.$emit("input", this.picture);
-      this.$emit("input", this.schoolCard);
-      this.$emit("input", this.birthPSA);
-      this.$emit("input", this.goodMoral);
+      this.$emit('input', this.picture);
+      this.$emit('input', this.schoolCard);
+      this.$emit('input', this.birthPSA);
+      this.$emit('input', this.goodMoral);
 
-      console.log("Delete File Array", this.deleteFileArray);
+      console.log('Delete File Array', this.deleteFileArray);
       // console.log("New File Array", this.newUploadFileArray)
       if (this.arrayFileIndex[0]) {
         this.updatepicture = this.arrayFileIndex[0].name;
-        console.log("naay data", this.arrayFileIndex[0].name);
+        console.log('naay data', this.arrayFileIndex[0].name);
       } else if (this.pictureOldValue) {
         this.updatepicture = this.pictureOldValue;
       } else {
@@ -579,7 +580,7 @@ export default {
 
       if (this.arrayFileIndex[1]) {
         this.updateschoolCard = this.arrayFileIndex[1].name;
-        console.log("naay data", this.arrayFileIndex[1].name);
+        console.log('naay data', this.arrayFileIndex[1].name);
       } else if (this.schoolCardOldValue) {
         this.updateschoolCard = this.schoolCardOldValue;
       } else {
@@ -588,7 +589,7 @@ export default {
 
       if (this.arrayFileIndex[2]) {
         this.updatebirthPSA = this.arrayFileIndex[2].name;
-        console.log("naay data", this.arrayFileIndex[2].name);
+        console.log('naay data', this.arrayFileIndex[2].name);
       } else if (this.birthPSAOldValue) {
         this.updatebirthPSA = this.birthPSAOldValue;
       } else {
@@ -597,7 +598,7 @@ export default {
 
       if (this.arrayFileIndex[3]) {
         this.updategoodMoral = this.arrayFileIndex[3].name;
-        console.log("naay data", this.arrayFileIndex[3].name);
+        console.log('naay data', this.arrayFileIndex[3].name);
       } else if (this.goodMoralOldValue) {
         this.updategoodMoral = this.goodMoralOldValue;
       } else {
@@ -608,7 +609,7 @@ export default {
       const fd = new FormData();
       for (let i = 0; i < this.arrayFileIndex.length; i++) {
         const element = this.arrayFileIndex[i];
-        fd.append("file", element);
+        fd.append('file', element);
       }
 
       let data = {
@@ -619,11 +620,11 @@ export default {
         goodMoral: this.updategoodMoral,
       };
 
-      fd.append("body", JSON.stringify(data));
+      fd.append('body', JSON.stringify(data));
 
-      this.axiosCall("/enroll-student/update-student-file/", "POST", fd).then(
+      this.axiosCall('/enroll-student/update-student-file/', 'POST', fd).then(
         (res) => {
-          console.log("Uploaded File", res.data);
+          console.log('Uploaded File', res.data);
           if (res.data.status == 201) {
             try {
               if (this.deleteFileArray) {
@@ -631,30 +632,30 @@ export default {
                 console.log(items);
                 try {
                   this.axiosCall(
-                    "/enroll-student/getArrayFile/",
-                    "POST",
+                    '/enroll-student/getArrayFile/',
+                    'POST',
                     items,
                   ).then((res) => {
                     console.log(res.data);
                     this.dialog = false;
                     this.fadeAwayMessage.show = true;
-                    this.fadeAwayMessage.type = "success";
-                    this.fadeAwayMessage.header = "System Message";
-                    this.fadeAwayMessage.message = "Successfully Updated!";
+                    this.fadeAwayMessage.type = 'success';
+                    this.fadeAwayMessage.header = 'System Message';
+                    this.fadeAwayMessage.message = 'Successfully Updated!';
                     this.closeD();
                   });
                 } catch (error) {
-                  console.error("Error sending data:", error);
+                  console.error('Error sending data:', error);
                 }
               }
             } catch (error) {
-              console.error("Error sending data:", error);
+              console.error('Error sending data:', error);
             }
           } else if (res.data.status == 401) {
             this.dialog = false;
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
           }
         },
@@ -662,18 +663,18 @@ export default {
     },
 
     getAssignedModules() {
-      this.axiosCall("/assigned-modules", "GET").then((res) => {
+      this.axiosCall('/assigned-modules', 'GET').then((res) => {
         this.assignedModulesList = res.data;
       });
     },
     getUseRoles() {
-      this.axiosCall("/user-role", "GET").then((res) => {
+      this.axiosCall('/user-role', 'GET').then((res) => {
         this.userRoleList = res.data;
       });
     },
 
     getSchoolYear() {
-      this.axiosCall("/enroll-student/getSchoolYear", "GET").then((res) => {
+      this.axiosCall('/enroll-student/getSchoolYear', 'GET').then((res) => {
         if (res) {
           this.year_fromList = res.data;
           const currentDate = new Date();
@@ -683,7 +684,7 @@ export default {
             const endDate = new Date(item.endDate);
             return currentDate >= startDate && currentDate <= endDate;
           });
-          console.log("Filtered", filteredData[0].id);
+          console.log('Filtered', filteredData[0].id);
           this.verifyModel.schoo_yearId = filteredData[0].id;
         }
       });
@@ -692,19 +693,19 @@ export default {
     viewPicture() {
       let datastring = this.picture.substring(7, 0);
       // alert(this.verifyModel.picture);
-      if (datastring == "default") {
+      if (datastring == 'default') {
         this.fadeAwayMessage.show = true;
-        this.fadeAwayMessage.type = "info";
-        this.fadeAwayMessage.header = "System Message";
+        this.fadeAwayMessage.type = 'info';
+        this.fadeAwayMessage.header = 'System Message';
         this.fadeAwayMessage.message =
-          "No file Uploaded, This file is not required";
+          'No file Uploaded, This file is not required';
       } else {
         window.open(
           process.env.VUE_APP_SERVER +
-            "/enroll-student/view/studentFile/" +
+            '/enroll-student/view/studentFile/' +
             this.picture +
-            "",
-          "_blank", // <- This is what makes it open in a new window.
+            '',
+          '_blank', // <- This is what makes it open in a new window.
         );
       }
     },
@@ -712,19 +713,19 @@ export default {
     viewGoodMoral() {
       let datastring = this.goodMoral.substring(7, 0);
       // alert(this.verifyModel.picture);
-      if (datastring == "default") {
+      if (datastring == 'default') {
         this.fadeAwayMessage.show = true;
-        this.fadeAwayMessage.type = "info";
-        this.fadeAwayMessage.header = "System Message";
+        this.fadeAwayMessage.type = 'info';
+        this.fadeAwayMessage.header = 'System Message';
         this.fadeAwayMessage.message =
-          "No file Uploaded, This file is not required";
+          'No file Uploaded, This file is not required';
       } else {
         window.open(
           process.env.VUE_APP_SERVER +
-            "/enroll-student/view/studentFile/" +
+            '/enroll-student/view/studentFile/' +
             this.goodMoral +
-            "",
-          "_blank", // <- This is what makes it open in a new window.
+            '',
+          '_blank', // <- This is what makes it open in a new window.
         );
       }
     },
@@ -732,38 +733,38 @@ export default {
     viewSchoolCard() {
       let datastring = this.schoolCard.substring(7, 0);
       // alert(this.picture);
-      if (datastring == "default") {
+      if (datastring == 'default') {
         this.fadeAwayMessage.show = true;
-        this.fadeAwayMessage.type = "info";
-        this.fadeAwayMessage.header = "System Message";
+        this.fadeAwayMessage.type = 'info';
+        this.fadeAwayMessage.header = 'System Message';
         this.fadeAwayMessage.message =
-          "No file Uploaded, This file is not required";
+          'No file Uploaded, This file is not required';
       } else {
         window.open(
           process.env.VUE_APP_SERVER +
-            "/enroll-student/view/studentFile/" +
+            '/enroll-student/view/studentFile/' +
             this.schoolCard +
-            "",
-          "_blank", // <- This is what makes it open in a new window.
+            '',
+          '_blank', // <- This is what makes it open in a new window.
         );
       }
     },
     viewPSA() {
       let datastring = this.birthPSA.substring(7, 0);
       // alert(this.picture);
-      if (datastring == "default") {
+      if (datastring == 'default') {
         this.fadeAwayMessage.show = true;
-        this.fadeAwayMessage.type = "info";
-        this.fadeAwayMessage.header = "System Message";
+        this.fadeAwayMessage.type = 'info';
+        this.fadeAwayMessage.header = 'System Message';
         this.fadeAwayMessage.message =
-          "No file Uploaded, This file is not required";
+          'No file Uploaded, This file is not required';
       } else {
         window.open(
           process.env.VUE_APP_SERVER +
-            "/enroll-student/view/studentFile/" +
+            '/enroll-student/view/studentFile/' +
             this.birthPSA +
-            "",
-          "_blank", // <- This is what makes it open in a new window.
+            '',
+          '_blank', // <- This is what makes it open in a new window.
         );
       }
     },

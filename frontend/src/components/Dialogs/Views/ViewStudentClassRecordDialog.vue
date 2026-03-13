@@ -151,6 +151,7 @@
                   <v-data-table
                     :headers="tab != 3 ? headers : headers1"
                     :items="studentList"
+                    :group-by="[{ key: 'sex', order: 'asc' }]"
                     density="compact"
                     item-key="name"
                   >
@@ -270,6 +271,7 @@
               <v-data-table
                 :headers="headersGenerated"
                 :items="gradeData"
+                :group-by="[{ key: 'sex', order: 'asc' }]"
                 v-if="sub_subject == null"
               >
                 <template v-slot:[`item.status`]="{ item }">
@@ -408,7 +410,13 @@
         <v-card-title class="d-flex dialog-header align-center">
           <span v-if="data" style="text-transform: uppercase">
             {{ data.subject_title }} {{ data.grade_level }}
-            {{ data.room_section }} Student Quizes</span
+            {{ data.room_section }} Student Quizes ({{
+              tab == 1
+                ? 'Written Works'
+                : tab == 2
+                ? 'Performance Task'
+                : 'Quarterly Assessment'
+            }})</span
           >
           <v-spacer></v-spacer>
           <v-btn
@@ -428,7 +436,11 @@
         <v-card-text style="max-height: 700px" class="">
           <v-row>
             <v-col cols="12">
-              <v-data-table :headers="headersQuizList" :items="items">
+              <v-data-table
+                :headers="headersQuizList"
+                :items="items"
+                :group-by="[{ key: 'sex', order: 'asc' }]"
+              >
                 <!-- Dynamic quiz columns -->
                 <template
                   v-for="header in headersQuizList"
@@ -622,6 +634,7 @@ export default {
       headersQuizList: [],
       headers: [
         { title: 'Name', align: 'start', sortable: false, key: 'name' },
+        { title: 'LRN', align: 'center', sortable: false, key: 'lrnNo' },
         {
           title: 'Score',
           align: 'center',
@@ -965,6 +978,7 @@ export default {
           students[r.SG_studentID] = {
             name: r.name,
             studentID: r.SG_studentID,
+            sex: r.SG_sex,
             roomID: r.SG_roomID,
             school_yearID: r.SG_school_yearID,
             subjectID: r.SG_subjectID,

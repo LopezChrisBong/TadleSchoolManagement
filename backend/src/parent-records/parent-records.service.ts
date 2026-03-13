@@ -276,13 +276,14 @@ export class ParentRecordsService {
         'ES.grade_level as grade_level',
         'ES.updated_at as updated_at',
         'ES.statusEnrolled as statusEnrolled',
+        'ES.lrnNo as lrnNo',
       ])
       .leftJoin(ParentRecord, 'PR', 'PR.studentID = ES.id')
       .where('ES.statusEnrolled != 0')
       .andWhere('PR.parentID = :parentID', { parentID })
       .getRawMany();
 
-    // console.log(data)
+    console.log(data);
     return data;
   }
 
