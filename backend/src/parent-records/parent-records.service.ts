@@ -16,6 +16,8 @@ import {
   ParentRecord,
   Subject,
   StudentReportDisciplinary,
+  Announcement,
+  Comments,
 } from 'src/entities';
 import { Brackets, DataSource, Repository } from 'typeorm';
 import { CreateStudentReportDisciplinaryDto } from './dto/create-student-report-disciplinary.dto';
@@ -283,7 +285,103 @@ export class ParentRecordsService {
       .andWhere('PR.parentID = :parentID', { parentID })
       .getRawMany();
 
-    console.log(data);
+    // console.log(data);
+    return data;
+  }
+
+  async getStudentAchievements(filter: number, studentID: number) {
+    let attendance = await this.dataSource
+      .createQueryBuilder(StudentAttendance, 'sa')
+      .where('school_yearID = :filter', { filter })
+      .andWhere('studentID = :studentID', { studentID })
+      .groupBy('attendanceDate')
+      .getMany();
+    let present = 0;
+    let absent = 0;
+    let excuse = 0;
+    for (let i = 0; i < attendance.length; i++) {
+      if (attendance[i].attendance === 1) {
+        present += 1;
+      } else if (attendance[i].attendance === 2) {
+        excuse += 1;
+      } else if (attendance[i].attendance === 0) {
+        absent += 1;
+      }
+    }
+    let counted = present + excuse + absent;
+    let add = present + excuse;
+    let devide = add / counted;
+    let multiply = devide * 100;
+    return { present, absent, excuse, percent: multiply.toFixed(2) };
+  }
+
+  async getParentAnnouncements(filter: number, studentID: number) {
+    let studentRoom = await this.dataSource
+      .createQueryBuilder(StudentList, 'sl')
+      .select([
+        'sl.*',
+        "IF (!ISNULL(ud.mname)  AND LOWER(ud.mname) != 'n/a', concat(ud.fname, ' ',SUBSTRING(ud.mname, 1, 1) ,'. ',ud.lname) ,concat(ud.fname, ' ', ud.lname)) as adviserName",
+        'ud.id as adviserID',
+      ])
+      .leftJoin(RoomsSection, 'rs', 'rs.id = sl.roomId')
+      .leftJoin(UserDetail, 'ud', 'ud.id = rs.teacherId')
+      .where('sl.studentId = :studentID', { studentID })
+      .andWhere('sl.school_yearId = :filter', { filter })
+      .getRawOne();
+
+    let announcement;
+    if (!studentRoom) {
+      console.log('wala pay room');
+      return;
+    } else {
+      if (!studentRoom.adviserID) {
+        console.log('walay adviser');
+        return;
+      } else {
+        // console.log(studentRoom);
+        announcement = await this.dataSource
+          .createQueryBuilder(Announcement, 'an')
+          .select([
+            'an.*',
+            "IF (!ISNULL(ud.mname)  AND LOWER(ud.mname) != 'n/a', concat(ud.fname, ' ',SUBSTRING(ud.mname, 1, 1) ,'. ',ud.lname) ,concat(ud.fname, ' ', ud.lname)) as name",
+          ])
+          .leftJoin(UserDetail, 'ud', 'ud.id = an.teacherID')
+          .where('an.teacherID = :userID', { userID: studentRoom.adviserID })
+          .andWhere('an.school_yearID = :filter', { filter })
+          .orderBy('an.created_at', 'ASC')
+          .getRawMany();
+      }
+    }
+    let data = [];
+    for (let i = 0; i < announcement.length; i++) {
+      data.unshift({
+        text: announcement[i].title,
+        teacherID: announcement[i].teacherID,
+        teacherName: announcement[i].name,
+        postID: announcement[i].id,
+        date: announcement[i].created_at,
+        likes: 0,
+        comments: [],
+        newComment: '',
+        showComment: false,
+      });
+    }
+    for (let i = 0; i < data.length; i++) {
+      let getComment = await this.dataSource
+        .createQueryBuilder(Comments, 'cm')
+        .select([
+          'cm.*',
+          "IF (!ISNULL(ud.mname)  AND LOWER(ud.mname) != 'n/a', concat(ud.fname, ' ',SUBSTRING(ud.mname, 1, 1) ,'. ',ud.lname) ,concat(ud.fname, ' ', ud.lname)) as name",
+        ])
+        .leftJoin(UserDetail, 'ud', 'ud.id = cm.userID')
+        .where('cm.postID = :postID', { postID: data[i].postID })
+        .andWhere('cm.school_yearID = :filter', { filter })
+        .getRawMany();
+      for (let index = 0; index < getComment.length; index++) {
+        data[i].comments.push(getComment[index]);
+      }
+    }
+    // console.log(data);
     return data;
   }
 

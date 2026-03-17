@@ -24,6 +24,7 @@ import { DiciplinaryReportModule } from './diciplinary-report/diciplinary-report
 import { ParentRecordsModule } from './parent-records/parent-records.module';
 import { NotificationModule } from './notification/notification.module';
 import { SchoolEventsModule } from './school-events/school-events.module';
+import { AnnouncementModule } from './announcement/announcement.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { SchoolEventsModule } from './school-events/school-events.module';
     ParentRecordsModule,
     NotificationModule,
     SchoolEventsModule,
+    AnnouncementModule,
   ],
 
   controllers: [AppController],

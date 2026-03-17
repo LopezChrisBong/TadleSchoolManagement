@@ -92,6 +92,28 @@ export class ParentRecordsController {
     return this.parentRecordsService.getPrefectReport(+filter, +tab);
   }
 
+  @Get('getStudentAchievements/:filter/:studentID')
+  getStudentAchievements(
+    @Param('filter') filter: string,
+    @Param('studentID') studentID: string,
+  ) {
+    return this.parentRecordsService.getStudentAchievements(
+      +filter,
+      +studentID,
+    );
+  }
+
+  @Get('getParentAnnouncements/:filter/:studentID')
+  getParentAnnouncements(
+    @Param('filter') filter: string,
+    @Param('studentID') studentID: string,
+  ) {
+    return this.parentRecordsService.getParentAnnouncements(
+      +filter,
+      +studentID,
+    );
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.parentRecordsService.findOne(+id);

@@ -1,3 +1,5 @@
+import { Announcement } from 'src/announcement/entities/announcement.entity';
+import { Comments } from 'src/announcement/entities/comments.entity';
 import { AssignedModule } from 'src/assigned-modules/entities/assigned-module.entity';
 import { Users } from 'src/auth/entities/auth.entity';
 import { Availability } from 'src/enroll-student/entities/availability.entity';
@@ -59,7 +61,9 @@ const entities = [
   LardoStudentNotification,
   LardoStudentForFacultyNotification,
   StudentReportDisciplinary,
-  SchoolEvent
+  SchoolEvent,
+  Announcement,
+  Comments,
 ];
 
 export {
@@ -92,7 +96,9 @@ export {
   LardoStudentNotification,
   LardoStudentForFacultyNotification,
   StudentReportDisciplinary,
-  SchoolEvent
+  SchoolEvent,
+  Announcement,
+  Comments,
 };
 
 export default entities;
