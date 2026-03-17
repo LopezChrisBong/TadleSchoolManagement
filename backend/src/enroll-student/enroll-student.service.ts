@@ -1259,11 +1259,11 @@ export class EnrollStudentService {
         school_year_to: updateSchoolYearDto.school_year_to,
         status: updateSchoolYearDto.status,
       });
-      if (updateSchoolYearDto.status == true) {
-        await this.dataSource.manager.query(
-          `UPDATE enroll_student SET statusEnrolled = 0`,
-        );
-      }
+      // if (updateSchoolYearDto.status == true) {
+      //   await this.dataSource.manager.query(
+      //     `UPDATE enroll_student SET statusEnrolled = 0`,
+      //   );
+      // }
       return {
         msg: 'Activated successfully!',
         status: HttpStatus.OK,

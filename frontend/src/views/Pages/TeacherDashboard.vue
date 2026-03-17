@@ -63,7 +63,7 @@
       <!-- LEFT COLUMN -->
       <v-col cols="12" md="8">
         <!-- AT RISK TABLE -->
-        <v-card class="mb-6" elevation="2">
+        <v-card class="mb-6 pa-4" elevation="2">
           <v-card-title class="font-weight-bold">
             At-Risk Students
             <v-spacer />
@@ -117,7 +117,7 @@
                 "
                 variant="flat"
               >
-                <span class="text-white">
+                <span class="text-white" style="font-size: 10px">
                   {{
                     item.transmuted_grade <= 70
                       ? 'Remedial Class + Parent Meeting'
@@ -281,7 +281,7 @@ export default {
       headers: [
         { title: 'LRN', key: 'lrn' },
         { title: 'Student Name', key: 'name' },
-        { title: 'Risk Level', key: 'transmuted_grade' },
+        // { title: 'Risk Level', key: 'transmuted_grade' },
         { title: 'Remarks', key: 'remarks' },
         { title: 'Grade', key: 'grade' },
         { title: 'Action', key: 'action', align: 'end' },
