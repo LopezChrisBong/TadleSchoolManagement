@@ -132,7 +132,14 @@
             <!-- ACTIONS -->
             <v-row class="mt-6" dense>
               <template v-if="readonly">
-                <v-col v-if="userRole != 3" cols="12" sm="auto">
+                <v-col
+                  v-if="
+                    $store.state.user.user.assignedModuleID == 2 ||
+                    $store.state.user.user.assignedModuleID == 21
+                  "
+                  cols="12"
+                  sm="auto"
+                >
                   <v-btn
                     block
                     variant="tonal"
@@ -146,7 +153,14 @@
                   </v-btn>
                 </v-col>
 
-                <v-col v-if="userRole != 3" cols="12" sm="auto">
+                <v-col
+                  v-if="
+                    $store.state.user.user.assignedModuleID == 2 ||
+                    $store.state.user.user.assignedModuleID == 21
+                  "
+                  cols="12"
+                  sm="auto"
+                >
                   <v-btn
                     block
                     variant="tonal"

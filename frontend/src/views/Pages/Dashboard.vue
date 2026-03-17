@@ -24,60 +24,10 @@
     </v-row>
 
     <v-row dense>
-      <v-col cols="12" md="8">
-        <!-- <v-row dense class="mb-6">
-          <v-col cols="12" md="6">
-            <v-card class="pa-4">
-              <div class="section-title">At-Risk Overview (JHS)</div>
-
-              <v-progress-circular
-                model-value="71"
-                :size="140"
-                :width="18"
-                color="orange"
-                class="my-4"
-              >
-                71
-              </v-progress-circular>
-
-              <div class="legend">
-                <div><span class="dot green"></span> Low 29</div>
-                <div><span class="dot orange"></span> Moderate 24</div>
-                <div><span class="dot red"></span> High 18</div>
-              </div>
-            </v-card>
-          </v-col>
-
-          <v-col cols="12" md="6">
-            <v-card class="pa-4">
-              <div class="section-title">At-Risk Overview (SHS)</div>
-
-              <v-progress-circular
-                model-value="27"
-                :size="140"
-                :width="18"
-                color="deep-orange"
-                class="my-4"
-              >
-                27
-              </v-progress-circular>
-
-              <div class="legend">
-                <div><span class="dot green"></span> Low 12</div>
-                <div><span class="dot orange"></span> Moderate 8</div>
-                <div><span class="dot red"></span> High 7</div>
-              </div>
-            </v-card>
-          </v-col>
-        </v-row> -->
-
-        <v-card>
+      <v-col cols="12">
+        <v-card class="pa-4">
           <v-card-title class="d-flex justify-space-between align-center">
             <div class="section-title">Student Management</div>
-
-            <!-- <v-btn size="small" color="amber-darken-2">
-              Assign Adviser and Teacher →
-            </v-btn> -->
           </v-card-title>
 
           <v-data-table
@@ -102,45 +52,6 @@
           </v-data-table>
         </v-card>
       </v-col>
-
-      <v-col cols="12" md="4">
-        <!-- <v-card class="mb-6 pa-4">
-          <div class="section-title mb-4">Quick Access</div>
-
-          <v-btn block class="mb-2" variant="outlined">Manage Classes</v-btn>
-          <v-btn block class="mb-2" variant="outlined">Manage Teachers</v-btn>
-          <v-btn block class="mb-2" variant="outlined">View SF2 & SF10</v-btn>
-          <v-btn block color="orange">Generate Summary Reports</v-btn>
-        </v-card> -->
-
-        <v-card class="mb-6 pa-4">
-          <div class="section-title mb-3">Announcements</div>
-
-          <v-list density="compact">
-            <v-list-item>
-              <v-icon class="me-2" color="orange">mdi-bullhorn</v-icon>
-              Parent Meeting – Friday 3PM
-            </v-list-item>
-            <v-list-item>
-              <v-icon class="me-2" color="blue">mdi-file</v-icon>
-              Submit class reports by Feb 29
-            </v-list-item>
-          </v-list>
-        </v-card>
-
-        <!-- <v-card class="pa-4">
-          <div class="section-title mb-3">At-Risk & LARDO Students</div>
-
-          <v-list density="compact">
-            <v-list-item v-for="(s, i) in sidebarStudents" :key="i">
-              <v-list-item-title>
-                {{ s.name }}
-              </v-list-item-title>
-              <v-btn size="x-small" variant="text">View</v-btn>
-            </v-list-item>
-          </v-list>
-        </v-card> -->
-      </v-col>
     </v-row>
   </v-container>
 </template>
@@ -151,19 +62,11 @@ export default {
       headers: [
         { title: 'LRN', key: 'lrn' },
         { title: 'Student Name', key: 'student_name' },
-        // { title: 'Status', key: 'status' },
         { title: 'At-Risk Grade', key: 'transmuted_grade' },
         { title: 'Adviser', key: 'adviser' },
         { title: 'Grade', key: 'grade_level' },
         { title: 'Section', key: 'room_name' },
       ],
-
-      // sidebarStudents: [
-      //   { name: 'John Dela Cruz' },
-      //   { name: 'Mia Santiago' },
-      //   { name: 'Alex Reyes' },
-      // ],
-
       juniorCount: null,
       seniorCount: null,
       riskCout: null,
@@ -172,6 +75,11 @@ export default {
   },
   mounted() {
     this.initialize();
+  },
+  watch: {
+    '$store.getters.getFilterSelected'() {
+      this.initialize();
+    },
   },
   methods: {
     initialize() {
