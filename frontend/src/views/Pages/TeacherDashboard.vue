@@ -90,13 +90,15 @@
                 size="small"
                 variant="flat"
               >
-                {{
-                  item.transmuted_grade <= 75
-                    ? 'High Risk'
-                    : item.transmuted_grade <= 80
-                    ? 'Moderate'
-                    : 'Passed'
-                }}
+                <span class="text-white">
+                  {{
+                    item.transmuted_grade <= 70
+                      ? 'High'
+                      : item.transmuted_grade <= 75
+                      ? 'Moderate'
+                      : 'Passable'
+                  }}
+                </span>
               </v-chip>
             </template>
             <template v-slot:[`item.grade`]="{ item }">
@@ -108,20 +110,22 @@
                 size="small"
                 :color="
                   item.transmuted_grade <= 75
-                    ? 'red'
-                    : item.transmuted_grade <= 80
                     ? 'orange'
+                    : item.transmuted_grade <= 80
+                    ? 'yellow'
                     : 'green'
                 "
                 variant="flat"
               >
-                {{
-                  item.transmuted_grade <= 75
-                    ? 'Report'
-                    : item.transmuted_grade <= 80
-                    ? 'Counsel'
-                    : 'None'
-                }}
+                <span class="text-white">
+                  {{
+                    item.transmuted_grade <= 70
+                      ? 'Remedial Class + Parent Meeting'
+                      : item.transmuted_grade <= 75
+                      ? 'Teacher Consultation'
+                      : 'Counceling'
+                  }}
+                </span>
               </v-btn>
             </template>
           </v-data-table>
@@ -280,7 +284,7 @@ export default {
         { title: 'Risk Level', key: 'transmuted_grade' },
         { title: 'Remarks', key: 'remarks' },
         { title: 'Grade', key: 'grade' },
-        { title: 'Action', key: 'action' },
+        { title: 'Action', key: 'action', align: 'end' },
       ],
 
       students: [
@@ -340,8 +344,8 @@ export default {
       this.getFacultyDashboardData();
     },
     riskColor(risk) {
-      if (risk <= 75) return 'red';
-      if (risk <= 80) return 'orange';
+      if (risk <= 75) return 'orange';
+      if (risk <= 80) return 'yellow';
       return 'green';
     },
 

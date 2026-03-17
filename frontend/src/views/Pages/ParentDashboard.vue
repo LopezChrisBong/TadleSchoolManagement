@@ -1,8 +1,8 @@
 <template>
-  <v-container fluid class="pa-6 grey-lighten-4 fill-height">
+  <v-container fluid>
     <v-row>
       <!-- LEFT COLUMN -->
-      <v-col cols="12" md="4">
+      <v-col cols="12" md="5">
         <!-- Student Profile -->
         <v-card class="pa-4 rounded-xl mb-4 elevation-3">
           <div class="text-h6 font-weight-bold mb-4">Student Profile</div>
@@ -10,38 +10,66 @@
           <div class="d-flex align-center">
             <v-carousel
               height="150"
+              v-model="activeIndex"
               hide-delimiter-background
               show-arrows
               v-if="studentList.length"
             >
               <template v-slot:prev="{ props }">
-                <v-btn color="white" variant="text" @click="props.onClick"
+                <v-btn
+                  color="white"
+                  variant="text"
+                  @click="
+                    props.onClick();
+                    studentData(studentList[activeIndex]);
+                  "
                   ><v-icon size="30">mdi-arrow-left</v-icon>
                 </v-btn>
               </template>
               <template v-slot:next="{ props }">
-                <v-btn color="white" variant="text" @click="props.onClick"
+                <v-btn
+                  color="white"
+                  variant="text"
+                  @click="
+                    props.onClick();
+                    studentData(studentList[activeIndex]);
+                  "
                   ><v-icon size="30">mdi-arrow-right</v-icon>
                 </v-btn>
               </template>
               <v-carousel-item v-for="(slide, i) in studentList" :key="i">
                 <v-sheet :color="colors[i]" height="100%">
                   <div class="d-flex align-center">
-                    <v-avatar size="90" class="ml-15 mr-2">
-                      <v-img src="https://i.pravatar.cc/100" />
+                    <v-avatar
+                      size="90"
+                      class="ml-15 mr-2"
+                      style="border: 1px solid white"
+                    >
+                      <!-- <v-img src="https://i.pravatar.cc/100" /> -->
+                      <v-icon size="50">mdi-account</v-icon>
                     </v-avatar>
 
-                    <div>
-                      <div class="font-weight-bold text-body-1">
-                        {{ slide.name }}
+                    <div class="d-flex pa-4">
+                      <div
+                        class="mx-3 pa-2"
+                        style="border: 1px solid white; border-radius: 10px"
+                      >
+                        <div class="font-weight-bold text-body-1">
+                          Name:{{ slide.name }}
+                        </div>
+                        <div class="text-caption">LRN: {{ slide.lrnNo }}</div>
+                        <div class="text-caption">
+                          Grade: {{ slide.grade_level }}
+                        </div>
                       </div>
-                      <div class="text-caption">LRN: {{ slide.lrnNo }}</div>
-                      <div class="text-caption">
-                        Grade: {{ slide.grade_level }}
-                      </div>
-                      <div class="text-caption">Adviser: Mrs. Santos</div>
-                      <div class="text-caption">School Year: 2023–2024</div>
-                      <div class="text-caption">Quarter: Q3</div>
+                      <!-- <div
+                        class="mx-3 pa-2"
+                        style="border: 1px solid white; border-radius: 10px"
+                      >
+                        <div class="text-caption">Adviser: Mrs. Santos</div>
+                        <div class="text-caption">School Year: 2023–2024</div>
+                        <div class="text-caption">Quarter: Q3</div>
+                      </div> -->
                     </div>
                   </div>
                 </v-sheet>
@@ -49,73 +77,10 @@
             </v-carousel>
           </div>
         </v-card>
-
-        <!-- Academic Performance -->
-        <v-card class="pa-4 rounded-xl elevation-3 mb-4">
-          <div class="text-h6 font-weight-bold mb-4">Academic Performance</div>
-
-          <div class="mb-3">
-            <div class="d-flex justify-space-between text-caption">
-              <span>Math</span>
-              <span class="text-red">62%</span>
-            </div>
-            <v-progress-linear
-              model-value="62"
-              color="red"
-              height="8"
-              rounded
-            />
-          </div>
-
-          <div class="mb-3">
-            <div class="d-flex justify-space-between text-caption">
-              <span>Science</span>
-              <span class="text-orange">74%</span>
-            </div>
-            <v-progress-linear
-              model-value="74"
-              color="orange"
-              height="8"
-              rounded
-            />
-          </div>
-
-          <div>
-            <div class="d-flex justify-space-between text-caption">
-              <span>English</span>
-              <span class="text-green">88%</span>
-            </div>
-            <v-progress-linear
-              model-value="88"
-              color="green"
-              height="8"
-              rounded
-            />
-          </div>
-        </v-card>
-
-        <!-- Reports -->
-        <v-card class="pa-4 rounded-xl elevation-3">
-          <div class="text-h6 font-weight-bold mb-4">Reports</div>
-
-          <v-list density="compact">
-            <v-list-item title="SF9: Report Card" subtitle="Q3">
-              <template #append>
-                <v-btn size="small" variant="text">View</v-btn>
-              </template>
-            </v-list-item>
-
-            <v-list-item title="Attendance Record" subtitle="Jan – Mar">
-              <template #append>
-                <v-btn size="small" variant="text">View</v-btn>
-              </template>
-            </v-list-item>
-          </v-list>
-        </v-card>
       </v-col>
 
       <!-- RIGHT COLUMN -->
-      <v-col cols="12" md="8">
+      <v-col cols="12" md="7">
         <!-- Attendance Overview -->
         <v-card class="pa-6 rounded-xl mb-4 elevation-3">
           <div class="text-h6 font-weight-bold mb-4">Attendance Overview</div>
@@ -123,107 +88,100 @@
           <v-row align="center">
             <v-col cols="12" md="4" class="text-center">
               <v-progress-circular
-                model-value="78"
+                :model-value="percent"
                 size="130"
                 width="15"
                 color="green"
               >
-                78%
+                {{ percent }}%
               </v-progress-circular>
             </v-col>
 
             <v-col cols="12" md="8">
-              <v-chip color="green" class="me-2">25 Present</v-chip>
-              <v-chip color="orange" class="me-2">8 Absences</v-chip>
-              <v-chip color="yellow-darken-2">3 Late</v-chip>
+              <v-chip color="green" class="me-2">{{ present }} Present</v-chip>
+              <v-chip color="orange" class="me-2">{{ absent }} Absences</v-chip>
+              <v-chip color="yellow-darken-2">{{ excuse }} Excuse</v-chip>
 
-              <div class="mt-4">
+              <!-- <div class="mt-4">
                 <v-alert type="error" density="compact" variant="tonal">
                   LARDO ALERT
                 </v-alert>
-              </div>
+              </div> -->
             </v-col>
           </v-row>
         </v-card>
+      </v-col>
+      <!-- Announcements -->
+      <v-col cols="12" md="12">
+        <div class="my-5 text-h4"><strong> Announcement</strong></div>
+        <!-- POSTS -->
+        <v-card v-for="(post, index) in posts" :key="index" class="mb-4">
+          <v-card-title class="d-flex align-center">
+            <v-avatar size="40" class="mr-2">
+              <!-- <v-img src="https://i.pravatar.cc/100" /> -->
+              <v-icon>mdi-account</v-icon>
+            </v-avatar>
 
-        <v-row>
-          <!-- Alert & Discipline -->
-          <v-col cols="12" md="6">
-            <v-card class="pa-4 rounded-xl elevation-3">
-              <div class="text-h6 font-weight-bold mb-3">
-                Alert & Discipline Status
+            <div>
+              <div class="font-weight-bold">{{ post.teacherName }}</div>
+
+              <div class="text-caption text-grey">
+                {{ formatDate(post.date) }}
               </div>
+            </div>
+          </v-card-title>
 
-              <v-alert type="error" variant="flat" class="mb-3">
-                Learner At-Risk of Dropping Out
-              </v-alert>
+          <v-card-text>
+            {{ post.text }}
+          </v-card-text>
 
-              <div class="text-caption">Risk Level: <strong>High</strong></div>
-              <div class="text-caption">
-                Reason: <strong>5 Consecutive Absences</strong>
-              </div>
-              <div class="text-caption">
-                Status: <strong>Under Monitoring</strong>
-              </div>
-            </v-card>
-          </v-col>
+          <v-divider />
 
-          <!-- Discipline Case -->
-          <v-col cols="12" md="6">
-            <v-card class="pa-4 rounded-xl elevation-3">
-              <div class="text-h6 font-weight-bold mb-3">Discipline Case</div>
+          <v-card-actions>
+            <!-- <v-btn variant="text" @click="likePost(index)">
+              👍 Like {{ post.likes }}
+            </v-btn> -->
 
-              <v-timeline density="compact">
-                <v-timeline-item dot-color="blue">
-                  Academic Concern
-                </v-timeline-item>
-                <v-timeline-item dot-color="grey"> Reported </v-timeline-item>
-                <v-timeline-item dot-color="grey"> Counseled </v-timeline-item>
-                <v-timeline-item dot-color="red">
-                  Referred to Prefect
-                </v-timeline-item>
-              </v-timeline>
+            <v-btn variant="text" @click="post.showComment = !post.showComment">
+              💬 Comment ({{ post.comments.length }})
+            </v-btn>
+          </v-card-actions>
 
-              <v-btn color="error" block class="mt-3"> Under Ongoing </v-btn>
-            </v-card>
-          </v-col>
-        </v-row>
-
-        <v-row>
-          <!-- Announcements -->
-          <v-col cols="12" md="6">
-            <v-card class="pa-4 rounded-xl elevation-3">
-              <div class="text-h6 font-weight-bold mb-3">Announcements</div>
-
-              <v-list density="compact">
-                <v-list-item
-                  title="Parent Meeting"
-                  subtitle="Reminder: Friday at 3PM"
+          <v-expand-transition>
+            <div v-if="post.showComment">
+              <v-divider />
+              <div class="d-flex pa-3">
+                <v-text-field
+                  v-model="post.newComment"
+                  label="Write comment..."
+                  density="compact"
+                  @keyup.enter="addComment(index)"
                 />
-                <v-list-item
-                  title="Field Trip Update"
-                  subtitle="Rescheduled to March 10"
-                />
-              </v-list>
-            </v-card>
-          </v-col>
-
-          <!-- Recent Notifications -->
-          <v-col cols="12" md="6">
-            <v-card class="pa-4 rounded-xl elevation-3">
-              <div class="text-h6 font-weight-bold mb-3">
-                Recent Notifications
+                <v-btn class="mx-2" variant="flat" @click="addComment(index)"
+                  ><v-icon color="pink" size="24"
+                    >mdi-arrow-right</v-icon
+                  ></v-btn
+                >
               </div>
 
               <v-list density="compact">
-                <v-list-item title="At-Risk of Failing in Math" />
-                <v-list-item title="5 Consecutive Absences" />
-                <v-list-item title="Arrived 15 minutes late today" />
-                <v-list-item title="New Announcement Posted" />
+                <v-list-item v-for="(c, i) in post.comments" :key="i">
+                  <v-row>
+                    <v-col cols="2"
+                      ><strong>{{ c.name }}</strong></v-col
+                    >
+                    <v-col
+                      cols="10"
+                      style="border: 1px solid grey; border-radius: 10px"
+                    >
+                      <span>{{ c.title }}</span></v-col
+                    >
+                  </v-row>
+                </v-list-item>
               </v-list>
-            </v-card>
-          </v-col>
-        </v-row>
+            </div>
+          </v-expand-transition>
+        </v-card>
       </v-col>
     </v-row>
   </v-container>
@@ -232,6 +190,12 @@
 export default {
   data: () => ({
     studentList: [],
+    activeIndex: 0,
+    present: null,
+    absent: null,
+    posts: [],
+    excuse: null,
+    percent: null,
     colors: [
       'indigo',
       'warning',
@@ -243,9 +207,17 @@ export default {
   mounted() {
     this.initialize();
   },
+  watch: {
+    activeIndex(newIndex) {
+      this.studentData(this.studentList[newIndex]);
+      this.getParentAnnouncements(this.studentList[newIndex]);
+    },
+    '$store.getters.getFilterSelected'() {
+      this.initialize();
+    },
+  },
   methods: {
     initialize() {
-      console.log('1');
       this.getMyStudent();
     },
     getMyStudent() {
@@ -256,7 +228,71 @@ export default {
           data.forEach((element, i) => {
             data[i].name = this.toTitleCase(element.name);
           });
+          this.studentData(data[0]);
+          this.getParentAnnouncements(data[0]);
           this.studentList = data;
+        }
+      });
+    },
+    studentData(student) {
+      console.log(student);
+      let filter = this.$store.getters.getFilterSelected;
+      this.axiosCall(
+        '/parent-records/getStudentAchievements/' + filter + '/' + student.id,
+        'GET',
+      ).then((res) => {
+        if (res) {
+          console.log(res.data);
+          this.present = res.data.present;
+          this.absent = res.data.absent;
+          this.excuse = res.data.excuse;
+          this.percent = res.data.percent;
+        }
+      });
+    },
+    getParentAnnouncements(student) {
+      console.log(student);
+      let filter = this.$store.getters.getFilterSelected;
+      this.axiosCall(
+        '/parent-records/getParentAnnouncements/' + filter + '/' + student.id,
+        'GET',
+      ).then((res) => {
+        if (res) {
+          let data = res.data;
+          for (let i = 0; i < data.length; i++) {
+            data[i].teacherName = this.toTitleCase(data[i].teacherName);
+          }
+          this.posts = data;
+        }
+      });
+    },
+    addComment(i) {
+      let userID = this.$store.state.user.id;
+      let filter = this.$store.getters.getFilterSelected;
+      const p = this.posts[i];
+      if (!p.newComment) return;
+
+      let commentData = {
+        userID: userID,
+        title: p.newComment,
+        school_yearID: filter,
+        postID: p.postID,
+      };
+      let data = {
+        data: JSON.stringify(commentData),
+      };
+      console.log(data);
+      this.axiosCall('/announcement/addComment', 'POST', data).then((res) => {
+        if (res.data.status == 201) {
+          //   p.comments.push(p.newComment);
+          //   p.newComment = '';
+          //   this.confirmDialog = false;
+          this.initialize();
+        } else if (res.data.status == 400) {
+          this.fadeAwayMessage.show = true;
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
+          this.fadeAwayMessage.message = res.data.msg;
         }
       });
     },

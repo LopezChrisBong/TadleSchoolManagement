@@ -209,8 +209,9 @@ export default {
     studentDataListed: null,
     student_activeList: [],
     headers: [
-      { title: 'Last Name', value: 'lname', align: 'start', sortable: true },
-      { title: 'First Name', value: 'fname', align: 'start' },
+      { title: 'LRN', value: 'lrnNo', align: 'start', sortable: true },
+      { title: 'Name', value: 'name', align: 'start', sortable: true },
+      // { title: 'First Name', value: 'fname', align: 'start' },
       // { title: 'Name', value: 'name', align: 'start' },
       {
         title: 'Actions',

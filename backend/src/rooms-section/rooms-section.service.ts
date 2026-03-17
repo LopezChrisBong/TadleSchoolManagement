@@ -825,7 +825,7 @@ export class RoomsSectionService {
   }
 
   async getMyClassList(userID: number, filter: number) {
-    console.log(filter);
+    // console.log(filter);
     try {
       let data = await this.dataSource.manager
         .createQueryBuilder(StudentList, 'SL')
@@ -854,7 +854,7 @@ export class RoomsSectionService {
           ])
           .where('RS.teacherId = :teacherId', { teacherId: userID })
           .getRawMany();
-        // console.log('NEW DAR',userData)
+        // console.log('NEW DAR', userData);
         return userData;
       } else {
         return data;

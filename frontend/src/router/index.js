@@ -42,6 +42,7 @@ import StudentDiscipline from '../views/Pages/StudentDiscipline.vue';
 import ParentChildren from '../views/Pages/ParentChildren.vue';
 import AdvisoryProgramm from '../views/Pages/AdvisoryProgramm.vue';
 import Events from '../views/Pages/Events.vue';
+import Announcement from '../views/Pages/Announcement.vue';
 // Vue.use(VueRouter);
 
 const routes = [
@@ -235,6 +236,12 @@ const routes = [
         component: Events,
         meta: { title: "Events", authRequired: true },
       },
+      {
+        path: "announcement",
+        component: Announcement,
+        meta: { title: "Announcement", authRequired: true },
+      },
+      
       
       
       // {
@@ -300,6 +307,11 @@ const routes = [
         path: "users",
         component: Users,
         meta: { title: "Utilities - Users", authRequired: true },
+      },
+      {
+        path: "announcement",
+        component: Announcement,
+        meta: { title: "Announcement", authRequired: true },
       },
 
       
@@ -383,6 +395,11 @@ const routes = [
         path: "events",
         component: Events,
         meta: { title: "Events", authRequired: true },
+      },
+      {
+        path: "announcement",
+        component: Announcement,
+        meta: { title: "Announcement", authRequired: true },
       },
     ],
   },

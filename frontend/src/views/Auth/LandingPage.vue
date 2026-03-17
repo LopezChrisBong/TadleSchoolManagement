@@ -93,7 +93,7 @@
     </v-container>
     <v-divider color="black"></v-divider>
     <!--EVENTS-->
-    <!-- <div style="background-color: #f3f3f3; width: 100%" id="events">
+    <div style="background-color: #f3f3f3; width: 100%" id="events">
       <v-container class="py-12">
         <v-row>
           <v-col
@@ -178,13 +178,18 @@
           </v-col>
         </v-row>
       </v-container>
-    </div> -->
+    </div>
 
     <!-- FOOTER -->
     <v-divider color="black"></v-divider>
-    <v-footer class="py-2">
+    <v-footer class="pa-14">
       <v-row>
-        <v-col cols="12" md="4" class="px-12">
+        <v-col
+          cols="12"
+          md="4"
+          class="px-12"
+          style="border: 1px solid pink; border-radius: 10px"
+        >
           <div class="text-center">
             <strong>MISSION</strong>
           </div>
@@ -202,8 +207,30 @@
             </p>
           </div>
         </v-col>
+        <v-col
+          cols="12"
+          md="4"
+          class="px-12"
+          style="border: 1px solid pink; border-radius: 10px"
+        >
+          <div class="text-center">
+            <strong>CORE VALUES</strong>
+          </div>
 
-        <v-col cols="12" md="4" class="px-12">
+          <div class="text-center">
+            <p class="text-grey mt-2">
+              Maka-Diyos <br />
+              Maka-tao <br />Makakalikasan <br />
+              Makabansa
+            </p>
+          </div>
+        </v-col>
+        <v-col
+          cols="12"
+          md="4"
+          class="px-12"
+          style="border: 1px solid pink; border-radius: 10px"
+        >
           <div class="text-center">
             <strong>VISSION</strong>
           </div>
@@ -214,20 +241,6 @@
               potential and contribute meaningfully to building the nation. As a
               learner-centered public institution, the Department of Education
               continuously improves itself to better serve its stakeholders.
-            </p>
-          </div>
-        </v-col>
-
-        <v-col cols="12" md="4" class="px-12">
-          <div class="text-center">
-            <strong>CORE VALUES</strong>
-          </div>
-
-          <div class="text-center">
-            <p class="text-grey mt-2">
-              Maka-Diyos <br />
-              Maka-tao <br />Makakalikasan <br />
-              Makabansa
             </p>
           </div>
         </v-col>
