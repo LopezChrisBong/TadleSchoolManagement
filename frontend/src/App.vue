@@ -7,31 +7,31 @@
 
 <script>
 export default {
-  name: "App",
+  name: 'App',
   components: {
-    "loading-screen": () => import("./components/Utils/LoadingScreen.vue"),
+    'loading-screen': () => import('./components/Utils/LoadingScreen.vue'),
   },
   data: () => ({
     render: false,
   }),
-  created: function() {
+  created: function () {
     //VueX set this Vue Variable
     // this.$store.dispatch("setThisVue", this);
     // console.log("is Expired: " + this.$store.getters.isExpired);
     // console.log(this.$store.state.expiryDate);
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
-    const token = urlParams.get("token");
+    const token = urlParams.get('token');
     if (token) {
-      localStorage.setItem("token", token);
-      this.$store.commit("setExpiryDate");
-      this.$router.push("/");
+      localStorage.setItem('token', token);
+      this.$store.commit('setExpiryDate');
+      this.$router.push('/');
       location.reload();
     }
 
     if (this.$store.state.expiryDate < Date.now()) {
-      this.$store.dispatch("setUser", null);
-      this.$store.dispatch("setIsAuthenticated", 0);
+      this.$store.dispatch('setUser', null);
+      this.$store.dispatch('setIsAuthenticated', 0);
       this.render = true;
       // this.$router.push("/");
       // setTimeout(() => {
@@ -45,31 +45,31 @@ export default {
   methods: {
     getUser() {
       if (this.$store.getters.getIsAuthenticated == 0) {
-        if (localStorage.getItem("token")) {
+        if (localStorage.getItem('token')) {
           // let token = { token: localStorage.getItem("token") };
-          this.axiosCall("/auth/current_user", "GET")
+          this.axiosCall('/auth/current_user', 'GET')
             .then((res) => {
               if (res.statusCode != 401) {
                 let data = res.data.userdetail;
 
-                this.$store.dispatch("setUser", data);
-                this.$store.dispatch("setIsAuthenticated", 1);
+                this.$store.dispatch('setUser', data);
+                this.$store.dispatch('setIsAuthenticated', 1);
                 if (data.usertype.id == 1) {
-                  this.$router.push("/admin/dashboard");
+                  this.$router.push('/admin/dashboard');
                 } else if (data.usertype.id == 2) {
                   if (data.user.user_roleID == 5) {
-                    this.$router.push("/superadmin/dashboard");
+                    this.$router.push('/superadmin/dashboard');
                   } else {
-                    this.$router.push("/employee/dashboard");
+                    this.$router.push('/employee/dashboard');
                   }
                 } else if (data.usertype.id == 3) {
-                  this.$router.push("/security/dashboard");
+                  this.$router.push('/security/dashboard');
                 } else if (data.usertype.id == 4) {
-                  this.$router.push("/auditor/dashboard");
+                  this.$router.push('/auditor/dashboard');
                 }
               } else {
-                this.$store.dispatch("setUser", null);
-                this.$store.dispatch("setIsAuthenticated", 0);
+                this.$store.dispatch('setUser', null);
+                this.$store.dispatch('setIsAuthenticated', 0);
                 setTimeout(() => {
                   location.reload();
                 }, 500);
@@ -83,15 +83,15 @@ export default {
           this.render = true;
         }
       } else {
-        this.axiosCall("/auth/current_user", "GET").then((res) => {
+        this.axiosCall('/auth/current_user', 'GET').then((res) => {
           // console.log(res.data);
           if (res.statusCode != 401) {
             let data = res.data.userdetail;
-            this.$store.dispatch("setUser", data);
-            this.$store.dispatch("setIsAuthenticated", 1);
+            this.$store.dispatch('setUser', data);
+            this.$store.dispatch('setIsAuthenticated', 1);
           } else {
-            this.$store.dispatch("setUser", null);
-            this.$store.dispatch("setIsAuthenticated", 0);
+            this.$store.dispatch('setUser', null);
+            this.$store.dispatch('setIsAuthenticated', 0);
             setTimeout(() => {
               location.reload();
             }, 500);

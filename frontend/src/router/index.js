@@ -178,7 +178,7 @@ const routes = [
       {
         path: "classroom-programm",
         component: ClassroomProgramm,
-        meta: { title: "High School Program", authRequired: true },
+        meta: { title: "Classroom Program", authRequired: true },
       },
 
       {
@@ -374,7 +374,7 @@ const routes = [
       {
         path: "classroom-programm",
         component: ClassroomProgramm,
-        meta: { title: "High School Program", authRequired: true },
+        meta: { title: "Classroom Program", authRequired: true },
       },
       {
         path: "student-discipline",

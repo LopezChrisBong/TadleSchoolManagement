@@ -52,7 +52,7 @@ export class NotificationService {
       .getRawMany();
 
     for (let i = 0; i < data.length; i++) {
-      Object.assign(data[i], { recommendation: 'Parent Counceling' });
+      Object.assign(data[i], { recommendation: 'Parent Counseling' });
     }
     return data;
   }
@@ -67,7 +67,7 @@ export class NotificationService {
       .getRawMany();
 
     for (let i = 0; i < data.length; i++) {
-      Object.assign(data[i], { recommendation: 'Parent Counceling' });
+      Object.assign(data[i], { recommendation: 'Parent Counseling' });
     }
 
     return data;

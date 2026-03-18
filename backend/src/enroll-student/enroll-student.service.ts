@@ -142,7 +142,7 @@ export class EnrollStudentService {
     } catch (err) {
       await queryRunner.rollbackTransaction();
       const toReturn = {
-        msg: err,
+        msg: 'Something went wrong!' + err,
         status: HttpStatus.BAD_REQUEST,
       };
       return toReturn;

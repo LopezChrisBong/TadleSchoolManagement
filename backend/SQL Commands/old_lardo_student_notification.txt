@@ -1,0 +1,89 @@
+
+DELIMITER $$
+
+CREATE TRIGGER trg_after_insert_attendance
+AFTER INSERT ON student_attendance
+FOR EACH ROW
+BEGIN
+    DECLARE v_student_name VARCHAR(255);
+    DECLARE v_consecutive_absents INT;
+    DECLARE v_absent_dates TEXT;
+    DECLARE v_remarks TEXT;
+     DECLARE v_subject_title VARCHAR(255);
+
+    -- Only check if the new record is absent
+    IF NEW.attendance = 0 THEN
+
+        -- Count last 5 records where absent
+        SELECT COUNT(*) INTO v_consecutive_absents
+        FROM (
+            SELECT attendance
+            FROM student_attendance sa
+            WHERE sa.studentID = NEW.studentID
+              AND sa.attendanceDate <= NEW.attendanceDate
+            ORDER BY sa.attendanceDate DESC
+            LIMIT 5
+        ) AS last_five
+        WHERE last_five.attendance = 0;
+
+        -- If all 5 are absent
+        IF v_consecutive_absents = 5 THEN
+            -- Get student full name
+            SELECT CONCAT(es.fname, ' ', es.lname)
+            INTO v_student_name
+            FROM enroll_student es
+            WHERE es.id = NEW.studentID
+            LIMIT 1;
+            
+		-- Get subject title 
+        SELECT sj.subject_title
+        INTO v_subject_title
+        FROM subject sj
+        WHERE sj.id = NEW.subjectID
+        LIMIT 1;
+
+            -- Collect last 5 absent dates formatted as M-DD-YYYY
+            SELECT GROUP_CONCAT(DATE_FORMAT(sa.attendanceDate, '%c-%d-%Y') ORDER BY sa.attendanceDate DESC SEPARATOR ', ')
+            INTO v_absent_dates
+            FROM student_attendance sa
+            WHERE sa.studentID = NEW.studentID
+              AND sa.attendance = 0
+              AND sa.attendanceDate <= NEW.attendanceDate
+            ORDER BY sa.attendanceDate DESC
+            LIMIT 5;
+
+            -- Build remarks message
+            SET v_remarks = CONCAT('Student has been absent for 5 consecutive days on: ', v_absent_dates);
+
+            -- Insert into lardo_student_notification
+            INSERT INTO lardo_student_notification (
+                studentID,
+                student_name,
+                teacherID,
+                school_yearID,
+                grade_level,
+                room_name,
+                route,
+                `read`,
+                remarks,
+                subject_title
+            )
+            SELECT
+                NEW.studentID,
+                v_student_name,
+                rs.teacherId,
+                NEW.school_yearID,
+                rs.grade_level,
+                rs.room_section, -- map to room_name
+                '/advisory-rooms',
+                FALSE,
+                v_remarks,
+                v_subject_title
+            FROM rooms_section rs
+            WHERE rs.id = NEW.roomID
+              AND rs.teacherId IS NOT NULL;
+        END IF;
+    END IF;
+END$$
+
+DELIMITER ;
