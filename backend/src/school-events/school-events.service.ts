@@ -98,13 +98,13 @@ export class SchoolEventsService {
     const events = await this.dataSource
       .getRepository(SchoolEvent)
       .createQueryBuilder('se')
-      // .where('se.eventType != :type', { type: 'Mandatory' })
       .select([
         'se.eventType',
         'se.eventName',
         'se.eventDate',
         'se.eventDescription',
       ])
+      .andWhere('se.isActive = :active', { active: 1 })
       .orderBy('se.eventDate', 'ASC')
       .getMany();
 
@@ -118,7 +118,6 @@ export class SchoolEventsService {
       .getRepository(SchoolEvent)
       .createQueryBuilder('se')
       .where('se.eventType != :type', { type: 'Mandatory' })
-      .andWhere('se.isActive = 1')
       .select([
         'se.eventType',
         'se.eventName',
@@ -126,6 +125,7 @@ export class SchoolEventsService {
         'se.eventDescription',
         'se.eventFile',
       ])
+      .andWhere('se.isActive = :active', { active: 1 })
       .orderBy('se.eventDate', 'ASC')
       .getMany();
 
