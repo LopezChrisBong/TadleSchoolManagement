@@ -221,9 +221,9 @@
   </div>
 </template>
 <script>
-import eventBus from "@/eventBus";
-import AddRoomSectionDialog from "../../components/Dialogs/Forms/AddRoomSectionDialog.vue";
-import ClassRoomGeneratedListDialog from "../../components/Dialogs/Forms/ClassRoomGeneratedListDialog.vue";
+import eventBus from '@/eventBus';
+import AddRoomSectionDialog from '../../components/Dialogs/Forms/AddRoomSectionDialog.vue';
+import ClassRoomGeneratedListDialog from '../../components/Dialogs/Forms/ClassRoomGeneratedListDialog.vue';
 
 export default {
   components: {
@@ -231,7 +231,7 @@ export default {
     ClassRoomGeneratedListDialog,
   },
   data: () => ({
-    search: "",
+    search: '',
     taggingData: null,
     fullname: null,
     applicantData: null,
@@ -241,26 +241,26 @@ export default {
     generateSeniorClassRecord: false,
     headers: [
       {
-        title: "Room Name",
-        value: "room_section",
-        align: "start",
-        valign: "start",
+        title: 'Room Name',
+        value: 'room_section',
+        align: 'start',
+        valign: 'start',
         sortable: false,
       },
 
       {
-        title: "Adviser",
-        value: "name",
-        align: "center",
-        valign: "center",
+        title: 'Adviser',
+        value: 'name',
+        align: 'center',
+        valign: 'center',
         sortable: false,
       },
 
       {
-        title: "Action",
-        value: "action",
-        align: "end",
-        valign: "end",
+        title: 'Action',
+        value: 'action',
+        align: 'end',
+        valign: 'end',
         sortable: false,
       },
     ],
@@ -270,23 +270,23 @@ export default {
     printData: [],
     verified: [],
     perPageChoices: [
-      { text: "5", value: 5 },
-      { text: "10", value: 10 },
-      { text: "20", value: 20 },
-      { text: "50", value: 50 },
-      { text: "100", value: 100 },
-      { text: "250", value: 250 },
-      { text: "500", value: 500 },
+      { text: '5', value: 5 },
+      { text: '10', value: 10 },
+      { text: '20', value: 20 },
+      { text: '50', value: 50 },
+      { text: '100', value: 100 },
+      { text: '250', value: 250 },
+      { text: '500', value: 500 },
     ],
-    activeTab: { id: 1, name: "Grade 7", active: true },
+    activeTab: { id: 1, name: 'Grade 7', active: true },
     tab: 1,
     tabList: [
-      { id: 1, name: "Grade 7", active: true },
-      { id: 2, name: "Grade 8", active: false },
-      { id: 3, name: "Grade 9", active: false },
-      { id: 4, name: "Grade 10", active: false },
-      { id: 5, name: "Grade 11", active: false },
-      { id: 6, name: "Grade 12", active: false },
+      { id: 1, name: 'Grade 7', active: true },
+      { id: 2, name: 'Grade 8', active: false },
+      { id: 3, name: 'Grade 9', active: false },
+      { id: 4, name: 'Grade 10', active: false },
+      { id: 5, name: 'Grade 11', active: false },
+      { id: 6, name: 'Grade 12', active: false },
     ],
     RoomData: null,
     designationData: null,
@@ -312,26 +312,26 @@ export default {
     passfilter: null,
     fadeAwayMessage: {
       show: false,
-      type: "success",
-      header: "Successfully Deleted!",
-      message: "",
+      type: 'success',
+      header: 'Successfully Deleted!',
+      message: '',
       top: 10,
     },
     yearList: [],
     monthsList: [
-      { id: 0, name: "All" },
-      { id: 1, name: "January" },
-      { id: 2, name: "February" },
-      { id: 3, name: "March" },
-      { id: 4, name: "April" },
-      { id: 5, name: "May" },
-      { id: 6, name: "June" },
-      { id: 7, name: "July" },
-      { id: 8, name: "August" },
-      { id: 9, name: "September" },
-      { id: 10, name: "October" },
-      { id: 11, name: "November" },
-      { id: 12, name: "December" },
+      { id: 0, name: 'All' },
+      { id: 1, name: 'January' },
+      { id: 2, name: 'February' },
+      { id: 3, name: 'March' },
+      { id: 4, name: 'April' },
+      { id: 5, name: 'May' },
+      { id: 6, name: 'June' },
+      { id: 7, name: 'July' },
+      { id: 8, name: 'August' },
+      { id: 9, name: 'September' },
+      { id: 10, name: 'October' },
+      { id: 11, name: 'November' },
+      { id: 12, name: 'December' },
     ],
   }),
 
@@ -339,19 +339,19 @@ export default {
     this.initialize();
     this.getAlreadyGenerate();
 
-    eventBus.on("closeAddClassroom", () => {
+    eventBus.on('closeAddClassroom', () => {
       this.initialize();
       this.getAlreadyGenerate();
     });
-    eventBus.on("closeaddStudentClassRoomDialog", () => {
+    eventBus.on('closeaddStudentClassRoomDialog', () => {
       this.initialize();
       this.getAlreadyGenerate();
     });
   },
 
   beforeUnmount() {
-    eventBus.off("closeaddStudentClassRoomDialog");
-    eventBus.off("closeAddClassroom");
+    eventBus.off('closeaddStudentClassRoomDialog');
+    eventBus.off('closeAddClassroom');
   },
 
   watch: {
@@ -392,13 +392,13 @@ export default {
       // console.log("Filted", filter);
 
       if (this.tab == 1) {
-        this.gradeName = "Grade 7";
-        this.axiosCall("/rooms-section/" + "Grade 7", "GET").then((res) => {
+        this.gradeName = 'Grade 7';
+        this.axiosCall('/rooms-section/' + 'Grade 7', 'GET').then((res) => {
           if (res) {
-            console.log("Love", res.data);
+            console.log('Love', res.data);
             res.data.forEach((element, i) => {
               res.data[i].room_section = this.toUpperCaseData(
-                element.room_section || "",
+                element.room_section || '',
               );
             });
             this.data = res.data;
@@ -406,14 +406,14 @@ export default {
           }
         });
       } else if (this.tab == 2) {
-        this.gradeName = "Grade 8";
+        this.gradeName = 'Grade 8';
 
-        this.axiosCall("/rooms-section/" + "Grade 8", "GET").then((res) => {
+        this.axiosCall('/rooms-section/' + 'Grade 8', 'GET').then((res) => {
           if (res) {
-            console.log("Love", res.data);
+            console.log('Love', res.data);
             res.data.forEach((element, i) => {
               res.data[i].room_section = this.toUpperCaseData(
-                element.room_section || "",
+                element.room_section || '',
               );
             });
             this.data = res.data;
@@ -421,14 +421,14 @@ export default {
           }
         });
       } else if (this.tab == 3) {
-        this.gradeName = "Grade 9";
+        this.gradeName = 'Grade 9';
 
-        this.axiosCall("/rooms-section/" + "Grade 9", "GET").then((res) => {
+        this.axiosCall('/rooms-section/' + 'Grade 9', 'GET').then((res) => {
           if (res) {
-            console.log("Love", res.data);
+            console.log('Love', res.data);
             res.data.forEach((element, i) => {
               res.data[i].room_section = this.toUpperCaseData(
-                element.room_section || "",
+                element.room_section || '',
               );
             });
             this.data = res.data;
@@ -436,14 +436,14 @@ export default {
           }
         });
       } else if (this.tab == 4) {
-        this.gradeName = "Grade 10";
+        this.gradeName = 'Grade 10';
 
-        this.axiosCall("/rooms-section/" + "Grade 10", "GET").then((res) => {
+        this.axiosCall('/rooms-section/' + 'Grade 10', 'GET').then((res) => {
           if (res) {
-            console.log("Love", res.data);
+            console.log('Love', res.data);
             res.data.forEach((element, i) => {
               res.data[i].room_section = this.toUpperCaseData(
-                element.room_section || "",
+                element.room_section || '',
               );
             });
             this.data = res.data;
@@ -451,14 +451,14 @@ export default {
           }
         });
       } else if (this.tab == 5) {
-        this.gradeName = "Grade 11";
+        this.gradeName = 'Grade 11';
 
-        this.axiosCall("/rooms-section/" + "Grade 11", "GET").then((res) => {
+        this.axiosCall('/rooms-section/' + 'Grade 11', 'GET').then((res) => {
           if (res) {
-            console.log("Love", res.data);
+            console.log('Love', res.data);
             res.data.forEach((element, i) => {
               res.data[i].room_section = this.toUpperCaseData(
-                element.room_section || "",
+                element.room_section || '',
               );
             });
             this.data = res.data;
@@ -466,14 +466,14 @@ export default {
           }
         });
       } else if (this.tab == 6) {
-        this.gradeName = "Grade 12";
+        this.gradeName = 'Grade 12';
 
-        this.axiosCall("/rooms-section/" + "Grade 12", "GET").then((res) => {
+        this.axiosCall('/rooms-section/' + 'Grade 12', 'GET').then((res) => {
           if (res) {
-            console.log("Love", res.data);
+            console.log('Love', res.data);
             res.data.forEach((element, i) => {
               res.data[i].room_section = this.toUpperCaseData(
-                element.room_section || "",
+                element.room_section || '',
               );
             });
             this.data = res.data;
@@ -485,21 +485,21 @@ export default {
     dummyGenerate() {
       let filter = this.$store.getters.getFilterSelected;
       this.axiosCall(
-        "/enroll-student/getSchoolYear/toGenerate/" +
+        '/enroll-student/getSchoolYear/toGenerate/' +
           this.gradeName +
-          "/" +
+          '/' +
           filter,
-        "GET",
+        'GET',
       ).then((res) => {
         this.conflict = res.data[0].conflict;
 
-        console.log("Strand Conflict", this.conflict);
+        console.log('Strand Conflict', this.conflict);
         if (this.conflict == 0) {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
           this.fadeAwayMessage.message =
-            "No Student Enrolled in this School Year or Grade Level";
+            'No Student Enrolled in this School Year or Grade Level';
         } else {
           this.generateSeniorClassRecord = true;
           this.getAllStrand();
@@ -509,47 +509,47 @@ export default {
     generateByStrand() {
       let filter = this.$store.getters.getFilterSelected;
       this.axiosCall(
-        "/rooms-section/getConflictStrand/" +
+        '/rooms-section/getConflictStrand/' +
           this.gradeName +
-          "/" +
+          '/' +
           filter +
-          "/" +
+          '/' +
           this.strandId,
-        "GET",
+        'GET',
       ).then((res) => {
-        console.log("conflict", res.data);
+        console.log('conflict', res.data);
 
         if (res.data != 0) {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
           this.fadeAwayMessage.message =
-            "Please select another strand to generate, class list already exist!";
+            'Please select another strand to generate, class list already exist!';
         } else {
-          console.log("wala pa");
+          console.log('wala pa');
           this.axiosCall(
-            "/rooms-section/genStrandRecord/seniorHigh/" +
+            '/rooms-section/genStrandRecord/seniorHigh/' +
               this.gradeName +
-              "/" +
+              '/' +
               filter +
-              "/" +
+              '/' +
               this.strandId,
-            "POST",
+            'POST',
           ).then((res) => {
             if (res) {
               if (res.data.status == 201) {
                 this.dialog = false;
                 this.fadeAwayMessage.show = true;
-                this.fadeAwayMessage.type = "success";
-                this.fadeAwayMessage.header = "System Message";
+                this.fadeAwayMessage.type = 'success';
+                this.fadeAwayMessage.header = 'System Message';
                 this.fadeAwayMessage.message = res.data.msg;
                 this.confirmDialog = false;
                 this.initialize();
               } else if (res.data.status == 400) {
                 this.confirmDialog = false;
                 this.fadeAwayMessage.show = true;
-                this.fadeAwayMessage.type = "error";
-                this.fadeAwayMessage.header = "System Message";
+                this.fadeAwayMessage.type = 'error';
+                this.fadeAwayMessage.header = 'System Message';
                 this.fadeAwayMessage.message = res.data.msg;
               }
             }
@@ -561,185 +561,185 @@ export default {
     generateClassRecord() {
       let filter = this.$store.getters.getFilterSelected;
       this.axiosCall(
-        "/enroll-student/getSchoolYear/toGenerate/" +
+        '/enroll-student/getSchoolYear/toGenerate/' +
           this.gradeName +
-          "/" +
+          '/' +
           filter,
-        "GET",
+        'GET',
       ).then((res) => {
         if (res) {
           this.conflict = res.data[0].conflict;
 
           if (this.conflict == 0) {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message =
-              "No Student Enrolled in this School Year or Grade Level";
+              'No Student Enrolled in this School Year or Grade Level';
           } else {
             if (this.tab == 1) {
-              this.gradeName = "Grade 7";
+              this.gradeName = 'Grade 7';
               this.axiosCall(
-                "/rooms-section/generateClassRecord/byGrade/level/" +
+                '/rooms-section/generateClassRecord/byGrade/level/' +
                   this.gradeName +
-                  "/" +
+                  '/' +
                   filter,
-                "POST",
+                'POST',
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
                     this.dialog = false;
                     this.fadeAwayMessage.show = true;
-                    this.fadeAwayMessage.type = "success";
-                    this.fadeAwayMessage.header = "System Message";
+                    this.fadeAwayMessage.type = 'success';
+                    this.fadeAwayMessage.header = 'System Message';
                     this.fadeAwayMessage.message = res.data.msg;
                     this.confirmDialog = false;
                     this.initialize();
                   } else if (res.data.status == 400) {
                     this.confirmDialog = false;
                     this.fadeAwayMessage.show = true;
-                    this.fadeAwayMessage.type = "error";
-                    this.fadeAwayMessage.header = "System Message";
+                    this.fadeAwayMessage.type = 'error';
+                    this.fadeAwayMessage.header = 'System Message';
                     this.fadeAwayMessage.message = res.data.msg;
                   }
                 }
               });
             } else if (this.tab == 2) {
-              this.gradeName = "Grade 8";
+              this.gradeName = 'Grade 8';
 
               this.axiosCall(
-                "/rooms-section/generateClassRecord/byGrade/level/" +
+                '/rooms-section/generateClassRecord/byGrade/level/' +
                   this.gradeName +
-                  "/" +
+                  '/' +
                   filter,
-                "POST",
+                'POST',
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
                     this.dialog = false;
                     this.fadeAwayMessage.show = true;
-                    this.fadeAwayMessage.type = "success";
-                    this.fadeAwayMessage.header = "System Message";
+                    this.fadeAwayMessage.type = 'success';
+                    this.fadeAwayMessage.header = 'System Message';
                     this.fadeAwayMessage.message = res.data.msg;
                     this.confirmDialog = false;
                     this.initialize();
                   } else if (res.data.status == 400) {
                     this.confirmDialog = false;
                     this.fadeAwayMessage.show = true;
-                    this.fadeAwayMessage.type = "error";
-                    this.fadeAwayMessage.header = "System Message";
+                    this.fadeAwayMessage.type = 'error';
+                    this.fadeAwayMessage.header = 'System Message';
                     this.fadeAwayMessage.message = res.data.msg;
                   }
                 }
               });
             } else if (this.tab == 3) {
-              this.gradeName = "Grade 9";
+              this.gradeName = 'Grade 9';
 
               this.axiosCall(
-                "/rooms-section/generateClassRecord/byGrade/level/" +
+                '/rooms-section/generateClassRecord/byGrade/level/' +
                   this.gradeName +
-                  "/" +
+                  '/' +
                   filter,
-                "POST",
+                'POST',
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
                     this.dialog = false;
                     this.fadeAwayMessage.show = true;
-                    this.fadeAwayMessage.type = "success";
-                    this.fadeAwayMessage.header = "System Message";
+                    this.fadeAwayMessage.type = 'success';
+                    this.fadeAwayMessage.header = 'System Message';
                     this.fadeAwayMessage.message = res.data.msg;
                     this.confirmDialog = false;
                     this.initialize();
                   } else if (res.data.status == 400) {
                     this.confirmDialog = false;
                     this.fadeAwayMessage.show = true;
-                    this.fadeAwayMessage.type = "error";
-                    this.fadeAwayMessage.header = "System Message";
+                    this.fadeAwayMessage.type = 'error';
+                    this.fadeAwayMessage.header = 'System Message';
                     this.fadeAwayMessage.message = res.data.msg;
                   }
                 }
               });
             } else if (this.tab == 4) {
-              this.gradeName = "Grade 10";
+              this.gradeName = 'Grade 10';
 
               this.axiosCall(
-                "/rooms-section/generateClassRecord/byGrade/level/" +
+                '/rooms-section/generateClassRecord/byGrade/level/' +
                   this.gradeName +
-                  "/" +
+                  '/' +
                   filter,
-                "POST",
+                'POST',
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
                     this.dialog = false;
                     this.fadeAwayMessage.show = true;
-                    this.fadeAwayMessage.type = "success";
-                    this.fadeAwayMessage.header = "System Message";
+                    this.fadeAwayMessage.type = 'success';
+                    this.fadeAwayMessage.header = 'System Message';
                     this.fadeAwayMessage.message = res.data.msg;
                     this.confirmDialog = false;
                     this.initialize();
                   } else if (res.data.status == 400) {
                     this.confirmDialog = false;
                     this.fadeAwayMessage.show = true;
-                    this.fadeAwayMessage.type = "error";
-                    this.fadeAwayMessage.header = "System Message";
+                    this.fadeAwayMessage.type = 'error';
+                    this.fadeAwayMessage.header = 'System Message';
                     this.fadeAwayMessage.message = res.data.msg;
                   }
                 }
               });
             } else if (this.tab == 5) {
-              this.gradeName = "Grade 11";
+              this.gradeName = 'Grade 11';
 
               this.axiosCall(
-                "/rooms-section/generateClassRecord/byGrade/level/" +
+                '/rooms-section/generateClassRecord/byGrade/level/' +
                   this.gradeName +
-                  "/" +
+                  '/' +
                   filter,
-                "POST",
+                'POST',
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
                     this.dialog = false;
                     this.fadeAwayMessage.show = true;
-                    this.fadeAwayMessage.type = "success";
-                    this.fadeAwayMessage.header = "System Message";
+                    this.fadeAwayMessage.type = 'success';
+                    this.fadeAwayMessage.header = 'System Message';
                     this.fadeAwayMessage.message = res.data.msg;
                     this.confirmDialog = false;
                     this.initialize();
                   } else if (res.data.status == 400) {
                     this.confirmDialog = false;
                     this.fadeAwayMessage.show = true;
-                    this.fadeAwayMessage.type = "error";
-                    this.fadeAwayMessage.header = "System Message";
+                    this.fadeAwayMessage.type = 'error';
+                    this.fadeAwayMessage.header = 'System Message';
                     this.fadeAwayMessage.message = res.data.msg;
                   }
                 }
               });
             } else if (this.tab == 6) {
-              this.gradeName = "Grade 12";
+              this.gradeName = 'Grade 12';
 
               this.axiosCall(
-                "/rooms-section/generateClassRecord/byGrade/level/" +
+                '/rooms-section/generateClassRecord/byGrade/level/' +
                   this.gradeName +
-                  "/" +
+                  '/' +
                   filter,
-                "POST",
+                'POST',
               ).then((res) => {
                 if (res) {
                   if (res.data.status == 201) {
                     this.dialog = false;
                     this.fadeAwayMessage.show = true;
-                    this.fadeAwayMessage.type = "success";
-                    this.fadeAwayMessage.header = "System Message";
+                    this.fadeAwayMessage.type = 'success';
+                    this.fadeAwayMessage.header = 'System Message';
                     this.fadeAwayMessage.message = res.data.msg;
                     this.confirmDialog = false;
                     this.initialize();
                   } else if (res.data.status == 400) {
                     this.confirmDialog = false;
                     this.fadeAwayMessage.show = true;
-                    this.fadeAwayMessage.type = "error";
-                    this.fadeAwayMessage.header = "System Message";
+                    this.fadeAwayMessage.type = 'error';
+                    this.fadeAwayMessage.header = 'System Message';
                     this.fadeAwayMessage.message = res.data.msg;
                   }
                 }
@@ -775,10 +775,10 @@ export default {
       let filter = this.$store.getters.getFilterSelected;
 
       if (this.tab == 1) {
-        this.gradeName = "Grade 7";
+        this.gradeName = 'Grade 7';
         this.axiosCall(
-          "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET",
+          '/rooms-section/getCountGen/' + this.gradeName + '/' + filter,
+          'GET',
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -787,11 +787,11 @@ export default {
           }
         });
       } else if (this.tab == 2) {
-        this.gradeName = "Grade 8";
+        this.gradeName = 'Grade 8';
 
         this.axiosCall(
-          "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET",
+          '/rooms-section/getCountGen/' + this.gradeName + '/' + filter,
+          'GET',
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -800,11 +800,11 @@ export default {
           }
         });
       } else if (this.tab == 3) {
-        this.gradeName = "Grade 9";
+        this.gradeName = 'Grade 9';
 
         this.axiosCall(
-          "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET",
+          '/rooms-section/getCountGen/' + this.gradeName + '/' + filter,
+          'GET',
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -813,11 +813,11 @@ export default {
           }
         });
       } else if (this.tab == 4) {
-        this.gradeName = "Grade 10";
+        this.gradeName = 'Grade 10';
 
         this.axiosCall(
-          "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET",
+          '/rooms-section/getCountGen/' + this.gradeName + '/' + filter,
+          'GET',
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -826,11 +826,11 @@ export default {
           }
         });
       } else if (this.tab == 5) {
-        this.gradeName = "Grade 11";
+        this.gradeName = 'Grade 11';
 
         this.axiosCall(
-          "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET",
+          '/rooms-section/getCountGen/' + this.gradeName + '/' + filter,
+          'GET',
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -839,11 +839,11 @@ export default {
           }
         });
       } else if (this.tab == 6) {
-        this.gradeName = "Grade 12";
+        this.gradeName = 'Grade 12';
 
         this.axiosCall(
-          "/rooms-section/getCountGen/" + this.gradeName + "/" + filter,
-          "GET",
+          '/rooms-section/getCountGen/' + this.gradeName + '/' + filter,
+          'GET',
         ).then((res) => {
           if (res) {
             this.generatedCount = res.data[0].count_gen;
@@ -856,24 +856,36 @@ export default {
 
     add() {
       this.RoomData = [{ id: null }];
-      this.action = "Add";
+      this.action = 'Add';
     },
     editItem(item) {
       this.RoomData = item;
-      this.action = "Update";
+      this.action = 'Update';
     },
     printClassList(item) {
-      console.log(item);
-      this.fadeAwayMessage.show = true;
-      this.fadeAwayMessage.type = "info";
-      this.fadeAwayMessage.header = "System Message";
-      this.fadeAwayMessage.message = "This Feature is to be followed";
+      // console.log(item);
+      // this.fadeAwayMessage.show = true;
+      // this.fadeAwayMessage.type = "info";
+      // this.fadeAwayMessage.header = "System Message";
+      // this.fadeAwayMessage.message = "This Feature is to be followed";
+      let filter = this.$store.getters.getFilterSelected;
+      window.open(
+        process.env.VUE_APP_SERVER +
+          '/pdf-generator/getAllStudenList/' +
+          filter +
+          '/' +
+          item.id +
+          '/' +
+          this.gradeName +
+          '',
+        '_blank',
+      );
     },
 
     addStudent(item) {
       let filter = this.$store.getters.getFilterSelected;
       this.taggingData = item;
-      this.action = "View";
+      this.action = 'View';
       this.passfilter = filter;
     },
     viewApplicant(item) {
@@ -887,29 +899,29 @@ export default {
     viewItem(item) {
       if (this.tab == 1) {
         this.RoomData = item;
-        this.action = "View";
+        this.action = 'View';
       } else {
         this.designationData = item;
-        this.action = "View";
+        this.action = 'View';
       }
     },
 
     deleteItem() {
-      this.axiosCall("/rooms-section/" + this.deleteData.id, "DELETE").then(
+      this.axiosCall('/rooms-section/' + this.deleteData.id, 'DELETE').then(
         (res) => {
           if (res.data.status == 200) {
             this.dialog = false;
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "success";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'success';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
             this.confirmDialog = false;
             this.initialize();
           } else if (res.data.status == 400) {
             this.confirmDialog = false;
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
           }
         },
@@ -921,7 +933,7 @@ export default {
     },
 
     getAllStrand() {
-      this.axiosCall("/rooms-section/AllStrand/Data/strand", "GET").then(
+      this.axiosCall('/rooms-section/AllStrand/Data/strand', 'GET').then(
         (res) => {
           if (res) {
             let data = [];
@@ -936,7 +948,7 @@ export default {
               data.push(arr);
             }
             this.strandList = data;
-            console.log("All Strand", res.data);
+            console.log('All Strand', res.data);
           }
         },
       );

@@ -232,7 +232,7 @@
           style="border: 1px solid pink; border-radius: 10px"
         >
           <div class="text-center">
-            <strong>VISSION</strong>
+            <strong>VISION</strong>
           </div>
           <div class="text-justify">
             <p class="text-grey">
@@ -497,7 +497,8 @@ export default {
       });
     },
     getEventsExcepMandatory() {
-      this.axiosCall('/school-events/getEventsExcepMandatory', 'GET').then(
+      // this.axiosCall('/school-events/getEventsExcepMandatory', 'GET').then(
+      this.axiosCall('/school-events/getEventsWithMandatory', 'GET').then(
         (res) => {
           if (res.data) {
             let data = res.data;

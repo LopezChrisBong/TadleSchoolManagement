@@ -55,6 +55,7 @@
         <template v-slot:[`item.actions`]="{ item }">
           <div class="d-flex">
             <v-btn
+              v-if="item.graded == 1"
               x-small
               color="white"
               class="black--text mx-1"
@@ -115,7 +116,7 @@
     <!-- Delete Confirmation Dialog -->
     <v-dialog v-model="dialogConfirmDelete" max-width="500">
       <v-card>
-        <v-card-title class="text-h6">Confirm Deletion</v-card-title>
+        <v-card-title class="text-h6">Confirm Delete!</v-card-title>
         <v-card-text>
           Are you sure you want to delete this student?
         </v-card-text>
@@ -134,7 +135,7 @@
     <!-- Delete Confirmation Dialog -->
     <v-dialog v-model="dialogConfirmDrop" max-width="500">
       <v-card>
-        <v-card-title class="text-h6">Confirm Drop</v-card-title>
+        <v-card-title class="text-h6">Confirm Drop!</v-card-title>
         <v-card-text> Are you sure you want to drop this student? </v-card-text>
         <v-card-actions>
           <v-spacer />

@@ -854,9 +854,20 @@ export class RoomsSectionService {
           ])
           .where('RS.teacherId = :teacherId', { teacherId: userID })
           .getRawMany();
-        // console.log('NEW DAR', userData);
         return userData;
       } else {
+        for (let i = 0; i < data.length; i++) {
+          let grades = await this.dataSource
+            .createQueryBuilder(StudentQuarterFinalGrade, 'sq')
+            .where('school_yearID = :filter', { filter })
+            .andWhere('studentID = :studentID', {
+              studentID: data[i].studentId,
+            })
+            .getMany();
+          Object.assign(data[i], { graded: grades.length > 0 ? 1 : 0 });
+        }
+
+        console.log('NEW DAR', data);
         return data;
       }
     } catch (error) {

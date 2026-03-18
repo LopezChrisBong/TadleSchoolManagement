@@ -279,6 +279,7 @@ export default {
       tableItems: [],
       headers: [
         { title: 'Student Name', value: 'name', align: 'start' },
+        { title: 'LRN', value: 'lrnNo', align: 'center' },
         {
           title: 'Action',
           value: 'actions',

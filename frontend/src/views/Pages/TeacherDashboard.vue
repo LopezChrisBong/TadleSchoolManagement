@@ -211,7 +211,7 @@
 
           <v-list density="compact">
             <v-list-item
-              v-for="(m, i) in misbehaveList"
+              v-for="(m, i) in paginatedMisbehave"
               :key="i"
               class="border-bottom"
             >
@@ -221,13 +221,38 @@
 
               <v-chip
                 size="x-small"
-                :color="m.status == 0 ? 'red' : 'green'"
+                :color="
+                  m.status == 0
+                    ? 'yellow'
+                    : m.status == 1
+                    ? 'orange'
+                    : m.status == 2
+                    ? 'red'
+                    : 'green'
+                "
                 variant="flat"
               >
-                {{ m.status == 0 ? 'Pending' : 'Resolve' }}
+                {{
+                  m.status == 0
+                    ? 'Adviser Review'
+                    : m.status == 1
+                    ? 'Prefect Review'
+                    : m.status == 2
+                    ? 'Parent Review'
+                    : 'Resolved'
+                }}
               </v-chip>
             </v-list-item>
           </v-list>
+
+          <!-- Pagination -->
+          <div class="d-flex justify-center pa-4">
+            <v-pagination
+              v-model="misPage"
+              :length="misPageCount"
+              total-visible="5"
+            />
+          </div>
         </v-card>
 
         <!-- ALERTS -->
@@ -237,15 +262,24 @@
           </v-card-title>
 
           <v-list density="compact">
-            <v-list-item v-for="(a, i) in alertStudents" :key="i">
+            <v-list-item v-for="(a, i) in paginatedAlerts" :key="i">
               <v-icon color="orange" class="me-2">mdi-alert</v-icon>
               {{
                 a.transmuted_grade
-                  ? 'At-Risk:' + a.name + ', ' + a.remarks
-                  : 'Lardo:' + a.name + ', ' + a.remarks
+                  ? 'At-Risk: ' + a.name + ', ' + a.remarks
+                  : 'Lardo: ' + a.name + ', ' + a.remarks
               }}
             </v-list-item>
           </v-list>
+
+          <!-- Pagination -->
+          <div class="d-flex justify-center pa-4">
+            <v-pagination
+              v-model="page"
+              :length="pageCount"
+              total-visible="5"
+            />
+          </div>
         </v-card>
 
         <!-- NOTIFICATIONS -->
@@ -270,6 +304,10 @@
 export default {
   data() {
     return {
+      page: 1,
+      itemsPerPage: 10,
+      misPage: 1,
+      misItemsPerPage: 10,
       search: '',
       roomList: [],
       atRiskCount: null,
@@ -337,6 +375,25 @@ export default {
   watch: {
     '$store.getters.getFilterSelected'() {
       this.initialize();
+    },
+  },
+  computed: {
+    paginatedAlerts() {
+      const start = (this.page - 1) * this.itemsPerPage;
+      const end = start + this.itemsPerPage;
+      return this.alertStudents.slice(start, end);
+    },
+    pageCount() {
+      return Math.ceil(this.alertStudents.length / this.itemsPerPage);
+    },
+    // MISBEHAVIOR pagination
+    paginatedMisbehave() {
+      const start = (this.misPage - 1) * this.misItemsPerPage;
+      const end = start + this.misItemsPerPage;
+      return this.misbehaveList.slice(start, end);
+    },
+    misPageCount() {
+      return Math.ceil(this.misbehaveList.length / this.misItemsPerPage);
     },
   },
   methods: {

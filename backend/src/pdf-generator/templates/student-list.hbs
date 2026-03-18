@@ -1,0 +1,231 @@
+<html lang='en'>
+
+  <head>
+    <meta charset='UTF-8' />
+    <meta http-equiv='X-UA-Compatible' content='IE=edge' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Document</title>
+    <style>
+      /**body { font-family: 'Liberation Sans'; }*/ .container{ width: 100%;
+      margin: 0 auto; } .header { position: fixed; top: 0px; left: 0px; right:
+      0px; height: 100px; } .footer { position: fixed; bottom: 0px; left: 0px;
+      right: 0px; height: 120px; } body { font-family: 'Arial' } table{ width:
+      100%; } table,th, td { page-break-inside: auto; } .strong { font-weight:
+      bold; } .bordered { border: 1px solid black; } .font-10 { font-size: 10px;
+      } .font-12 { font-size: 12px; } .font-14 {font-size: 14px; } .font-16 {
+      font-size: 16px; } .font-18 { font-size:18px; }.font-24 { font-size:24px;
+      } .extra-spacing-tr { height: 20px; } .header { height: 60px; } tr
+      {page-break-inside: avoid; page-break-after: auto; } thead {
+      display:table-header-group; } tfoot { display: table-footer-group; }
+      .to_title{ margin-top: 0px;}.to_title_div{ text-align: center; }
+      .to_content{page-break-inside: auto; margin-top: 120px; margin-left: 40px;
+      margin-right: 40px; } .to_number{margin-right: 100px;} .employee_table{
+      }.recommending_approval{ display: flex; justify-content: space-between; }
+      .underline{ border-bottom:1px solid black } #eval_table tr td, #eval_table
+      tr th{ padding: 8px; } #f_table
+      th,#f_table td,#eval_table th,#eval_table td{ border: 1px solid black; }
+      #f_table,#eval_table, #mySched{ border-collapse: collapse; } 
+      #eval_table{ border: 1px solid black; } #mySched  td{ border:
+      1px solid black; padding: 2px;width:  11.11%;} 
+      table {
+          page-break-inside: auto;
+        }
+
+        tr {
+          page-break-inside: avoid;
+          page-break-after: auto;
+        }
+
+        thead {
+          display: table-header-group;
+        }
+
+        tfoot {
+          display: table-footer-group;
+        }
+    </style>
+  </head>
+
+  <body>
+    {{#each this}}
+
+      <div class='container'>
+        <div class='header'>
+          <img
+            src='data:image/png;base64, {{header_img}}'
+            width='100%'
+            height="90px"
+            alt=''
+          />
+
+        </div>
+        <div class='footer'>
+
+          {{!-- <img
+            style='position:fixed; bottom:0; left:0;right:0;'
+            src='data:image/png;base64, {{footer_img}}'
+            width='100%'
+            alt=''
+          /> --}}
+        </div>
+
+        
+          <div style='width: 100%;'>
+            <table
+              style='margin:0 auto; width: 100%; page-break-inside:auto; table-layout:fixed'
+            >
+              <thead>
+                <tr>
+                  <td colspan='2'>
+                    <div style='height: 90px;'></div>
+                  </td>
+                </tr>
+              </thead>
+              <tfoot>
+                <tr>
+                  <td colspan='2'>
+                    <div style='height: 80px;'></div>
+
+                  </td>
+                </tr>
+              </tfoot>
+        
+              <tbody class=""> 
+                <tr >
+                    <td colspan="2" style="font-weight: bold; text-transform:uppercase">List of Students</td>
+                </tr>
+                <tr>
+                  <td colspan='2'>
+                  <table id="eval_table" style="width:100%;">
+                    <tr>
+                      <td align="center" class="font-12" style=" width:10%;">#</td>
+                      <td align="center" class="font-12" style=" width:60%;">Name</td>
+                      <td align="center" class="font-12" style=" width:30%;">Sex</td>
+                      <td align="center" class="font-12" style=" width:30%;">LRN</td>
+                    </tr>
+
+                    {{#each rawData_male}}
+                      <tr>
+                        <td align="center" class="font-12" style="text-transform: uppercase; width:20px;">{{plusOne @index}}</td>
+                        <td class="font-12" style="text-transform: uppercase;">{{name}}</td>
+                        <td align="center" class="font-12">{{sex}}</td>
+                        <td align="center" class="font-12">{{lrnNo}}</td>
+                      </tr>
+                    {{/each}}
+                  </table>
+                </tr>
+                   <tr>
+                  <td colspan='1'>
+                  <table id="eval_table" style="width:100%;">
+                    <tr>
+                      <td align="center" class="font-12" style=" width:60%;">Total Number of Male</td>
+                      <td align="center" class="font-12" style=" width:40%;">{{count_male}}</td>
+                    </tr>
+
+                  </table>
+                </tr>
+                  <tr>
+                  <td colspan='2'>
+                  <table id="eval_table" style="width:100%;">
+                    <tr>
+                      <td align="center" class="font-12" style=" width:10%;">#</td>
+                      <td align="center" class="font-12" style=" width:60%;">Name</td>
+                      <td align="center" class="font-12" style=" width:30%;">Sex</td>
+                      <td align="center" class="font-12" style=" width:30%;">LRN</td>
+                    </tr>
+
+                    {{#each rawData_female}}
+                      <tr>
+                        <td class="font-12" style="text-transform: uppercase; width:20px;">{{plusOne @index}}</td>
+                        <td class="font-12" style="text-transform: uppercase;">{{name}}</td>
+                        <td align="center" class="font-12">{{sex}}</td>
+                        <td align="center" class="font-12">{{lrnNo}}</td>
+                      </tr>
+                    {{/each}}
+                  </table>
+                </tr>
+                <tr>
+                  <td colspan='1'>
+                  <table id="eval_table" style="width:100%;">
+                    <tr>
+                      <td align="center" class="font-12" style=" width:60%;">Total Number of Female</td>
+                      <td align="center" class="font-12" style=" width:40%;">{{count_female}}</td>
+                    </tr>
+
+                  </table>
+                </tr>
+                 <tr>
+                  <td colspan='2'>
+                  <table id="eval_table" style="width:100%;">
+                    <tr>
+                      <td align="center" class="font-12" style=" width:35%;">Total Number of Male</td>
+                      <td align="center" class="font-12" style=" width:35%;">Total Number of Female</td>
+                      <td align="center" class="font-12" style=" width:30%;">Total Number Student</td>
+                    </tr>
+                     <tr>
+                      <td align="center" class="font-12" >{{count_male}}</td>
+                      <td align="center" class="font-12" >{{count_female}}</td>
+                      <td align="center" class="font-12" >{{total_student}}</td>
+                    </tr>
+
+                  </table>
+                </tr>
+           <tr class="font-12"> 
+                    <td  colspan="2">
+                      <div style="display: flex; justify-content: space-between; padding:1rem">
+                      <div >
+                        <div>
+                           Prepared by:
+                        </div>
+                        <div style="margin-left: 3rem; margin-top:0.5rem; ">
+                          <u style="text-transform:uppercase">{{teacherName.name}}</u><br> Adviser
+                        </div>
+                       
+                      </div>
+                      <div>
+                        <div>
+                          Noted by:
+                        </div>
+                        
+                        <div style="margin-left: 3rem; margin-top:0.5rem">
+                          <u>TOMOTEO T. CAPADNGAN</u><br>School Head
+                          
+                        </div>
+                      </div>
+                      
+                      </div>
+                    
+                    </td>
+                  
+                </tr>
+                <tr class="font-12"> 
+                    <td  colspan="2">
+                      <div style="display: flex; justify-content:center ;padding: 0.5rem">
+                        <div >
+                          <div>
+                            Approved by:
+                          </div>
+                          <div style="margin-left: 3rem; margin-top:0.5rem">
+                         
+                            <div>
+                              <u>REYNALDO B. MELLORIDA, CESO V</u>
+                            </div>
+                           <div>
+                            School Division Superintendent
+                           </div>
+                          </div>
+                      </div>
+                      </div>
+                    
+                    </td>
+                  
+                </tr>
+             
+              </tbody>
+            </table>
+          </div>
+      </div>
+    {{/each}}
+  </body>
+
+</html>

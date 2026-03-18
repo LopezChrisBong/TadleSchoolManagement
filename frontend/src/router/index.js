@@ -43,6 +43,7 @@ import ParentChildren from '../views/Pages/ParentChildren.vue';
 import AdvisoryProgramm from '../views/Pages/AdvisoryProgramm.vue';
 import Events from '../views/Pages/Events.vue';
 import Announcement from '../views/Pages/Announcement.vue';
+import MyReports from '../views/Pages/MyReports.vue';
 // Vue.use(VueRouter);
 
 const routes = [
@@ -401,6 +402,12 @@ const routes = [
         component: Announcement,
         meta: { title: "Announcement", authRequired: true },
       },
+      {
+        path: "my-reports",
+        component: MyReports,
+        meta: { title: "Reported Students", authRequired: true },
+      },
+      
     ],
   },
   //security
