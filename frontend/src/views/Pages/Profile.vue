@@ -154,10 +154,7 @@
                 </v-col>
 
                 <v-col
-                  v-if="
-                    $store.state.user.user.assignedModuleID == 2 ||
-                    $store.state.user.user.assignedModuleID == 21
-                  "
+                  v-if="$store.state.user.user.assignedModuleID != 22"
                   cols="12"
                   sm="auto"
                 >

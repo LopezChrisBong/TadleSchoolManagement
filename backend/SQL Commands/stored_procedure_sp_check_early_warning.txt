@@ -19,6 +19,8 @@ BEGIN
     DECLARE v_grade_level VARCHAR(100);
     DECLARE v_room_name VARCHAR(255);
     DECLARE v_total_grade DECIMAL(5,2);
+    DECLARE v_failed_subjects INT DEFAULT 0;
+    DECLARE v_remarks VARCHAR(255);
 
     -- Require at least 3 grading components
     SELECT COUNT(*)
@@ -33,7 +35,7 @@ BEGIN
 
     IF v_count >= 3 THEN
 
-        -- Get total grade directly (DO NOT depend on status)
+        -- Get total grade
         SELECT total_grade
         INTO v_total_grade
         FROM student_subject_summary
@@ -43,8 +45,29 @@ BEGIN
           AND TRIM(quarter) = TRIM(p_quarter)
         LIMIT 1;
 
-        -- Check if at risk (<75)
-        IF v_total_grade IS NOT NULL AND v_total_grade < 75 THEN
+        -- Proceed if grade is below 80 (covers 75–79 and below 75)
+        IF v_total_grade IS NOT NULL AND v_total_grade < 80 THEN
+
+            -- Count failed subjects (<75)
+            SELECT COUNT(*)
+            INTO v_failed_subjects
+            FROM student_subject_summary
+            WHERE studentID = p_studentID
+              AND school_yearID = p_school_yearID
+              AND TRIM(quarter) = TRIM(p_quarter)
+              AND total_grade < 75;
+
+            -- Determine intervention
+            IF v_total_grade BETWEEN 75 AND 79 THEN
+                SET v_remarks = 'Peer Tutoring & Remedial Support';
+
+            ELSEIF v_total_grade < 75 THEN
+                IF v_failed_subjects >= 3 THEN
+                    SET v_remarks = 'Parent-Teacher Conference + Intensive Intervention';
+                ELSE
+                    SET v_remarks = 'Mandatory Remediation';
+                END IF;
+            END IF;
 
             -- Get transmuted grade
             SELECT tg.transmuted_grade
@@ -104,7 +127,7 @@ BEGIN
                 p_school_yearID,
                 '/parent-children',
                 FALSE,
-                'Early Warning',
+                v_remarks,
                 v_subject_title
             FROM parent_record pr
             WHERE pr.studentID = p_studentID
@@ -117,7 +140,7 @@ BEGIN
             );
 
             -- =============================
-            -- TEACHER NOTIFICATION (FIXED)
+            -- TEACHER NOTIFICATION
             -- =============================
             IF v_teacherID IS NOT NULL THEN
 
@@ -144,7 +167,7 @@ BEGIN
                     p_school_yearID,
                     '/advisory-rooms',
                     FALSE,
-                    'Early Warning',
+                    v_remarks,
                     v_grade_level,
                     v_room_name,
                     v_subject_title,
@@ -158,8 +181,8 @@ BEGIN
                       AND f.school_yearID = p_school_yearID
                       AND TRIM(f.subject_title) = TRIM(v_subject_title)
                 );
-                
-                 INSERT INTO at_risk_student_for_faculty_notification (
+
+                INSERT INTO at_risk_student_for_faculty_notification (
                     studentID,
                     student_name,
                     teacherID,
@@ -182,7 +205,7 @@ BEGIN
                     p_school_yearID,
                     '/students-records',
                     FALSE,
-                    'Early Warning',
+                    v_remarks,
                     v_grade_level,
                     v_room_name,
                     v_subject_title,

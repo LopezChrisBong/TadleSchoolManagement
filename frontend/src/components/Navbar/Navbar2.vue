@@ -1294,6 +1294,9 @@ export default {
         data,
       ).then((res) => {
         if (res.data.status == 200) {
+          // this.$store.commit('SET_ASSIGNED_MODULE', this.newRoleData.id);
+          // this.$store.dispatch('updateAssignedModule', this.newRoleData.id);
+          // this.logout();
           this.isLoading = false;
           location.reload();
         } else if (res.data.status == 400) {

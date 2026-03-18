@@ -306,7 +306,8 @@ export default {
       // } else {
       //   console.log('false', assingedModules);
       // }
-      if (this.userRoleID == 2) {
+      // if (this.userRoleID == 2) {
+      if (assingedModules == 2 || assingedModules == 21) {
         this.axiosCall(
           '/parent-records/getDisciplinaryReport/' +
             this.filter +
@@ -327,7 +328,6 @@ export default {
           }
         });
       } else if (subModules.includes(23) || assingedModules == 23) {
-        console.log('senior');
         this.axiosCall(
           '/parent-records/getPrefectReport/' + this.filter + '/' + this.tab,
           'GET',

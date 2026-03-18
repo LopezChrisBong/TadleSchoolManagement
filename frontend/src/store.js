@@ -24,6 +24,9 @@ const store = createStore({
     getEmp: (state) => state.emp,
   },
   mutations: {
+    SET_ASSIGNED_MODULE(state, moduleID) {
+      state.user.user.assignedModuleID = moduleID;
+    },
     setExpiryDate(state) {
       const date = new Date()
       date.setDate(date.getDate() + 1)
@@ -49,6 +52,9 @@ const store = createStore({
     },
   },
   actions: {
+    updateAssignedModule({ commit }, moduleID) {
+      commit("SET_ASSIGNED_MODULE", moduleID);
+    },
     setThisVue({ commit }, payload) {
       commit('setThisVue', payload)
     },

@@ -207,7 +207,7 @@
                 multiple
                 item-title="name"
                 item-value="id"
-                label="Report Type"
+                label="Tag Student Involved"
                 color="pink"
                 :items="filteredStudentList"
               >

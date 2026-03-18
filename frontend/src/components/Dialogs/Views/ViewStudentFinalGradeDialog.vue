@@ -86,7 +86,7 @@
               style="background-color: blue; color: white; border-radius: 10px"
             >
               <v-icon size="small">mdi-printer</v-icon>
-              Printer All
+              Print All
             </button>
             <button
               class="pa-2"
@@ -94,7 +94,7 @@
               style="background-color: blue; color: white; border-radius: 10px"
             >
               <v-icon size="small">mdi-printer</v-icon>
-              Printer SF10
+              Print SF10
             </button>
             <v-spacer></v-spacer>
             <v-btn color="red" outlined @click="closeD()">
