@@ -31,15 +31,18 @@
           class="mr-2"
           color="primary"
         />
-        <!-- <v-btn
+        <v-btn
           class="me-2"
-          prepend-icon="mdi-plus"
+          prepend-icon="mdi-printer"
           rounded="lg"
+          v-if="
+            $store.state.user.user.assignedModuleID !== 21 &&
+            $store.state.user.user.assignedModuleID !== 2
+          "
           :color="$vuetify.theme.themes.light.submitBtns"
-          text="Add"
-          border
-          @click="add()"
-        ></v-btn> -->
+          text="Print"
+          @click="printRecords()"
+        ></v-btn>
       </v-col>
     </v-row>
 
@@ -78,7 +81,7 @@
             class="my-1"
           >
             <v-icon start size="18"> mdi-eye </v-icon>
-            Report
+            View
           </v-btn>
         </template>
 
@@ -166,15 +169,23 @@
             Close
           </v-btn>
           <v-spacer></v-spacer>
-
+          <v-btn
+            v-if="tab == 1"
+            color="green"
+            class="white--text"
+            variant="flat"
+            @click="submitReport(2)"
+          >
+            Resolve
+          </v-btn>
           <v-btn
             v-if="tab == 1"
             :color="$vuetify.theme.themes.light.submitBtns"
             class="white--text"
             variant="flat"
-            @click="submitReport()"
+            @click="submitReport(1)"
           >
-            Report
+            Submit
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -202,7 +213,7 @@ export default {
       { title: 'Name', value: 'name', align: 'start' },
       { title: 'Reported BY:', value: 'teacher_name', align: 'center' },
       { title: 'Subject', value: 'subject_title', align: 'center' },
-      // { title: 'Grade Level', value: 'grade_level', align: 'center' },
+      { title: 'Grade Level', value: 'grade_level', align: 'center' },
       { title: 'Type', value: 'report_type', align: 'center' },
       { title: 'Tagged Student', value: 'tagged', align: 'center' },
       {
@@ -285,28 +296,35 @@ export default {
       this.userId = this.$store.state.user.id;
       this.userRoleID = this.$store.state.user.user.user_roleID;
       this.filter = this.$store.getters.getFilterSelected;
-      if (this.userRoleID == 2) {
+      this.loading = false;
+
+      let raw = this.$store.state.user.user.subModules;
+
+      let subModules;
+
+      try {
+        subModules = JSON.parse(raw);
+      } catch (e) {
+        subModules = [];
+      }
+      if (!Array.isArray(subModules)) {
+        subModules = [subModules];
+      }
+      let assingedModules = this.$store.state.user.user.assignedModuleID;
+      if (assingedModules == 2 || assingedModules == 21) {
         this.tabList = [
           { id: 1, name: 'Reports', active: true },
           { id: 2, name: 'Submitted', active: false },
+          { id: 3, name: 'Resolved', active: false },
         ];
       } else {
         this.tabList = [
           { id: 1, name: 'Adviser', active: true },
           { id: 2, name: 'Parent', active: false },
+          { id: 3, name: 'Resolved', active: false },
         ];
       }
 
-      this.loading = false;
-
-      let subModules = JSON.parse(this.$store.state.user.user.subModules);
-      let assingedModules = this.$store.state.user.user.assignedModuleID;
-      // if (this.$store.state.user.user.subModules || assingedModules == 23) {
-      //   console.log('true');
-      // } else {
-      //   console.log('false', assingedModules);
-      // }
-      // if (this.userRoleID == 2) {
       if (assingedModules == 2 || assingedModules == 21) {
         this.axiosCall(
           '/parent-records/getDisciplinaryReport/' +
@@ -351,11 +369,31 @@ export default {
       this.studentReportData = item;
       this.reportDialog = true;
     },
-    submitReport() {
-      // alert("submitted");
-      let data = {
-        status: this.userRoleID == 2 ? 1 : 2,
-      };
+    submitReport(num) {
+      let raw = this.$store.state.user.user.subModules;
+
+      let subModules;
+
+      try {
+        subModules = JSON.parse(raw);
+      } catch (e) {
+        subModules = [];
+      }
+      if (!Array.isArray(subModules)) {
+        subModules = [subModules];
+      }
+      let assingedModules = this.$store.state.user.user.assignedModuleID;
+      let data = [];
+      if (num == 1) {
+        data = {
+          status: assingedModules == 2 || assingedModules == 21 ? 1 : 2,
+        };
+      } else {
+        data = {
+          status: assingedModules == 2 || assingedModules == 21 ? 3 : 4,
+        };
+      }
+
       this.axiosCall(
         '/parent-records/updateStudentReport/' +
           this.studentReportData.reportID,
@@ -400,6 +438,9 @@ export default {
           this.initialize();
         },
       );
+    },
+    printRecords() {
+      console.log('love');
     },
   },
 };

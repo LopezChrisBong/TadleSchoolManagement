@@ -18,6 +18,7 @@ import {
   StudentReportDisciplinary,
   Announcement,
   Comments,
+  TeacherGradeLevel,
 } from 'src/entities';
 import { Brackets, DataSource, Repository } from 'typeorm';
 import { CreateStudentReportDisciplinaryDto } from './dto/create-student-report-disciplinary.dto';
@@ -422,8 +423,11 @@ export class ParentRecordsService {
     if (tab == 1) {
       data.andWhere('SRD.status = 0');
       data.orderBy('SRD.created_at', 'DESC');
-    } else {
-      data.andWhere('SRD.status != 0');
+    } else if (tab == 2) {
+      data.andWhere('SRD.status = 1');
+      data.orderBy('SRD.created_at', 'DESC');
+    } else if (tab == 3) {
+      data.andWhere('SRD.status = 3');
       data.orderBy('SRD.created_at', 'DESC');
     }
     const results = await data.getRawMany();
@@ -472,8 +476,101 @@ export class ParentRecordsService {
     return finalResults;
   }
 
-  async getPrefectReport(filter: number, tab: number) {
-    console.log(filter, tab);
+  async getMyReport(filter: number, teacherID: number) {
+    const data = this.dataSource.manager
+      .createQueryBuilder(EnrollStudent, 'ES')
+      .select([
+        "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
+        "IF (!ISNULL(UD.mname)  AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ',SUBSTRING(UD.mname, 1, 1) ,'. ',UD.lname) ,concat(UD.fname, ' ', UD.lname)) as teacher_name",
+        'ES.id as id',
+        'SRD.id as reportID',
+        'ES.fname as fname',
+        'ES.mname as mname',
+        'ES.lname as lname',
+        'ES.suffix as suffix',
+        'ES.bdate as bdate',
+        'ES.sex as sex',
+        'ES.civil_status as civil_status',
+        'ES.school_yearId as school_yearId',
+        'ES.grade_level as grade_level',
+        'ES.statusEnrolled as statusEnrolled',
+        'SRD.report_type as report_type',
+        'SRD.report_description as report_description',
+        'S.subject_title as subject_title',
+        'RS.room_section as room_section',
+        'SRD.tag_students as tag_students',
+        'SRD.status as status',
+      ])
+      .leftJoin(StudentReportDisciplinary, 'SRD', 'SRD.studentID = ES.id')
+      .leftJoin(RoomsSection, 'RS', 'RS.id = SRD.roomID')
+      .leftJoin(UserDetail, 'UD', 'UD.id = SRD.teacherID')
+      .leftJoin(Subject, 'S', 'S.id = SRD.subjectID')
+      .where('SRD.school_yearID = :filter', { filter })
+      .andWhere('RS.teacherId = :teacherID', { teacherID })
+      .orderBy('SRD.created_at', 'DESC');
+
+    const results = await data.getRawMany();
+
+    if (!results.length) return results;
+
+    let allTaggedIds: number[] = [];
+
+    results.forEach((r) => {
+      if (r.tag_students) {
+        const parsed = JSON.parse(r.tag_students);
+        allTaggedIds.push(...parsed.map((id) => Number(id)));
+      }
+    });
+
+    allTaggedIds = [...new Set(allTaggedIds)];
+
+    let taggedStudentsMap = {};
+
+    if (allTaggedIds.length > 0) {
+      const taggedStudents = await this.dataSource
+        .createQueryBuilder(EnrollStudent, 'ES')
+        .select(['ES.id as id', "CONCAT(ES.fname, ' ', ES.lname) as name"])
+        .where('ES.id IN (:...ids)', { ids: allTaggedIds })
+        .getRawMany();
+
+      taggedStudents.forEach((s) => {
+        taggedStudentsMap[s.id] = s;
+      });
+    }
+
+    const finalResults = results.map((r) => {
+      let tagged = [];
+
+      if (r.tag_students) {
+        const parsed = JSON.parse(r.tag_students);
+        tagged = parsed.map((id) => taggedStudentsMap[id]).filter(Boolean);
+      }
+
+      return {
+        ...r,
+        tagged,
+      };
+    });
+    // console.log(finalResults[0].tagged);
+    return finalResults;
+  }
+
+  async getPrefectReport(filter: number, tab: number, curr_user: any) {
+    let getGrades = await this.dataSource
+      .createQueryBuilder(TeacherGradeLevel, 'tg')
+      .where('tg.teachersId = :teacherID', {
+        teacherID: curr_user.userdetail.id,
+      })
+      .getMany();
+    let gradeArr = [];
+
+    for (let i = 0; i < getGrades.length; i++) {
+      gradeArr.push({
+        grade_level: `Grade ${getGrades[i].grade_level}`,
+      });
+    }
+    let gradeArrs = gradeArr.map((g) => g.grade_level);
+
     const data = this.dataSource.manager
       .createQueryBuilder(EnrollStudent, 'ES')
       .select([
@@ -502,8 +599,10 @@ export class ParentRecordsService {
       .leftJoin(UserDetail, 'UD', 'UD.id = SRD.teacherID')
       .leftJoin(Subject, 'S', 'S.id = SRD.subjectID')
       // .where('ES.statusEnrolled != 0')
-      .where('SRD.school_yearID = :filter', { filter });
-
+      .where('SRD.school_yearID = :filter', { filter })
+      .andWhere('SRD.grade_level IN (:...gradeArrs)', {
+        gradeArrs,
+      });
     // if (roleID == 6) {
     //   data.andWhere('SRD.grade_level IN (:...grades)', {
     //     grades: ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'],
@@ -516,8 +615,11 @@ export class ParentRecordsService {
     if (tab == 1) {
       data.andWhere('SRD.status = 1');
       data.orderBy('SRD.created_at', 'DESC');
-    } else {
+    } else if (tab == 2) {
       data.andWhere('SRD.status = 2');
+      data.orderBy('SRD.created_at', 'DESC');
+    } else if (tab == 3) {
+      data.andWhere('SRD.status = 4');
       data.orderBy('SRD.created_at', 'DESC');
     }
     // .getRawMany();

@@ -986,7 +986,7 @@ export class EnrollStudentService {
     const lardoCount = lardoStudents.length;
 
     const alertStudents = [...lardoStudents, ...atRiskStudents];
-
+    console.log(misbehaveList);
     return {
       data: rooms,
       studentCount,

@@ -87,9 +87,23 @@ export class ParentRecordsController {
     );
   }
 
+  @Get('getMyReport/:filter/:teacherID')
+  getMyReport(
+    @Param('filter') filter: string,
+    @Param('teacherID') teacherID: string,
+  ) {
+    return this.parentRecordsService.getMyReport(+filter, +teacherID);
+  }
+
   @Get('getPrefectReport/:filter/:tab')
-  getPrefectReport(@Param('filter') filter: string, @Param('tab') tab: string) {
-    return this.parentRecordsService.getPrefectReport(+filter, +tab);
+  getPrefectReport(
+    @Param('filter') filter: string,
+    @Param('tab') tab: string,
+    @Headers() headers,
+  ) {
+    var head_str = headers.authorization;
+    const curr_user = currentUser(head_str);
+    return this.parentRecordsService.getPrefectReport(+filter, +tab, curr_user);
   }
 
   @Get('getStudentAchievements/:filter/:studentID')

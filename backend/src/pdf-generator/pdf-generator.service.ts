@@ -115,6 +115,10 @@ hbs.registerHelper('sexFormat', function (value) {
   }
 });
 
+hbs.registerHelper('plusOne', function (value) {
+  return value + 1;
+});
+
 hbs.registerHelper('for', function (from, to, incr, block) {
   var accum = '';
   for (var i = from; i < to; i += incr) accum += block.fn(i);
@@ -429,7 +433,7 @@ export class PdfGeneratorService {
       {
         header_img: this.base64_encode(headerImg, 'headerfooter'),
         footer_img: this.base64_encode(footerImg, 'headerfooter'),
-        mySched: mySched,
+        mySched: mySched ? mySched : [],
         year: filter,
         teacherName: teacherName,
         // month:getmonth
@@ -764,7 +768,7 @@ export class PdfGeneratorService {
         footer_img: this.base64_encode(footerImg, 'headerfooter'),
         student: arr[0],
         gradeLevel: gradeLevel,
-        studentData: studentData,
+        studentData: studentData ? studentData : [],
         junior: junior,
         // name:gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12'? arr[0].name: arr.name,
       },
@@ -2249,6 +2253,96 @@ export class PdfGeneratorService {
           right: '0.10in',
         },
         landscape: true,
+        printBackground: true,
+      });
+      await browser.close();
+      return buffer;
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async getAllStudenList(filter: number, id: number, grade: string) {
+    let rawData_male = await this.dataSource.manager
+      .createQueryBuilder(StudentList, 'SL')
+      .select([
+        '*',
+        'SL.id as studentListId',
+        "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ',SUBSTRING(ES.mname, 1, 1) ,' ',ES.fname) ,concat(ES.lname, ' ', ES.fname)) as name",
+        "IF (!ISNULL(ES.guardian_mname)  AND LOWER(ES.guardian_mname) != 'n/a', concat(ES.guardian_fname, ' ',SUBSTRING(ES.guardian_mname, 1, 1) ,' ',ES.guardian_lname) ,concat(ES.guardian_fname, ' ', ES.guardian_lname)) as guardian_name",
+      ])
+      .leftJoin(RoomsSection, 'room', 'room.id = SL.roomId')
+      .leftJoin(EnrollStudent, 'ES', 'ES.id = SL.studentId')
+      .where('SL.school_yearId = "' + filter + '"')
+      .andWhere('ES.sex = "Male"')
+      .andWhere('SL.grade_level = "' + grade + '"')
+      .andWhere('SL.roomId = "' + id + '"')
+      .andWhere('ES.statusEnrolled = 1')
+      .orderBy('ES.lname')
+      .getRawMany();
+
+    let count_male = rawData_male.length;
+
+    let rawData_female = await this.dataSource.manager
+      .createQueryBuilder(StudentList, 'SL')
+      .select([
+        '*',
+        'SL.id as studentListId',
+        "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ',SUBSTRING(ES.mname, 1, 1) ,' ',ES.fname) ,concat(ES.lname, ' ', ES.fname)) as name",
+        "IF (!ISNULL(ES.guardian_mname)  AND LOWER(ES.guardian_mname) != 'n/a', concat(ES.guardian_fname, ' ',SUBSTRING(ES.guardian_mname, 1, 1) ,' ',ES.guardian_lname) ,concat(ES.guardian_fname, ' ', ES.guardian_lname)) as guardian_name",
+      ])
+      .leftJoin(RoomsSection, 'room', 'room.id = SL.roomId')
+      .leftJoin(EnrollStudent, 'ES', 'ES.id = SL.studentId')
+      .where('SL.school_yearId = "' + filter + '"')
+      .andWhere('ES.sex = "Female"')
+      .andWhere('SL.grade_level = "' + grade + '"')
+      .andWhere('SL.roomId = "' + id + '"')
+      .andWhere('ES.statusEnrolled = 1')
+      .orderBy('ES.lname')
+      .getRawMany();
+    let count_female = rawData_female.length;
+
+    console.log(rawData_male, rawData_female, count_male, count_female);
+
+    let headerImg = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/header.png',
+    );
+    let footerImg = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/footer.png',
+    );
+
+    const data = [
+      {
+        header_img: this.base64_encode(headerImg, 'headerfooter'),
+        footer_img: this.base64_encode(footerImg, 'headerfooter'),
+        rawData_male: rawData_male ? rawData_male : [],
+        rawData_female: rawData_female ? rawData_female : [],
+        count_male,
+        count_female,
+        total_student: Number(count_female) + Number(count_male),
+      },
+    ];
+    try {
+      const browser = await puppeteer.launch({
+        // headless: 'new',
+        // args: ['--no-sandbox'],
+      });
+      const page = await browser.newPage();
+      // compile(template_name, data)
+      const content = await this.compile('student-list', data);
+      await page.setContent(content);
+
+      const buffer = await page.pdf({
+        format: 'legal',
+        margin: {
+          top: '0.20in',
+          left: '0.50in',
+          bottom: '0.20in',
+          right: '0.50in',
+        },
+        landscape: false,
         printBackground: true,
       });
       await browser.close();
