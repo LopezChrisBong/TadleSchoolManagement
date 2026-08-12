@@ -14,6 +14,7 @@ const store = createStore({
     emp: null,
     expiryDate: null,
     filterSelected: null,
+    syType: null,
   },
   getters: {
     getIsAuthenticated: (state) => state.isAuthenticated,
@@ -21,6 +22,7 @@ const store = createStore({
     isExpired: (state) => state.expiryDate < Date.now(),
     getUserData: (state) => state.user,
     getFilterSelected: (state) => state.filterSelected,
+    getSyType: (state) => state.syType,
     getEmp: (state) => state.emp,
   },
   mutations: {
@@ -46,6 +48,9 @@ const store = createStore({
     },
     setFilterSelected(state, data) {
       state.filterSelected = data
+    },
+    setSyType(state, data) {
+      state.syType = data
     },
     setEmp(state, data) {
       state.emp = data

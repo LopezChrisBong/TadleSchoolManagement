@@ -59,7 +59,11 @@
               x-small
               color="white"
               class="black--text mx-1"
-              @click="viewStudentAchievements(item)"
+              @click="
+                syType == 0
+                  ? viewStudentAchievements(item)
+                  : viewStudentAchievementsV2(item)
+              "
             >
               <v-icon size="14">mdi-printer-outline</v-icon>
               Form 138
@@ -227,6 +231,7 @@ export default {
     grade: null,
     dataEdit: [],
     room_name: null,
+    syType: null,
     deleteData: null,
     dropData: null,
     updateData: null,
@@ -295,6 +300,7 @@ export default {
     initialize() {
       this.userRoleID = this.$store.state.user.id;
       this.filter = this.$store.getters.getFilterSelected;
+      this.syType = this.$store.getters.getSyType;
       this.getTaggedStudent();
     },
     valuesItem(item) {
@@ -420,6 +426,22 @@ export default {
       window.open(
         process.env.VUE_APP_SERVER +
           '/pdf-generator/getStudentAchievements/' +
+          item.studentId +
+          '/' +
+          this.classID +
+          '/' +
+          this.filterYear +
+          '/' +
+          item.grade_level +
+          '',
+        '_blank',
+      );
+    },
+    viewStudentAchievementsV2(item) {
+      // console.log('print', item.grade_level);
+      window.open(
+        process.env.VUE_APP_SERVER +
+          '/pdf-generator/getStudentAchievementsV2/' +
           item.studentId +
           '/' +
           this.classID +

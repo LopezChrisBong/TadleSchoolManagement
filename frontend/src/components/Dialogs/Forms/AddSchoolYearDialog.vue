@@ -66,6 +66,24 @@
                 >
                 </v-autocomplete>
               </v-col>
+              <v-col cols="12" md="12" v-if="action == 'Update'">
+                <v-autocomplete
+                  v-model="syType"
+                  :rules="[formRules.required]"
+                  variant="outlined"
+                  density="compact"
+                  class="rounded-lg"
+                  item-title="name"
+                  item-value="id"
+                  label="School Year Type"
+                  color="#93CB5B"
+                  :items="[
+                    { id: 1, name: '3 Term' },
+                    { id: 0, name: '4 Quarters' },
+                  ]"
+                >
+                </v-autocomplete>
+              </v-col>
             </v-row>
           </v-card-text>
           <v-divider></v-divider>
@@ -114,23 +132,22 @@
         <!-- Content -->
         <v-card-text class="pt-4" v-if="status == 1">
           <p class="text-body-1 text-justify mb-2">
-            Are you sure you want to activate this school year?
+            Are you sure you want to update this school year?
           </p>
 
-          <v-alert type="info" variant="tonal" density="compact" class="mt-2">
+          <!-- <v-alert type="info" variant="tonal" density="compact" class="mt-2">
             This action is <strong>irreversible</strong> all students that are
             enrolled on the last school year will automatically set to
             unenrolled.
-          </v-alert>
+          </v-alert> -->
         </v-card-text>
 
         <v-card-text class="pt-4" v-else>
-          <p class="text-body-1 text-justify mb-2">
-            Updates are only allowed when changing the status from inactive to
-            active.
-          </p>
-
           <v-alert type="info" variant="tonal" density="compact" class="mt-2">
+            <p class="text-body-1 text-justify mb-2">
+              Updates are only allowed when changing the status from inactive to
+              active.
+            </p>
             This school year has been set to inactive. No updates are allowed.
           </v-alert>
         </v-card-text>
@@ -170,7 +187,7 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
 export default {
   components: {},
   props: {
@@ -181,6 +198,7 @@ export default {
   data() {
     return {
       status: null,
+      syType: null,
       year_fromList: [],
       confirmDialog: false,
       updateID: null,
@@ -196,9 +214,9 @@ export default {
 
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
@@ -210,12 +228,13 @@ export default {
       handler(data) {
         this.dialog = true;
         if (data.id) {
-          console.log("School Year", data);
+          console.log('School Year', data);
           this.initialize();
           this.updateID = data.id;
           this.school_year_from = data.school_year_from;
           this.school_year_to = data.school_year_to;
           this.status = data.status;
+          this.syType = data.syType;
         } else {
           this.$refs.AddSchoolYear.reset();
           this.initialize();
@@ -233,7 +252,7 @@ export default {
     },
 
     closeD() {
-      eventBus.emit("closeAddSchoolYearDialog", false);
+      eventBus.emit('closeAddSchoolYearDialog', false);
       this.dialog = false;
       this.confirmSubmit.type = null;
       this.confirmSubmit.error = false;
@@ -253,55 +272,57 @@ export default {
     },
 
     checkConflict(type) {
-      if (type == "ADD") {
+      if (type == 'ADD') {
         let data = {
           school_year_from: this.school_year_from,
           school_year_to: this.school_year_to,
+          syType: this.syType,
         };
         // console.log(data);
-        this.axiosCall("/enroll-student/addSchoolYear", "POST", data).then(
+        this.axiosCall('/enroll-student/addSchoolYear', 'POST', data).then(
           (res) => {
             console.log(res.data);
             // alert("Successfully Added");
             this.closeD();
             if (res.data.status == 201) {
               this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = "success";
-              this.fadeAwayMessage.header = "System Message";
-              this.fadeAwayMessage.message = "Successfully Added Subject!";
+              this.fadeAwayMessage.type = 'success';
+              this.fadeAwayMessage.header = 'System Message';
+              this.fadeAwayMessage.message = 'Successfully Added Subject!';
             } else if (res.data.status == 400) {
               this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = "error";
-              this.fadeAwayMessage.header = "System Message";
+              this.fadeAwayMessage.type = 'error';
+              this.fadeAwayMessage.header = 'System Message';
               this.fadeAwayMessage.message = res.data.msg;
             }
           },
         );
-      } else if (type == "UPDATE") {
+      } else if (type == 'UPDATE') {
         // alert("UPDATED");
 
         let data = {
           school_year_from: this.school_year_from,
           school_year_to: this.school_year_to,
           status: this.status,
+          syType: this.syType,
         };
         console.log(data);
         this.axiosCall(
-          "/enroll-student/updateSchoolYear/" + this.updateID,
-          "PATCH",
+          '/enroll-student/updateSchoolYear/' + this.updateID,
+          'PATCH',
           data,
         ).then((res) => {
           console.log(res.data);
           if (res.data.status == 200) {
             this.closeD();
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "success";
-            this.fadeAwayMessage.header = "System Message";
-            this.fadeAwayMessage.message = "Successfully updated!!";
+            this.fadeAwayMessage.type = 'success';
+            this.fadeAwayMessage.header = 'System Message';
+            this.fadeAwayMessage.message = 'Successfully updated!!';
           } else if (res.data.status == 400) {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
           }
           location.reload();

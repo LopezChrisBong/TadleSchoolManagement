@@ -9,4 +9,7 @@ export class CreateSchoolYearDto {
 
   @ApiProperty()
   status: boolean;
+
+  @ApiProperty()
+  syType: number;
 }

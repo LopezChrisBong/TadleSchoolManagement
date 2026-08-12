@@ -26,13 +26,15 @@
                     data.grade_level == 'Grade 11' ||
                     data.grade_level == 'Grade 12'
                       ? ['1st Quarter', '2nd Quarter', 'All']
-                      : [
+                      : syType == 0
+                      ? [
                           '1st Quarter',
                           '2nd Quarter',
                           '3rd Quarter',
                           '4th Quarter',
                           'All',
                         ]
+                      : ['1st Term', '2nd Term', '3rd Term']
                   "
                   chips
                   variant="outlined"
@@ -141,7 +143,7 @@ export default {
     return {
       updateID: null,
       dialog: false,
-      quarter: '1st Quarter',
+      quarter: '',
       semester: null,
       studentsGrade: [],
       students: [],
@@ -181,6 +183,8 @@ export default {
 
   methods: {
     initialize() {
+      this.syType = this.$store.getters.getSyType;
+      this.quarter = this.syType == 0 ? '1st Quarter' : '1st Term';
       this.getAllStudentsGrade();
     },
     buildTable(data) {

@@ -38,6 +38,11 @@ import { AnnouncementModule } from './announcement/announcement.module';
       database: process.env.DATABASE_NAME,
       entities: entities,
       synchronize: true, //for production this is set to be false
+      extra: {
+        initSql: [
+          "SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))",
+        ],
+      },
     }),
     // PDFModule.register({
     //   isGlobal: true,

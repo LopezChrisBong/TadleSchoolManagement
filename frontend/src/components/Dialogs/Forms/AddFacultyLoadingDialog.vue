@@ -335,6 +335,7 @@ export default {
     accept() {
       if (this.$refs.UserVerifyFormref.validate()) {
         let filter = this.$store.getters.getFilterSelected;
+
         let hours = this.calculateHoursDifference(
           this.time_slot_from,
           this.time_slot_to,

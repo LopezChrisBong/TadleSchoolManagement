@@ -173,7 +173,7 @@
 
 <script>
 export default {
-  props: ["screenSmall", "reloadImg"],
+  props: ['screenSmall', 'reloadImg'],
   watch: {
     screenSmall: {
       handler(val) {
@@ -196,7 +196,7 @@ export default {
   },
   data() {
     return {
-      search: "",
+      search: '',
       drawer: true,
       mini: false,
       profImg: null,
@@ -217,10 +217,10 @@ export default {
     // console.log("is OIC", this.isOIC);
     // this.loadUserRoles();
     if (this.$store.state.expiryDate < Date.now()) {
-      this.$store.dispatch("setUser", null);
-      this.$store.dispatch("setIsAuthenticated", 0);
+      this.$store.dispatch('setUser', null);
+      this.$store.dispatch('setIsAuthenticated', 0);
       // this.render = true;
-      this.$router.push("/");
+      this.$router.push('/');
 
       // location.reload();
     }
@@ -252,64 +252,64 @@ export default {
       this.drawer = true;
     },
     loadImg() {
-      this.axiosCall("/user-details/getUserProfileImg", "GET").then((res) => {
+      this.axiosCall('/user-details/getUserProfileImg', 'GET').then((res) => {
         this.profImg =
           process.env.VUE_APP_SERVER +
-          "/user-details/getProfileImg/" +
+          '/user-details/getProfileImg/' +
           res.data.profile_img;
       });
     },
     toProfile() {
       var usertype = this.$store.state.user.usertype.description;
       if (this.$store.state.user.user.user_roleID == 5) {
-        this.$router.push("/superadmin/profile");
+        this.$router.push('/superadmin/profile');
       } else {
-        this.$router.push("/" + usertype.toLowerCase() + "/profile");
+        this.$router.push('/' + usertype.toLowerCase() + '/profile');
       }
     },
     getCurrentDate() {
       const cur_date = new Date();
       const month = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December',
       ];
       const day = [
-        "Sunday",
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
       ];
       return (
         day[cur_date.getDay()] +
-        ", " +
+        ', ' +
         month[cur_date.getMonth()] +
-        " " +
+        ' ' +
         cur_date.getDate() +
-        "; " +
+        '; ' +
         this.formatAMPM(cur_date)
       );
     },
     formatAMPM(date) {
       var hours = date.getHours();
       var minutes = date.getMinutes();
-      var ampm = hours >= 12 ? "pm" : "am";
+      var ampm = hours >= 12 ? 'pm' : 'am';
       hours = hours % 12;
       hours = hours ? hours : 12;
-      minutes = minutes < 10 ? "0" + minutes : minutes;
-      var strTime = hours + ":" + minutes + " " + ampm;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      var strTime = hours + ':' + minutes + ' ' + ampm;
       return strTime;
     },
     // onResize() {
@@ -322,17 +322,17 @@ export default {
     closeNav() {
       this.drawer = false;
 
-      this.$emit("closeNav");
+      this.$emit('closeNav');
     },
 
     getModules(usertypeID) {
-      this.axiosCall("/usertype-module/usertype/" + usertypeID, "GET").then(
+      this.axiosCall('/usertype-module/usertype/' + usertypeID, 'GET').then(
         (res) => {
           if (res) {
             // this.modules = res.data;
             // console.log(res.data);
           }
-        }
+        },
       );
     },
 
@@ -346,31 +346,31 @@ export default {
     // },
 
     loadMenu(userType, userRole) {
-      this.axiosCall("/assigned-modules/getMyAssignedModules/my", "GET").then(
+      this.axiosCall('/assigned-modules/getMyAssignedModules/my', 'GET').then(
         (resp) => {
           this.links = JSON.parse(resp.data.assign_mods);
           switch (userType) {
             case 1:
-              this.userType = "admin";
+              this.userType = 'admin';
 
               break;
             case 2:
               if (userRole == 5) {
-                this.userType = "superadmin";
+                this.userType = 'superadmin';
               } else {
-                this.userType = "employee";
+                this.userType = 'employee';
               }
               break;
             case 3:
-              this.userType = "security";
+              this.userType = 'security';
 
               break;
             case 4:
-              this.userType = "auditor";
+              this.userType = 'auditor';
 
               break;
           }
-        }
+        },
       );
 
       // if (this.isActiveOIC) {

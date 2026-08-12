@@ -443,8 +443,8 @@ export class PdfGeneratorService {
     // console.log(data);
     try {
       const browser = await puppeteer.launch({
-        // headless: 'new',
-        // args: ['--no-sandbox'],
+        headless: 'new',
+        args: ['--no-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -775,12 +775,344 @@ export class PdfGeneratorService {
     ];
     try {
       const browser = await puppeteer.launch({
-        // headless: 'new',
-        // args: ['--no-sandbox'],
+        headless: 'new',
+        args: ['--no-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
       const content = await this.compile('students-achievement', data);
+      await page.setContent(content);
+
+      const buffer = await page.pdf({
+        format: 'legal',
+        margin: {
+          top: '0.20in',
+          left: '0.50in',
+          bottom: '0.20in',
+          right: '0.50in',
+        },
+        landscape: false,
+        printBackground: true,
+        // displayHeaderFooter: true,
+        // footerTemplate:
+        //   '<div style="border: 1px solid black; width:100%;z-index:1">  <div style=""><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAApgAAAKYB3X3/OAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAANCSURBVEiJtZZPbBtFFMZ/M7ubXdtdb1xSFyeilBapySVU8h8OoFaooFSqiihIVIpQBKci6KEg9Q6H9kovIHoCIVQJJCKE1ENFjnAgcaSGC6rEnxBwA04Tx43t2FnvDAfjkNibxgHxnWb2e/u992bee7tCa00YFsffekFY+nUzFtjW0LrvjRXrCDIAaPLlW0nHL0SsZtVoaF98mLrx3pdhOqLtYPHChahZcYYO7KvPFxvRl5XPp1sN3adWiD1ZAqD6XYK1b/dvE5IWryTt2udLFedwc1+9kLp+vbbpoDh+6TklxBeAi9TL0taeWpdmZzQDry0AcO+jQ12RyohqqoYoo8RDwJrU+qXkjWtfi8Xxt58BdQuwQs9qC/afLwCw8tnQbqYAPsgxE1S6F3EAIXux2oQFKm0ihMsOF71dHYx+f3NND68ghCu1YIoePPQN1pGRABkJ6Bus96CutRZMydTl+TvuiRW1m3n0eDl0vRPcEysqdXn+jsQPsrHMquGeXEaY4Yk4wxWcY5V/9scqOMOVUFthatyTy8QyqwZ+kDURKoMWxNKr2EeqVKcTNOajqKoBgOE28U4tdQl5p5bwCw7BWquaZSzAPlwjlithJtp3pTImSqQRrb2Z8PHGigD4RZuNX6JYj6wj7O4TFLbCO/Mn/m8R+h6rYSUb3ekokRY6f/YukArN979jcW+V/S8g0eT/N3VN3kTqWbQ428m9/8k0P/1aIhF36PccEl6EhOcAUCrXKZXXWS3XKd2vc/TRBG9O5ELC17MmWubD2nKhUKZa26Ba2+D3P+4/MNCFwg59oWVeYhkzgN/JDR8deKBoD7Y+ljEjGZ0sosXVTvbc6RHirr2reNy1OXd6pJsQ+gqjk8VWFYmHrwBzW/n+uMPFiRwHB2I7ih8ciHFxIkd/3Omk5tCDV1t+2nNu5sxxpDFNx+huNhVT3/zMDz8usXC3ddaHBj1GHj/As08fwTS7Kt1HBTmyN29vdwAw+/wbwLVOJ3uAD1wi/dUH7Qei66PfyuRj4Ik9is+hglfbkbfR3cnZm7chlUWLdwmprtCohX4HUtlOcQjLYCu+fzGJH2QRKvP3UNz8bWk1qMxjGTOMThZ3kvgLI5AzFfo379UAAAAASUVORK5CYII=" style="width:30px;height:30px;"/></div><span style="margin-right: 1cm"><span class="pageNumber"></span> of <span class="totalPages"></span></span></div>',
+      });
+      // console.log('Applicant generated');
+      await browser.close();
+      return buffer;
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async getStudentAchievementsV2(
+    studentID: number,
+    roomID: number,
+    filter: number,
+    gradeLevel: string,
+  ) {
+    // console.log(studentID, roomID, filter,gradeLevel)
+    let arr;
+    let firstSemSubjects;
+    let secondSemSubjects;
+    let juniorHigh;
+    let arrs;
+    let junior;
+    let query = this.dataSource.manager
+      .createQueryBuilder(EnrollStudent, 'ES')
+      .select([
+        'ES.id as id',
+        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ', SUBSTRING(ES.mname, 1, 1), '. ', ES.lname), concat(ES.fname, ' ', ES.lname)) as name",
+        'SQF.transmuted_grade as final_grade',
+        'SQF.initial_grade as initial_grade',
+        'SQF.quarter as quarter',
+        'SQF.semester as semester',
+        'S.subject_title as subject_title',
+        'SQF.sub_subject as sub_subject',
+      ])
+      .leftJoin(StudentList, 'SL', 'ES.id = SL.studentId')
+      .leftJoin(StudentQuarterFinalGrade, 'SQF', 'SQF.studentID = ES.id')
+      .leftJoin(Subject, 'S', 'S.id = SQF.subjectID')
+      .where('SQF.school_yearID = :filter', { filter })
+      .andWhere('SQF.roomID = :roomID', { roomID })
+      .andWhere('SQF.studentID = :studentID', { studentID })
+      .andWhere('ES.grade_level = :gradeLevel', { gradeLevel })
+      .andWhere('ES.statusEnrolled = 1');
+    let newData = await query.getRawMany();
+
+    // console.log(newData)
+    if (gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12') {
+      const pivoted = Object.values(
+        newData.reduce((acc, row) => {
+          const { id, name, semester, subject_title, quarter, final_grade } =
+            row;
+
+          if (!acc[id]) {
+            acc[id] = {
+              id,
+              name,
+              semesters: {},
+            };
+          }
+
+          // ensure semester bucket exists
+          if (!acc[id].semesters[semester]) {
+            acc[id].semesters[semester] = { subjects: [] };
+          }
+
+          // find or create subject inside this semester
+          let subject = acc[id].semesters[semester].subjects.find(
+            (s) => s.subject === subject_title,
+          );
+          if (!subject) {
+            subject = {
+              subject: subject_title,
+              '1st Term': null,
+              '2nd Term': null,
+              '3rd Term': null,
+              // '4th Term': null,
+              finalGrade: null,
+              remarks: null,
+            };
+            acc[id].semesters[semester].subjects.push(subject);
+          }
+
+          // assign the grade under the correct quarter
+          subject[quarter] = final_grade;
+
+          // recalc final grade
+          const grades = [
+            subject['1st Term'],
+            subject['2nd Term'],
+            subject['3rd Term'],
+            // subject['4th Term'],
+          ].filter((g) => g !== null);
+
+          if (grades.length > 0) {
+            const avg = Math.round(
+              grades.reduce((a, b) => a + b, 0) / grades.length,
+            );
+            subject.finalGrade = avg;
+            subject.remarks = avg >= 75 ? 'Passed' : 'Failed';
+          }
+
+          return acc;
+        }, {}),
+      );
+
+      arr = JSON.parse(JSON.stringify(pivoted));
+      arrs = arr[0].semesters;
+      firstSemSubjects = arrs['1st Semester'].subjects;
+      secondSemSubjects = arrs['2nd Semester'].subjects;
+      // console.log('Second',secondSemSubjects)
+    } else {
+      const pivoted = Object.values(
+        newData.reduce((acc, row) => {
+          const {
+            id,
+            name,
+            semester,
+            subject_title,
+            quarter,
+            final_grade,
+            sub_subject,
+          } = row;
+
+          if (!acc[id]) {
+            acc[id] = { id, name, semesters: {} };
+          }
+
+          if (!acc[id].semesters[semester]) {
+            acc[id].semesters[semester] = { subjects: [] };
+          }
+
+          const sem = acc[id].semesters[semester];
+
+          if (sub_subject) {
+            const subSubjects = JSON.parse(sub_subject);
+            const subGrades: number[] = [];
+
+            Object.keys(subSubjects).forEach((sub) => {
+              let subItem = sem.subjects.find((s) => s.subject === sub);
+              if (!subItem) {
+                subItem = {
+                  subject: sub,
+                  '1st Term': null,
+                  '2nd Term': null,
+                  '3rd Term': null,
+                  // '4th Term': null,
+                  finalGrade: null,
+                  conspan: null,
+                  remarks: null,
+                };
+                sem.subjects.push(subItem);
+              }
+
+              subItem[quarter] = subSubjects[sub].transmuted_grade;
+              subGrades.push(subSubjects[sub].transmuted_grade);
+            });
+
+            let mapeh = sem.subjects.find((s) => s.subject === subject_title);
+            if (!mapeh) {
+              mapeh = {
+                subject: subject_title, // "MAPEH"
+                '1st Term': null,
+                '2nd Term': null,
+                '3rd Term': null,
+                // '4th Term': null,
+                finalGrade: null,
+                conspan: null,
+                remarks: null,
+              };
+              sem.subjects.push(mapeh);
+            }
+
+            if (subGrades.length > 0) {
+              const quarterAvg = Math.round(
+                subGrades.reduce((a, b) => a + b, 0) / subGrades.length,
+              );
+              mapeh[quarter] = quarterAvg;
+            }
+
+            const mapehGrades = [
+              mapeh['1st Term'],
+              mapeh['2nd Term'],
+              mapeh['3rd Term'],
+              // mapeh['4th Term'],
+            ].filter((g) => g !== null);
+
+            if (mapehGrades.length > 0) {
+              const avg = Math.round(
+                mapehGrades.reduce((a, b) => a + b, 0) / mapehGrades.length,
+              );
+              mapeh.finalGrade = avg;
+              mapeh.remarks = avg >= 75 ? 'Passed' : 'Failed';
+            }
+          } else {
+            let subject = sem.subjects.find((s) => s.subject === subject_title);
+            if (!subject) {
+              subject = {
+                subject: subject_title,
+                '1st Term': null,
+                '2nd Term': null,
+                '3rd Term': null,
+                // '4th Term': null,
+                finalGrade: null,
+                conspan: 1,
+                remarks: null,
+              };
+              sem.subjects.push(subject);
+            }
+
+            subject[quarter] = final_grade;
+
+            const grades = [
+              subject['1st Term'],
+              subject['2nd Term'],
+              subject['3rd Term'],
+              // subject['4th Term'],
+            ].filter((g) => g !== null);
+
+            if (grades.length > 0) {
+              const avg = Math.round(
+                grades.reduce((a, b) => a + b, 0) / grades.length,
+              );
+              subject.finalGrade = avg;
+              subject.remarks = avg >= 75 ? 'Passed' : 'Failed';
+            }
+          }
+
+          return acc;
+        }, {}),
+      );
+
+      arr = JSON.parse(JSON.stringify(pivoted));
+      arrs = arr[0].semesters;
+
+      Object.keys(arrs).forEach((semKey) => {
+        let semSubjects = arrs[semKey].subjects;
+
+        const normalSubjects = semSubjects.filter(
+          (s) =>
+            s.subject !== 'MAPEH' &&
+            !['Music', 'Arts', 'Physical Education', 'Health'].includes(
+              s.subject,
+            ),
+        );
+        const mapeh = semSubjects.find((s) => s.subject === 'MAPEH');
+        const subs = semSubjects.filter((s) =>
+          ['Music', 'Arts', 'Physical Education', 'Health'].includes(s.subject),
+        );
+
+        const generalGrades = [...normalSubjects, mapeh]
+          .filter(Boolean)
+          .map((s) => s.finalGrade)
+          .filter((g) => g !== null);
+        let generalAverage = null;
+        if (generalGrades.length > 0) {
+          generalAverage = Math.round(
+            generalGrades.reduce((a, b) => a + b, 0) / generalGrades.length,
+          );
+        }
+
+        arrs[semKey].subjects = [
+          ...normalSubjects,
+          mapeh,
+          ...subs,
+          {
+            subject: 'General Average',
+            conspan: 4,
+            finalGrade: generalAverage,
+            remarks: generalAverage >= 75 ? 'Passed' : 'Failed',
+          },
+        ];
+      });
+
+      juniorHigh = arrs['Junior High'].subjects;
+    }
+
+    let studentData = {};
+    if (arrs['Junior High']) {
+      junior = true;
+      studentData = { juniorHigh: juniorHigh };
+    } else {
+      junior = false;
+      studentData = {
+        firstSem: firstSemSubjects,
+        secondSem: secondSemSubjects,
+      };
+    }
+    console.log(studentData);
+
+    let headerImg = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/header.png',
+    );
+    let footerImg = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/footer.png',
+    );
+    // let headerImg = join(process.cwd(), '/../static/img/header.png');
+    // let footerImg = join(process.cwd(), '/../static/img/footer.png');
+    const data = [
+      {
+        header_img: this.base64_encode(headerImg, 'headerfooter'),
+        footer_img: this.base64_encode(footerImg, 'headerfooter'),
+        student: arr[0],
+        gradeLevel: gradeLevel,
+        studentData: studentData ? studentData : [],
+        junior: junior,
+        // name:gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12'? arr[0].name: arr.name,
+      },
+    ];
+    try {
+      const browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--no-sandbox'],
+      });
+      const page = await browser.newPage();
+      // compile(template_name, data)
+      const content = await this.compile('students-achievementV2', data);
       await page.setContent(content);
 
       const buffer = await page.pdf({
@@ -812,6 +1144,18 @@ export class PdfGeneratorService {
     semester: string,
     gradeLevel: string,
   ) {
+    // console.log(filter, roomID, quarter, semester, gradeLevel);
+    let schoolYear = await this.dataSource.manager
+      .createQueryBuilder(SchoolYear, 'A')
+      .select([
+        // "*",
+        "CONCAT(school_year_from, ' - ', school_year_to) AS school_year",
+        // "CONCAT(school_year_from, '-06-01') as startDate,CONCAT(school_year_to, '-05-31') as endDate"
+        'syType as syType',
+      ])
+      .where('A.id = :filter', { filter })
+      .getRawOne();
+
     let query = this.dataSource.manager
       .createQueryBuilder(EnrollStudent, 'ES')
       .select([
@@ -829,10 +1173,17 @@ export class PdfGeneratorService {
       .where('SQF.school_yearID = :filter', { filter })
       .andWhere('SQF.roomID = :roomID', { roomID })
       .andWhere('SQF.semester = :semester', { semester })
+      .andWhere('SQF.quarter = :quarter', { quarter })
       .andWhere('ES.statusEnrolled = 1');
 
     let rawData = await query.getRawMany();
-    const newrawData = await this.transformData(rawData);
+    let newrawData;
+    if (schoolYear.syType == 0) {
+      newrawData = await this.transformData(rawData);
+    } else {
+      newrawData = await this.transformDataV2(rawData);
+    }
+
     console.log(newrawData.students);
 
     let roomQuery = this.dataSource.manager
@@ -855,16 +1206,6 @@ export class PdfGeneratorService {
     } else {
       colapse = true;
     }
-
-    let schoolYear = await this.dataSource.manager
-      .createQueryBuilder(SchoolYear, 'A')
-      .select([
-        // "*",
-        "CONCAT(school_year_from, ' - ', school_year_to) AS school_year",
-        // "CONCAT(school_year_from, '-06-01') as startDate,CONCAT(school_year_to, '-05-31') as endDate"
-      ])
-      .where('A.status = 1')
-      .getRawOne();
 
     // console.log(schoolYear.school_year)
 
@@ -892,12 +1233,18 @@ export class PdfGeneratorService {
     ];
     try {
       const browser = await puppeteer.launch({
-        // headless: 'new',
-        // args: ['--no-sandbox'],
+        headless: 'new',
+        args: ['--no-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
-      const content = await this.compile('student-all-grade', data);
+      let content;
+      if (schoolYear.syType == 0) {
+        content = await this.compile('student-all-grade', data);
+      } else {
+        content = await this.compile('student-all-gradev2', data);
+      }
+
       await page.setContent(content);
 
       const buffer = await page.pdf({
@@ -994,6 +1341,79 @@ export class PdfGeneratorService {
       students: Object.values(students),
     };
   }
+  async transformDataV2(rawData: any) {
+    const students: Record<number, any> = {};
+    const subjectsSet = new Set<string>();
+
+    rawData.forEach((row) => {
+      const { id, name, subject_title, final_grade, quarter } = row;
+
+      if (!students[id]) {
+        students[id] = {
+          id,
+          name,
+          finalAverage: 0,
+          status: '',
+        };
+      }
+
+      if (!students[id][subject_title]) {
+        students[id][subject_title] = {
+          q1: null,
+          q2: null,
+          q3: null,
+          // q4: null,
+          final: null,
+        };
+      }
+
+      // Track dynamic subjects
+      subjectsSet.add(subject_title);
+
+      // Assign grades by quarter
+      if (quarter === '1st Term') students[id][subject_title].q1 = final_grade;
+      else if (quarter === '2nd Term')
+        students[id][subject_title].q2 = final_grade;
+      else if (quarter === '3rd Term')
+        students[id][subject_title].q3 = final_grade;
+      // else if (quarter === '4th Term')
+      //   students[id][subject_title].q4 = final_grade;
+
+      // Compute subject final
+      // const { q1, q2, q3, q4 } = students[id][subject_title];
+      // const quarters = [q1, q2, q3, q4].filter((q) => q != null);
+      const { q1, q2, q3 } = students[id][subject_title];
+      const quarters = [q1, q2, q3].filter((q) => q != null);
+
+      if (quarters.length > 0) {
+        students[id][subject_title].final = Math.round(
+          quarters.reduce((a, b) => a + b, 0) / quarters.length,
+        );
+      }
+    });
+
+    // Compute student’s overall final average
+    Object.values(students).forEach((student: any) => {
+      const subjectFinals = Object.keys(student)
+        .filter(
+          (key) => !['id', 'name', 'finalAverage', 'status'].includes(key),
+        )
+        .map((subject) => student[subject].final)
+        .filter((f) => f != null);
+
+      if (subjectFinals.length > 0) {
+        student.finalAverage = Math.round(
+          subjectFinals.reduce((a, b) => a + b, 0) / subjectFinals.length,
+        );
+        student.status = student.finalAverage >= 75 ? 'Passed' : 'Failed';
+      }
+    });
+
+    return {
+      subjects: Array.from(subjectsSet), // return subjects separately
+      students: Object.values(students),
+    };
+  }
 
   async getAllUnderLoadFaculty(filter: number) {
     let query = this.dataSource.manager
@@ -1055,8 +1475,8 @@ export class PdfGeneratorService {
     ];
     try {
       const browser = await puppeteer.launch({
-        // headless: 'new',
-        // args: ['--no-sandbox'],
+        headless: 'new',
+        args: ['--no-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -1221,8 +1641,8 @@ export class PdfGeneratorService {
     ];
     try {
       const browser = await puppeteer.launch({
-        // headless: 'new',
-        // args: ['--no-sandbox'],
+        headless: 'new',
+        args: ['--no-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -1382,9 +1802,20 @@ export class PdfGeneratorService {
         // "*",
         "CONCAT(school_year_from, ' - ', school_year_to) AS school_year",
         "CONCAT(school_year_from, '-06-01') as startDate,CONCAT(school_year_to, '-05-31') as endDate",
+        'syType as syType',
       ])
       .where('SY.id = :school_yearID', { school_yearID })
       .getRawOne();
+
+    let quarter = [];
+    let headerTitle;
+    if (schoolYear.syType == 0) {
+      quarter = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'];
+      headerTitle = 'QUARTER';
+    } else {
+      quarter = ['1st Term', '2nd Term', '3rd Term'];
+      headerTitle = 'TERM';
+    }
 
     let query = this.dataSource.manager
       .createQueryBuilder(EnrollStudent, 'ES')
@@ -1411,10 +1842,11 @@ export class PdfGeneratorService {
       .leftJoin(Subject, 'S', 'S.id = SQF.subjectID')
       .where('SQF.school_yearID = :school_yearID', { school_yearID })
       .andWhere('SQF.roomID = :roomID', { roomID })
-      // .andWhere('SQF.semester = :semester', { semester })
+      .andWhere('SQF.quarter IN (:...quarter)', { quarter })
       .andWhere('ES.statusEnrolled = 1');
 
     let rawData = await query.getRawMany();
+    console.log(schoolYear);
     let level;
     if (
       roomData.grade_level == 'Grade 11' ||
@@ -1424,7 +1856,13 @@ export class PdfGeneratorService {
     } else {
       level = 'Junior High';
     }
-    let newData = await this.transformGrades(rawData, level);
+    let newData;
+    if (schoolYear.syType == 0) {
+      newData = await this.transformGrades(rawData, level);
+    } else {
+      newData = await this.transformGradesV2(rawData, level);
+    }
+
     // console.log(newData[0])
     let curDate = new Date();
 
@@ -1449,12 +1887,17 @@ export class PdfGeneratorService {
     ];
     try {
       const browser = await puppeteer.launch({
-        // headless: 'new',
-        // args: ['--no-sandbox'],
+        headless: 'new',
+        args: ['--no-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
-      const content = await this.compile('school-form10', data);
+      let content;
+      if (schoolYear.syType == 0) {
+        content = await this.compile('school-form10', data);
+      } else {
+        content = await this.compile('school-form10v2', data);
+      }
       await page.setContent(content);
 
       const buffer = await page.pdf({
@@ -1682,6 +2125,240 @@ export class PdfGeneratorService {
             subj['2nd Quarter'],
             subj['3rd Quarter'],
             subj['4th Quarter'],
+          ]);
+          subj.remarks =
+            subj.finalGrade !== null
+              ? subj.finalGrade >= 75
+                ? 'Passed'
+                : 'Failed'
+              : null;
+        }
+
+        // 🔹 Junior High general average
+        Object.values(students).forEach((student) => {
+          const subjects = student.juniorHigh;
+          const grades = subjects
+            .map((s: any) => s.finalGrade)
+            .filter((g: any) => g !== null);
+          if (grades.length > 0) {
+            const avg = average(grades);
+            student.juniorHighAverage = avg;
+            student.juniorHighRemarks = avg >= 75 ? 'Passed' : 'Failed';
+          }
+        });
+      }
+    });
+
+    return Object.values(students);
+  }
+
+  async transformGradesV2(data, level: 'Senior High' | 'Junior High') {
+    const students: Record<string, any> = {};
+
+    const average = (values: (number | null)[]): number | null => {
+      const nums = values.filter((v) => v !== null) as number[];
+      if (nums.length === 0) return null;
+      return Math.round(nums.reduce((a, b) => a + b, 0) / nums.length);
+    };
+
+    data.forEach((d) => {
+      if (!students[d.id]) {
+        students[d.id] = {
+          id: d.id,
+          sex: d.sex,
+          bdate: this.formatDate(d.bdate),
+          lrnNo: d.lrnNo,
+          fname: d.fname,
+          lname: d.lname,
+          mname: d.mname,
+          name: d.name,
+        };
+
+        if (level === 'Senior High') {
+          students[d.id].firstSemester = [];
+          students[d.id].secondSemester = [];
+        } else {
+          students[d.id].juniorHigh = [];
+        }
+      }
+
+      // ==========================================================
+      //  SENIOR HIGH
+      // ==========================================================
+      if (level === 'Senior High') {
+        const semesterArray =
+          d.semester === '1st Semester'
+            ? students[d.id].firstSemester
+            : students[d.id].secondSemester;
+
+        let subj = semesterArray.find((s) => s.subject === d.subject_title);
+        if (!subj) {
+          subj = {
+            indicator: d.indicator,
+            subject: d.subject_title,
+            '1st Quarter': null,
+            '2nd Quarter': null,
+            finalGrade: null,
+            remarks: null,
+          };
+          semesterArray.push(subj);
+        }
+
+        subj[d.quarter] = d.final_grade;
+
+        // compute final grade for SHS per semester
+        const q1 = subj['1st Quarter'];
+        const q2 = subj['2nd Quarter'];
+        const quarters = [q1, q2].filter((q) => q !== null);
+        if (quarters.length > 0) {
+          subj.finalGrade =
+            quarters.reduce((a, b) => a + b, 0) / quarters.length;
+          subj.remarks = subj.finalGrade >= 75 ? 'Passed' : 'Failed';
+        }
+
+        // Compute semester general averages
+        if (level === 'Senior High') {
+          const first = students[d.id].firstSemester;
+          const second = students[d.id].secondSemester;
+
+          if (first.length > 0) {
+            const grades = first
+              .map((s) => s.finalGrade)
+              .filter((g) => g !== null);
+            if (grades.length > 0) {
+              const avg = grades.reduce((a, b) => a + b, 0) / grades.length;
+              students[d.id].firstSemesterAverage = avg;
+              students[d.id].firstSemesterRemarks =
+                avg >= 75 ? 'Passed' : 'Failed';
+            }
+          }
+
+          if (second.length > 0) {
+            const grades = second
+              .map((s) => s.finalGrade)
+              .filter((g) => g !== null);
+            if (grades.length > 0) {
+              const avg = grades.reduce((a, b) => a + b, 0) / grades.length;
+              students[d.id].secondSemesterAverage = avg.toFixed();
+              students[d.id].secondSemesterRemarks =
+                avg >= 75 ? 'Passed' : 'Failed';
+            }
+          }
+        }
+      }
+
+      // ==========================================================
+      //  JUNIOR HIGH
+      // ==========================================================
+      else {
+        // check if subject is MAPEH (with sub-subject JSON)
+        if (d.subject_title === 'MAPEH' && d.sub_subject) {
+          let mapeh = students[d.id].juniorHigh.find(
+            (s) => s.subject === 'MAPEH',
+          );
+          if (!mapeh) {
+            mapeh = {
+              subject: 'MAPEH',
+              indicator: null,
+              '1st Term': null,
+              '2nd Term': null,
+              '3rd Term': null,
+              '4th Term': null,
+              finalGrade: null,
+              remarks: null,
+              sub_subject: {},
+            };
+            students[d.id].juniorHigh.push(mapeh);
+          }
+
+          // ✅ Parse JSON from DB
+          let subs: any = {};
+          try {
+            subs = JSON.parse(d.sub_subject);
+          } catch {
+            subs = {};
+          }
+
+          // Loop sub-subjects
+          Object.entries(subs).forEach(([subName, subData]: [string, any]) => {
+            if (!mapeh.sub_subject[subName]) {
+              mapeh.sub_subject[subName] = {
+                initial_grade: null,
+                transmuted_grade: null,
+                finalGrade: null,
+                remarks: null,
+                quarters: {
+                  '1st Term': null,
+                  '2nd Term': null,
+                  '3rd Term': null,
+                  '4th Term': null,
+                },
+              };
+            }
+
+            const sub = mapeh.sub_subject[subName];
+            sub.initial_grade = Math.round(parseFloat(subData.initial_grade));
+            sub.transmuted_grade = subData.transmuted_grade;
+            sub.quarters[d.quarter] = sub.transmuted_grade;
+
+            // compute sub final
+            const subQuarters = Object.values(sub.quarters).filter(
+              (q) => q !== null,
+            ) as number[];
+            if (subQuarters.length > 0) {
+              sub.finalGrade = average(subQuarters);
+              sub.remarks = sub.finalGrade >= 75 ? 'Passed' : 'Failed';
+            }
+          });
+
+          // recompute MAPEH quarter = average of sub-subjects
+          const quarterGrades = Object.values(mapeh.sub_subject)
+            .map((s: any) => s.quarters[d.quarter])
+            .filter((g: any) => g !== null) as number[];
+
+          if (quarterGrades.length > 0) {
+            mapeh[d.quarter] = average(quarterGrades);
+          }
+
+          // recompute MAPEH final
+          const quarters = [
+            mapeh['1st Term'],
+            mapeh['2nd Term'],
+            mapeh['3rd Term'],
+            mapeh['4th Term'],
+          ].filter((q) => q !== null) as number[];
+
+          if (quarters.length > 0) {
+            mapeh.finalGrade = average(quarters);
+            mapeh.remarks = mapeh.finalGrade >= 75 ? 'Passed' : 'Failed';
+          }
+        }
+
+        // 🔹 Normal subjects
+        else {
+          let subj = students[d.id].juniorHigh.find(
+            (s) => s.subject === d.subject_title,
+          );
+          if (!subj) {
+            subj = {
+              subject: d.subject_title,
+              indicator: d.indicator,
+              '1st Term': null,
+              '2nd Term': null,
+              '3rd Term': null,
+              '4th Term': null,
+              finalGrade: null,
+              remarks: null,
+            };
+            students[d.id].juniorHigh.push(subj);
+          }
+
+          subj[d.quarter] = d.final_grade;
+          subj.finalGrade = average([
+            subj['1st Term'],
+            subj['2nd Term'],
+            subj['3rd Term'],
+            subj['4th Term'],
           ]);
           subj.remarks =
             subj.finalGrade !== null
@@ -1958,8 +2635,8 @@ export class PdfGeneratorService {
     ];
     try {
       const browser = await puppeteer.launch({
-        // headless: 'new',
-        // args: ['--no-sandbox'],
+        headless: 'new',
+        args: ['--no-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -2201,6 +2878,7 @@ export class PdfGeneratorService {
       process.cwd(),
       process.env.FILE_PATH + 'static/img/edukasyon.png',
     );
+
     let deped = join(
       process.cwd(),
       process.env.FILE_PATH + 'static/img/deped.png',
@@ -2236,8 +2914,8 @@ export class PdfGeneratorService {
     ];
     try {
       const browser = await puppeteer.launch({
-        // headless: 'new',
-        // args: ['--no-sandbox'],
+        headless: 'new',
+        args: ['--no-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -2326,8 +3004,8 @@ export class PdfGeneratorService {
     ];
     try {
       const browser = await puppeteer.launch({
-        // headless: 'new',
-        // args: ['--no-sandbox'],
+        headless: 'new',
+        args: ['--no-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)

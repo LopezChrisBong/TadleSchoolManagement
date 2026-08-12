@@ -17,6 +17,9 @@ export class SchoolYear {
   @Column({ type: 'varchar' })
   school_year_to: string;
 
+  @Column({ type: 'int', default: 0 })
+  syType: number;
+
   @Column({ type: 'boolean', default: false })
   status: boolean;
 

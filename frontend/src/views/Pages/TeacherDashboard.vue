@@ -157,7 +157,7 @@
         </v-row> -->
 
         <!-- REPORT BUTTONS -->
-        <v-card class="pa-4 mb-6" elevation="2">
+        <!-- <v-card class="pa-4 mb-6" elevation="2">
           <div class="font-weight-bold mb-3">Report</div>
 
           <v-row dense>
@@ -198,7 +198,7 @@
               >
             </v-col>
           </v-row>
-        </v-card>
+        </v-card> -->
       </v-col>
 
       <!-- RIGHT COLUMN -->
@@ -379,20 +379,32 @@ export default {
   },
   computed: {
     paginatedAlerts() {
+      // const start = (this.page - 1) * this.itemsPerPage;
+      // const end = start + this.itemsPerPage;
+      // return this.alertStudents.slice(start, end);
+
+      const list = this.alertStudents || [];
       const start = (this.page - 1) * this.itemsPerPage;
       const end = start + this.itemsPerPage;
-      return this.alertStudents.slice(start, end);
+      return list.slice(start, end);
     },
     pageCount() {
+      // return Math.ceil(this.alertStudents.length / this.itemsPerPage);
+      if (!this.alertStudents || !this.itemsPerPage) return 1;
       return Math.ceil(this.alertStudents.length / this.itemsPerPage);
     },
     // MISBEHAVIOR pagination
     paginatedMisbehave() {
+      const list = this.misbehaveList || [];
       const start = (this.misPage - 1) * this.misItemsPerPage;
       const end = start + this.misItemsPerPage;
-      return this.misbehaveList.slice(start, end);
+      return list.slice(start, end);
     },
+    // misPageCount() {
+    //   return Math.ceil(this.misbehaveList.length / this.misItemsPerPage);
+    // },
     misPageCount() {
+      if (!this.misbehaveList || !this.misItemsPerPage) return 1;
       return Math.ceil(this.misbehaveList.length / this.misItemsPerPage);
     },
   },

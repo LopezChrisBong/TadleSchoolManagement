@@ -54,13 +54,12 @@
       >
         <template v-slot:[`item.status`]="{ item }">
           <v-chip :color="item.status == 0 ? 'red' : 'green'">
-            {{ item.status == 0 ? "Inactive" : "Active" }}
+            {{ item.status == 0 ? 'Inactive' : 'Active' }}
           </v-chip>
         </template>
         <template v-slot:[`item.action`]="{ item }">
           <div class="text-no-wrap" style="padding: 4px">
             <v-btn
-              v-if="item.status != 1"
               x-small
               color="pink"
               class="my-2 mx-2"
@@ -70,6 +69,7 @@
               <v-icon size="14">mdi-pencil-outline</v-icon>Update
             </v-btn>
             <!-- <v-btn
+                  v-if="item.status != 1"  
                   x-small
                   color="red"
                   class="my-2"
@@ -130,53 +130,53 @@
   </div>
 </template>
 <script>
-import eventBus from "@/eventBus";
-import AddSchoolYearDialog from "../../components/Dialogs/Forms/AddSchoolYearDialog.vue";
+import eventBus from '@/eventBus';
+import AddSchoolYearDialog from '../../components/Dialogs/Forms/AddSchoolYearDialog.vue';
 export default {
   components: {
     AddSchoolYearDialog,
   },
   data: () => ({
-    search: "",
+    search: '',
     taggingData: null,
     fullname: null,
     applicantData: null,
     headers: [
       {
-        title: "School Year",
-        value: "school_year",
-        align: "start",
-        valign: "start",
+        title: 'School Year',
+        value: 'school_year',
+        align: 'start',
+        valign: 'start',
         sortable: false,
       },
 
       {
-        title: "From:",
-        value: "school_year_from",
-        align: "center",
-        valign: "center",
+        title: 'From:',
+        value: 'school_year_from',
+        align: 'center',
+        valign: 'center',
         sortable: false,
       },
 
       {
-        title: "To:",
-        value: "school_year_to",
-        align: "center",
-        valign: "center",
+        title: 'To:',
+        value: 'school_year_to',
+        align: 'center',
+        valign: 'center',
         sortable: false,
       },
       {
-        title: "Status",
-        value: "status",
-        align: "center",
-        valign: "center",
+        title: 'Status',
+        value: 'status',
+        align: 'center',
+        valign: 'center',
         sortable: false,
       },
       {
-        title: "Action",
-        value: "action",
-        align: "end",
-        valign: "end",
+        title: 'Action',
+        value: 'action',
+        align: 'end',
+        valign: 'end',
         sortable: false,
       },
 
@@ -194,17 +194,17 @@ export default {
     printData: [],
     verified: [],
     perPageChoices: [
-      { text: "5", value: 5 },
-      { text: "10", value: 10 },
-      { text: "20", value: 20 },
-      { text: "50", value: 50 },
-      { text: "100", value: 100 },
-      { text: "250", value: 250 },
-      { text: "500", value: 500 },
+      { text: '5', value: 5 },
+      { text: '10', value: 10 },
+      { text: '20', value: 20 },
+      { text: '50', value: 50 },
+      { text: '100', value: 100 },
+      { text: '250', value: 250 },
+      { text: '500', value: 500 },
     ],
-    activeTab: { id: 1, name: "School Year" },
+    activeTab: { id: 1, name: 'School Year' },
     tab: 1,
-    tabList: [{ id: 1, name: "School Year" }],
+    tabList: [{ id: 1, name: 'School Year' }],
     editSchollYear: null,
     designationData: null,
     totalCount: 0,
@@ -224,26 +224,26 @@ export default {
     confirmDialog: false,
     fadeAwayMessage: {
       show: false,
-      type: "success",
-      header: "Successfully Deleted!",
-      message: "",
+      type: 'success',
+      header: 'Successfully Deleted!',
+      message: '',
       top: 10,
     },
     yearList: [],
     monthsList: [
-      { id: 0, name: "All" },
-      { id: 1, name: "January" },
-      { id: 2, name: "February" },
-      { id: 3, name: "March" },
-      { id: 4, name: "April" },
-      { id: 5, name: "May" },
-      { id: 6, name: "June" },
-      { id: 7, name: "July" },
-      { id: 8, name: "August" },
-      { id: 9, name: "September" },
-      { id: 10, name: "October" },
-      { id: 11, name: "November" },
-      { id: 12, name: "December" },
+      { id: 0, name: 'All' },
+      { id: 1, name: 'January' },
+      { id: 2, name: 'February' },
+      { id: 3, name: 'March' },
+      { id: 4, name: 'April' },
+      { id: 5, name: 'May' },
+      { id: 6, name: 'June' },
+      { id: 7, name: 'July' },
+      { id: 8, name: 'August' },
+      { id: 9, name: 'September' },
+      { id: 10, name: 'October' },
+      { id: 11, name: 'November' },
+      { id: 12, name: 'December' },
     ],
   }),
 
@@ -251,14 +251,14 @@ export default {
     this.loadYear();
 
     this.initialize();
-    eventBus.on("closeAddSchoolYearDialog", () => {
+    eventBus.on('closeAddSchoolYearDialog', () => {
       this.initialize();
     });
   },
 
   beforeUnmount() {
     // eventBus.off("closeMyJobApplicationDialog");
-    eventBus.off("closeAddSchoolYearDialog");
+    eventBus.off('closeAddSchoolYearDialog');
 
     // eventBus.off("closeMyDesignationDialog");
   },
@@ -295,7 +295,7 @@ export default {
   methods: {
     tag(item) {
       this.taggingData = item;
-      this.action = "Tag";
+      this.action = 'Tag';
     },
 
     loadYear() {
@@ -314,7 +314,7 @@ export default {
       this.loading = true;
 
       if (this.tab == 1) {
-        this.axiosCall("/enroll-student/getSchoolYear", "GET").then((res) => {
+        this.axiosCall('/enroll-student/getSchoolYear', 'GET').then((res) => {
           if (res) {
             this.data = res.data;
             this.loading = false;
@@ -337,12 +337,12 @@ export default {
     },
     add() {
       this.editSchollYear = [{ id: null }];
-      this.action = "Add";
+      this.action = 'Add';
     },
     editItem(item) {
       console.log(this.tab, item);
       this.editSchollYear = item;
-      this.action = "Update";
+      this.action = 'Update';
     },
 
     // deleteItem() {
