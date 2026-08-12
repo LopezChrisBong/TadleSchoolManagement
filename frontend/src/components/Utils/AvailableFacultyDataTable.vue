@@ -48,7 +48,6 @@
               variant="outlined"
               density="compact"
               prepend-inner-icon="mdi-account-tie"
-              clearable
             />
           </v-col>
           <v-col cols="12" md="4">

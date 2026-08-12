@@ -36,12 +36,14 @@
                       data.grade_level == 'Grade 11' ||
                       data.grade_level == 'Grade 12'
                         ? ['1st Quarter', '2nd Quarter']
-                        : [
+                        : syType == 0
+                        ? [
                             '1st Quarter',
                             '2nd Quarter',
                             '3rd Quarter',
                             '4th Quarter',
                           ]
+                        : ['1st Term', '2nd Term', '3rd Term']
                     "
                     chips
                     variant="outlined"
@@ -415,7 +417,7 @@
                 ? 'Written Works'
                 : tab == 2
                 ? 'Performance Task'
-                : 'Quarterly Assessment'
+                : 'Periodic Assessment'
             }})</span
           >
           <v-spacer></v-spacer>
@@ -585,13 +587,14 @@ export default {
       sortBy: [{ key: 'name', order: 'ASD' }],
       readonly: true,
       dialog: false,
+      syType: null,
       sub_subject: null,
       gradeData: [],
       newData: [],
       confirmDialog: false,
       title: null,
       savedata: 'save',
-      quarter: '1st Quarter',
+      quarter: '',
       semester: null,
       gradesDialog: false,
       dinominator: null,
@@ -613,7 +616,7 @@ export default {
         { title: 'Subject', key: 'subject_title' },
         { title: 'Written Works', key: 'ww_weighted' },
         { title: 'Performance Task', key: 'pt_weighted' },
-        { title: 'Quarterly Assessment', key: 'qa_weighted' },
+        { title: 'Periodic Assessment', key: 'qa_weighted' },
         { title: 'Initial Grade', key: 'initial_grade' },
         { title: 'Final Grade', key: 'transmuted_grade' },
         { title: 'Status', key: 'status' },
@@ -627,7 +630,7 @@ export default {
       tabList: [
         { id: 1, name: 'Written Works', active: true },
         { id: 2, name: 'Performance Tasks', active: false },
-        { id: 3, name: 'Quarterly Assessment', active: false },
+        { id: 3, name: 'Periodic Assessment', active: false },
       ],
       items: [],
       quizLabels: [],
@@ -710,6 +713,8 @@ export default {
   methods: {
     initialize() {
       this.filter = this.$store.getters.getFilterSelected;
+      this.syType = this.$store.getters.getSyType;
+      this.quarter = this.syType == 0 ? '1st Quarter' : '1st Term';
       this.userRoleID = this.$store.state.user.id;
       this.getTaggedStudent();
     },

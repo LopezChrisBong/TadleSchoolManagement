@@ -9,7 +9,7 @@ import * as express from 'express';
 import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
 import { ExpressAdapter } from '@nestjs/platform-express';
-
+import { DataSource } from 'typeorm';
 async function bootstrap() {
   var whitelist = [
     'http://localhost:8080',
@@ -73,6 +73,14 @@ async function bootstrap() {
   // app.use(express.static(__dirname + '/imgAsset'));
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb' }));
+
+  const dataSource = app.get(DataSource);
+  // await dataSource.query(`
+  //   SET GLOBAL sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))
+  // `);
+  await dataSource.query(`
+  SET SESSION sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''))
+  `);
 
   await app.listen(3000);
   // await app.listen(process.env.NODE_ENV == 'development' ? 3000 : 3005);

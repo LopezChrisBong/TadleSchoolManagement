@@ -82,6 +82,35 @@ export class PdfGeneratorController {
     res.end(buffer);
   }
 
+  @Get('/getStudentAchievementsV2/:studentID/:roomID/:filter/:gradeLevel')
+  async getStudentAchievementsV2(
+    @Res() res,
+    @Param('studentID') studentID: number,
+    @Param('roomID') roomID: number,
+    @Param('filter') filter: number,
+    @Param('gradeLevel') gradeLevel: string,
+  ): Promise<void> {
+    const buffer = await this.pdfGeneratorService.getStudentAchievementsV2(
+      studentID,
+      roomID,
+      filter,
+      gradeLevel,
+    );
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'inline; filename=example.pdf',
+      'Content-Length': buffer.length,
+
+      // prevent cache
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      Pragma: 'no-cache',
+      Expires: 0,
+    });
+
+    res.end(buffer);
+  }
+
   @Get(
     '/getAllStudentsFinalGrade/:filter/:roomID/:quarter/:semester/:gradeLevel',
   )

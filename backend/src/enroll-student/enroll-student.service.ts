@@ -189,6 +189,7 @@ export class EnrollStudentService {
         where: {
           school_year_from: createSchoolYearDto.school_year_from,
           school_year_to: createSchoolYearDto.school_year_to,
+          syType: createSchoolYearDto.syType,
         },
       });
       console.log(existing);
@@ -1258,6 +1259,7 @@ export class EnrollStudentService {
         school_year_from: updateSchoolYearDto.school_year_from,
         school_year_to: updateSchoolYearDto.school_year_to,
         status: updateSchoolYearDto.status,
+        syType: updateSchoolYearDto.syType,
       });
       // if (updateSchoolYearDto.status == true) {
       //   await this.dataSource.manager.query(
