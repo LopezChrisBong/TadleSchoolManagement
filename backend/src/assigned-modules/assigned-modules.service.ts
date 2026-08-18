@@ -56,7 +56,7 @@ export class AssignedModulesService {
   async getSpecificModules() {
     let modules = await this.dataSource
       .createQueryBuilder(AssignedModule, 'am')
-      .where('am.id != 1')
+      // .where('am.id != 1')
       .andWhere('am.id != 4')
       .andWhere('am.id != 22')
       .getMany();

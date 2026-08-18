@@ -97,10 +97,10 @@
             <v-btn color="primary" variant="flat" @click="accept">
               <v-icon start>
                 {{
-                  action === "Verify" ? "mdi-check-circle" : "mdi-content-save"
+                  action === 'Verify' ? 'mdi-check-circle' : 'mdi-content-save'
                 }}
               </v-icon>
-              {{ action === "Verify" ? "Accept" : "Update" }}
+              {{ action === 'Verify' ? 'Accept' : 'Update' }}
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -119,7 +119,7 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
 export default {
   props: {
     data: Object,
@@ -131,8 +131,8 @@ export default {
       isValidated: false,
       subModules: [],
       statusList: [
-        { id: 1, description: "Elementary" },
-        { id: 2, description: "High School" },
+        { id: 1, description: 'Elementary' },
+        { id: 2, description: 'High School' },
       ],
       verifyModel: {
         id: null,
@@ -151,9 +151,9 @@ export default {
       assigneAccessModulesList: [],
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
@@ -177,7 +177,7 @@ export default {
         this.initialize();
         // this.$refs.UserVerifyFormref.resetValidation();
         if (data.id) {
-          console.log("Love", data);
+          console.log('Love', data);
           this.verifyModel.id = data.id;
           this.verifyModel.userID = data.user_id;
           this.verifyModel.name = data.name;
@@ -195,7 +195,7 @@ export default {
             (item) => item !== data.user_assignedModuleID,
           );
 
-          console.log("this.subModules", this.subModules);
+          console.log('this.subModules', this.subModules);
 
           this.verifyModel.newStatus = data.status;
           // this.verifyModel.date_hired = data.emp_date_hired;
@@ -213,16 +213,16 @@ export default {
       this.getUseRoles();
     },
     getUserType() {
-      this.axiosCall("/user-type/getAllUsertype", "GET").then((res) => {
+      this.axiosCall('/user-type/getAllUsertype', 'GET').then((res) => {
         if (res.data) {
-          console.log("UserList", res.data);
+          console.log('UserList', res.data);
           let data = res.data;
           this.usertypeList = data;
         }
       });
     },
     closeD() {
-      eventBus.emit("closeAccountsVerificationDialog", true);
+      eventBus.emit('closeAccountsVerificationDialog', true);
       this.dialog = false;
     },
     accept() {
@@ -244,23 +244,23 @@ export default {
         isValidated: this.isValidated,
         subModules: JSON.stringify(this.subModules),
         status: this.verifyModel.newStatus,
-        update_type: this.action == "Verify" ? 1 : 2,
+        update_type: this.action == 'Verify' ? 1 : 2,
       };
       console.log(this.subModules);
-      this.axiosCall("/user-details/updateVerifiedUser", "POST", data).then(
+      this.axiosCall('/user-details/updateVerifiedUser', 'POST', data).then(
         (res) => {
           if (res.data.status == 200) {
             this.dialog = false;
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "success";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'success';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
             this.closeD();
           } else if (res.data.status == 400) {
             this.dialog = false;
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
             // this.$refs.PositionFormref.reset();
             this.closeD();
@@ -271,14 +271,19 @@ export default {
     },
 
     getAssignedModules() {
-      this.axiosCall("/assigned-modules/", "GET").then((res) => {
-        // console.log("AssignedM", res.data);
-        let data = res.data;
+      this.axiosCall('/assigned-modules/', 'GET').then((res) => {
+        let data = [];
+        for (let i = 0; i < res.data.length; i++) {
+          if (res.data[i].id != 4) {
+            data.push(res.data[i]);
+          }
+        }
+        console.log('AssignedM', data);
         this.assignedModulesList = data;
       });
     },
     getAccessControlAssignedModules() {
-      this.axiosCall("/assigned-modules/getSpecificModules", "GET").then(
+      this.axiosCall('/assigned-modules/getSpecificModules', 'GET').then(
         (res) => {
           // console.log("AssignedM", res.data);
           let data = res.data;
@@ -287,8 +292,8 @@ export default {
       );
     },
     getUseRoles() {
-      this.axiosCall("/user-role", "GET").then((res) => {
-        console.log("UserRole", res.data);
+      this.axiosCall('/user-role', 'GET').then((res) => {
+        console.log('UserRole', res.data);
         this.userRoleList = res.data;
       });
     },

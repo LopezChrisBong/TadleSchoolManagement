@@ -13,23 +13,26 @@
             <v-img
               src="/img/southernlogo.png"
               max-width="90"
-              class="mx-auto"
+              class="mx-auto mb-2"
               cover
               rounded="xl"
             />
-            <h2 class="text-center mx-3 mb-5">
+            <h2 class="text-center mx-3 mb-1">
               Welcome to <span class="text-pink"> CMS </span>
             </h2>
-            <!-- <h2 class="text-start">Sign In</h2> -->
+            <p class="text-center text-caption text-grey-darken-1 mb-6">
+              Sign in to continue to your account
+            </p>
 
             <v-form ref="formLogin">
               <v-text-field
                 v-model="emailLogin"
                 :rules="[formRules.required, formRules.email]"
                 label="Email address"
-                prepend-inner-icon="mdi-email"
+                prepend-inner-icon="mdi-email-outline"
                 variant="outlined"
                 density="compact"
+                rounded="lg"
                 @keyup.enter="dologin()"
                 class="mb-3"
               />
@@ -39,20 +42,38 @@
                 :type="showPassword ? 'text' : 'password'"
                 :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
                 @click:append-inner="showPassword = !showPassword"
-                prepend-inner-icon="mdi-lock"
+                prepend-inner-icon="mdi-lock-outline"
                 @keyup.enter="dologin()"
                 variant="outlined"
                 density="compact"
+                rounded="lg"
                 class="mb-5"
               />
-              <v-btn color="#e93175" block @click="dologin()">Sign In</v-btn>
-              <div class="mt-4 text-caption" v-if="!isSmAndUp">
-                <div class="d-flex">
-                  <p>Don't have an account yet?</p>
-                  <a class="text-green" @click="mobileChange()">Sign Up</a>
+              <v-btn
+                color="#e93175"
+                block
+                rounded="lg"
+                size="large"
+                elevation="0"
+                @click="dologin()"
+              >
+                Sign In
+                <v-icon end size="18">mdi-arrow-right</v-icon>
+              </v-btn>
+
+              <div class="mt-5 text-caption" v-if="!isSmAndUp">
+                <div class="d-flex justify-center">
+                  <p class="mr-1">Don't have an account yet?</p>
+                  <a
+                    class="text-green font-weight-medium"
+                    @click="mobileChange()"
+                    >Sign Up</a
+                  >
                 </div>
                 <div class="text-green d-flex justify-center mt-3">
-                  <a @click="doHome()">Home</a>
+                  <a @click="doHome()">
+                    <v-icon size="14" class="mr-1">mdi-home-outline</v-icon>Home
+                  </a>
                 </div>
               </div>
             </v-form>
@@ -69,54 +90,87 @@
           "
         >
           <v-card class="form-card" elevation="10" rounded="xl">
-            <h2 class="text-center mb-4">Create Account</h2>
-            <p class="text-caption text-gray-100 mb-3">
-              Step {{ step.id }} of 3 - {{ step.name }}
+            <h2 class="text-center mb-2">Create Account</h2>
+
+            <!-- Step indicator -->
+            <div class="d-flex align-center justify-center mb-1">
+              <template v-for="n in 3" :key="n">
+                <div
+                  class="step-dot"
+                  :class="{
+                    'step-dot-active': n === step.id,
+                    'step-dot-done': n < step.id,
+                  }"
+                >
+                  <v-icon v-if="n < step.id" size="12" color="white"
+                    >mdi-check</v-icon
+                  >
+                </div>
+                <div
+                  v-if="n < 3"
+                  class="step-line"
+                  :class="{ 'step-line-done': n < step.id }"
+                ></div>
+              </template>
+            </div>
+            <p class="text-caption text-center text-grey-darken-1 mb-5">
+              Step {{ step.id }} of 3 — {{ step.name }}
             </p>
+
             <v-form ref="formInformation" v-show="step.id == 1">
               <v-text-field
                 v-model="fname"
                 label="First Name"
-                prepend-inner-icon="mdi-account"
+                prepend-inner-icon="mdi-account-outline"
                 :rules="[formRules.required]"
                 variant="outlined"
                 density="compact"
+                rounded="lg"
                 class="mb-3"
               />
               <v-text-field
                 v-model="mname"
                 label="Middle Name(optional)"
-                prepend-inner-icon="mdi-account"
+                prepend-inner-icon="mdi-account-outline"
                 variant="outlined"
                 density="compact"
+                rounded="lg"
                 class="mb-3"
               />
               <v-text-field
                 v-model="lname"
                 label="Last Name"
-                prepend-inner-icon="mdi-account"
+                prepend-inner-icon="mdi-account-outline"
                 :rules="[formRules.required]"
                 variant="outlined"
                 density="compact"
+                rounded="lg"
                 class="mb-3"
               />
-              <v-btn color="#e93175" block @click="next()" class="mb-2"
-                >Next</v-btn
+              <v-btn
+                color="#e93175"
+                block
+                rounded="lg"
+                size="large"
+                elevation="0"
+                @click="next()"
+                class="mb-2"
               >
-              <div class="mt-4 text-caption d-flex" v-if="!isSmAndUp">
-                <p>Already have an account?</p>
-                <a class="text-green" @click="mobileChange()">Sign In</a>
+                Next
+                <v-icon end size="18">mdi-arrow-right</v-icon>
+              </v-btn>
+              <div
+                class="mt-4 text-caption d-flex justify-center"
+                v-if="!isSmAndUp"
+              >
+                <p class="mr-1">Already have an account?</p>
+                <a class="text-green font-weight-medium" @click="mobileChange()"
+                  >Sign In</a
+                >
               </div>
             </v-form>
+
             <v-form ref="formRegister" v-show="step.id == 2">
-              <!-- <v-text-field
-                v-model="name"
-                label="Name"
-                prepend-inner-icon="mdi-account"
-                outlined
-                dense
-                class="mb-3"
-              /> -->
               <v-autocomplete
                 v-if="userType == 1"
                 v-model="assignedModuleID"
@@ -124,7 +178,7 @@
                 variant="outlined"
                 clearable=""
                 density="compact"
-                class="rounded-lg"
+                class="rounded-lg mb-1"
                 item-value="id"
                 item-title="description"
                 label="Role"
@@ -135,12 +189,13 @@
               <v-text-field
                 v-model="email"
                 label="Email"
-                prepend-inner-icon="mdi-email"
+                prepend-inner-icon="mdi-email-outline"
                 :rules="[formRules.required, formRules.email]"
                 @change="checkEmail()"
                 :error-messages="emailError"
                 variant="outlined"
                 density="compact"
+                rounded="lg"
                 class="mb-3"
               />
               <v-text-field
@@ -150,16 +205,18 @@
                 :append-inner-icon="showPassword ? 'mdi-eye-off' : 'mdi-eye'"
                 @click:append-inner="showPassword = !showPassword"
                 :rules="[formRules.required, formRules.password]"
-                prepend-inner-icon="mdi-lock"
+                prepend-inner-icon="mdi-lock-outline"
                 variant="outlined"
                 density="compact"
-                class="mb-5"
+                rounded="lg"
+                class="mb-3"
               />
               <v-text-field
-                class="font-size-14"
+                class="font-size-14 mb-5"
                 color="#93CB5B"
                 variant="outlined"
                 density="compact"
+                rounded="lg"
                 v-model="confirmPassword"
                 :rules="[
                   formRules.required,
@@ -170,60 +227,54 @@
                   showPasswordConfirm ? 'mdi-eye-off' : 'mdi-eye'
                 "
                 @click:append-inner="showPasswordConfirm = !showPasswordConfirm"
-                prepend-inner-icon="mdi-lock"
+                prepend-inner-icon="mdi-lock-outline"
                 label="Confirm Password"
               ></v-text-field>
               <v-btn
                 color="#e93175"
                 block
+                rounded="lg"
+                size="large"
+                elevation="0"
                 @click="register()"
                 class="mb-2"
                 :loading="isLoading"
-                >Sign Up</v-btn
               >
-              <!-- <v-btn
-                variant="outlined"
-                block
-                color="primary"
-                @click="mobileChange()"
+                Sign Up
+              </v-btn>
+              <div
+                class="mt-4 text-caption d-flex justify-center"
                 v-if="!isSmAndUp"
-                >Sign In</v-btn
-              > -->
-              <div class="mt-4 text-caption d-flex" v-if="!isSmAndUp">
-                <div class="d-flex">
-                  <p>Already have an account?</p>
-                  <a class="text-green" @click="mobileChange()">Sign In</a>
-                </div>
+              >
+                <p class="mr-1">Already have an account?</p>
+                <a class="text-green font-weight-medium" @click="mobileChange()"
+                  >Sign In</a
+                >
               </div>
             </v-form>
+
             <v-form
               ref="formOTP"
               v-show="step.id === 3"
               @submit.prevent="submitOTP"
             >
-              <v-row class="mx-5 mt-3">
-                <v-col cols="12" class="pa-0 px-2 mb-2">
-                  <span class="text-justify" style="font-size: 10px">
-                    Please enter the OTP that was sent to your Email Address to
-                    continue your system Registration.
-                  </span>
+              <v-row class="mx-1 mt-1" justify="center">
+                <v-col cols="12" class="pa-0 px-2 mb-3 text-center">
+                  <v-icon color="pink" size="34" class="mb-2"
+                    >mdi-email-check-outline</v-icon
+                  >
+                  <div style="font-size: 12px" class="text-grey-darken-1">
+                    Please enter the OTP that was sent to your email address to
+                    continue your system registration.
+                  </div>
                 </v-col>
 
-                <v-col cols="12" class="mb-4">
-                  <p class="text-caption text-grey">
-                    Please enter your One Time Pin
+                <v-col cols="12" class="mb-2 text-center">
+                  <p class="text-caption text-grey mb-3">
+                    Enter your One Time Pin
                   </p>
 
                   <div class="otp-wrapper">
-                    <!-- <input
-                      v-for="(digit, index) in otp"
-                      :key="index"
-                      type="text"
-                      maxlength="1"
-                      v-model="otp[index]"
-                      class="otp-input"
-                      @update:modelValue="focusNext(index)"
-                    /> -->
                     <input
                       v-for="(digit, index) in otp"
                       :key="index"
@@ -237,16 +288,17 @@
                   </div>
                 </v-col>
 
-                <v-col cols="12" class="pa-0 px-4">
+                <v-col cols="12" class="pa-0 px-4 mt-2">
                   <v-btn
                     type="submit"
                     :loading="isLoading"
                     block
                     variant="flat"
                     color="#e93175"
-                    class="py-5 text-white rounded-lg"
+                    size="large"
+                    class="text-white rounded-lg"
                   >
-                    CONFIRM
+                    Confirm
                   </v-btn>
                 </v-col>
               </v-row>
@@ -276,13 +328,14 @@
 
               <!-- TAGLINE -->
               <div class="tagline-light mb-6">
-                “Nurturing Potentials, Inspiring Excellence, Building Futures”
+                "Nurturing Potentials, Inspiring Excellence, Building Futures"
               </div>
 
               <!-- BUTTONS -->
               <div class="d-flex justify-center mt-4">
                 <v-btn
                   variant="outlined"
+                  rounded="lg"
                   class="font-weight-bold mx-3"
                   append-icon="mdi-account"
                   width="150"
@@ -294,6 +347,7 @@
 
                 <v-btn
                   variant="flat"
+                  rounded="lg"
                   class="font-weight-bold mx-3"
                   append-icon="mdi-home"
                   width="150"
@@ -322,13 +376,14 @@
 
               <!-- TAGLINE -->
               <div class="tagline mb-6">
-                “Nurturing Potentials, Inspiring Excellence, Building Futures”
+                "Nurturing Potentials, Inspiring Excellence, Building Futures"
               </div>
 
               <!-- OPTIONAL BUTTONS -->
               <div class="d-flex justify-center mt-4">
                 <v-btn
                   variant="outlined"
+                  rounded="lg"
                   class="font-weight-bold mx-3"
                   append-icon="mdi-account"
                   color="white"
@@ -340,6 +395,7 @@
 
                 <v-btn
                   variant="flat"
+                  rounded="lg"
                   class="font-weight-bold mx-3"
                   append-icon="mdi-home"
                   width="150"
@@ -619,6 +675,11 @@ export default {
           this.fadeAwayMessage.message =
             'Your OTP has been successfully confirmed. You may now proceed to log in.';
           this.fadeAwayMessage.header = 'System Message';
+          this.otp = ['', '', '', '', '', ''];
+          this.step = { id: 1, name: 'Personal Information' };
+          setTimeout(() => {
+            this.$router.push('/login');
+          }, 2000);
           // this.$router.push("/registration-success");
         } else {
           this.isLoading = false;
@@ -646,8 +707,7 @@ export default {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  /* background: linear-gradient(135deg, #e0cad9, #bb73a9); */
-  background: linear-gradient(135deg, #ffffff, #ffffff);
+  background: linear-gradient(135deg, #fff5f9, #ffffff);
 }
 
 .auth-wrapper {
@@ -682,11 +742,6 @@ export default {
   .auth-wrapper {
     min-height: 550px;
   }
-  /* .sign-up-container {
-    left: 0;
-    opacity: 0;
-    z-index: 0;
-  } */
 }
 
 .sign-in-container {
@@ -726,7 +781,6 @@ export default {
 }
 
 .overlay {
-  /* background: linear-gradient(135deg, #20bfa9, #178ca6); */
   background: linear-gradient(to right, #f8f9fa, #e93175);
   position: relative;
   left: -100%;
@@ -761,17 +815,46 @@ export default {
 .overlay-right {
   transform: translateX(0);
 }
+
+/* Step indicator */
+.step-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #f0e3ea;
+  color: #b0879a;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.25s ease;
+}
+.step-dot-active {
+  background: #e93175;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(233, 49, 117, 0.15);
+}
+.step-dot-done {
+  background: #e93175;
+}
+.step-line {
+  width: 28px;
+  height: 2px;
+  background: #f0e3ea;
+  margin: 0 4px;
+  transition: all 0.25s ease;
+}
+.step-line-done {
+  background: #e93175;
+}
+
 .otp-wrapper {
   display: flex;
   justify-content: center;
   gap: 8px;
   color: black;
 }
-/* 
-.otp-input {
-  max-width: 100px;
-  text-align: center;
-} */
 .otp-input {
   border: 2px solid;
   border-color: #ff53cc;
@@ -782,7 +865,13 @@ export default {
   margin-left: 2px;
   font-size: 28px;
   text-align: center;
+  transition: box-shadow 0.2s ease;
 }
+.otp-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 83, 204, 0.25);
+}
+
 .custom-overlay {
   background: linear-gradient(135deg, #e93175, #d81b60);
   color: white;

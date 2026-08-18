@@ -214,7 +214,6 @@ export class EnrollStudentService {
   }
 
   // async AddSchedule(createAvailabilityDto: CreateAvailabilityDto) {
-
   //   try {
   //     const conflict = await this.checkConflict(createAvailabilityDto);
 
@@ -226,7 +225,9 @@ export class EnrollStudentService {
   //       };
   //     }
 
-  //     const newSchedule = this.availabilityRepository.create(createAvailabilityDto);
+  //     const newSchedule = this.availabilityRepository.create(
+  //       createAvailabilityDto,
+  //     );
   //     await this.availabilityRepository.save(newSchedule);
 
   //     return {
@@ -247,8 +248,9 @@ export class EnrollStudentService {
     const savedDays: string[] = [];
     const skippedDays: string[] = [];
 
+    let dayData = [createAvailabilityDto.day];
     try {
-      for (const day of createAvailabilityDto.day) {
+      for (const day of dayData) {
         const data = {
           teacherID: createAvailabilityDto.teacherID,
           subjectId: createAvailabilityDto.subjectId,
@@ -493,7 +495,8 @@ export class EnrollStudentService {
         'ES.semester  as track',
         'ES.strand  as track',
       ])
-      .where('ES.statusEnrolled = 0')
+      // .where('ES.statusEnrolled = 0')
+      .where('ES.statusEnrolled = 1')
       // .andWhere('ES.seniorJunior IN (:...values)', {
       //   values: [school_level, school_level1],
       // })

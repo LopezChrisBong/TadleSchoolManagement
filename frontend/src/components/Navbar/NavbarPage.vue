@@ -1,14 +1,34 @@
 <template>
   <v-app>
     <!-- Sticky Top App Bar -->
-    <v-app-bar app dark>
-      <v-app-bar-nav-icon @click="drawer = !drawer" />
-      <v-toolbar-title>
-        {{
-          $vuetify.display.smAndUp ? 'School Management System' : 'SMS'
-        }}</v-toolbar-title
-      >
+    <v-app-bar app elevation="0" class="app-bar-light">
+      <v-app-bar-nav-icon
+        @click="drawer = !drawer"
+        aria-label="Toggle navigation"
+        class="d-lg-none"
+        color="#1F2933"
+      />
+      <v-toolbar-title class="font-weight-bold d-flex align-center brand-title">
+        {{ $vuetify.display.smAndUp ? 'Class Management System' : 'CMS' }}
+      </v-toolbar-title>
+
+      <!-- Decorative search field (visual only — not wired to a search action) -->
+      <!--    <div class="topbar-search d-none d-lg-flex align-center">
+      <v-icon size="18" color="#9AA1AC" class="me-2">mdi-magnify</v-icon>
+        <span class="text-body-2 topbar-search-placeholder">Search task</span> 
+      </div>-->
+
       <v-spacer />
+
+      <!-- <v-btn
+        icon
+        variant="text"
+        class="topbar-icon-btn d-none d-sm-inline-flex"
+        aria-label="Mail"
+      >
+        <v-icon color="#4B5563">mdi-email-outline</v-icon>
+      </v-btn> -->
+
       <!-- notification -->
       <v-menu
         v-model="notifMenu"
@@ -21,11 +41,17 @@
           <v-badge
             :content="unreadCount > 99 ? '99+' : unreadCount"
             :model-value="hasUnread"
-            color="blue"
+            color="#F97316"
             overlap
           >
-            <v-btn icon v-bind="props">
-              <v-icon :color="hasUnread ? 'white' : 'white'">
+            <v-btn
+              icon
+              variant="text"
+              v-bind="props"
+              aria-label="Notifications"
+              class="topbar-icon-btn"
+            >
+              <v-icon :color="hasUnread ? '#E35E93' : '#4B5563'">
                 {{ hasUnread ? 'mdi-bell-ring' : 'mdi-bell-outline' }}
               </v-icon>
             </v-btn>
@@ -35,45 +61,52 @@
         <v-card
           width="380"
           max-height="650"
-          class="overflow-y-auto rounded-xl elevation-8"
+          class="overflow-y-auto rounded-xl notif-panel"
         >
           <!-- HEADER -->
-          <v-card-title class="d-flex align-center px-5 py-4">
-            <v-icon class="me-2" color="primary">mdi-bell-outline</v-icon>
-            <span class="text-h6 font-weight-bold">Notifications</span>
+          <v-card-title
+            class="d-flex align-center px-5 py-4 notif-panel-header"
+          >
+            <v-avatar size="34" class="me-3 header-icon-avatar">
+              <v-icon size="18" color="white">mdi-bell-outline</v-icon>
+            </v-avatar>
+            <div>
+              <div class="text-subtitle-1 font-weight-bold">Notifications</div>
+              <div class="text-caption text-medium-emphasis">
+                {{
+                  hasUnread ? unreadCount + ' unread' : "You're all caught up"
+                }}
+              </div>
+            </div>
           </v-card-title>
 
           <v-divider />
 
           <v-card-text class="pa-4">
             <div
-              class="d-flex pa-2"
+              class="d-flex pa-1 mb-1"
               v-if="$store.state.user.user.assignedModuleID != 22"
             >
-              <v-row>
-                <v-col cols="12" md="6">
-                  <v-btn
-                    block
-                    :color="status === 'Lardo' ? 'blue' : 'grey'"
-                    dark
-                    @click="status = 'Lardo'"
+              <v-btn-toggle
+                v-model="status"
+                mandatory
+                divided
+                density="comfortable"
+                class="status-toggle w-100"
+              >
+                <v-btn value="Lardo" class="flex-grow-1" size="small">
+                  <v-icon start size="16"
+                    >mdi-file-document-alert-outline</v-icon
                   >
-                    Lardo
-                  </v-btn>
-                </v-col>
-
-                <v-col cols="12" md="6">
-                  <v-btn
-                    block
-                    :color="status === 'At-Risk' ? 'blue' : 'grey'"
-                    dark
-                    @click="status = 'At-Risk'"
-                  >
-                    At-Risk
-                  </v-btn>
-                </v-col>
-              </v-row>
+                  Lardo
+                </v-btn>
+                <v-btn value="At-Risk" class="flex-grow-1" size="small">
+                  <v-icon start size="16">mdi-alert-circle-outline</v-icon>
+                  At-Risk
+                </v-btn>
+              </v-btn-toggle>
             </div>
+
             <!-- LARDO Notification -->
             <div
               v-if="lardoNotification.length"
@@ -85,11 +118,15 @@
               <v-card
                 v-for="(req, i) in limitLardoAdviser"
                 :key="'req-' + i"
-                class="notif-card"
+                class="notif-card notif-card--lardo"
+                variant="flat"
               >
                 <div class="d-flex align-start">
-                  <v-avatar size="42" class="me-3">
-                    <v-icon>mdi-account</v-icon>
+                  <v-avatar
+                    size="42"
+                    class="me-3 notif-avatar notif-avatar--lardo"
+                  >
+                    <v-icon size="20" color="white">mdi-account</v-icon>
                   </v-avatar>
 
                   <div class="flex-grow-1">
@@ -97,17 +134,22 @@
                       {{ req.student_name }}
                     </div>
 
-                    <div class="text-caption text-grey-darken-1 mb-2">
+                    <div class="text-caption text-medium-emphasis mb-2">
                       {{ req.remarks }}
                     </div>
-                    <div class="pt-3">
-                      <strong> Decision Support Recommendation:</strong>
+                    <div class="recommendation-block">
+                      <div
+                        class="text-caption font-weight-bold recommendation-label"
+                      >
+                        Decision Support Recommendation
+                      </div>
+                      <div class="text-caption">{{ req.recommendation }}</div>
                     </div>
-                    <div>{{ req.recommendation }}</div>
                     <v-btn
                       size="small"
-                      color="primary"
-                      variant="flat"
+                      color="#E35E93"
+                      variant="tonal"
+                      class="mt-2"
                       @click="openLardoNotification(req)"
                     >
                       View
@@ -130,11 +172,15 @@
               <v-card
                 v-for="(req, i) in limitLardoFaculty"
                 :key="'req-' + i"
-                class="notif-card"
+                class="notif-card notif-card--lardo"
+                variant="flat"
               >
                 <div class="d-flex align-start">
-                  <v-avatar size="42" class="me-3">
-                    <v-icon>mdi-account</v-icon>
+                  <v-avatar
+                    size="42"
+                    class="me-3 notif-avatar notif-avatar--lardo"
+                  >
+                    <v-icon size="20" color="white">mdi-account</v-icon>
                   </v-avatar>
 
                   <div class="flex-grow-1">
@@ -142,17 +188,22 @@
                       {{ req.student_name }}
                     </div>
 
-                    <div class="text-caption text-grey-darken-1 mb-2">
+                    <div class="text-caption text-medium-emphasis mb-2">
                       {{ req.remarks }}
                     </div>
-                    <div class="pt-3">
-                      <strong> Decision Support Recommendation:</strong>
+                    <div class="recommendation-block">
+                      <div
+                        class="text-caption font-weight-bold recommendation-label"
+                      >
+                        Decision Support Recommendation
+                      </div>
+                      <div class="text-caption">{{ req.recommendation }}</div>
                     </div>
-                    <div>{{ req.recommendation }}</div>
                     <v-btn
                       size="small"
-                      color="primary"
-                      variant="flat"
+                      color="#E35E93"
+                      variant="tonal"
+                      class="mt-2"
                       @click="openLardoFacultyNotification(req)"
                     >
                       View
@@ -162,6 +213,25 @@
                   <v-badge v-if="!req.read" color="error" dot />
                 </div>
               </v-card>
+            </div>
+
+            <!-- Empty state: Lardo -->
+            <div
+              v-if="
+                !lardoNotification.length && !lardoNotificationForFaculty.length
+              "
+              v-show="status === 'Lardo'"
+              class="empty-state"
+            >
+              <v-icon size="30" class="mb-2" color="grey-lighten-1"
+                >mdi-file-check-outline</v-icon
+              >
+              <div class="text-body-2 font-weight-medium">
+                No LARDO notifications
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                New alerts will show up here
+              </div>
             </div>
 
             <!-- At Risk Adviser -->
@@ -175,45 +245,76 @@
               <v-card
                 v-for="(notif, index) in limitAtRiskAdviser"
                 :key="'notif-' + index"
-                class="notif-card clickable"
+                class="notif-card notif-card--risk clickable"
+                variant="flat"
                 @click="openAdviserNotification(notif)"
               >
                 <div class="d-flex align-start">
-                  <v-avatar size="42" class="me-3">
-                    <v-icon>mdi-alert-circle-outline</v-icon>
+                  <v-avatar
+                    size="42"
+                    class="me-3 notif-avatar notif-avatar--risk"
+                  >
+                    <v-icon size="20" color="white"
+                      >mdi-alert-circle-outline</v-icon
+                    >
                   </v-avatar>
 
                   <div class="flex-grow-1">
                     <div class="text-body-2 font-weight-medium">
                       {{ notif.student_name }}
                     </div>
-                    <div class="text-caption text-grey-darken-1">
+                    <div class="text-caption text-medium-emphasis">
                       {{ notif.remarks }}
                     </div>
                   </div>
 
                   <v-badge v-if="!notif.read" color="error" dot />
                 </div>
-                <div class="pt-3">
-                  <strong> Decision Support Recommendation:</strong>
+                <div class="recommendation-block mt-2">
+                  <div
+                    class="text-caption font-weight-bold recommendation-label"
+                  >
+                    Decision Support Recommendation
+                  </div>
+                  <div class="text-caption">{{ notif.recommendation }}</div>
                 </div>
-                <div>{{ notif.recommendation }}</div>
               </v-card>
             </div>
 
-            <!-- Parent Notification -->
-            <div v-if="parentNotification.length" class="mb-4">
-              <!-- <div class="section-title">Parent Notification</div> -->
+            <!-- Empty state: At-Risk -->
+            <div
+              v-if="!atRiskNotification.length"
+              v-show="status === 'At-Risk'"
+              class="empty-state"
+            >
+              <v-icon size="30" class="mb-2" color="grey-lighten-1"
+                >mdi-shield-check-outline</v-icon
+              >
+              <div class="text-body-2 font-weight-medium">
+                No at-risk alerts
+              </div>
+              <div class="text-caption text-medium-emphasis">
+                Nothing needs your attention right now
+              </div>
+            </div>
 
+            <!-- Parent Notification -->
+            <div v-if="parentNotification.length" class="mb-2">
               <v-card
                 v-for="(notif, index) in limitParentNotification"
                 :key="'notif-' + index"
-                class="notif-card clickable"
+                class="notif-card notif-card--parent clickable"
+                variant="flat"
                 @click="openParentNotification(notif)"
               >
                 <div class="d-flex align-start">
-                  <v-avatar size="42" class="me-3">
-                    <v-icon>mdi-account-child-outline</v-icon>
+                  <v-avatar
+                    size="42"
+                    class="me-3 notif-avatar notif-avatar--parent"
+                  >
+                    <v-icon size="20" color="white"
+                      >mdi-account-child-outline</v-icon
+                    >
                   </v-avatar>
 
                   <div class="flex-grow-1">
@@ -221,11 +322,11 @@
                       {{ notif.student_name }}
                     </div>
 
-                    <div class="text-caption text-grey-darken-1">
+                    <div class="text-caption text-medium-emphasis">
                       Grade: {{ notif.transmuted_grade }}
                     </div>
 
-                    <div class="text-caption text-grey-darken-1">
+                    <div class="text-caption text-medium-emphasis">
                       Remarks: {{ notif.remarks }}
                     </div>
                   </div>
@@ -242,14 +343,14 @@
             <v-btn
               block
               rounded="lg"
-              color="primary"
+              color="#E35E93"
               variant="flat"
               @click="
                 showAllNotifDialog = true;
                 notifMenu = false;
               "
             >
-              View All Notification
+              View All Notifications
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -260,30 +361,43 @@
         <template #activator="{ props }">
           <v-chip
             v-bind="props"
-            class="rounded-pill py-2 px-3 d-flex align-center"
-            color="white"
-            style="color: white"
+            class="rounded-pill py-2 px-3 d-flex align-center account-chip"
+            variant="flat"
           >
-            <v-avatar size="32" class="me-2">
+            <v-avatar size="26" class="me-2">
               <v-img
                 :src="
                   !profImg ? require('@/assets/img/img_avatar.png') : profImg
                 "
+                cover
               />
             </v-avatar>
-            <v-icon size="20" class="me-1" v-if="$vuetify.display.smAndDown">
+            <!-- <span class="d-none d-md-flex flex-column me-2 account-chip-text">
+              <span class="text-body-2 font-weight-medium">{{
+                $store.state.user.fname
+              }}</span>
+              <span class="text-caption account-chip-subtext">{{
+                $store.state.user.usertype.description
+              }}</span>
+            </span> -->
+            <!-- <v-icon
+              size="20"
+              class="me-1"
+              v-if="$vuetify.display.smAndDown"
+              color="#4B5563"
+            >
               mdi-account-arrow-right
-            </v-icon>
-            <v-icon size="20">mdi-chevron-down</v-icon>
+            </v-icon> -->
+            <v-icon size="20" color="#4B5563">mdi-chevron-down</v-icon>
           </v-chip>
         </template>
 
         <v-card width="280" elevation="12" rounded="xl" class="overflow-hidden">
           <!-- HEADER -->
-          <v-sheet color="pink" class="pa-4">
+          <v-sheet class="pa-4 account-menu-header">
             <v-row align="center" no-gutters>
               <v-col cols="auto">
-                <v-avatar size="56" class="elevation-6">
+                <v-avatar size="56" class="elevation-4 account-avatar-ring">
                   <v-img
                     :src="
                       !profImg
@@ -296,13 +410,17 @@
               </v-col>
 
               <v-col class="pl-3">
-                <div class="text-subtitle-1 font-weight-bold text-white">
-                  {{ $store.state.user.fname }}
-                  {{ $store.state.user.lname.charAt(0).toUpperCase() }}.
+                <div
+                  class="text-subtitle-1 font-weight-bold text-grey-darken-4 account-name-caption"
+                >
+                  {{ $store.state.user.lname.toUpperCase() }}
+                  {{ $store.state.user.fname.charAt(0).toUpperCase() }}.
                 </div>
-                <div class="text-caption text-white opacity-80">
-                  {{ $store.state.user.usertype.description }} •
-                  {{ getMyRole($store.state.user.user.user_roleID) }}
+                <div
+                  class="text-caption text-grey-darken-4 account-role-caption"
+                >
+                  {{ $store.state.user.usertype.description }}
+                  <!-- {{ getMyRole($store.state.user.user.user_roleID) }} -->
                 </div>
               </v-col>
 
@@ -313,6 +431,7 @@
                   variant="text"
                   color="white"
                   @click="menu = false"
+                  aria-label="Close"
                 >
                   <v-icon>mdi-close</v-icon>
                 </v-btn>
@@ -356,17 +475,26 @@
       app
       v-model="drawer"
       :temporary="$vuetify.display.smAndDown"
+      class="app-drawer"
     >
-      <v-list nav dense class="sidebar mt-2">
-        <!-- <v-list-item>
-          <v-avatar>
-            <v-img :src="profImg" width="60" />
-          </v-avatar>
-          <v-list-item-title class="text-uppercase">
-            {{ $store.state.user.fname }} {{ $store.state.user.lname }}
-          </v-list-item-title>
-        </v-list-item> 
-        <v-divider />-->
+      <div class="sidebar-logo d-flex align-center px-4 py-5">
+        <v-avatar size="36" class="me-3 sidebar-logo-mark">
+          <v-img
+            :src="!profImg ? require('@/assets/img/img_avatar.png') : profImg"
+            cover
+          />
+        </v-avatar>
+        <span class="text-subtitle-1 font-weight-bold sidebar-logo-text">
+          <div class="text-subtitle-1 font-weight-bold text-grey-darken-4">
+            {{ $store.state.user.lname.toUpperCase() }}
+            {{ $store.state.user.fname.charAt(0).toUpperCase() }}.
+          </div></span
+        >
+      </div>
+
+      <div class="sidebar-section-label px-4">Menu</div>
+
+      <v-list nav dense class="sidebar mt-1">
         <template v-for="(link, i) in links" :key="i">
           <v-list-item
             v-if="!link.subLink"
@@ -374,6 +502,8 @@
             router
             :exact="true"
             density="compact"
+            rounded="lg"
+            class="mx-2 my-1 sidebar-item"
           >
             <div class="d-flex justify-left align-center">
               <v-icon start>{{ link.icon }}</v-icon>
@@ -383,7 +513,12 @@
 
           <v-list-group v-else v-model="openGroups[i]">
             <template #activator="{ props }">
-              <v-list-item v-bind="props" density="compact">
+              <v-list-item
+                v-bind="props"
+                density="compact"
+                rounded="lg"
+                class="mx-2 my-1 sidebar-item"
+              >
                 <div class="d-flex justify-left align-center">
                   <v-icon start>{{ link.icon }}</v-icon>
                   <v-list-item-title>{{ link.title }}</v-list-item-title>
@@ -396,7 +531,7 @@
               :key="sublink.title"
               :to="`/${userType}${sublink.route}`"
               router
-              class="rounded my-1"
+              class="rounded-lg my-1 mx-2 sidebar-sublink"
             >
               <v-list-item-title>{{ sublink.title }}</v-list-item-title>
             </v-list-item>
@@ -408,19 +543,18 @@
     <!-- Scrollable Main Content -->
     <v-main class="scrollable-main bg-grey-lighten-4">
       <v-container fluid class="pa-6">
-        <v-card rounded="xl" elevation="1">
+        <v-card rounded="xl" elevation="0" class="content-card">
           <!-- Header -->
           <v-card-title
-            class="d-flex align-center justify-space-between"
+            class="d-flex align-center justify-space-between page-header"
             v-if="$route.meta.title != 'My Profile'"
           >
-            <v-row>
+            <v-row align="center">
               <v-col cols="12" md="6">
-                <div class="text-h6 font-weight-bold">
+                <div class="text-h6 font-weight-bold page-title">
                   {{ $route.meta.title }}
                 </div>
-                <!-- <div class="text-caption text-grey">Academic overview</div> --></v-col
-              >
+              </v-col>
               <v-col
                 cols="12"
                 md="6"
@@ -430,7 +564,6 @@
                     : 'd-flex justify-end'
                 "
               >
-                <!--:disabled="userModule == 22"-->
                 <v-autocomplete
                   v-model="selectedFilter"
                   label="School Year"
@@ -440,13 +573,16 @@
                   density="compact"
                   variant="outlined"
                   hide-details
+                  rounded="lg"
                   style="max-width: 220px"
+                  prepend-inner-icon="mdi-calendar-blank-outline"
                   @update:modelValue="changeFilter"
-              /></v-col>
+                />
+              </v-col>
             </v-row>
           </v-card-title>
 
-          <v-divider />
+          <v-divider v-if="$route.meta.title != 'My Profile'" />
 
           <!-- Content -->
           <v-card-text class="pa-6">
@@ -455,15 +591,23 @@
         </v-card>
       </v-container>
     </v-main>
+
     <!-- Notification Dialog -->
     <v-dialog v-model="showAllNotifDialog" scrollable max-width="650">
       <v-card class="rounded-xl elevation-10">
         <!-- HEADER -->
-        <v-card-title class="d-flex align-center px-6 py-4">
-          <v-icon class="me-2" color="primary"> mdi-bell-outline </v-icon>
+        <v-card-title class="d-flex align-center px-6 py-4 notif-panel-header">
+          <v-avatar size="34" class="me-3 header-icon-avatar">
+            <v-icon size="18" color="white">mdi-bell-outline</v-icon>
+          </v-avatar>
           <span class="text-h6 font-weight-bold"> All Notifications </span>
           <v-spacer />
-          <v-btn icon variant="text" @click="showAllNotifDialog = false">
+          <v-btn
+            icon
+            variant="text"
+            @click="showAllNotifDialog = false"
+            aria-label="Close"
+          >
             <v-icon>mdi-close</v-icon>
           </v-btn>
         </v-card-title>
@@ -472,33 +616,27 @@
 
         <v-card-text class="pa-6">
           <div
-            class="d-flex pa-2"
+            class="d-flex pa-1 mb-2"
             v-if="$store.state.user.user.assignedModuleID != 22"
           >
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-btn
-                  block
-                  :color="status === 'Lardo' ? 'blue' : 'grey'"
-                  dark
-                  @click="status = 'Lardo'"
-                >
-                  Lardo
-                </v-btn>
-              </v-col>
-
-              <v-col cols="12" md="6">
-                <v-btn
-                  block
-                  :color="status === 'At-Risk' ? 'blue' : 'grey'"
-                  dark
-                  @click="status = 'At-Risk'"
-                >
-                  At-Risk
-                </v-btn>
-              </v-col>
-            </v-row>
+            <v-btn-toggle
+              v-model="status"
+              mandatory
+              divided
+              density="comfortable"
+              class="status-toggle w-100"
+            >
+              <v-btn value="Lardo" class="flex-grow-1" size="small">
+                <v-icon start size="16">mdi-file-document-alert-outline</v-icon>
+                Lardo
+              </v-btn>
+              <v-btn value="At-Risk" class="flex-grow-1" size="small">
+                <v-icon start size="16">mdi-alert-circle-outline</v-icon>
+                At-Risk
+              </v-btn>
+            </v-btn-toggle>
           </div>
+
           <!-- LARDO Notification -->
           <div
             v-if="lardoNotification.length"
@@ -510,11 +648,15 @@
             <v-card
               v-for="(req, i) in lardoNotification"
               :key="'req-' + i"
-              class="notif-card"
+              class="notif-card notif-card--lardo"
+              variant="flat"
             >
               <div class="d-flex align-start">
-                <v-avatar size="44" class="me-3">
-                  <v-icon>mdi-account</v-icon>
+                <v-avatar
+                  size="44"
+                  class="me-3 notif-avatar notif-avatar--lardo"
+                >
+                  <v-icon size="20" color="white">mdi-account</v-icon>
                 </v-avatar>
 
                 <div class="flex-grow-1">
@@ -522,18 +664,23 @@
                     {{ req.student_name }}
                   </div>
 
-                  <div class="text-caption text-grey-darken-1 mb-2">
+                  <div class="text-caption text-medium-emphasis mb-2">
                     {{ req.remarks }}
                   </div>
 
-                  <div class="pt-3">
-                    <strong> Decision Support Recommendation:</strong>
+                  <div class="recommendation-block">
+                    <div
+                      class="text-caption font-weight-bold recommendation-label"
+                    >
+                      Decision Support Recommendation
+                    </div>
+                    <div class="text-caption">{{ req.recommendation }}</div>
                   </div>
-                  <div>{{ req.recommendation }}</div>
                   <v-btn
                     size="small"
-                    color="primary"
-                    variant="flat"
+                    color="#E35E93"
+                    variant="tonal"
+                    class="mt-2"
                     @click="openLardoNotification(req)"
                   >
                     View
@@ -556,11 +703,15 @@
             <v-card
               v-for="(req, i) in lardoNotificationForFaculty"
               :key="'req-' + i"
-              class="notif-card"
+              class="notif-card notif-card--lardo"
+              variant="flat"
             >
               <div class="d-flex align-start">
-                <v-avatar size="44" class="me-3">
-                  <v-icon>mdi-account</v-icon>
+                <v-avatar
+                  size="44"
+                  class="me-3 notif-avatar notif-avatar--lardo"
+                >
+                  <v-icon size="20" color="white">mdi-account</v-icon>
                 </v-avatar>
 
                 <div class="flex-grow-1">
@@ -568,18 +719,23 @@
                     {{ req.student_name }}
                   </div>
 
-                  <div class="text-caption text-grey-darken-1 mb-2">
+                  <div class="text-caption text-medium-emphasis mb-2">
                     {{ req.remarks }}
                   </div>
 
-                  <div class="pt-3">
-                    <strong> Decision Support Recommendation:</strong>
+                  <div class="recommendation-block">
+                    <div
+                      class="text-caption font-weight-bold recommendation-label"
+                    >
+                      Decision Support Recommendation
+                    </div>
+                    <div class="text-caption">{{ req.recommendation }}</div>
                   </div>
-                  <div>{{ req.recommendation }}</div>
                   <v-btn
                     size="small"
-                    color="primary"
-                    variant="flat"
+                    color="#E35E93"
+                    variant="tonal"
+                    class="mt-2"
                     @click="openLardoFacultyNotification(req)"
                   >
                     View
@@ -589,6 +745,25 @@
                 <v-badge v-if="!req.read" color="error" dot />
               </div>
             </v-card>
+          </div>
+
+          <!-- Empty state: Lardo -->
+          <div
+            v-if="
+              !lardoNotification.length && !lardoNotificationForFaculty.length
+            "
+            v-show="status === 'Lardo'"
+            class="empty-state"
+          >
+            <v-icon size="34" class="mb-2" color="grey-lighten-1"
+              >mdi-file-check-outline</v-icon
+            >
+            <div class="text-body-1 font-weight-medium">
+              No LARDO notifications
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              New alerts will show up here
+            </div>
           </div>
 
           <!-- At-Risk Adviser -->
@@ -602,29 +777,37 @@
             <v-card
               v-for="(notif, index) in atRiskNotification"
               :key="'notif-' + index"
-              class="notif-card clickable"
+              class="notif-card notif-card--risk clickable"
+              variant="flat"
               @click="openAdviserNotification(notif)"
             >
               <div class="d-flex align-start">
-                <v-avatar size="44" class="me-3">
-                  <v-icon>mdi-alert-circle-outline</v-icon>
+                <v-avatar
+                  size="44"
+                  class="me-3 notif-avatar notif-avatar--risk"
+                >
+                  <v-icon size="20" color="white"
+                    >mdi-alert-circle-outline</v-icon
+                  >
                 </v-avatar>
 
                 <div class="flex-grow-1">
                   <div class="text-body-2 font-weight-medium">
                     {{ notif.student_name }}
                   </div>
-                  <div class="text-caption text-grey-darken-1">
+                  <div class="text-caption text-medium-emphasis">
                     {{ notif.remarks }}
                   </div>
                 </div>
 
                 <v-badge v-if="!notif.read" color="error" dot />
               </div>
-              <div class="pt-3">
-                <strong> Decision Support Recommendation:</strong>
+              <div class="recommendation-block mt-2">
+                <div class="text-caption font-weight-bold recommendation-label">
+                  Decision Support Recommendation
+                </div>
+                <div class="text-caption">{{ notif.recommendation }}</div>
               </div>
-              <div>{{ notif.recommendation }}</div>
             </v-card>
           </div>
 
@@ -635,45 +818,74 @@
             <v-card
               v-for="(notif, index) in atRiskNotificationForFaculty"
               :key="'notif-' + index"
-              class="notif-card clickable"
+              class="notif-card notif-card--risk clickable"
+              variant="flat"
               @click="openFacultyNotification(notif)"
             >
               <div class="d-flex align-start">
-                <v-avatar size="44" class="me-3">
-                  <v-icon>mdi-alert-circle-outline</v-icon>
+                <v-avatar
+                  size="44"
+                  class="me-3 notif-avatar notif-avatar--risk"
+                >
+                  <v-icon size="20" color="white"
+                    >mdi-alert-circle-outline</v-icon
+                  >
                 </v-avatar>
 
                 <div class="flex-grow-1">
                   <div class="text-body-2 font-weight-medium">
                     {{ notif.student_name }}
                   </div>
-                  <div class="text-caption text-grey-darken-1">
+                  <div class="text-caption text-medium-emphasis">
                     {{ notif.remarks }}
                   </div>
                 </div>
 
                 <v-badge v-if="!notif.read" color="error" dot />
               </div>
-              <div class="pt-3">
-                <strong> Decision Support Recommendation:</strong>
+              <div class="recommendation-block mt-2">
+                <div class="text-caption font-weight-bold recommendation-label">
+                  Decision Support Recommendation
+                </div>
+                <div class="text-caption">{{ notif.recommendation }}</div>
               </div>
-              <div>{{ notif.recommendation }}</div>
             </v-card>
+          </div>
+
+          <!-- Empty state: At-Risk -->
+          <div
+            v-if="
+              !atRiskNotification.length && !atRiskNotificationForFaculty.length
+            "
+            v-show="status === 'At-Risk'"
+            class="empty-state"
+          >
+            <v-icon size="34" class="mb-2" color="grey-lighten-1"
+              >mdi-shield-check-outline</v-icon
+            >
+            <div class="text-body-1 font-weight-medium">No at-risk alerts</div>
+            <div class="text-caption text-medium-emphasis">
+              Nothing needs your attention right now
+            </div>
           </div>
 
           <!-- Parent Notification -->
           <div v-if="parentNotification.length" class="mb-4">
-            <!-- <div class="section-title">Parent Notification</div> -->
-
             <v-card
               v-for="(notif, index) in parentNotification"
               :key="'notif-' + index"
-              class="notif-card clickable"
+              class="notif-card notif-card--parent clickable"
+              variant="flat"
               @click="openParentNotification(notif)"
             >
               <div class="d-flex align-start">
-                <v-avatar size="44" class="me-3">
-                  <v-icon>mdi-account-child-outline</v-icon>
+                <v-avatar
+                  size="44"
+                  class="me-3 notif-avatar notif-avatar--parent"
+                >
+                  <v-icon size="20" color="white"
+                    >mdi-account-child-outline</v-icon
+                  >
                 </v-avatar>
 
                 <div class="flex-grow-1">
@@ -681,11 +893,11 @@
                     {{ notif.student_name }}
                   </div>
 
-                  <div class="text-caption text-grey-darken-1">
+                  <div class="text-caption text-medium-emphasis">
                     Final Grade: {{ notif.transmuted_grade }}
                   </div>
 
-                  <div class="text-caption text-grey-darken-1">
+                  <div class="text-caption text-medium-emphasis">
                     Remarks: {{ notif.remarks }}
                   </div>
                 </div>
@@ -701,7 +913,7 @@
         <v-card-actions class="pa-4">
           <v-spacer />
           <v-btn
-            color="primary"
+            color="#E35E93"
             variant="flat"
             rounded="lg"
             @click="showAllNotifDialog = false"
@@ -711,36 +923,46 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
     <!--Logout Dialog-->
     <v-dialog v-model="logoutDialog" max-width="420" persistent>
-      <v-card class="rounded-lg">
+      <v-card class="rounded-xl">
         <!-- Header -->
-        <v-card-title class="headline d-flex align-center">
-          <!-- <v-icon color="red" class="mr-2">mdi-logout</v-icon> -->
-          Confirm Logout
-        </v-card-title>
-
-        <v-divider></v-divider>
-
-        <!-- Content -->
-        <v-card-text class="text-center py-6">
-          <p class="mb-2">Are you sure you want to log out?</p>
-          <span class="grey--text text--darken-1">
-            You will need to log in again to continue.
-          </span>
+        <v-card-text class="text-center pt-8 pb-2">
+          <v-avatar size="56" color="red-lighten-5" class="mb-4">
+            <v-icon size="28" color="red">mdi-logout</v-icon>
+          </v-avatar>
+          <div class="text-h6 font-weight-bold mb-1">Confirm Logout</div>
+          <p class="text-body-2 text-medium-emphasis mb-0">
+            Are you sure you want to log out? You'll need to sign in again to
+            continue.
+          </p>
         </v-card-text>
 
-        <v-divider></v-divider>
-
         <!-- Actions -->
-        <v-card-actions class="px-4 py-3">
-          <v-spacer></v-spacer>
-
-          <v-btn color="grey" variant="outlined" @click="logoutDialog = false">
-            Cancel
-          </v-btn>
-
-          <v-btn color="red" variant="flat" @click="logout()"> Logout </v-btn>
+        <v-card-actions class="px-6 py-6">
+          <div class="d-flex justify-space-between w-100">
+            <v-btn
+              block
+              color="grey-darken-1"
+              variant="outlined"
+              rounded="lg"
+              @click="logoutDialog = false"
+            >
+              Cancel
+            </v-btn>
+          </div>
+          <div class="d-flex justify-space-between w-100">
+            <v-btn
+              block
+              color="red"
+              variant="flat"
+              rounded="lg"
+              @click="logout()"
+            >
+              Log Out
+            </v-btn>
+          </div>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -749,11 +971,14 @@
     <v-dialog v-model="assignedModuleDialog" max-width="380" persistent>
       <v-card class="rounded-xl">
         <!-- Header -->
-        <v-card-title class="text-h6 font-weight-medium px-6 py-4">
+        <v-card-title class="text-h6 font-weight-bold px-6 py-4">
           Change Role
         </v-card-title>
+        <v-card-subtitle class="px-6 pb-2"
+          >Select the role you'd like to switch to</v-card-subtitle
+        >
 
-        <v-divider />
+        <v-divider class="mt-2" />
 
         <!-- Content -->
         <v-card-text class="px-4 py-4">
@@ -768,14 +993,13 @@
                 :class="{ active: selectedModuleId === item.id }"
                 elevation="0"
                 border
-                clickable
                 ripple
                 @click="selectButton(index, item)"
               >
                 <span class="text-body-1">
                   {{ item.description }}
                 </span>
-                <v-icon v-if="selectedModuleId === item.id" color="#ff82e0">
+                <v-icon v-if="selectedModuleId === item.id" color="#E35E93">
                   mdi-check-circle
                 </v-icon>
               </v-card>
@@ -790,6 +1014,7 @@
           <v-btn
             variant="outlined"
             color="red"
+            rounded="lg"
             @click="assignedModuleDialog = false"
           >
             Cancel
@@ -798,9 +1023,10 @@
           <v-spacer />
 
           <v-btn
-            color="pink"
+            color="#E35E93"
             :loading="isLoading"
             variant="flat"
+            rounded="lg"
             :disabled="selectedModuleId === null"
             @click="confirmChangeRole"
           >
@@ -809,6 +1035,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
     <fade-away-message-component
       displayType="variation2"
       v-model="fadeAwayMessage.show"
@@ -883,37 +1110,11 @@ export default {
       userModule: null,
       notifTab: 0,
       isValidated: null,
-      // unreadCount: 5,
-      // hasUnread: true,
       lardoNotificationForFaculty: [],
       assigneAccessModulesList: [],
-      lardoNotification: [
-        // {
-        //   name: "Jovelyn Billote Autintico",
-        //   // avatar: "https://cdn.vuetifyjs.com/images/john.jpg",
-        //   average: 65,
-        //   read: false,
-        // },
-        // {
-        //   name: "Florence Perucho",
-        //   // avatar: "https://cdn.vuetifyjs.com/images/john.jpg",
-        //   average: 69,
-        //   read: false,
-        // },
-      ],
+      lardoNotification: [],
       atRiskNotificationForFaculty: [],
-      atRiskNotification: [
-        // {
-        //   name: "Jovelyn Billote Autintico",
-        //   // avatar: "https://cdn.vuetifyjs.com/images/john.jpg",
-        //   read: false,
-        // },
-        // {
-        //   name: "Florence Perucho",
-        //   // avatar: "https://cdn.vuetifyjs.com/images/john.jpg",
-        //   read: false,
-        // },
-      ],
+      atRiskNotification: [],
       parentNotification: [],
     };
   },
@@ -962,7 +1163,6 @@ export default {
     this.userId = this.$store.state.user.id;
     this.userModule = this.$store.state.user.user.assignedModuleID;
     this.isValidated = this.$store.state.user.user.isValidated;
-    // console.log(this.$store.state.user.user.isValidated);
     this.loadYearForFilter();
     this.getLardoNotification();
     this.getLardoNotificationForFaculty();
@@ -985,10 +1185,6 @@ export default {
         }),
       );
       console.table(this.assigneAccessModulesList);
-
-      // this.selectedModuleId = Number(
-      //   this.$store.state.user.user.assignedModuleID,
-      // );
 
       this.newRoleData = this.assigneAccessModulesList.find(
         (item) => item.id === this.selectedModuleId,
@@ -1014,11 +1210,7 @@ export default {
       });
     },
     changeFilter(newValue) {
-      // this.$store.commit("setFilterSelected", this.selectedFilter);
       this.$store.commit('setFilterSelected', newValue);
-      // let filter = this.$store.getters.getFilterSelected;
-      // console.log(filter);
-      // alert(filter);
     },
 
     openParentNotification(notif) {
@@ -1030,13 +1222,10 @@ export default {
           (res) => {
             console.log(res);
             if (notif.route) {
-              // this.$router.push(notif.route);
               this.$router.push('/' + this.userType + notif.route);
             }
           },
         );
-
-        // this.$router.push(req.route);
       }
     },
     openAdviserNotification(notif) {
@@ -1051,12 +1240,9 @@ export default {
         ).then((res) => {
           console.log(res);
           if (notif.route) {
-            // this.$router.push(notif.route);
             this.$router.push('/' + this.userType + notif.route);
           }
         });
-
-        // this.$router.push(req.route);
       }
     },
 
@@ -1072,12 +1258,9 @@ export default {
         ).then((res) => {
           console.log(res);
           if (notif.route) {
-            // this.$router.push(notif.route);
             this.$router.push('/' + this.userType + notif.route);
           }
         });
-
-        // this.$router.push(req.route);
       }
     },
 
@@ -1093,12 +1276,9 @@ export default {
         ).then((res) => {
           console.log(res);
           if (notif.route) {
-            // this.$router.push(notif.route);
             this.$router.push('/' + this.userType + notif.route);
           }
         });
-
-        // this.$router.push(req.route);
       }
     },
     openLardoFacultyNotification(notif) {
@@ -1113,12 +1293,9 @@ export default {
         ).then((res) => {
           console.log(res);
           if (notif.route) {
-            // this.$router.push(notif.route);
             this.$router.push('/' + this.userType + notif.route);
           }
         });
-
-        // this.$router.push(req.route);
       }
     },
 
@@ -1192,7 +1369,6 @@ export default {
       this.axiosCall('/assigned-modules/getMyAssignedModules/my', 'GET').then(
         (resp) => {
           this.selectedModuleId = resp.data.id;
-          // console.log("getMyAssignedModules", resp.data.id);
           this.links = JSON.parse(resp.data.assign_mods);
           switch (userType) {
             case 1:
@@ -1290,11 +1466,6 @@ export default {
       );
     },
     confirmChangeRole() {
-      // console.log(
-      //   "confirmChangeRole()",
-      //   this.newRoleData.id,
-      //   this.$store.state.user.user.id,
-      // );
       this.isLoading = true;
       let userID = this.$store.state.user.user.id;
       let data = {
@@ -1306,9 +1477,6 @@ export default {
         data,
       ).then((res) => {
         if (res.data.status == 200) {
-          // this.$store.commit('SET_ASSIGNED_MODULE', this.newRoleData.id);
-          // this.$store.dispatch('updateAssignedModule', this.newRoleData.id);
-          // this.logout();
           this.isLoading = false;
           location.reload();
         } else if (res.data.status == 400) {
@@ -1340,113 +1508,189 @@ export default {
 </script>
 
 <style scoped>
+/* ============ Design tokens (this component) ============ */
+.v-app-bar,
+.scrollable-main,
+.sidebar,
+.notif-panel,
+.role-card {
+  --brand: #e35e93;
+  --brand-dark: #c2457b;
+  --brand-soft: #fdeef5;
+  --ink: #17241d;
+  --ink-soft: #6b7280;
+  --surface: #f6f7f9;
+  --risk: #f97316;
+  --risk-soft: #fff4e8;
+  --lardo: #6366f1;
+  --lardo-soft: #eef0fe;
+  --parent: #0d9488;
+  --parent-soft: #e6f6f4;
+}
+
 /* Scrollable area */
 .scrollable-main {
   height: calc(100vh - 64px);
   overflow-y: auto;
-  background-color: #f3f4f6; /* Soft gray */
-}
-
-/* Sidebar active link */
-.sidebar .v-list-item--active {
-  background-color: #dc0b70 !important;
-  color: #ffffff !important;
-}
-
-/* Sidebar sublink active */
-.sidebar .v-list-group .v-list-item--active {
-  background-color: #dc0b70 !important; /* Lighter teal */
-  color: #ffffff !important;
-  border-radius: 5px;
-}
-
-/* Hover states */
-.sidebar .v-list-item:hover {
-  background-color: rgba(13, 148, 136, 0.1) !important;
-}
-.sidebar .v-list-item--active:hover {
-  color: #dc0b70 !important;
+  background-color: var(--surface);
 }
 
 /* App bar */
-.v-app-bar {
-  background-color: #dc0b70 !important;
-  color: white !important;
-}
-
-/* Notification badge color */
-.v-badge .v-badge__badge {
-  background-color: #f97316 !important; /* Orange */
-}
-
-/* Primary button color override */
-/* .v-btn {
-  background-color: #dc700b !important;
-  color: white !important;
-} */
-
-.close {
+.app-bar-light {
   background-color: #ffffff !important;
-  color: rgb(0, 0, 0) !important;
+  color: var(--ink) !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.role-card {
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.brand-title {
+  letter-spacing: 0.2px;
+  color: var(--ink);
 }
 
-.role-card:hover {
-  /* background-color: rgba(0, 0, 0, 0.03); */
-  background-color: #ff82e0;
+.topbar-search {
+  background-color: var(--surface);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 999px;
+  padding: 8px 16px;
+  min-width: 260px;
+}
+.topbar-search-placeholder {
+  color: #9aa1ac;
 }
 
-.role-card.active {
-  border: 2px solid #ff82e0;
-  background-color: rgba(25, 118, 210, 0.08);
+.topbar-icon-btn {
+  transition: transform 0.15s ease;
 }
-.v-list-item {
-  transition: background-color 0.2s ease, transform 0.15s ease;
+.topbar-icon-btn:hover {
+  transform: translateY(-1px);
 }
 
-.v-list-item:hover {
+.account-chip {
+  background-color: var(--surface) !important;
+  transition: background-color 0.15s ease;
+}
+.account-chip:hover {
+  background-color: var(--brand-soft) !important;
+}
+.account-chip-text {
+  line-height: 1.2;
+}
+.account-chip-subtext {
+  color: var(--ink-soft);
+}
+
+/* Sidebar */
+.app-drawer {
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
+  background-color: #ffffff !important;
+}
+
+.sidebar-logo-mark {
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+}
+.sidebar-logo-text {
+  color: var(--ink);
+}
+
+.sidebar-section-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #a3aab5;
+  margin-bottom: 6px;
+}
+
+.sidebar-item {
+  transition: background-color 0.18s ease, transform 0.15s ease;
+  color: var(--ink-soft);
+}
+.sidebar-item:hover {
+  background-color: var(--brand-soft);
   transform: translateX(2px);
 }
-.section-title {
+
+.sidebar :deep(.v-list-item--active) {
+  background-color: var(--brand-soft) !important;
+  color: var(--brand) !important;
   font-weight: 600;
-  font-size: 14px;
+  border-left: 3px solid var(--brand);
+}
+.sidebar :deep(.v-list-item--active .v-icon) {
+  color: var(--brand) !important;
+}
+
+.sidebar-sublink {
+  transition: background-color 0.18s ease;
+}
+.sidebar-sublink:hover {
+  background-color: var(--brand-soft);
+}
+.sidebar :deep(.v-list-group .v-list-item--active) {
+  background-color: var(--brand) !important;
+  color: #ffffff !important;
+  border-radius: 8px;
+}
+
+/* Content card */
+.content-card {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.page-header {
+  padding: 20px 24px !important;
+}
+
+.page-title {
+  color: var(--ink);
+}
+
+/* Account menu */
+.account-menu-header {
+  background: linear-gradient(
+    120deg,
+    var(--brand) 0%,
+    var(--brand-dark) 100%
+  ) !important;
+}
+.account-role-caption {
+  opacity: 0.85;
+}
+.account-avatar-ring {
+  border: 2px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Notification panel */
+.notif-panel-header {
+  background-color: #fafafa;
+}
+.header-icon-avatar {
+  background: linear-gradient(120deg, var(--brand), var(--brand-dark));
+}
+
+.status-toggle {
+  border-radius: 10px !important;
+  overflow: hidden;
+  width: 100%;
+}
+
+.section-title {
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   margin-bottom: 12px;
-  color: #555;
+  color: var(--ink-soft);
 }
 
 .notif-card {
   padding: 14px;
   margin-bottom: 12px;
   border-radius: 14px;
-  transition: all 0.2s ease;
-  cursor: default;
-}
-
-.notif-card.clickable {
-  cursor: pointer;
-}
-
-.notif-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
-}
-.section-title {
-  font-weight: 600;
-  font-size: 14px;
-  margin-bottom: 14px;
-  color: #555;
-}
-
-.notif-card {
-  padding: 16px;
-  margin-bottom: 14px;
-  border-radius: 14px;
-  transition: all 0.2s ease;
+  background-color: #fafafa;
+  border-left: 3px solid transparent;
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease;
   cursor: default;
 }
 
@@ -1457,5 +1701,76 @@ export default {
 .notif-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  background-color: #ffffff;
+}
+
+.notif-card--lardo {
+  border-left-color: var(--lardo);
+}
+.notif-card--risk {
+  border-left-color: var(--risk);
+}
+.notif-card--parent {
+  border-left-color: var(--parent);
+}
+
+.notif-avatar--lardo {
+  background-color: var(--lardo);
+}
+.notif-avatar--risk {
+  background-color: var(--risk);
+}
+.notif-avatar--parent {
+  background-color: var(--parent);
+}
+
+.recommendation-block {
+  background-color: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.recommendation-label {
+  color: var(--ink-soft);
+  margin-bottom: 2px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--ink-soft);
+}
+
+/* Role selection card */
+.role-card {
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.role-card:hover {
+  background-color: var(--brand-soft);
+  border-color: var(--brand) !important;
+}
+
+.role-card.active {
+  border: 2px solid var(--brand) !important;
+  background-color: var(--brand-soft);
+}
+
+/* Focus visibility for accessibility */
+.notif-card.clickable:focus-visible,
+.sidebar-item:focus-visible,
+.role-card:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notif-card,
+  .sidebar-item,
+  .topbar-icon-btn,
+  .account-chip {
+    transition: none !important;
+  }
 }
 </style>

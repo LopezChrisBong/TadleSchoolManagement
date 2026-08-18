@@ -9,9 +9,9 @@
 </template>
 
 <script>
-import Navbar from "../components/Navbar/Navbar2.vue";
+import Navbar from '../components/Navbar/NavbarPage.vue';
 export default {
-  name: "App",
+  name: 'App',
   components: {
     Navbar,
   },

@@ -834,7 +834,7 @@ export class RoomsSectionService {
           'SL.id as id',
           'RS.room_section as room_name',
           'RS.id as roomID',
-          "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
+          "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ',ES.fname,' ', SUBSTRING(ES.mname, 1, 1) ,'. ') ,concat(ES.lname, ' ', ES.fname)) as name",
         ])
         .leftJoin(RoomsSection, 'RS', 'RS.id = SL.roomId')
         .leftJoin(SchoolYear, 'SY', 'SY.id = SL.school_yearId')

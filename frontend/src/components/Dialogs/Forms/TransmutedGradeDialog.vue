@@ -96,7 +96,7 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
 
 export default {
   components: {},
@@ -113,9 +113,9 @@ export default {
       end_range: null,
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
@@ -126,7 +126,7 @@ export default {
     data: {
       handler(data) {
         this.dialog = true;
-        console.log("View Data", data.subject_title);
+        console.log('View Data', data.subject_title);
         if (data.id) {
           this.initialize();
           this.updateID = data.id;
@@ -150,21 +150,21 @@ export default {
     initialize() {},
 
     closeD() {
-      eventBus.emit("closeTransmutedGradeDialog", false);
+      eventBus.emit('closeTransmutedGradeDialog', false);
       this.dialog = false;
     },
 
     checkConflict(type) {
-      if (type == "ADD") {
+      if (type == 'ADD') {
         if (
           this.transmuted_grade == null ||
           this.start_range == null ||
           this.end_range == null
         ) {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
-          this.fadeAwayMessage.message = "Please fill all fields";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
+          this.fadeAwayMessage.message = 'Please fill all fields';
         } else {
           let data = {
             transmuted_grade: this.transmuted_grade,
@@ -172,34 +172,34 @@ export default {
             end_range: this.end_range.toString(),
           };
           console.log(data);
-          this.axiosCall("/rooms-section/transmutedGrade", "POST", data).then(
+          this.axiosCall('/rooms-section/transmutedGrade', 'POST', data).then(
             (res) => {
               console.log(res.data);
               this.closeD();
               if (res.data.status == 201) {
                 this.fadeAwayMessage.show = true;
-                this.fadeAwayMessage.type = "success";
-                this.fadeAwayMessage.header = "System Message";
-                this.fadeAwayMessage.message = "Successfully Added Subject!";
+                this.fadeAwayMessage.type = 'success';
+                this.fadeAwayMessage.header = 'System Message';
+                this.fadeAwayMessage.message = 'Successfully added!';
               } else if (res.data.status == 400) {
                 this.fadeAwayMessage.show = true;
-                this.fadeAwayMessage.type = "error";
-                this.fadeAwayMessage.header = "System Message";
+                this.fadeAwayMessage.type = 'error';
+                this.fadeAwayMessage.header = 'System Message';
                 this.fadeAwayMessage.message = res.data.msg;
               }
             },
           );
         }
-      } else if (type == "UPDATE") {
+      } else if (type == 'UPDATE') {
         if (
           this.transmuted_grade == null ||
           this.start_range == null ||
           this.end_range == null
         ) {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
-          this.fadeAwayMessage.message = "Please fill all fields";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
+          this.fadeAwayMessage.message = 'Please fill all fields';
         } else {
           let data = {
             transmuted_grade: this.transmuted_grade,
@@ -208,21 +208,21 @@ export default {
           };
           console.log(data);
           this.axiosCall(
-            "/rooms-section/updateTransmutedGrade/" + this.updateID,
-            "PATCH",
+            '/rooms-section/updateTransmutedGrade/' + this.updateID,
+            'PATCH',
             data,
           ).then((res) => {
             console.log(res.data);
             if (res.data.status == 201) {
               this.closeD();
               this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = "success";
-              this.fadeAwayMessage.header = "System Message";
-              this.fadeAwayMessage.message = "Successfully updated!!";
+              this.fadeAwayMessage.type = 'success';
+              this.fadeAwayMessage.header = 'System Message';
+              this.fadeAwayMessage.message = 'Successfully updated!';
             } else if (res.data.status == 400) {
               this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = "error";
-              this.fadeAwayMessage.header = "System Message";
+              this.fadeAwayMessage.type = 'error';
+              this.fadeAwayMessage.header = 'System Message';
               this.fadeAwayMessage.message = res.data.msg;
             }
           });

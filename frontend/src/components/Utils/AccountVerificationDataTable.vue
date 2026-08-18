@@ -1,22 +1,24 @@
 <template>
-  <v-container fluid class="pa-6">
+  <v-container fluid class="pa-6 accounts-page">
     <!-- Top Section -->
-    <v-card rounded="xl" elevation="1" class="mb-6">
-      <v-card-text>
+    <v-card rounded="xl" elevation="0" class="mb-6 toolbar-card">
+      <v-card-text class="pa-5">
         <v-row align="center" dense>
           <!-- Tabs -->
           <v-col cols="12" md="6" class="d-flex flex-wrap ga-2">
-            <v-btn
-              v-for="tab in tabList"
-              :key="tab.id"
-              size="small"
-              rounded="lg"
-              :color="tab.active ? 'pink' : 'grey'"
-              :variant="tab.active ? 'flat' : 'tonal'"
-              @click="changeTab(tab)"
-            >
-              {{ tab.name }}
-            </v-btn>
+            <div class="tab-group">
+              <v-btn
+                v-for="tab in tabList"
+                :key="tab.id"
+                size="small"
+                rounded="lg"
+                :class="['tab-btn', { 'tab-btn--active': tab.active }]"
+                variant="text"
+                @click="changeTab(tab)"
+              >
+                {{ tab.name }}
+              </v-btn>
+            </div>
           </v-col>
 
           <!-- Search & Action -->
@@ -27,14 +29,17 @@
               prepend-inner-icon="mdi-magnify"
               variant="outlined"
               density="compact"
+              rounded="lg"
               hide-details
               clearable
               max-width="260"
+              class="search-field"
             />
             <v-btn
               prepend-icon="mdi-plus"
               rounded="lg"
-              color="pink"
+              color="#E35E93"
+              variant="flat"
               @click="add"
             >
               Add Account
@@ -45,7 +50,7 @@
     </v-card>
 
     <!-- Data Table -->
-    <v-card rounded="xl" elevation="1">
+    <v-card rounded="xl" elevation="0" class="table-card">
       <v-data-table
         :headers="headers"
         :items="data"
@@ -53,7 +58,7 @@
         :items-per-page="10"
         :loading="loading"
         loading-text="Loading data..."
-        class="text-body-2"
+        class="text-body-2 dt-container accounts-table"
       >
         <template v-slot:[`item.fname`]="{ item }">
           <div class="font-weight-medium">
@@ -66,20 +71,22 @@
             <v-btn
               size="small"
               variant="tonal"
-              color="primary"
+              rounded="lg"
+              :color="tab === 1 ? '#E35E93' : '#2563EB'"
               class="me-2"
               @click="tab === 1 ? editItem(item) : viewItem(item)"
             >
               <v-icon start size="16">{{
-                tab === 1 ? "mdi-check" : "mdi-eye"
+                tab === 1 ? 'mdi-check' : 'mdi-eye'
               }}</v-icon>
-              {{ tab === 1 ? "Verify" : "View" }}
+              {{ tab === 1 ? 'Verify' : 'View' }}
             </v-btn>
 
             <v-btn
               v-if="tab === 1"
               size="small"
               variant="tonal"
+              rounded="lg"
               color="error"
               @click="deleteItem(item)"
             >
@@ -91,9 +98,10 @@
 
         <template #no-data>
           <v-empty-state
-            icon="mdi-account-off"
+            icon="mdi-account-off-outline"
             title="No users found"
             text="Try adjusting your search or filters"
+            class="py-10"
           />
         </template>
       </v-data-table>
@@ -106,19 +114,35 @@
     <!-- Delete Confirmation -->
     <v-dialog v-model="dialogConfirmDelete" max-width="420">
       <v-card rounded="xl">
-        <v-card-title class="font-weight-bold">Confirm Deletion</v-card-title>
-        <v-card-text>
-          This action cannot be undone. Are you sure you want to delete this
-          account?
+        <v-card-text class="text-center pt-8 pb-2">
+          <v-avatar size="56" color="red-lighten-5" class="mb-4">
+            <v-icon size="28" color="red">mdi-delete-outline</v-icon>
+          </v-avatar>
+          <div class="text-h6 font-weight-bold mb-1">Confirm Deletion</div>
+          <p class="text-body-2 text-medium-emphasis mb-0">
+            This action cannot be undone. Are you sure you want to delete this
+            account?
+          </p>
         </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="dialogConfirmDelete = false"
-            >Cancel</v-btn
+        <v-card-actions class="px-6 py-6">
+          <v-btn
+            block
+            variant="outlined"
+            color="grey-darken-1"
+            rounded="lg"
+            @click="dialogConfirmDelete = false"
           >
-          <v-btn color="error" variant="flat" @click="confirmDelete"
-            >Delete</v-btn
+            Cancel
+          </v-btn>
+          <v-btn
+            block
+            color="error"
+            variant="flat"
+            rounded="lg"
+            @click="confirmDelete"
           >
+            Delete
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -127,17 +151,19 @@
     <v-dialog v-model="dialog" max-width="560" persistent>
       <v-card rounded="xl" elevation="2">
         <!-- Header -->
-        <v-card-title class="d-flex align-center justify-space-between">
+        <v-card-title
+          class="d-flex align-center justify-space-between px-6 py-4 dialog-header"
+        >
           <div>
             <div class="text-h6 font-weight-bold">View Details</div>
-            <div class="text-caption text-grey">
+            <div class="text-caption dialog-header-subtitle">
               Choose what you want to manage
             </div>
           </div>
           <v-btn
             icon="mdi-close"
             variant="text"
-            color="grey"
+            color="white"
             @click="dialog = false"
           />
         </v-card-title>
@@ -152,16 +178,21 @@
               <v-card
                 class="action-card"
                 rounded="lg"
-                elevation="1"
+                elevation="0"
                 @click="editItem(dataEdit)"
               >
                 <v-card-text class="text-center">
-                  <v-icon size="56" color="primary"
-                    >mdi-file-cog-outline</v-icon
+                  <v-avatar
+                    size="56"
+                    class="mb-3 action-icon action-icon--module"
                   >
-                  <div class="mt-3 font-weight-medium">Module</div>
-                  <div class="text-caption text-grey">
-                    System access & roles
+                    <v-icon size="28" color="white"
+                      >mdi-file-cog-outline</v-icon
+                    >
+                  </v-avatar>
+                  <div class="font-weight-medium">Module</div>
+                  <div class="text-caption text-medium-emphasis">
+                    System access &amp; roles
                   </div>
                 </v-card-text>
               </v-card>
@@ -172,15 +203,22 @@
               <v-card
                 class="action-card"
                 rounded="lg"
-                elevation="1"
+                elevation="0"
                 @click="personalInfo(dataEdit)"
               >
                 <v-card-text class="text-center">
-                  <v-icon size="56" color="success"
-                    >mdi-account-box-outline</v-icon
+                  <v-avatar
+                    size="56"
+                    class="mb-3 action-icon action-icon--personal"
                   >
-                  <div class="mt-3 font-weight-medium">Personal Info</div>
-                  <div class="text-caption text-grey">Profile & details</div>
+                    <v-icon size="28" color="white"
+                      >mdi-account-box-outline</v-icon
+                    >
+                  </v-avatar>
+                  <div class="font-weight-medium">Personal Info</div>
+                  <div class="text-caption text-medium-emphasis">
+                    Profile &amp; details
+                  </div>
                 </v-card-text>
               </v-card>
             </v-col>
@@ -190,14 +228,19 @@
               <v-card
                 class="action-card"
                 rounded="lg"
-                elevation="1"
+                elevation="0"
                 @click="credentials(dataEdit)"
               >
                 <v-card-text class="text-center">
-                  <v-icon size="56" color="warning">mdi-file-sign</v-icon>
-                  <div class="mt-3 font-weight-medium">Credentials</div>
-                  <div class="text-caption text-grey">
-                    Certificates & licenses
+                  <v-avatar
+                    size="56"
+                    class="mb-3 action-icon action-icon--credentials"
+                  >
+                    <v-icon size="28" color="white">mdi-file-sign</v-icon>
+                  </v-avatar>
+                  <div class="font-weight-medium">Credentials</div>
+                  <div class="text-caption text-medium-emphasis">
+                    Certificates &amp; licenses
                   </div>
                 </v-card-text>
               </v-card>
@@ -208,7 +251,12 @@
         <!-- Footer -->
         <v-card-actions class="px-6 pb-6">
           <v-spacer />
-          <v-btn variant="outlined" color="grey" @click="dialog = false">
+          <v-btn
+            variant="outlined"
+            color="grey"
+            rounded="lg"
+            @click="dialog = false"
+          >
             Close
           </v-btn>
         </v-card-actions>
@@ -344,14 +392,11 @@ export default {
     },
 
     initialize() {
-      // let filter = this.$store.getters.getFilterSelected;
-      // console.log("Filted", filter);
       this.loading = true;
       this.tab = 1;
 
       this.axiosCall("/user-details/getAllUsersToVerify", "GET").then((res) => {
         if (res) {
-          // console.log(res.data);
           let data = res.data;
           data.forEach((element, i) => {
             data[i].name = this.toTitleCase(element.name);
@@ -415,7 +460,6 @@ export default {
 
     editItem(item) {
       this.updateData = item;
-      // this.updateData = [{ id: null }];
       this.action = this.tab == 1 ? "Verify" : "Update";
     },
     viewItem(item) {
@@ -439,25 +483,87 @@ export default {
   },
 };
 </script>
+
 <style scoped>
+.accounts-page {
+  --brand: #e35e93;
+  --brand-soft: #fdeef5;
+  --ink: #17241d;
+  --ink-soft: #6b7280;
+}
+
+/* Toolbar */
+.toolbar-card,
+.table-card {
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.tab-group {
+  background-color: #f3f4f6;
+  border-radius: 12px;
+  padding: 4px;
+  display: inline-flex;
+  gap: 4px;
+}
+
+.tab-btn {
+  color: var(--ink-soft) !important;
+  font-weight: 500;
+}
+
+.tab-btn--active {
+  background-color: #ffffff !important;
+  color: var(--brand) !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.search-field :deep(.v-field) {
+  border-radius: 10px;
+}
+
+.dialog-header-subtitle {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Table — header background/rounding comes from the global .dt-container class */
+.accounts-table :deep(thead th) {
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  letter-spacing: 0.05em;
+}
+
+.accounts-table :deep(tbody tr:hover) {
+  background-color: var(--brand-soft);
+}
+
+/* Action cards in the View Details dialog */
 .action-card {
   cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.06);
   transition: all 0.2s ease;
 }
 .action-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
-}
-</style>
-
-<style scoped>
-.action-card {
-  cursor: pointer;
-  transition: all 0.2s ease;
+  border-color: var(--brand);
 }
 
-.action-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+.action-icon {
+  margin-inline: auto;
+}
+.action-icon--module {
+  background: linear-gradient(135deg, #e35e93, #c2457b);
+}
+.action-icon--personal {
+  background: linear-gradient(135deg, #0d9488, #0a6f66);
+}
+.action-icon--credentials {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action-card {
+    transition: none !important;
+  }
 }
 </style>

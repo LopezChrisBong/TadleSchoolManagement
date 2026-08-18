@@ -16,7 +16,6 @@
             <v-icon>mdi-camera</v-icon>
           </v-btn>
         </v-avatar>
-
         <div class="mt-4 font-weight-bold text-h6">
           {{
             data.mname
@@ -135,7 +134,8 @@
                 <v-col
                   v-if="
                     $store.state.user.user.assignedModuleID == 2 ||
-                    $store.state.user.user.assignedModuleID == 21
+                    $store.state.user.user.assignedModuleID == 21 ||
+                    ($store.state.user.user.subModules || []).length > 0
                   "
                   cols="12"
                   sm="auto"

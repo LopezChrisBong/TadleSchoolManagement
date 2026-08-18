@@ -12,7 +12,9 @@
           style="color: #e93175"
         >
           <div class="d-flex align-center">
-            <v-icon size="28" class="mr-2">mdi-school</v-icon>
+            <v-avatar color="#fff0f6" size="38" class="mr-3">
+              <v-icon size="22" color="pink">mdi-school</v-icon>
+            </v-avatar>
 
             <span
               class="font-weight-bold"
@@ -22,15 +24,24 @@
             </span>
           </div>
 
-          <div
-            v-if="isSmAndUp"
-            class="text-caption font-weight-medium text-right mt-1 mt-sm-0"
-          >
-            facebook • twitter • email • number
+          <div v-if="isSmAndUp" class="d-flex align-center ga-1">
+            <v-btn icon size="small" variant="text" color="pink">
+              <v-icon size="18">mdi-facebook</v-icon>
+            </v-btn>
+            <v-btn icon size="small" variant="text" color="pink">
+              <v-icon size="18">mdi-twitter</v-icon>
+            </v-btn>
+            <v-btn icon size="small" variant="text" color="pink">
+              <v-icon size="18">mdi-email-outline</v-icon>
+            </v-btn>
+            <v-btn icon size="small" variant="text" color="pink">
+              <v-icon size="18">mdi-phone-outline</v-icon>
+            </v-btn>
           </div>
         </div>
       </v-container>
     </v-app-bar>
+
     <!-- HERO SECTION -->
     <v-container fluid class="hero-section py-16 mt-15">
       <v-row align="center" justify="center">
@@ -38,21 +49,30 @@
           <v-img
             src="/img/landingpage.jpg"
             max-width="780"
-            class="mx-auto"
+            class="mx-auto hero-image"
             cover
             rounded="xl"
           />
         </v-col>
         <v-col cols="12" md="5" class="d-flex justify-center align-center">
-          <div>
+          <div class="text-center text-md-left">
+            <v-chip
+              color="pink"
+              variant="tonal"
+              size="small"
+              class="mb-4 font-weight-medium"
+            >
+              Department of Education
+            </v-chip>
+
             <p
-              class="text-pink school-code-light"
+              class="text-pink school-code-light mb-0"
               :style="
                 isSmAndUp
-                  ? { fontSize: '42px', fontWeight: '800' }
+                  ? { fontSize: '40px', fontWeight: '800', lineHeight: '1.25' }
                   : {
-                      fontSize: '20px',
-                      fontWeight: '1000',
+                      fontSize: '22px',
+                      fontWeight: '800',
                       textAlign: 'center',
                     }
               "
@@ -65,36 +85,39 @@
               the world." <br />— Nelson Mandela
             </p>
 
-            <v-btn
-              color="pink"
-              size="large"
-              rounded="xl"
-              elevation="2"
-              class="mt-6 mx-2 px-8"
-              :block="!isSmAndUp"
-              @click="goToDiv()"
-            >
-              Open Portal
-            </v-btn>
-
-            <!-- <v-btn
-              color="pink"
-              variant="outlined"
-              size="large"
-              rounded="xl"
-              class="mt-6 mx-2 px-8"
-              @click="goToEvents()"
-            >
-              View Events
-            </v-btn> -->
+            <div class="mt-6">
+              <v-btn
+                color="pink"
+                size="large"
+                rounded="xl"
+                elevation="2"
+                class="px-8"
+                :block="!isSmAndUp"
+                @click="goToDiv()"
+              >
+                Open Portal
+                <v-icon end size="18">mdi-arrow-right</v-icon>
+              </v-btn>
+            </div>
           </div>
         </v-col>
       </v-row>
     </v-container>
-    <v-divider color="black"></v-divider>
+
+    <v-divider></v-divider>
+
     <!--EVENTS-->
-    <div style="background-color: #f3f3f3; width: 100%" id="events">
-      <v-container class="py-12">
+    <div style="background-color: #f9f9fb; width: 100%" id="events">
+      <v-container class="py-14">
+        <div class="text-center mb-10">
+          <h2 class="text-h5 font-weight-bold" style="color: #2b2b2b">
+            School Events & Announcements
+          </h2>
+          <p class="text-body-2 text-medium-emphasis mt-1">
+            Stay up to date with what's happening around campus
+          </p>
+        </div>
+
         <v-row>
           <v-col
             cols="12"
@@ -103,9 +126,11 @@
             class="mb-10"
           >
             <div class="d-flex align-center mb-6">
-              <v-icon size="32" class="mr-3" color="pink">
-                {{ getIcon(eventType) }}
-              </v-icon>
+              <v-avatar color="#fff0f6" size="44" class="mr-3">
+                <v-icon size="24" color="pink">
+                  {{ getIcon(eventType) }}
+                </v-icon>
+              </v-avatar>
 
               <h2
                 class="font-weight-bold"
@@ -129,7 +154,7 @@
                 v-for="(event, i) in events"
                 :key="i"
               >
-                <v-card rounded="xl" elevation="2" class="event-card">
+                <v-card rounded="xl" elevation="2" class="event-card h-100">
                   <v-card-text>
                     <div class="event-image-wrapper">
                       <v-img
@@ -147,6 +172,7 @@
                       variant="outlined"
                       size="small"
                       class="my-3"
+                      prepend-icon="mdi-calendar-blank-outline"
                     >
                       {{ formatDate(event.eventDate) }}
                     </v-chip>
@@ -181,20 +207,16 @@
     </div>
 
     <!-- FOOTER -->
-    <v-divider color="black"></v-divider>
-    <v-footer class="pa-14">
+    <v-divider></v-divider>
+    <v-footer class="pa-8 pa-md-14" style="background-color: #ffffff">
       <v-row>
-        <v-col
-          cols="12"
-          md="4"
-          class="px-12"
-          style="border: 1px solid pink; border-radius: 10px"
-        >
-          <div class="text-center">
-            <strong>MISSION</strong>
-          </div>
-          <div class="text-justify">
-            <p class="text-grey mt-2">
+        <v-col cols="12" md="4">
+          <v-card rounded="xl" elevation="0" class="mission-card pa-6 h-100">
+            <v-icon size="30" color="pink" class="mb-3"
+              >mdi-flag-outline</v-icon
+            >
+            <div class="text-subtitle-1 font-weight-bold mb-2">MISSION</div>
+            <p class="text-grey-darken-1 text-body-2" style="line-height: 1.7">
               To protect and promote the right of every Filipino to quality,
               equitable, culture-based, and complete basic education where:
               Students learn in a child-friendly, gender-sensitive, safe, and
@@ -205,44 +227,40 @@
               and other stakeholders are actively engaged and share
               responsibility for developing life-long learners.
             </p>
-          </div>
+          </v-card>
         </v-col>
-        <v-col
-          cols="12"
-          md="4"
-          class="px-12"
-          style="border: 1px solid pink; border-radius: 10px"
-        >
-          <div class="text-center">
-            <strong>CORE VALUES</strong>
-          </div>
 
-          <div class="text-center">
-            <p class="text-grey mt-2">
+        <v-col cols="12" md="4">
+          <v-card
+            rounded="xl"
+            elevation="0"
+            class="mission-card pa-6 h-100 text-center"
+          >
+            <v-icon size="30" color="pink" class="mb-3"
+              >mdi-star-outline</v-icon
+            >
+            <div class="text-subtitle-1 font-weight-bold mb-2">CORE VALUES</div>
+            <p class="text-grey-darken-1 text-body-2" style="line-height: 1.9">
               Maka-Diyos <br />
-              Maka-tao <br />Makakalikasan <br />
+              Maka-tao <br />
+              Makakalikasan <br />
               Makabansa
             </p>
-          </div>
+          </v-card>
         </v-col>
-        <v-col
-          cols="12"
-          md="4"
-          class="px-12"
-          style="border: 1px solid pink; border-radius: 10px"
-        >
-          <div class="text-center">
-            <strong>VISION</strong>
-          </div>
-          <div class="text-justify">
-            <p class="text-grey">
+
+        <v-col cols="12" md="4">
+          <v-card rounded="xl" elevation="0" class="mission-card pa-6 h-100">
+            <v-icon size="30" color="pink" class="mb-3">mdi-eye-outline</v-icon>
+            <div class="text-subtitle-1 font-weight-bold mb-2">VISION</div>
+            <p class="text-grey-darken-1 text-body-2" style="line-height: 1.7">
               We dream of Filipinos who passionately love their country and
               whose values and competencies enable them to realize their full
               potential and contribute meaningfully to building the nation. As a
               learner-centered public institution, the Department of Education
               continuously improves itself to better serve its stakeholders.
             </p>
-          </div>
+          </v-card>
         </v-col>
       </v-row>
     </v-footer>
@@ -283,19 +301,13 @@
                   item.active ? 'active-card' : 'inactive-card',
                 ]"
               >
-                <!-- <v-icon
-                  size="68"
-                  class="mb-4"
-                  :color="item.active ? 'white' : 'pink'"
-                >
-                  {{ item.icon }}
-                </v-icon> -->
                 <v-img
                   :src="item.image"
                   height="160"
                   width="100%"
                   cover
                   class="mb-1 pa-2"
+                  rounded="lg"
                 />
 
                 <div
@@ -326,15 +338,6 @@
           <v-btn variant="flat" color="red" @click="portalDialog = false">
             Cancel
           </v-btn>
-
-          <!-- <v-btn
-            color="primary"
-            variant="flat"
-            class="ml-3"
-            :disabled="!modules.some((m) => m.active)"
-          >
-            Continue
-          </v-btn> -->
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -386,7 +389,6 @@
                   mdi-clock-outline
                 </v-icon>
                 {{ formatDate(detailData.eventDate) }} <br />
-                <!-- March 15, 2026 · 8:00 AM – 4:00 PM -->
               </div>
             </v-col>
           </v-row>
@@ -533,6 +535,10 @@ export default {
   align-items: center;
 }
 
+.hero-image {
+  box-shadow: 0 20px 45px rgba(233, 49, 117, 0.15);
+}
+
 .hero-title {
   font-size: 2.5rem;
   font-weight: 700;
@@ -548,15 +554,42 @@ export default {
 }
 
 .event-card {
-  transition: all 0.25s ease;
+  transition: all 0.3s ease;
+  border: 1px solid #f0f0f0;
 }
 
 .event-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(233, 49, 117, 0.15);
 }
+
+.event-image-wrapper {
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.event-image-wrapper img {
+  transition: transform 0.4s ease;
+}
+
+.event-card:hover img {
+  transform: scale(1.08);
+}
+
+.mission-card {
+  background: #fdfdfd;
+  border: 1px solid #f0e3ea;
+  transition: all 0.25s ease;
+}
+
+.mission-card:hover {
+  border-color: #f5c1d6;
+  box-shadow: 0 10px 25px rgba(233, 49, 117, 0.08);
+}
+
 .portal-dialog {
   backdrop-filter: blur(6px);
+  background: #ffffff;
 }
 
 .module-card {
@@ -578,13 +611,11 @@ export default {
   background: linear-gradient(135deg, #e93175, #ff6fa5);
   transform: translateY(-8px) scale(1.02);
 }
+
 .school-code-light {
   font-weight: 800;
-  letter-spacing: 4px;
+  letter-spacing: 3px;
   color: #e93175;
-}
-.portal-dialog {
-  background: #ffffff;
 }
 
 .dialog-title {
@@ -610,26 +641,5 @@ export default {
   font-size: 1rem;
   color: #333;
   line-height: 1.6;
-}
-.event-card {
-  transition: all 0.3s ease;
-  border: 1px solid #f0f0f0;
-}
-
-.event-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 15px 35px rgba(233, 49, 117, 0.15);
-}
-.event-image-wrapper {
-  overflow: hidden;
-  border-radius: 16px;
-}
-
-.event-image-wrapper img {
-  transition: transform 0.4s ease;
-}
-
-.event-card:hover img {
-  transform: scale(1.08);
 }
 </style>

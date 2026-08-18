@@ -2,29 +2,57 @@
   <div>
     <v-dialog v-model="dialog" persistent scrollable max-width="600px">
       <v-card rounded="xl" elevation="2">
-        <!-- <v-toolbar color="white" dark flat>
-          <v-toolbar-title class="text-h6 font-weight-bold"
-            >{{ action }} User {{ step.name }}</v-toolbar-title
-          >
-          <v-spacer></v-spacer>
-          <v-btn icon @click="closeD()">
-            <v-icon>mdi-close</v-icon>
-          </v-btn>
-        </v-toolbar> -->
-        <v-card-title class="d-flex align-center justify-space-between">
+        <v-card-title
+          class="d-flex align-center justify-space-between px-6 py-4 dialog-header"
+        >
           <div>
             <div class="text-h6 font-weight-bold">{{ action }} User</div>
-            <div class="text-caption text-grey">
+            <div class="text-caption dialog-header-subtitle">
               {{ step.name }}
             </div>
           </div>
 
-          <v-btn icon="mdi-close" variant="text" color="grey" @click="closeD" />
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            color="white"
+            @click="closeD"
+          />
         </v-card-title>
+
+        <!-- Step progress (only meaningful for the multi-step "Add" flow) -->
+        <v-row>
+          <v-col cols="12">
+            <div v-if="action === 'Add'" class="step-progress px-6 py-3">
+              <div v-for="s in 3" :key="s" class="step-dot-wrap">
+                <div
+                  class="step-dot"
+                  :class="{
+                    'step-dot--active': s === step.id,
+                    'step-dot--done': s < step.id,
+                  }"
+                >
+                  <v-icon v-if="s < step.id" size="14" color="white">
+                    mdi-check
+                  </v-icon>
+
+                  <span v-else>{{ s }}</span>
+                </div>
+
+                <div
+                  v-if="s < 3"
+                  class="step-line"
+                  :class="{ 'step-line--done': s < step.id }"
+                />
+              </div>
+            </div>
+          </v-col>
+        </v-row>
+
         <v-divider></v-divider>
         <v-form ref="AddAccount" @submit.prevent>
-          <v-card-text>
-            <v-container fluid>
+          <v-card-text class="pa-6">
+            <v-container fluid class="pa-0">
               <!-- Step 1: Name Fields -->
               <v-row v-if="step.id === 1">
                 <v-col cols="12">
@@ -35,6 +63,7 @@
                     :rules="[formRules.required]"
                     variant="outlined"
                     density="compact"
+                    rounded="lg"
                   />
                 </v-col>
                 <v-col cols="12">
@@ -44,6 +73,7 @@
                     prepend-inner-icon="mdi-account"
                     variant="outlined"
                     density="compact"
+                    rounded="lg"
                   />
                 </v-col>
                 <v-col cols="12">
@@ -54,6 +84,7 @@
                     :rules="[formRules.required]"
                     variant="outlined"
                     density="compact"
+                    rounded="lg"
                   />
                 </v-col>
               </v-row>
@@ -70,20 +101,22 @@
                     :rules="userId == 3 ? [formRules.required] : []"
                     variant="outlined"
                     density="compact"
-                    color="primary"
+                    rounded="lg"
+                    color="#E35E93"
                   />
                 </v-col>
 
                 <v-col cols="12">
                   <v-card
                     variant="outlined"
-                    class="pa-3 d-flex justify-space-between align-center"
+                    rounded="lg"
+                    class="pa-3 d-flex justify-space-between align-center access-card"
                   >
                     <div>
                       <div class="font-weight-medium">
                         Multiple Roles Access
                       </div>
-                      <div class="text-caption text-grey">
+                      <div class="text-caption text-medium-emphasis">
                         Allow user to access multiple sub-modules
                       </div>
                     </div>
@@ -92,7 +125,7 @@
                       true-value="1"
                       false-value="0"
                       inset
-                      color="primary"
+                      color="#E35E93"
                       hide-details
                     />
                   </v-card>
@@ -110,6 +143,8 @@
                     chips
                     closable-chips
                     density="compact"
+                    rounded="lg"
+                    color="#E35E93"
                     :rules="[formRules.required]"
                   />
                 </v-col>
@@ -128,6 +163,7 @@
                     :error-messages="emailError"
                     variant="outlined"
                     density="compact"
+                    rounded="lg"
                   />
 
                   <v-text-field
@@ -142,6 +178,7 @@
                     :rules="[formRules.required, formRules.password]"
                     variant="outlined"
                     density="compact"
+                    rounded="lg"
                     class="mt-3"
                   />
 
@@ -159,6 +196,7 @@
                     prepend-inner-icon="mdi-lock"
                     variant="outlined"
                     density="compact"
+                    rounded="lg"
                     :rules="[
                       formRules.required,
                       formRules.confirmPassword(confirmPassword, password),
@@ -172,21 +210,23 @@
 
           <v-divider></v-divider>
 
-          <v-card-actions>
-            <v-btn color="red" variant="outlined" @click="closeD()"
+          <v-card-actions class="px-6 py-4">
+            <v-btn color="red" variant="outlined" rounded="lg" @click="closeD()"
               >Close</v-btn
             >
             <v-spacer></v-spacer>
             <v-btn
               @click="backForm()"
-              color="primary"
+              color="#E35E93"
               variant="outlined"
+              rounded="lg"
               v-if="step.id != 1 && action != 'Edit'"
               >Back</v-btn
             >
             <v-btn
-              color="success"
+              color="#6DB249"
               variant="flat"
+              rounded="lg"
               @click="handleAction()"
               :loading="isLoading"
             >
@@ -209,7 +249,7 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
 export default {
   props: {
     data: Object,
@@ -221,7 +261,7 @@ export default {
       isValidated: false,
       isLoading: false,
       subModules: [],
-      step: { id: 1, name: "Personal Information" },
+      step: { id: 1, name: 'Personal Information' },
       email: null,
       password: null,
       emailError: null,
@@ -248,9 +288,9 @@ export default {
       assigneAccessModulesList: [],
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
@@ -267,9 +307,9 @@ export default {
     },
     getButtonText() {
       if (this.step.id === 3) {
-        return this.action === "Add" ? "Save" : "Update";
+        return this.action === 'Add' ? 'Save' : 'Update';
       } else {
-        return this.action === "Update" ? "Update" : "Next";
+        return this.action === 'Update' ? 'Update' : 'Next';
       }
     },
   },
@@ -280,7 +320,7 @@ export default {
         this.initialize();
         // this.$refs.AddAccount.resetValidation();
         if (data.id) {
-          console.log("Love", data);
+          console.log('Love', data);
           this.verifyModel.id = data.id;
           this.verifyModel.userID = data.user_id;
           this.verifyModel.name = data.name;
@@ -293,10 +333,10 @@ export default {
           this.lname = data.lname;
           this.mname = data.mname;
           this.email = data.email;
-          if (this.action == "Update") {
-            this.step = { id: 1, name: "Personal Information" };
-          } else if (this.action == "Edit") {
-            this.step = { id: 3, name: "Account Credentials" };
+          if (this.action == 'Update') {
+            this.step = { id: 1, name: 'Personal Information' };
+          } else if (this.action == 'Edit') {
+            this.step = { id: 3, name: 'Account Credentials' };
           }
         } else {
           (this.verifyModel.id = null), (this.verifyModel.userID = null);
@@ -315,14 +355,14 @@ export default {
     handleAction() {
       // Step 3 logic
       if (this.step.id === 3) {
-        this.action === "Add" ? this.AddAccount() : this.UpdateCredentials();
+        this.action === 'Add' ? this.AddAccount() : this.UpdateCredentials();
         return;
       }
 
       // Other steps logic
-      if (this.action === "Update") {
+      if (this.action === 'Update') {
         this.UpdateInfo();
-      } else if (this.action === "Edit") {
+      } else if (this.action === 'Edit') {
         this.UpdateCredentials();
       } else {
         this.Next();
@@ -330,13 +370,13 @@ export default {
     },
     checkEmail() {
       this.emailChecking = true;
-      this.axiosCall("/auth/checkEmailIfExist/" + this.email, "GET").then(
+      this.axiosCall('/auth/checkEmailIfExist/' + this.email, 'GET').then(
         (res) => {
           console.log(res.data);
           if (res.data) {
-            this.emailError = "Email Already Exist!";
+            this.emailError = 'Email Already Exist!';
           } else {
-            this.emailError = "";
+            this.emailError = '';
           }
           this.emailChecking = false;
         },
@@ -350,9 +390,9 @@ export default {
       this.getAccessControlAssignedModules();
     },
     getUserType() {
-      this.axiosCall("/user-type/getAllUsertype", "GET").then((res) => {
+      this.axiosCall('/user-type/getAllUsertype', 'GET').then((res) => {
         if (res.data) {
-          console.log("UserList", res.data);
+          console.log('UserList', res.data);
           let data = res.data;
           this.usertypeList = data;
         }
@@ -362,9 +402,9 @@ export default {
       // registration logic here
       if (this.password != this.confirmPassword) {
         this.fadeAwayMessage.show = true;
-        this.fadeAwayMessage.type = "error";
-        this.fadeAwayMessage.message = "Password not mutch";
-        this.fadeAwayMessage.header = "System Message";
+        this.fadeAwayMessage.type = 'error';
+        this.fadeAwayMessage.message = 'Password not mutch';
+        this.fadeAwayMessage.header = 'System Message';
       } else {
         if (this.$refs.AddAccount.validate()) {
           this.isLoading = true;
@@ -393,22 +433,22 @@ export default {
             user_roleID: 2,
           };
           console.log(data);
-          this.axiosCall("/auth/addUserByAdmin", "POST", data).then((res) => {
+          this.axiosCall('/auth/addUserByAdmin', 'POST', data).then((res) => {
             if (res.data.status == 201) {
               this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = "success";
+              this.fadeAwayMessage.type = 'success';
               this.fadeAwayMessage.message = res.data.msg;
-              this.fadeAwayMessage.header = "System Message";
-              this.$store.dispatch("setEmail", this.email);
+              this.fadeAwayMessage.header = 'System Message';
+              this.$store.dispatch('setEmail', this.email);
               this.isLoading = false;
               this.closeD();
               this.refresh();
             } else {
               this.isLoading = false;
               this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = "error";
+              this.fadeAwayMessage.type = 'error';
               this.fadeAwayMessage.message = res.data.message;
-              this.fadeAwayMessage.header = "System Message";
+              this.fadeAwayMessage.header = 'System Message';
               this.animated = true;
             }
           });
@@ -418,9 +458,9 @@ export default {
     UpdateCredentials() {
       if (this.password == null) {
         this.fadeAwayMessage.show = true;
-        this.fadeAwayMessage.type = "error";
-        this.fadeAwayMessage.message = "Please fill-up required fields!";
-        this.fadeAwayMessage.header = "System Message";
+        this.fadeAwayMessage.type = 'error';
+        this.fadeAwayMessage.message = 'Please fill-up required fields!';
+        this.fadeAwayMessage.header = 'System Message';
       } else {
         this.isLoading = true;
         let data = {
@@ -428,24 +468,24 @@ export default {
           new_password: this.password,
         };
         this.axiosCall(
-          "/auth/changePassIDCred/" + this.data.id,
-          "POST",
+          '/auth/changePassIDCred/' + this.data.id,
+          'POST',
           data,
         ).then((res) => {
           if (res.data.status == 200) {
             this.isLoading = false;
             this.fadeAwayMessage.message = res.data.msg;
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "success";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'success';
+            this.fadeAwayMessage.header = 'System Message';
             this.closeD();
             this.refresh();
           } else if (res.data.status == 400) {
             this.isLoading = false;
             this.fadeAwayMessage.message = res.data.msg;
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
           }
         });
       }
@@ -458,58 +498,58 @@ export default {
         lname: this.lname,
       };
       this.axiosCall(
-        "/user-details/updateUserInfo/" +
+        '/user-details/updateUserInfo/' +
           this.data.id +
-          "/" +
+          '/' +
           JSON.stringify(data),
-        "POST",
+        'POST',
         data,
       ).then((res) => {
         if (res.data.status == 200) {
           this.isLoading = false;
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "success";
+          this.fadeAwayMessage.type = 'success';
           this.fadeAwayMessage.message = res.data.message;
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.header = 'System Message';
           this.closeD();
           this.refresh();
         } else {
           this.isLoading = false;
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
+          this.fadeAwayMessage.type = 'error';
           this.fadeAwayMessage.message = res.data.message;
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.header = 'System Message';
           this.animated = true;
         }
       });
     },
     closeD() {
-      eventBus.emit("closeAddAccountDialog", true);
-      this.step = { id: 1, name: "Personal Information" };
+      eventBus.emit('closeAddAccountDialog', true);
+      this.step = { id: 1, name: 'Personal Information' };
       this.dialog = false;
       this.refresh();
     },
     Next() {
       if (this.fname == null || this.lname == null) {
         this.fadeAwayMessage.show = true;
-        this.fadeAwayMessage.type = "error";
+        this.fadeAwayMessage.type = 'error';
         this.fadeAwayMessage.message =
-          "Please fill-up required fields for users Information!";
-        this.fadeAwayMessage.header = "System Message";
+          'Please fill-up required fields for users Information!';
+        this.fadeAwayMessage.header = 'System Message';
       } else if (this.step.id == 1) {
-        this.step = { id: 2, name: "Accounts Modules" };
+        this.step = { id: 2, name: 'Accounts Modules' };
       } else if (this.step.id == 2) {
         if (
           this.verifyModel.assignedModuleID == null ||
           this.subModules == []
         ) {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
+          this.fadeAwayMessage.type = 'error';
           this.fadeAwayMessage.message =
-            "Please fill-up required fields for users Modules!";
-          this.fadeAwayMessage.header = "System Message";
+            'Please fill-up required fields for users Modules!';
+          this.fadeAwayMessage.header = 'System Message';
         } else {
-          this.step = { id: 3, name: "Account Information" };
+          this.step = { id: 3, name: 'Account Information' };
         }
       }
 
@@ -521,22 +561,22 @@ export default {
     },
     backForm() {
       if (this.step.id == 3) {
-        this.step = { id: 2, name: "Accounts Modules" };
+        this.step = { id: 2, name: 'Accounts Modules' };
       } else if (this.step.id == 2) {
-        this.step = { id: 1, name: "Personal Information" };
+        this.step = { id: 1, name: 'Personal Information' };
       }
     },
 
     getAssignedModules() {
-      this.axiosCall("/assigned-modules", "GET").then((res) => {
-        console.log("AssignedM", res.data);
+      this.axiosCall('/assigned-modules', 'GET').then((res) => {
+        console.log('AssignedM', res.data);
         let data = res.data;
         this.assignedModulesList = data;
       });
     },
     getUseRoles() {
-      this.axiosCall("/user-role", "GET").then((res) => {
-        console.log("UserRole", res.data);
+      this.axiosCall('/user-role', 'GET').then((res) => {
+        console.log('UserRole', res.data);
         this.userRoleList = res.data;
       });
     },
@@ -552,7 +592,7 @@ export default {
       this.verifyModel.usertypeID = null;
     },
     getAccessControlAssignedModules() {
-      this.axiosCall("/assigned-modules/getSpecificModules", "GET").then(
+      this.axiosCall('/assigned-modules/getSpecificModules', 'GET').then(
         (res) => {
           // console.log("AssignedM", res.data);
           let data = res.data;
@@ -563,3 +603,73 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.dialog-header-subtitle {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.access-card {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Step progress indicator */
+.step-progress {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  background-color: #fafafa;
+}
+
+.step-dot-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.step-dot {
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  background-color: #e5e7eb;
+  color: #6b7280;
+  position: relative;
+  z-index: 2;
+}
+
+.step-dot--active {
+  background-color: #e35e93;
+  color: #ffffff;
+}
+
+.step-dot--done {
+  background-color: #6db249;
+  color: #ffffff;
+}
+
+.step-line {
+  position: absolute;
+  height: 2px;
+  background-color: #e5e7eb;
+
+  left: calc(50% + 13px);
+  right: calc(-50% + 13px);
+
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.step-line--done {
+  background-color: #6db249;
+}
+</style>
