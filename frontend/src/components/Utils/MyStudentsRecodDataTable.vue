@@ -1,41 +1,43 @@
 <template>
-  <div>
-    <v-row class="mx-2 mt-2">
-      <v-col cols="12" md="12">
-        <v-text-field
-          v-model="search"
-          label="Search"
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          density="compact"
-          hide-details
-          clearable
-          class="mr-2"
-          color="primary"
-        />
-      </v-col>
-      <v-spacer></v-spacer>
-      <v-col cols="12" md="12" class="flex-items" style="overflow: auto">
-        <v-tabs v-model="tab">
-          <v-tab
-            v-for="item in tabList"
-            :key="item.id"
-            :value="item.id"
-            @click="changeTab(item)"
-            :class="[
-              'pa-3 mx-3 transition-all',
-              tab === item.id
-                ? 'bg-pink-lighten-1 text-white'
-                : 'bg-grey-lighten-4',
-            ]"
-            rounded="lg"
+  <v-container fluid class="pa-6 records-bg">
+    <v-card class="pa-4 mb-4 border" elevation="0" rounded="lg">
+      <v-row align="center" dense>
+        <v-col cols="12" md="4">
+          <v-text-field
+            v-model="search"
+            label="Search"
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            density="compact"
+            hide-details
+            clearable
+            color="primary"
+          />
+        </v-col>
+
+        <v-col cols="12" md="8" style="overflow: auto">
+          <v-tabs
+            v-model="tab"
+            color="pink-lighten-1"
+            class="subject-tabs"
+            show-arrows
           >
-            {{ item.subject_title }}
-          </v-tab>
-        </v-tabs>
-      </v-col>
-    </v-row>
-    <v-card class="ma-5 dt-container" elevation="1">
+            <v-tab
+              v-for="item in tabList"
+              :key="item.id"
+              :value="item.id"
+              rounded="lg"
+              class="mx-1"
+              @click="changeTab(item)"
+            >
+              {{ item.subject_title }}
+            </v-tab>
+          </v-tabs>
+        </v-col>
+      </v-row>
+    </v-card>
+
+    <v-card class="border" elevation="0" rounded="lg">
       <v-data-table
         :headers="headers"
         :items="data"
@@ -43,71 +45,85 @@
         :search="search"
         @update:options="options"
         :loading="loading"
+        loading-text="Loading records..."
+        density="comfortable"
+        class="records-table"
         @pagination="pagination"
       >
         <template v-slot:[`item.actions`]="{ item }">
-          <div class="d-flex">
-            <v-btn
-              class="mx-2"
-              x-small
-              color="blue"
-              outlined
-              @click="reportItem(item)"
-            >
-              <v-icon size="18">mdi-eye</v-icon>
-              Report
-            </v-btn>
-            <v-btn
-              class="mx-2"
-              x-small
-              color="#dc0b70"
-              outlined
-              @click="editItem(item)"
-            >
-              <v-icon size="18">mdi-pencil</v-icon>
-              Atendance
-            </v-btn>
-            <v-btn
-              class="mx-2"
-              x-small
-              color="green"
-              outlined
-              @click="viewItem(item)"
-            >
-              <v-icon size="18">mdi-eye</v-icon>
-              Class Records
-            </v-btn>
+          <div class="d-flex justify-center ga-1">
+            <v-tooltip text="Report" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  icon="mdi-alert-octagon-outline"
+                  size="small"
+                  variant="text"
+                  color="blue"
+                  @click="reportItem(item)"
+                />
+              </template>
+            </v-tooltip>
+
+            <v-tooltip text="Attendance" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  icon="mdi-calendar-check-outline"
+                  size="small"
+                  variant="text"
+                  color="pink"
+                  @click="editItem(item)"
+                />
+              </template>
+            </v-tooltip>
+
+            <v-tooltip text="Class Records" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  icon="mdi-notebook-outline"
+                  size="small"
+                  variant="text"
+                  color="green"
+                  @click="viewItem(item)"
+                />
+              </template>
+            </v-tooltip>
+          </div>
+        </template>
+
+        <template #no-data>
+          <div class="py-8 text-center text-medium-emphasis">
+            <v-icon icon="mdi-notebook-off-outline" size="32" class="mb-2" />
+            <div>No class records found.</div>
           </div>
         </template>
       </v-data-table>
     </v-card>
+
     <StudentAttendanceDialog :data="attendanceData" :action="action" />
 
     <ViewStudentClassRecordFialog :data="viewData" :action="action" />
     <StudentDisciplinaryDialog :data="reportData" :action="action" />
 
-    <v-dialog v-model="dialogConfirmDelete" max-width="500">
-      <v-card>
-        <v-card-title class="text-h5"> Confirmation </v-card-title>
+    <v-dialog v-model="dialogConfirmDelete" max-width="420">
+      <v-card rounded="lg">
+        <v-card-title class="d-flex align-center ga-2 text-h6">
+          <v-icon icon="mdi-alert-circle-outline" color="error" />
+          Confirmation
+        </v-card-title>
 
-        <v-card-text style="font-size: 17px">
-          Are you sure you want to delete this item ?
-        </v-card-text>
+        <v-card-text> Are you sure you want to delete this item? </v-card-text>
 
         <v-card-actions>
           <v-spacer></v-spacer>
-
-          <v-btn
-            color="teal darken-3"
-            outlined
-            @click="dialogConfirmDelete = false"
-          >
+          <v-btn variant="text" @click="dialogConfirmDelete = false">
             Cancel
           </v-btn>
-
           <v-btn
-            :color="$vuetify.theme.themes.light.submitBtns"
-            class="white--text"
+            color="error"
+            variant="flat"
             @click="
               confirmDelete();
               dialogConfirmDelete = false;
@@ -118,6 +134,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
     <fade-away-message-component
       displayType="variation2"
       v-model="fadeAwayMessage.show"
@@ -126,7 +143,7 @@
       :top="fadeAwayMessage.top"
       :type="fadeAwayMessage.type"
     ></fade-away-message-component>
-  </div>
+  </v-container>
 </template>
 <script>
 import eventBus from '@/eventBus';
@@ -325,3 +342,31 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.records-bg {
+  min-height: 100vh;
+}
+
+.v-card.border {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+.subject-tabs :deep(.v-tab) {
+  text-transform: none;
+  font-weight: 500;
+}
+
+.subject-tabs :deep(.v-tab--selected) {
+  background: #f8bbd0;
+  color: #ad1457 !important;
+}
+
+.records-table :deep(thead th) {
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  opacity: 0.6;
+}
+</style>

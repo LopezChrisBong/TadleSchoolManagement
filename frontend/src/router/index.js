@@ -44,6 +44,7 @@ import AdvisoryProgramm from '../views/Pages/AdvisoryProgramm.vue';
 import Events from '../views/Pages/Events.vue';
 import Announcement from '../views/Pages/Announcement.vue';
 import MyReports from '../views/Pages/MyReports.vue';
+import DepEdPersonnels from '@/views/Pages/DepEdPersonnels.vue';
 // Vue.use(VueRouter);
 
 const routes = [
@@ -146,7 +147,7 @@ const routes = [
       {
         path: "student_verify",
         component: Student_verify,
-        meta: { title: "Verify Student", authRequired: true },
+        meta: { title: "Student List", authRequired: true },
       },
       {
         path: "user-type",
@@ -242,7 +243,11 @@ const routes = [
         component: Announcement,
         meta: { title: "Announcement", authRequired: true },
       },
-      
+      {
+        path: "deped-personnels",
+        component: DepEdPersonnels,
+        meta: { title: "DepEd Personnels", authRequired: true },
+      },
       
       
       // {
@@ -267,7 +272,7 @@ const routes = [
       {
         path: "student_verify",
         component: Student_verify,
-        meta: { title: "Verify Student", authRequired: true },
+        meta: { title: "Student List", authRequired: true },
       },
       {
         path: "enroll-student",
@@ -387,7 +392,7 @@ const routes = [
       {
         path: "student_verify",
         component: Student_verify,
-        meta: { title: "Verify Student", authRequired: true },
+        meta: { title: "Student List", authRequired: true },
       },
       {
         path: "enroll-student",
@@ -450,6 +455,11 @@ const routes = [
         path: "my-reports",
         component: MyReports,
         meta: { title: "Reported Students", authRequired: true },
+      },
+      {
+        path: "deped-personnels",
+        component: DepEdPersonnels,
+        meta: { title: "DepEd Personnels", authRequired: true },
       },
       
     ],

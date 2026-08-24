@@ -27,6 +27,7 @@ import { TeacherGradeLevel } from 'src/subjects/entities/prefered-grade-level.en
 import { TeacherSubject } from 'src/subjects/entities/prefered-subject.entity';
 import { Subject } from 'src/subjects/entities/subject.entity';
 import { SysModule } from 'src/sys-modules/entities/sys-module.entity';
+import { DepEdPersonnel } from 'src/user-details/entities/deped-personnel.entity';
 import { UserDetail } from 'src/user-details/entities/user-detail.entity';
 import { UserRole } from 'src/user-role/entities/user-role.entity';
 import { UserType } from 'src/user-type/entities/user-type.entity';
@@ -64,6 +65,7 @@ const entities = [
   SchoolEvent,
   Announcement,
   Comments,
+  DepEdPersonnel,
 ];
 
 export {
@@ -99,6 +101,7 @@ export {
   SchoolEvent,
   Announcement,
   Comments,
+  DepEdPersonnel,
 };
 
 export default entities;

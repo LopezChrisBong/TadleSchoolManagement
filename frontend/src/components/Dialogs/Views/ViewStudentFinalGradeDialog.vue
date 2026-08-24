@@ -61,10 +61,35 @@
                   @update:modelValue="changeQuarter"
                 ></v-autocomplete>
               </v-col>
+
+              <v-col cols="12" class="pb-0">
+                <v-tabs v-model="genderTab" color="pink" density="compact">
+                  <v-tab value="All">
+                    All
+                    <v-chip size="x-small" class="ml-2" variant="tonal">{{
+                      students.length
+                    }}</v-chip>
+                  </v-tab>
+                  <v-tab value="Male">
+                    Male
+                    <v-chip size="x-small" class="ml-2" variant="tonal">{{
+                      genderCounts.Male
+                    }}</v-chip>
+                  </v-tab>
+                  <v-tab value="Female">
+                    Female
+                    <v-chip size="x-small" class="ml-2" variant="tonal">{{
+                      genderCounts.Female
+                    }}</v-chip>
+                  </v-tab>
+                </v-tabs>
+                <v-divider class="mb-4"></v-divider>
+              </v-col>
+
               <v-col cols="12">
                 <v-data-table
                   :headers="headers"
-                  :items="students"
+                  :items="filteredStudents"
                   item-value="id"
                 >
                   <template v-slot:[`item.status`]="{ item }">
@@ -74,6 +99,17 @@
                     >
                       {{ item.average <= 80 ? 'Fail' : 'Passed' }}
                     </v-chip>
+                  </template>
+
+                  <template #no-data>
+                    <div class="py-8 text-center text-medium-emphasis">
+                      No
+                      {{
+                        genderTab === 'All'
+                          ? ''
+                          : genderTab.toLowerCase() + ' '
+                      }}students found.
+                    </div>
                   </template>
                 </v-data-table></v-col
               >
@@ -145,6 +181,7 @@ export default {
       dialog: false,
       quarter: '',
       semester: null,
+      genderTab: 'All',
       studentsGrade: [],
       students: [],
       headers: [],
@@ -158,7 +195,18 @@ export default {
     };
   },
 
-  computed: {},
+  computed: {
+    genderCounts() {
+      return {
+        Male: this.students.filter((s) => s.sex === 'Male').length,
+        Female: this.students.filter((s) => s.sex === 'Female').length,
+      };
+    },
+    filteredStudents() {
+      if (this.genderTab === 'All') return this.students;
+      return this.students.filter((s) => s.sex === this.genderTab);
+    },
+  },
   watch: {
     data: {
       handler(data) {
@@ -185,6 +233,7 @@ export default {
     initialize() {
       this.syType = this.$store.getters.getSyType;
       this.quarter = this.syType == 0 ? '1st Quarter' : '1st Term';
+      this.genderTab = 'All';
       this.getAllStudentsGrade();
     },
     buildTable(data) {
@@ -196,6 +245,9 @@ export default {
           students[item.id] = {
             id: item.id,
             name: item.name,
+            lname: item.lname,
+            sex: item.sex,
+            lrnNo: item.lrnNo,
           };
         }
         const subject = item.subject_title;
@@ -251,12 +303,15 @@ export default {
         }
       }
 
-      this.students = Object.values(students);
+      this.students = Object.values(students).sort((a, b) =>
+        (a.lname || '').localeCompare(b.lname || ''),
+      );
       let subjectHeaders = [];
       if (this.quarter === 'All') {
         subjectHeaders = Array.from(subjects).map((subject) => ({
           title: subject,
           align: 'center',
+          sortable: false,
           children: [
             ...Array.from(quarters).map((q) => ({
               title: q,

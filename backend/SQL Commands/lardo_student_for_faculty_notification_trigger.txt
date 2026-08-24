@@ -87,3 +87,254 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+
+
+
+part 2
+
+////
+DROP TRIGGER IF EXISTS trg_after_insert_attendance_for_faculty;
+
+DELIMITER $$
+
+CREATE TRIGGER `trg_after_insert_attendance_for_faculty`
+AFTER INSERT ON `student_attendance`
+FOR EACH ROW
+BEGIN
+
+    DECLARE v_student_name VARCHAR(255);
+    DECLARE v_consecutive_absents INT DEFAULT 0;
+    DECLARE v_total_absents INT DEFAULT 0;
+
+    DECLARE v_absent_dates TEXT;
+    DECLARE v_remarks TEXT;
+    DECLARE v_subject_title VARCHAR(255);
+
+
+    /* =====================================================
+       ONLY PROCESS ABSENT ATTENDANCE
+       attendance = 0 means ABSENT
+       ===================================================== */
+
+    IF NEW.attendance = 0 THEN
+
+
+        /* =====================================================
+           1. GET STUDENT NAME
+           ===================================================== */
+
+        SELECT CONCAT(es.fname, ' ', es.lname)
+        INTO v_student_name
+        FROM enroll_student es
+        WHERE es.id = NEW.studentID
+        LIMIT 1;
+
+
+        /* =====================================================
+           2. GET SUBJECT TITLE
+           ===================================================== */
+
+        SELECT sj.subject_title
+        INTO v_subject_title
+        FROM subject sj
+        WHERE sj.id = NEW.subjectID
+        LIMIT 1;
+
+
+        /* =====================================================
+           3. COUNT TOTAL ABSENT DAYS
+           
+           Multiple subjects on the same date count as ONE
+           absent day.
+           ===================================================== */
+
+        SELECT COUNT(*)
+        INTO v_total_absents
+        FROM (
+            SELECT sa.attendanceDate
+            FROM student_attendance sa
+            WHERE sa.studentID = NEW.studentID
+              AND sa.school_yearID = NEW.school_yearID
+            GROUP BY sa.attendanceDate
+            HAVING MIN(sa.attendance) = 0
+        ) AS absent_days;
+
+
+        /* =====================================================
+           4. GET RECENT ABSENT DATES
+           
+           Used for the faculty notification message.
+           ===================================================== */
+
+        SELECT GROUP_CONCAT(
+            DATE_FORMAT(x.attendanceDate, '%c-%d-%Y')
+            ORDER BY x.attendanceDate DESC
+            SEPARATOR ', '
+        )
+        INTO v_absent_dates
+        FROM (
+            SELECT DISTINCT sa.attendanceDate
+            FROM student_attendance sa
+            WHERE sa.studentID = NEW.studentID
+              AND sa.school_yearID = NEW.school_yearID
+              AND sa.attendance = 0
+              AND sa.attendanceDate <= NEW.attendanceDate
+            ORDER BY sa.attendanceDate DESC
+            LIMIT 5
+        ) AS x;
+
+
+        /* =====================================================
+           5. COUNT CONSECUTIVE ABSENT DAYS
+           
+           Multiple subjects on the same date = ONE day.
+
+           This checks the latest attendance dates and counts
+           the absent dates.
+           ===================================================== */
+
+        SELECT COUNT(*)
+        INTO v_consecutive_absents
+        FROM (
+            SELECT
+                sa.attendanceDate,
+                MIN(sa.attendance) AS daily_attendance
+            FROM student_attendance sa
+            WHERE sa.studentID = NEW.studentID
+              AND sa.school_yearID = NEW.school_yearID
+              AND sa.attendanceDate <= NEW.attendanceDate
+            GROUP BY sa.attendanceDate
+            ORDER BY sa.attendanceDate DESC
+            LIMIT 5
+        ) AS recent_days
+        WHERE recent_days.daily_attendance = 0;
+
+
+        /* =====================================================
+           6. LARDO CLASSIFICATION / RECOMMENDATION
+           
+           PRIORITY:
+           
+           40 absent days
+               -> NLPA
+           
+           20 absent days
+               -> Chronic Absenteeism
+           
+           5 consecutive days
+               -> Critical Tracking
+           
+           3 consecutive days
+               -> Early Warning
+           ===================================================== */
+
+        SET v_remarks = NULL;
+
+
+        /* =====================================================
+           40 ABSENT DAYS
+           20% OF APPROXIMATELY 200 SCHOOL DAYS
+           ===================================================== */
+
+        IF v_total_absents >= 40 THEN
+
+            SET v_remarks = CONCAT(
+                'NLPA: Student has reached 20% absenteeism ',
+                '(40 or more absent school days). ',
+                'Total absent days: ',
+                v_total_absents,
+                '. Recommendation: Automatic Failing Grade and No Credit.'
+            );
+
+
+        /* =====================================================
+           20 ABSENT DAYS
+           10% OF APPROXIMATELY 200 SCHOOL DAYS
+           ===================================================== */
+
+        ELSEIF v_total_absents >= 20 THEN
+
+            SET v_remarks = CONCAT(
+                'CHRONIC ABSENTEEISM: Student has reached 10% absenteeism ',
+                '(20 or more absent school days). ',
+                'Total absent days: ',
+                v_total_absents,
+                '. Recommendation: Parent-Teacher-Counselor Conference.'
+            );
+
+
+        /* =====================================================
+           5 CONSECUTIVE DAYS
+           CRITICAL TRACKING
+           ===================================================== */
+
+        ELSEIF v_consecutive_absents >= 5 THEN
+
+            SET v_remarks = CONCAT(
+                'CRITICAL TRACKING: Student has been absent for ',
+                v_consecutive_absents,
+                ' consecutive school days (',
+                v_absent_dates,
+                '). Recommendation: Home Visitation.'
+            );
+
+
+        /* =====================================================
+           3 CONSECUTIVE DAYS
+           EARLY WARNING
+           ===================================================== */
+
+        ELSEIF v_consecutive_absents >= 3 THEN
+
+            SET v_remarks = CONCAT(
+                'EARLY WARNING: Student has been absent for ',
+                v_consecutive_absents,
+                ' consecutive school days (',
+                v_absent_dates,
+                '). Recommendation: Home Contact/Call.'
+            );
+
+        END IF;
+
+
+        /* =====================================================
+           7. INSERT FACULTY NOTIFICATION
+           ===================================================== */
+
+        IF v_remarks IS NOT NULL THEN
+
+            INSERT INTO lardo_student_for_faculty_notification (
+                studentID,
+                student_name,
+                teacherID,
+                school_yearID,
+                grade_level,
+                room_name,
+                route,
+                `read`,
+                remarks,
+                subject_title
+            )
+            SELECT
+                NEW.studentID,
+                v_student_name,
+                rs.teacherId,
+                NEW.school_yearID,
+                rs.grade_level,
+                rs.room_section,
+                '/advisory-rooms',
+                FALSE,
+                v_remarks,
+                v_subject_title
+            FROM rooms_section rs
+            WHERE rs.id = NEW.roomID
+              AND rs.teacherId IS NOT NULL;
+
+        END IF;
+
+    END IF;
+
+END$$
+
+DELIMITER ;

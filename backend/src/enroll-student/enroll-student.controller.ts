@@ -185,6 +185,11 @@ export class EnrollStudentController {
     return this.enrollStudentService.getTotalEnrolledStudent(+filter, +status);
   }
 
+  @Get('getStudentDataList/:filter')
+  getStudentDataList(@Param('filter') filter: string) {
+    return this.enrollStudentService.getStudentDataList(+filter);
+  }
+
   @Get('FacultySchedule/:filter')
   FacultySchedule(@Param('filter') filter: string, @Headers() headers) {
     var head_str = headers.authorization;

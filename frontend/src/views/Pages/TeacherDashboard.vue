@@ -32,29 +32,81 @@
     <!-- STATS CARDS -->
     <v-row class="mb-6" dense>
       <v-col cols="12" md="4">
-        <v-card class="pa-4 stat-card" elevation="2">
-          <div class="text-h6 font-weight-bold">
-            {{ studentCount ? studentCount : 0 }}
+        <v-card class="pa-4 stat-card" elevation="0">
+          <div class="stat-icon-wrap blue-icon">
+            <v-icon icon="mdi-account-group-outline" size="24" />
           </div>
-          <div class="text-caption">Total Students</div>
+          <div>
+            <div class="text-h6 font-weight-bold">
+              {{ studentCount ? studentCount : 0 }}
+            </div>
+            <div class="text-caption text-medium-emphasis">Total Students</div>
+          </div>
         </v-card>
       </v-col>
 
       <v-col cols="12" md="4">
-        <v-card class="pa-4 stat-card red-light" elevation="2">
-          <div class="text-h6 font-weight-bold">
-            {{ atRiskCount ? atRiskCount : 0 }} At-Risk
+        <v-card class="pa-4 stat-card red-light" elevation="0">
+          <div class="stat-icon-wrap red-icon">
+            <v-icon icon="mdi-alert-outline" size="24" />
           </div>
-          <div class="text-caption">Student/s</div>
+          <div>
+            <div class="text-h6 font-weight-bold">
+              {{ atRiskCount ? atRiskCount : 0 }}
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              At-Risk Student/s
+            </div>
+          </div>
         </v-card>
       </v-col>
 
       <v-col cols="12" md="4">
-        <v-card class="pa-4 stat-card orange-light" elevation="2">
-          <div class="text-h6 font-weight-bold">
-            {{ lardoCount ? lardoCount : 0 }} LARDO
+        <v-card class="pa-4 stat-card orange-light" elevation="0">
+          <div class="stat-icon-wrap orange-icon">
+            <v-icon icon="mdi-clipboard-alert-outline" size="24" />
           </div>
-          <div class="text-caption">Student/s</div>
+          <div>
+            <div class="text-h6 font-weight-bold">
+              {{ lardoCount ? lardoCount : 0 }}
+            </div>
+            <div class="text-caption text-medium-emphasis">LARDO Student/s</div>
+          </div>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <!-- CHARTS -->
+    <v-row class="mb-6" dense>
+      <v-col cols="12" md="7">
+        <v-card class="pa-4" elevation="0">
+          <v-card-title class="font-weight-bold px-0"
+            >Student Overview</v-card-title
+          >
+          <div class="chart-wrap">
+            <Bar
+              v-if="hasOverviewData"
+              :data="overviewChartData"
+              :options="barOptions"
+            />
+            <div v-else class="empty-chart">No data yet.</div>
+          </div>
+        </v-card>
+      </v-col>
+
+      <v-col cols="12" md="5">
+        <v-card class="pa-4" elevation="0">
+          <v-card-title class="font-weight-bold px-0"
+            >Risk Level Breakdown</v-card-title
+          >
+          <div class="chart-wrap">
+            <Doughnut
+              v-if="hasRiskData"
+              :data="riskChartData"
+              :options="doughnutOptions"
+            />
+            <div v-else class="empty-chart">No at-risk students to chart.</div>
+          </div>
         </v-card>
       </v-col>
     </v-row>
@@ -63,8 +115,10 @@
       <!-- LEFT COLUMN -->
       <v-col cols="12" md="8">
         <!-- AT RISK TABLE -->
-        <v-card class="mb-6 pa-4" elevation="2">
-          <v-card-title class="font-weight-bold">
+        <v-card class="mb-6 pa-4" elevation="0">
+          <v-card-title
+            class="font-weight-bold d-flex align-center flex-wrap ga-3 px-0"
+          >
             At-Risk Students
             <v-spacer />
             <v-text-field
@@ -83,21 +137,16 @@
             :items="atRiskStudents"
             :search="search"
             density="comfortable"
+            class="risk-table"
           >
             <template v-slot:[`item.transmuted_grade`]="{ item }">
               <v-chip
-                :color="riskColor(item.transmuted_grade)"
+                :color="riskInfo(item.transmuted_grade).color"
                 size="small"
                 variant="flat"
               >
                 <span class="text-white">
-                  {{
-                    item.transmuted_grade <= 70
-                      ? 'High'
-                      : item.transmuted_grade <= 75
-                      ? 'Moderate'
-                      : 'Passable'
-                  }}
+                  {{ riskInfo(item.transmuted_grade).label }}
                 </span>
               </v-chip>
             </template>
@@ -108,25 +157,24 @@
             <template v-slot:[`item.action`]="{ item }">
               <v-btn
                 size="small"
-                :color="
-                  item.transmuted_grade <= 75
-                    ? 'orange'
-                    : item.transmuted_grade <= 80
-                    ? 'yellow'
-                    : 'green'
-                "
+                :color="riskInfo(item.transmuted_grade).color"
                 variant="flat"
               >
                 <span class="text-white" style="font-size: 10px">
-                  {{
-                    item.transmuted_grade <= 70
-                      ? 'Remedial Class + Parent Meeting'
-                      : item.transmuted_grade <= 75
-                      ? 'Teacher Consultation'
-                      : 'Counceling'
-                  }}
+                  {{ riskInfo(item.transmuted_grade).action }}
                 </span>
               </v-btn>
+            </template>
+
+            <template v-slot:no-data>
+              <div class="py-8 text-center text-medium-emphasis">
+                <v-icon
+                  icon="mdi-check-circle-outline"
+                  size="32"
+                  class="mb-2"
+                />
+                <div>No at-risk students found.</div>
+              </div>
             </template>
           </v-data-table>
         </v-card>
@@ -204,7 +252,7 @@
       <!-- RIGHT COLUMN -->
       <v-col cols="12" md="4">
         <!-- MISBEHAVIOR -->
-        <v-card class="mb-6" elevation="2">
+        <v-card class="mb-6" elevation="0">
           <v-card-title class="font-weight-bold">
             Student Misbehavior Reports
           </v-card-title>
@@ -213,71 +261,80 @@
             <v-list-item
               v-for="(m, i) in paginatedMisbehave"
               :key="i"
-              class="border-bottom"
+              class="border-bottom py-2"
             >
-              <v-list-item-title>
-                {{ m.name }}
-              </v-list-item-title>
+              <div class="d-flex justify-space-between align-center">
+                <v-list-item-title>{{ m.name }}</v-list-item-title>
+                <v-chip
+                  size="x-small"
+                  :color="misbehaviorStatus(m.status).color"
+                  variant="flat"
+                  class="ml-2"
+                >
+                  {{ misbehaviorStatus(m.status).label }}
+                </v-chip>
+              </div>
+            </v-list-item>
 
-              <v-chip
-                size="x-small"
-                :color="
-                  m.status == 0
-                    ? 'yellow'
-                    : m.status == 1
-                    ? 'orange'
-                    : m.status == 2
-                    ? 'red'
-                    : 'green'
-                "
-                variant="flat"
-              >
-                {{
-                  m.status == 0
-                    ? 'Adviser Review'
-                    : m.status == 1
-                    ? 'Prefect Review'
-                    : m.status == 2
-                    ? 'Parent Review'
-                    : 'Resolved'
-                }}
-              </v-chip>
+            <v-list-item v-if="!paginatedMisbehave.length">
+              <div class="text-caption text-medium-emphasis py-2">
+                No misbehavior reports.
+              </div>
             </v-list-item>
           </v-list>
 
-          <!-- Pagination -->
-          <div class="d-flex justify-center pa-4">
+          <div class="d-flex justify-center pa-4" v-if="misbehaveList.length">
             <v-pagination
               v-model="misPage"
               :length="misPageCount"
               total-visible="5"
+              density="compact"
             />
           </div>
         </v-card>
 
         <!-- ALERTS -->
-        <v-card class="mb-6" elevation="2">
+        <v-card class="mb-6" elevation="0">
           <v-card-title class="font-weight-bold">
             At-Risk & LARDO Alerts
           </v-card-title>
 
           <v-list density="compact">
-            <v-list-item v-for="(a, i) in paginatedAlerts" :key="i">
-              <v-icon color="orange" class="me-2">mdi-alert</v-icon>
-              {{
-                a.transmuted_grade
-                  ? 'At-Risk: ' + a.name + ', ' + a.remarks
-                  : 'Lardo: ' + a.name + ', ' + a.remarks
-              }}
+            <v-list-item
+              v-for="(a, i) in paginatedAlerts"
+              :key="i"
+              class="py-2"
+            >
+              <template v-slot:prepend>
+                <v-icon
+                  :color="a.transmuted_grade ? 'red' : 'orange'"
+                  icon="mdi-alert"
+                  size="20"
+                  class="me-2"
+                />
+              </template>
+              <span class="text-body-2">
+                {{
+                  a.transmuted_grade
+                    ? 'At-Risk: ' + a.name + ', ' + a.remarks
+                    : 'LARDO: ' + a.name + ', ' + a.remarks
+                }}
+              </span>
+            </v-list-item>
+
+            <v-list-item v-if="!paginatedAlerts.length">
+              <div class="text-caption text-medium-emphasis py-2">
+                No alerts.
+              </div>
             </v-list-item>
           </v-list>
 
-          <!-- Pagination -->
-          <div class="d-flex justify-center pa-4">
+          <div class="d-flex justify-center pa-4" v-if="alertStudents.length">
             <v-pagination
               v-model="page"
               :length="pageCount"
               total-visible="5"
+              density="compact"
             />
           </div>
         </v-card>
@@ -301,7 +358,30 @@
 </template>
 
 <script>
+import { Bar, Doughnut } from 'vue-chartjs';
+import {
+  Chart as ChartJS,
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  ArcElement,
+} from 'chart.js';
+
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  ArcElement,
+);
+
 export default {
+  components: { Bar, Doughnut },
   data() {
     return {
       page: 1,
@@ -351,11 +431,7 @@ export default {
 
       remedials: ['Ferdinand Lim – 3:30 PM', 'Mia Santiago – 4:30 PM'],
 
-      reminders: [
-        // 'Submit class report by 5 PM',
-        'Submit class report on time',
-        // 'Plan counseling for Alex Reyes',
-      ],
+      reminders: ['Submit class report on time'],
 
       alerts: [
         'LARDO Alert: Louis skipped 5 days',
@@ -367,6 +443,20 @@ export default {
         'Louis flagged as LARDO',
         'Counseling session tomorrow',
       ],
+
+      barOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+      },
+      doughnutOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } },
+        },
+      },
     };
   },
   mounted() {
@@ -379,43 +469,122 @@ export default {
   },
   computed: {
     paginatedAlerts() {
-      // const start = (this.page - 1) * this.itemsPerPage;
-      // const end = start + this.itemsPerPage;
-      // return this.alertStudents.slice(start, end);
-
       const list = this.alertStudents || [];
       const start = (this.page - 1) * this.itemsPerPage;
       const end = start + this.itemsPerPage;
       return list.slice(start, end);
     },
     pageCount() {
-      // return Math.ceil(this.alertStudents.length / this.itemsPerPage);
       if (!this.alertStudents || !this.itemsPerPage) return 1;
       return Math.ceil(this.alertStudents.length / this.itemsPerPage);
     },
-    // MISBEHAVIOR pagination
     paginatedMisbehave() {
       const list = this.misbehaveList || [];
       const start = (this.misPage - 1) * this.misItemsPerPage;
       const end = start + this.misItemsPerPage;
       return list.slice(start, end);
     },
-    // misPageCount() {
-    //   return Math.ceil(this.misbehaveList.length / this.misItemsPerPage);
-    // },
     misPageCount() {
       if (!this.misbehaveList || !this.misItemsPerPage) return 1;
       return Math.ceil(this.misbehaveList.length / this.misItemsPerPage);
+    },
+
+    hasOverviewData() {
+      return !!(this.studentCount || this.atRiskCount || this.lardoCount);
+    },
+    overviewChartData() {
+      return {
+        labels: ['Total Students', 'At-Risk', 'LARDO'],
+        datasets: [
+          {
+            label: 'Students',
+            data: [
+              this.studentCount || 0,
+              this.atRiskCount || 0,
+              this.lardoCount || 0,
+            ],
+            backgroundColor: ['#1565c0', '#c62828', '#ef6c00'],
+            borderRadius: 6,
+            maxBarThickness: 60,
+          },
+        ],
+      };
+    },
+
+    // Buckets atRiskStudents by the same riskInfo() thresholds used in the table,
+    // so the chart and the table can never disagree.
+    riskCounts() {
+      const counts = { High: 0, Moderate: 0, Passable: 0, Good: 0, 'N/A': 0 };
+      (this.atRiskStudents || []).forEach((s) => {
+        const label = this.riskInfo(s.transmuted_grade).label;
+        counts[label] = (counts[label] || 0) + 1;
+      });
+      return counts;
+    },
+    hasRiskData() {
+      return (this.atRiskStudents || []).length > 0;
+    },
+    riskChartData() {
+      const c = this.riskCounts;
+      const entries = Object.entries(c).filter(([, v]) => v > 0);
+      return {
+        labels: entries.map(([label]) => label),
+        datasets: [
+          {
+            data: entries.map(([, v]) => v),
+            backgroundColor: entries.map(([label]) => {
+              const colorMap = {
+                High: '#e53935',
+                Moderate: '#fb8c00',
+                Passable: '#ffb300',
+                Good: '#43a047',
+                'N/A': '#9e9e9e',
+              };
+              return colorMap[label];
+            }),
+          },
+        ],
+      };
     },
   },
   methods: {
     initialize() {
       this.getFacultyDashboardData();
     },
-    riskColor(risk) {
-      if (risk <= 75) return 'orange';
-      if (risk <= 80) return 'yellow';
-      return 'green';
+    riskInfo(grade) {
+      if (grade == null) {
+        return { label: 'N/A', color: 'grey', action: '—' };
+      }
+      if (grade <= 70) {
+        return {
+          label: 'High',
+          color: 'red',
+          action: 'Remedial Class + Parent Meeting',
+        };
+      }
+      if (grade <= 75) {
+        return {
+          label: 'Moderate',
+          color: 'orange',
+          action: 'Teacher Consultation',
+        };
+      }
+      if (grade <= 80) {
+        return {
+          label: 'Passable',
+          color: 'amber-darken-2',
+          action: 'Counseling',
+        };
+      }
+      return { label: 'Good', color: 'green', action: 'Monitor' };
+    },
+    misbehaviorStatus(status) {
+      const map = {
+        0: { label: 'Adviser Review', color: 'yellow-darken-2' },
+        1: { label: 'Prefect Review', color: 'orange' },
+        2: { label: 'Parent Review', color: 'red' },
+      };
+      return map[status] || { label: 'Resolved', color: 'green' };
     },
 
     getFacultyDashboardData() {
@@ -447,7 +616,39 @@ export default {
 }
 
 .stat-card {
-  border-radius: 14px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.stat-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.blue-icon {
+  background: #bbdefb;
+  color: #1565c0;
+}
+.red-icon {
+  background: #ffcdd2;
+  color: #c62828;
+}
+.orange-icon {
+  background: #ffe0b2;
+  color: #ef6c00;
 }
 
 .red-light {
@@ -460,5 +661,27 @@ export default {
 
 .border-bottom {
   border-bottom: 1px solid #eee;
+}
+
+.risk-table :deep(thead th) {
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  opacity: 0.6;
+}
+
+.chart-wrap {
+  height: 240px;
+  position: relative;
+}
+
+.empty-chart {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(0, 0, 0, 0.4);
+  font-size: 13px;
 }
 </style>

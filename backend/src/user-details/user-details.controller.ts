@@ -287,15 +287,32 @@ export class UserDetailsController {
   @UseGuards(JWTAuthGuard)
   @ApiBearerAuth()
   @Get('getTeachingNon')
-  getTeachingNon(@Headers() headers) {
+  getTeachingNon() {
     return this.userDetailsService.getTeachingNon();
   }
 
   @UseGuards(JWTAuthGuard)
   @ApiBearerAuth()
   @Get('getMaleFemaleCount')
-  getMaleFemaleCount(@Headers() headers) {
+  getMaleFemaleCount() {
     return this.userDetailsService.getMaleFemaleCount();
+  }
+
+  @UseGuards(JWTAuthGuard)
+  @ApiBearerAuth()
+  @Get('getDepEdPersonnel')
+  getDepEdPersonnel() {
+    return this.userDetailsService.getDepEdPersonnel();
+  }
+
+  @UseGuards(JWTAuthGuard)
+  @ApiBearerAuth()
+  @Patch('updateDepedName/:id')
+  updateDepedName(
+    @Param('id') id: string,
+    @Body() updateUserDetailDto: UpdateUserDetailDto,
+  ) {
+    return this.userDetailsService.updateDepedName(+id, updateUserDetailDto);
   }
 
   @Delete(':id')

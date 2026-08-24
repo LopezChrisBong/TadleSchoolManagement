@@ -842,6 +842,7 @@ export class RoomsSectionService {
         .where('RS.teacherId = :userId', { userId: userID })
         .andWhere('SY.id = :filter', { filter })
         .andWhere('ES.statusEnrolled = 1')
+        .orderBy('ES.lname', 'ASC')
         .getRawMany();
       // console.log('Wal',data)
       if (!data || data.length === 0) {
@@ -895,6 +896,7 @@ export class RoomsSectionService {
         .andWhere('SY.id = :filter', { filter: filter })
         .andWhere('RS.id = :roomID', { roomID: roomID })
         .andWhere('ES.statusEnrolled = 1')
+        .orderBy('ES.lname', 'ASC')
         .getRawMany();
 
       data = data.map((data) =>
@@ -922,7 +924,7 @@ export class RoomsSectionService {
         .select([
           '*',
           'ES.id as id',
-          "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
+          "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ',ES.lname,' ',SUBSTRING(ES.mname, 1, 1) ,'. ') ,concat(ES.lname, ' ', ES.fname)) as name",
         ])
         .leftJoin(StudentList, 'SL', 'ES.id = SL.studentId')
         .leftJoin(RoomsSection, 'RS', 'RS.id = SL.roomId')
@@ -931,6 +933,7 @@ export class RoomsSectionService {
         .where('SY.id = :filter', { filter: filter })
         .andWhere('RS.id = :roomID', { roomID: roomID })
         .andWhere('ES.statusEnrolled = 1')
+        .orderBy('ES.lname', 'ASC')
         .getRawMany();
       // console.log(data);
       return data;

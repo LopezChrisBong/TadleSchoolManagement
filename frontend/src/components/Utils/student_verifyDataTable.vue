@@ -14,6 +14,26 @@
               rounded="lg"
               >{{ tab.name }}</v-btn
             > -->
+            <v-autocomplete
+              v-model="selectedGrade"
+              :items="gradeOptions"
+              label="Grade Level"
+              variant="outlined"
+              density="compact"
+              hide-details
+              clearable
+              style="max-width: 200px"
+            />
+            <v-autocomplete
+              v-model="selectedRoom"
+              :items="roomOptions"
+              label="Room"
+              variant="outlined"
+              density="compact"
+              hide-details
+              clearable
+              style="max-width: 200px"
+            />
           </v-col>
           <v-spacer></v-spacer>
           <v-col cols="12" md="6" class="d-flex justify-end ga-3">
@@ -33,7 +53,7 @@
     <v-card rounded="xl" elevation="1">
       <v-data-table
         :headers="tab == 1 ? headers : headers1"
-        :items="data"
+        :items="filteredData"
         :items-per-page="10"
         :search="search"
         @update:options="options"
@@ -147,6 +167,16 @@ export default {
   },
   data: () => ({
     search: '',
+    selectedGrade: null,
+    selectedRoom: null,
+    gradeOptions: [
+      'Grade 7',
+      'Grade 8',
+      'Grade 9',
+      'Grade 10',
+      'Grade 11',
+      'Grade 12',
+    ],
     headers: [
       { title: 'Name', value: 'name', align: 'start' },
       {
@@ -159,8 +189,8 @@ export default {
     ],
     headers1: [
       { title: 'Name', value: 'name', align: 'start' },
-      { title: 'Enrolled', value: 'updated_at', align: 'center' },
-      { title: 'Status', value: 'statusEnrolled', align: 'center' },
+      // { title: 'Enrolled', value: 'updated_at', align: 'center' },
+      // { title: 'Status', value: 'statusEnrolled', align: 'center' },
       {
         title: 'Actions',
         value: 'actions',
@@ -231,8 +261,34 @@ export default {
     filterYear() {
       return this.$store.getters.getFilterSelected;
     },
+    // Rooms pulled from whatever's already in `data` — swap this for a
+    // dedicated API call if room_name isn't a field on these items,
+    // or if you want the full room list regardless of current results.
+    roomOptions() {
+      const rooms = this.data
+        .filter(
+          (d) => !this.selectedGrade || d.grade_level === this.selectedGrade,
+        )
+        .map((d) => d.room_name)
+        .filter(Boolean);
+      return [...new Set(rooms)].sort();
+    },
+    filteredData() {
+      return this.data.filter((item) => {
+        const gradeMatch =
+          !this.selectedGrade || item.grade_level === this.selectedGrade;
+        const roomMatch =
+          !this.selectedRoom || item.room_name === this.selectedRoom;
+        return gradeMatch && roomMatch;
+      });
+    },
   },
   watch: {
+    selectedGrade() {
+      if (this.selectedRoom && !this.roomOptions.includes(this.selectedRoom)) {
+        this.selectedRoom = null;
+      }
+    },
     options: {
       handler() {
         if (this.tab == 1) {
@@ -265,9 +321,11 @@ export default {
 
     initialize() {
       this.loading = true;
-      this.tab = 1;
-      this.activeTab = { id: 1, name: 'For Verification' };
-      this.axiosCall('/enroll-student/EnrollStudent', 'GET').then((res) => {
+      this.filter = this.$store.getters.getFilterSelected;
+      this.axiosCall(
+        '/enroll-student/getStudentDataList/' + this.filter,
+        'GET',
+      ).then((res) => {
         if (res) {
           console.log('Enrolled', res.data);
           let data = res.data;
@@ -283,7 +341,6 @@ export default {
 
     getVerifiedUsers() {
       this.loading = true;
-
       this.axiosCall('/enroll-student/EnrolledStudent', 'GET').then((res) => {
         if (res) {
           let data = res.data;

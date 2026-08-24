@@ -416,7 +416,8 @@ export class EnrollStudentService {
 
   async EnrollStudent(curr_user: any) {
     const user = await this.dataSource.query(
-      'SELECT * FROM user_detail where id ="' + curr_user.userdetail.id + '"',
+      'SELECT * FROM user_detail where id = ? ',
+      [curr_user.userdetail.id],
     );
 
     let school_level;
@@ -502,6 +503,25 @@ export class EnrollStudentService {
       // })
       .getRawMany();
 
+    return data;
+  }
+
+  async getStudentDataList(filter: number) {
+    let data = await this.dataSource.manager
+      .createQueryBuilder(EnrollStudent, 'ES')
+      .select([
+        "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
+        'ES.*',
+        'rs.room_section as room_name',
+      ])
+      .leftJoin(StudentList, 'sl', 'sl.studentId = ES.id')
+      .leftJoin(RoomsSection, 'rs', 'rs.id = sl.roomId')
+      // .where('sl.school_yearId = :filter', { filter })
+      // .andWhere('rs.id = :roomID', { roomID })
+      // .andWhere('sl.grade_level = :gradeLevel', { gradeLevel })
+      .getRawMany();
+
+    console.log(filter, data);
     return data;
   }
 
@@ -847,13 +867,15 @@ export class EnrollStudentService {
       .createQueryBuilder(EnrollStudent, 'ES')
       .select([
         'ES.id as id',
-        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ', SUBSTRING(ES.mname, 1, 1), '. ', ES.lname), concat(ES.fname, ' ', ES.lname)) as name",
+        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ', ES.lname, ' ',  SUBSTRING(ES.mname, 1, 1), '. '), concat(ES.lname, ' ', ES.fname)) as name",
         'SQF.transmuted_grade as final_grade',
         'SQF.initial_grade as initial_grade',
         'SQF.quarter as quarter',
         'SQF.semester as semester',
         'S.subject_title as subject_title',
         'ES.lrnNo as lrnNo',
+        'ES.sex as sex',
+        'ES.lname as lname',
       ])
       .leftJoin(StudentList, 'SL', 'ES.id = SL.studentId')
       .leftJoin(StudentQuarterFinalGrade, 'SQF', 'SQF.studentID = ES.id')
@@ -864,11 +886,12 @@ export class EnrollStudentService {
       .andWhere('ES.statusEnrolled = 1');
 
     if (quarter !== 'All') {
-      query = query.andWhere('SQF.quarter = :quarter', { quarter });
+      query.andWhere('SQF.quarter = :quarter', { quarter });
     }
+    query.orderBy('ES.lname', 'ASC');
 
     let data = await query.getRawMany();
-    // console.log(data);
+    console.log(data);
     return data;
   }
 

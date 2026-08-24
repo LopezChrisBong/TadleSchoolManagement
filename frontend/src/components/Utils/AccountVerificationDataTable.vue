@@ -240,7 +240,7 @@
                   </v-avatar>
                   <div class="font-weight-medium">Credentials</div>
                   <div class="text-caption text-medium-emphasis">
-                    Certificates &amp; licenses
+                    Email &amp; Password
                   </div>
                 </v-card-text>
               </v-card>

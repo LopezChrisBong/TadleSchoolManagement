@@ -11,6 +11,7 @@ import {
   AddStrand,
   AddTracks,
   Availability,
+  DepEdPersonnel,
   EnrollStudent,
   RoomsSection,
   SchoolYear,
@@ -444,7 +445,17 @@ export class PdfGeneratorService {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+
+        // For Chromium Updated and Fix
+        //         headless: 'new',
+        // executablePath: '/usr/bin/chromium-browser',
+        // args: [
+        //   '--no-sandbox',
+        //   '--disable-setuid-sandbox',
+        //   '--disable-dev-shm-usage',
+        //   '--disable-gpu',
+        // ],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -776,7 +787,7 @@ export class PdfGeneratorService {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -1108,7 +1119,7 @@ export class PdfGeneratorService {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -1234,7 +1245,7 @@ export class PdfGeneratorService {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -1476,7 +1487,7 @@ export class PdfGeneratorService {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -1642,7 +1653,7 @@ export class PdfGeneratorService {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -1888,7 +1899,7 @@ export class PdfGeneratorService {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -2636,7 +2647,7 @@ export class PdfGeneratorService {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -2915,7 +2926,7 @@ export class PdfGeneratorService {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -2946,11 +2957,13 @@ export class PdfGeneratorService {
       .select([
         '*',
         'SL.id as studentListId',
+        "IF (!ISNULL(ud.mname)  AND LOWER(ud.mname) != 'n/a', concat(ud.fname, ' ',SUBSTRING(ud.mname, 1, 1) ,'. ',ud.lname) ,concat(ud.fname, ' ', ud.lname)) as teacherName",
         "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ',SUBSTRING(ES.mname, 1, 1) ,' ',ES.fname) ,concat(ES.lname, ' ', ES.fname)) as name",
         "IF (!ISNULL(ES.guardian_mname)  AND LOWER(ES.guardian_mname) != 'n/a', concat(ES.guardian_fname, ' ',SUBSTRING(ES.guardian_mname, 1, 1) ,' ',ES.guardian_lname) ,concat(ES.guardian_fname, ' ', ES.guardian_lname)) as guardian_name",
       ])
       .leftJoin(RoomsSection, 'room', 'room.id = SL.roomId')
       .leftJoin(EnrollStudent, 'ES', 'ES.id = SL.studentId')
+      .leftJoin(UserDetail, 'ud', 'room.teacherId = ud.id')
       .where('SL.school_yearId = "' + filter + '"')
       .andWhere('ES.sex = "Male"')
       .andWhere('SL.grade_level = "' + grade + '"')
@@ -2980,7 +2993,9 @@ export class PdfGeneratorService {
       .getRawMany();
     let count_female = rawData_female.length;
 
-    console.log(rawData_male, rawData_female, count_male, count_female);
+    let getDeped = await this.dataSource.manager
+      .createQueryBuilder(DepEdPersonnel, 'dep')
+      .getMany();
 
     let headerImg = join(
       process.cwd(),
@@ -3000,12 +3015,15 @@ export class PdfGeneratorService {
         count_male,
         count_female,
         total_student: Number(count_female) + Number(count_male),
+        teacherName: rawData_male[0].teacherName,
+        schoolHead: getDeped[0].name,
+        superIntendent: getDeped[1].name,
       },
     ];
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
