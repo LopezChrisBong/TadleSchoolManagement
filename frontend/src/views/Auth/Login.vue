@@ -56,6 +56,8 @@
                 size="large"
                 elevation="0"
                 @click="dologin()"
+                :loading="isLoading"
+                :disabled="isLoading"
               >
                 Sign In
                 <v-icon end size="18">mdi-arrow-right</v-icon>
@@ -509,7 +511,7 @@ export default {
             res.data.status == 202
           ) {
             localStorage.setItem('token', res.data.token);
-
+            this.isLoading = false;
             this.$store.commit('setExpiryDate');
             location.reload();
             // setTimeout(() => {

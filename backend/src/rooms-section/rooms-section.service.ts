@@ -624,13 +624,15 @@ export class RoomsSectionService {
     subjectID: number,
     timeFrom: string,
     timeTo: string,
-    days: string, // "Mon,Tue,Wed"
+    days: string,
+    filter: number,
   ) {
     const conflict = await this.dataSource.manager.findBy(Availability, {
       teacherID,
       subjectId: subjectID,
       times_slot_from: timeFrom,
       times_slot_to: timeTo,
+      school_yearId: filter,
     });
 
     const dayArray = days.split(',').map((d) => d.trim());
@@ -638,7 +640,7 @@ export class RoomsSectionService {
     const conflictingDays = conflict
       .map((c) => c.day)
       .filter((day) => dayArray.includes(day));
-    // console.log(conflictingDays);
+    console.log(conflictingDays);
     return conflictingDays;
   }
 

@@ -5,7 +5,9 @@
       <v-row align="center" dense>
         <v-col cols="12" md="4">
           <div class="d-flex align-center ga-2">
-            <v-icon icon="mdi-google-classroom" color="primary" size="22" />
+            <v-avatar size="36" color="#fce4ec" class="mr-1">
+              <v-icon icon="mdi-google-classroom" color="#d6357e" size="20" />
+            </v-avatar>
             <span class="text-h6 font-weight-bold">{{
               room_name || 'My Class'
             }}</span>
@@ -21,15 +23,17 @@
             density="compact"
             hide-details
             clearable
-            color="primary"
+            color="#d6357e"
+            rounded="lg"
             style="max-width: 260px"
           />
           <v-btn
             v-if="edit"
             prepend-icon="mdi-plus"
             rounded="lg"
-            color="primary"
+            color="#d6357e"
             variant="flat"
+            class="text-white font-weight-bold"
             @click="add()"
           >
             Add
@@ -37,7 +41,7 @@
           <v-btn
             prepend-icon="mdi-eye-outline"
             rounded="lg"
-            color="blue"
+            color="#d6357e"
             variant="tonal"
             @click="viewFinalGrade()"
           >
@@ -84,11 +88,30 @@
                 class="mx-1"
               />
               <span class="font-weight-medium">{{ item.value }}</span>
-              <v-chip size="x-small" variant="tonal" class="ml-2">
+              <v-chip
+                size="x-small"
+                variant="tonal"
+                color="#d6357e"
+                class="ml-2"
+              >
                 {{ item.items.length }}
               </v-chip>
             </td>
           </tr>
+        </template>
+
+        <template v-slot:[`item.name`]="{ item }">
+          <div class="d-flex align-center py-2">
+            <v-avatar size="30" color="#fce4ec" class="mr-3">
+              <span
+                class="text-caption font-weight-bold"
+                style="color: #d6357e"
+              >
+                {{ initials(item.name) }}
+              </span>
+            </v-avatar>
+            <span class="font-weight-medium">{{ item.name }}</span>
+          </div>
         </template>
 
         <template v-slot:[`item.actions`]="{ item }">
@@ -186,10 +209,17 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="dialogConfirmDelete = false"
+          <v-btn
+            variant="text"
+            rounded="lg"
+            @click="dialogConfirmDelete = false"
             >Cancel</v-btn
           >
-          <v-btn color="error" variant="flat" @click="confirmDelete()"
+          <v-btn
+            color="error"
+            variant="flat"
+            rounded="lg"
+            @click="confirmDelete()"
             >Confirm</v-btn
           >
         </v-card-actions>
@@ -206,10 +236,14 @@
         <v-card-text> Are you sure you want to drop this student? </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="dialogConfirmDrop = false"
+          <v-btn variant="text" rounded="lg" @click="dialogConfirmDrop = false"
             >Cancel</v-btn
           >
-          <v-btn color="warning" variant="flat" @click="confirmDrop()"
+          <v-btn
+            color="warning"
+            variant="flat"
+            rounded="lg"
+            @click="confirmDrop()"
             >Confirm</v-btn
           >
         </v-card-actions>
@@ -219,26 +253,27 @@
     <!-- view dialog -->
     <v-dialog v-model="dialog" max-width="500px">
       <v-card rounded="lg">
-        <v-card-title>
-          <div class="d-flex justify-space-between align-center">
-            <span class="text-h6 font-weight-bold">Add Students</span>
-            <v-btn
-              variant="text"
-              icon="mdi-close"
-              density="compact"
-              color="red"
-              @click="dialog = false"
-            ></v-btn>
-          </div>
+        <v-card-title
+          class="d-flex justify-space-between align-center px-5 py-4"
+          style="background: #d6357e; color: #fff"
+        >
+          <span class="text-h6 font-weight-bold">Add Students</span>
+          <v-btn
+            variant="text"
+            icon="mdi-close"
+            density="compact"
+            color="white"
+            @click="dialog = false"
+          ></v-btn>
         </v-card-title>
-        <v-card-text>
+        <v-card-text class="pa-5">
           <v-row>
             <v-col cols="12" class="d-flex"> love </v-col>
           </v-row>
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions class="pa-3">
           <v-spacer />
-          <v-btn color="#147452" variant="flat">
+          <v-btn color="#147452" variant="flat" rounded="lg" class="text-white">
             <v-icon start>mdi-check-circle</v-icon>
             Save
           </v-btn>
@@ -279,8 +314,6 @@ export default {
     headers: [
       { title: 'LRN', value: 'lrnNo', align: 'start', sortable: true },
       { title: 'Name', value: 'name', align: 'start', sortable: true },
-      // { title: 'First Name', value: 'fname', align: 'start' },
-      // { title: 'Name', value: 'name', align: 'start' },
       {
         title: 'Actions',
         value: 'actions',
@@ -343,8 +376,9 @@ export default {
     filterYear: {
       handler(newData, oldData) {
         if (oldData != newData) {
+          this.data = [];
+          this.student_activeList = [];
           this.initialize();
-          this.getTaggedStudent();
         }
       },
       deep: true,
@@ -366,8 +400,16 @@ export default {
       this.syType = this.$store.getters.getSyType;
       this.getTaggedStudent();
     },
+    initials(name) {
+      if (!name) return '';
+      return name
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((n) => n[0].toUpperCase())
+        .join('');
+    },
     valuesItem(item) {
-      console.log(item);
       this.updateData = item;
       this.action = 'Add';
     },
@@ -376,7 +418,7 @@ export default {
         '/enroll-student/AddClassStudent/EnrolledStudent/' +
           grade +
           '/' +
-          this.filterYear,
+          this.filter,
         'GET',
       ).then((res) => {
         if (res.data) {
@@ -390,20 +432,14 @@ export default {
     },
     getTaggedStudent() {
       this.axiosCall(
-        '/rooms-section/getMyClassList/' +
-          this.userRoleID +
-          '/' +
-          this.filterYear,
+        '/rooms-section/getMyClassList/' + this.userRoleID + '/' + this.filter,
         'GET',
       ).then((res) => {
         if (res.data && Array.isArray(res.data) && res.data.length > 0) {
           let data = res.data;
-          //   console.log("Data Value", data);
-          console.log('Grade Level', res.data[0].grade_level);
           if (data[0].name != null) {
             for (let i = 0; i < data.length; i++) {
               data[i].name = this.toTitleCase(data[i].name);
-              // this.studentData.push(data[i].id);
             }
             this.data = data;
           }
@@ -437,7 +473,6 @@ export default {
         { id: null, roomID: this.classID, grade_level: this.grade },
       ];
       this.action = 'Add';
-      // this.dialog = true;
     },
     save() {
       if (this.studentData.length > 0) {
@@ -445,14 +480,12 @@ export default {
           classID: this.classID,
           stundent_list: JSON.stringify(this.studentData),
         };
-        console.log('Add Student', data);
 
         this.axiosCall(
           '/rooms-section/addMyStudentClassRoom',
           'POST',
           data,
         ).then((res) => {
-          console.log(res);
           if (res.data.status == 201) {
             this.fadeAwayMessage.show = true;
             this.fadeAwayMessage.type = 'success';
@@ -485,7 +518,6 @@ export default {
       this.action = 'View';
     },
     viewStudentAchievements(item) {
-      // console.log("print", item.grade_level);
       window.open(
         process.env.VUE_APP_SERVER +
           '/pdf-generator/getStudentAchievements/' +
@@ -501,7 +533,6 @@ export default {
       );
     },
     viewStudentAchievementsV2(item) {
-      // console.log('print', item.grade_level);
       window.open(
         process.env.VUE_APP_SERVER +
           '/pdf-generator/getStudentAchievementsV2/' +
@@ -538,7 +569,6 @@ export default {
       });
     },
     async confirmDrop() {
-      // console.log("drop", this.dropData);
       let data = {
         statusEnrolled: 2,
       };

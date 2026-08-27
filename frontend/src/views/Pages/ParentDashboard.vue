@@ -135,7 +135,120 @@
           </v-row>
         </v-card>
       </v-col>
+    </v-row>
+    <!-- Alert & Discipline Status -->
+    <v-row v-if="lardoAlert || disciplineCase">
+      <v-col cols="12" md="6" v-if="lardoAlert">
+        <v-card class="pa-4 rounded-xl mb-4 border" elevation="0">
+          <div class="text-h6 font-weight-bold mb-4">
+            Alert & Discipline Status
+          </div>
 
+          <v-alert
+            v-if="lardoAlert"
+            type="error"
+            variant="flat"
+            density="comfortable"
+            class="rounded-lg mb-3"
+            icon="mdi-alert"
+          >
+            <div class="font-weight-bold">LARDO ALERT</div>
+            <div class="text-caption">Learner At-Risk of Dropping Out</div>
+          </v-alert>
+
+          <div class="alert-detail-row">
+            <span class="text-medium-emphasis">Reason:</span>
+            <span class="font-weight-medium">{{ lardoAlert.remarks }}</span>
+          </div>
+          <div class="alert-detail-row">
+            <span class="text-medium-emphasis">Reported:</span>
+            <span class="font-weight-medium">{{
+              formatDate(lardoAlert.created_at)
+            }}</span>
+          </div>
+          <div class="alert-detail-row">
+            <span class="text-medium-emphasis">Status:</span>
+            <v-chip
+              size="small"
+              :color="lardoAlert.read ? 'grey' : 'red'"
+              variant="flat"
+              class="text-white"
+            >
+              {{ lardoAlert.read ? 'Acknowledged' : 'Unread' }}
+            </v-chip>
+          </div>
+        </v-card>
+      </v-col>
+
+      <v-col cols="12" md="6" v-if="disciplineCase">
+        <v-card class="pa-4 rounded-xl mb-4 border" elevation="0">
+          <div class="d-flex align-center mb-4">
+            <div class="text-h6 font-weight-bold">Discipline Case</div>
+            <v-spacer />
+            <v-chip
+              size="small"
+              variant="tonal"
+              color="blue"
+              prepend-icon="mdi-pin"
+            >
+              {{ disciplineCase.type }}
+            </v-chip>
+          </div>
+
+          <div class="d-flex align-center px-1 mb-4">
+            <template v-for="(step, i) in disciplineSteps" :key="step">
+              <div
+                class="d-flex flex-column align-center"
+                style="min-width: 70px"
+              >
+                <v-avatar
+                  size="26"
+                  :color="
+                    i <= disciplineStatusStep(disciplineCase.status)
+                      ? 'green'
+                      : 'grey-lighten-2'
+                  "
+                >
+                  <v-icon
+                    v-if="i <= disciplineStatusStep(disciplineCase.status)"
+                    size="15"
+                    color="white"
+                  >
+                    mdi-check
+                  </v-icon>
+                </v-avatar>
+                <span class="text-caption text-center mt-1">{{ step }}</span>
+              </div>
+              <v-divider
+                v-if="i < disciplineSteps.length - 1"
+                class="flex-grow-1 mx-1 mb-4"
+                :color="
+                  i < disciplineStatusStep(disciplineCase.status)
+                    ? 'green'
+                    : 'grey-lighten-2'
+                "
+                thickness="2"
+              />
+            </template>
+          </div>
+
+          <v-alert
+            :type="disciplineCase.status === 4 ? 'success' : 'warning'"
+            variant="flat"
+            density="comfortable"
+            class="rounded-lg"
+            :icon="
+              disciplineCase.status === 4
+                ? 'mdi-check-circle'
+                : 'mdi-calendar-clock'
+            "
+          >
+            {{ disciplineStatusLabel(disciplineCase.status) }}
+          </v-alert>
+        </v-card>
+      </v-col>
+    </v-row>
+    <v-row>
       <!-- Announcements -->
       <v-col cols="12">
         <div class="my-5 text-h5 font-weight-bold">Announcements</div>
@@ -249,6 +362,9 @@
 <script>
 export default {
   data: () => ({
+    lardoAlert: null,
+    disciplineCase: null,
+    disciplineSteps: ['Reported', 'Counseled', 'Referred to Prefect'],
     studentList: [],
     activeIndex: 0,
     present: null,
@@ -288,6 +404,41 @@ export default {
     initialize() {
       this.getMyStudent();
     },
+
+    disciplineStatusStep(status) {
+      // status 0 -> step 0, 1 -> step 1, 4 -> step 2 (2/3 unused)
+      if (status === 0) return 0;
+      if (status === 1) return 1;
+      if (status === 4) return 2;
+      return 0; // fallback
+    },
+    disciplineStatusLabel(status) {
+      return status === 0
+        ? 'Under Adviser Review'
+        : status === 1
+        ? 'Referred to Prefect'
+        : status === 4
+        ? 'Resolved'
+        : 'Unknown';
+    },
+    riskLevelColor(level) {
+      const l = (level || '').toLowerCase();
+      if (l === 'high') return 'red';
+      if (l === 'medium') return 'orange';
+      return 'green';
+    },
+    getStudentAlerts(student) {
+      let filter = this.$store.getters.getFilterSelected;
+      this.axiosCall(
+        '/parent-records/getStudentAlerts/' + filter + '/' + student.id,
+        'GET',
+      ).then((res) => {
+        if (res) {
+          this.lardoAlert = res.data.lardoData || null;
+          this.disciplineCase = res.data.disciplineData || null;
+        }
+      });
+    },
     // Was called in the template but never defined — added a plain
     // en-US date formatter. Swap the locale/options if you need something else.
     formatDate(date) {
@@ -326,6 +477,7 @@ export default {
           this.percent = res.data.percent;
         }
       });
+      this.getStudentAlerts(student);
     },
     getParentAnnouncements(student) {
       let filter = this.$store.getters.getFilterSelected;
@@ -429,5 +581,15 @@ export default {
 
 .empty-state {
   color: rgba(0, 0, 0, 0.4);
+}
+.alert-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.alert-detail-row:last-child {
+  border-bottom: none;
 }
 </style>

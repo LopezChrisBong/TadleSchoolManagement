@@ -343,15 +343,20 @@ export default {
             console.log(res.data.successCount);
             if (res.data.status == 201 || res.data.status == 200) {
               this.isLoading = false;
-              this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = 'success';
-              this.fadeAwayMessage.header =
-                res.data.successCount == 0
-                  ? 'No new students were added. They may already be assigned to this or another section.'
-                  : `Successfully added ${res.data.successCount} student${
-                      res.data.successCount > 1 ? 's' : ''
-                    }.`;
-              this.fadeAwayMessage.message = res.data.msg;
+              if (res.data.successCount == 0) {
+                this.fadeAwayMessage.show = true;
+                this.fadeAwayMessage.type = 'error';
+                this.fadeAwayMessage.header =
+                  'No new students were added. They may already be assigned to this or another section.';
+                this.fadeAwayMessage.message = 'No student added!';
+              } else {
+                this.fadeAwayMessage.show = true;
+                this.fadeAwayMessage.type = 'success';
+                this.fadeAwayMessage.header = `Successfully added ${
+                  res.data.successCount
+                } student${res.data.successCount > 1 ? 's' : ''}.`;
+                this.fadeAwayMessage.message = res.data.msg;
+              }
               this.closeD();
             } else {
               this.isLoading = false;

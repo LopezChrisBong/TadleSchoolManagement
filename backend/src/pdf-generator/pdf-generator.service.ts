@@ -15,9 +15,11 @@ import {
   EnrollStudent,
   RoomsSection,
   SchoolYear,
+  StudentAttendance,
   StudentGrade,
   StudentList,
   StudentQuarterFinalGrade,
+  StudentValues,
   Subject,
   TeacherSubject,
   UserDetail,
@@ -135,6 +137,24 @@ hbs.registerHelper('calcAge', function (value) {
   var diff_ms = Date.now() - dob.getTime();
   var age_dt = new Date(diff_ms);
   return Math.abs(age_dt.getUTCFullYear() - 1970);
+});
+
+hbs.registerHelper('calcAge2', function (value) {
+  if (!value) return 0;
+
+  const dob = new Date(value);
+
+  const today = new Date();
+
+  let age = today.getFullYear() - dob.getFullYear();
+
+  const monthDiff = today.getMonth() - dob.getMonth();
+
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+    age--;
+  }
+
+  return age;
 });
 
 hbs.registerHelper('ifEqual', function (value, conditionVal) {
@@ -502,24 +522,51 @@ export class PdfGeneratorService {
       .select([
         'ES.id as id',
         "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ', SUBSTRING(ES.mname, 1, 1), '. ', ES.lname), concat(ES.fname, ' ', ES.lname)) as name",
+        "IF (!ISNULL(UD.mname) AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ', SUBSTRING(UD.mname, 1, 1), '. ', UD.lname), concat(UD.fname, ' ', UD.lname)) as teacherName",
         'SQF.transmuted_grade as final_grade',
         'SQF.initial_grade as initial_grade',
         'SQF.quarter as quarter',
         'SQF.semester as semester',
         'S.subject_title as subject_title',
         'SQF.sub_subject as sub_subject',
+        'ES.bdate as bdate',
+        'RS.room_section as section',
+        'RS.grade_level as grade_level',
+        'RS.id as RoomID',
+        'ES.lrnNo as LRN',
+        'ES.sex as sex',
+        'S.id as subjecID',
+        'SL.id as ListID',
+        "concat(SY.school_year_from,'-',  SY.school_year_to) as schoolYear",
       ])
       .leftJoin(StudentList, 'SL', 'ES.id = SL.studentId')
+      .leftJoin(RoomsSection, 'RS', 'RS.id = SL.roomId')
+      .leftJoin(SchoolYear, 'SY', 'SY.id = SL.school_yearId')
       .leftJoin(StudentQuarterFinalGrade, 'SQF', 'SQF.studentID = ES.id')
       .leftJoin(Subject, 'S', 'S.id = SQF.subjectID')
+      .leftJoin(UserDetail, 'UD', 'UD.id = RS.teacherId')
       .where('SQF.school_yearID = :filter', { filter })
       .andWhere('SQF.roomID = :roomID', { roomID })
       .andWhere('SQF.studentID = :studentID', { studentID })
       .andWhere('ES.grade_level = :gradeLevel', { gradeLevel })
+      .andWhere('SL.school_yearId = :filter', { filter })
       .andWhere('ES.statusEnrolled = 1');
     let newData = await query.getRawMany();
+    let attendanceData = await this.getAttendance(newData, filter);
+    let depedOfficials = await this.dataSource.manager
+      .createQueryBuilder(DepEdPersonnel, 'dp')
+      .getMany();
 
-    // console.log(newData)
+    let studentValues = await this.dataSource.manager
+      .createQueryBuilder(StudentValues, 'sv')
+      .leftJoin(StudentList, 'sl', 'sl.id = sv.studentId')
+      .where('sv.studentid = :id', { id: newData[0].ListID })
+      .andWhere('sv.school_yearId = :filter', { filter })
+      .andWhere('sv.quarter LIKE :term', {
+        term: `%${'Quarter'}%`,
+      })
+      .getRawMany();
+
     if (gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12') {
       const pivoted = Object.values(
         newData.reduce((acc, row) => {
@@ -761,7 +808,6 @@ export class PdfGeneratorService {
         secondSem: secondSemSubjects,
       };
     }
-    console.log(studentData);
 
     let headerImg = join(
       process.cwd(),
@@ -781,6 +827,12 @@ export class PdfGeneratorService {
         gradeLevel: gradeLevel,
         studentData: studentData ? studentData : [],
         junior: junior,
+        studentInfo: newData[0],
+        principal: depedOfficials[0],
+        firstTerm: studentValues[0],
+        secondTerm: studentValues[1],
+        thirdTerm: studentValues[2],
+        fourthTerm: studentValues[3],
         // name:gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12'? arr[0].name: arr.name,
       },
     ];
@@ -791,7 +843,12 @@ export class PdfGeneratorService {
       });
       const page = await browser.newPage();
       // compile(template_name, data)
-      const content = await this.compile('students-achievement', data);
+      // const content = await this.compile('students-achievement', data);
+      const content = await this.compile(
+        'Form138_Blank_Template_Quarterly',
+        data,
+      );
+
       await page.setContent(content);
 
       const buffer = await page.pdf({
@@ -802,7 +859,7 @@ export class PdfGeneratorService {
           bottom: '0.20in',
           right: '0.50in',
         },
-        landscape: false,
+        landscape: true,
         printBackground: true,
         // displayHeaderFooter: true,
         // footerTemplate:
@@ -834,24 +891,51 @@ export class PdfGeneratorService {
       .select([
         'ES.id as id',
         "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ', SUBSTRING(ES.mname, 1, 1), '. ', ES.lname), concat(ES.fname, ' ', ES.lname)) as name",
+        "IF (!ISNULL(UD.mname) AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ', SUBSTRING(UD.mname, 1, 1), '. ', UD.lname), concat(UD.fname, ' ', UD.lname)) as teacherName",
         'SQF.transmuted_grade as final_grade',
         'SQF.initial_grade as initial_grade',
         'SQF.quarter as quarter',
         'SQF.semester as semester',
         'S.subject_title as subject_title',
         'SQF.sub_subject as sub_subject',
+        'ES.bdate as bdate',
+        'S.id as subjecID',
+        'RS.room_section as section',
+        'RS.grade_level as grade_level',
+        'RS.id as RoomID',
+        'ES.lrnNo as LRN',
+        'ES.sex as sex',
+        'SL.id as ListID',
+        "concat(SY.school_year_from,'-',  SY.school_year_to) as schoolYear",
       ])
       .leftJoin(StudentList, 'SL', 'ES.id = SL.studentId')
+      .leftJoin(RoomsSection, 'RS', 'RS.id = SL.roomId')
+      .leftJoin(SchoolYear, 'SY', 'SY.id = SL.school_yearId')
       .leftJoin(StudentQuarterFinalGrade, 'SQF', 'SQF.studentID = ES.id')
       .leftJoin(Subject, 'S', 'S.id = SQF.subjectID')
+      .leftJoin(UserDetail, 'UD', 'UD.id = RS.teacherId')
       .where('SQF.school_yearID = :filter', { filter })
       .andWhere('SQF.roomID = :roomID', { roomID })
       .andWhere('SQF.studentID = :studentID', { studentID })
       .andWhere('ES.grade_level = :gradeLevel', { gradeLevel })
+      .andWhere('SL.school_yearId = :filter', { filter })
       .andWhere('ES.statusEnrolled = 1');
     let newData = await query.getRawMany();
+    let attendanceData = await this.getAttendance(newData, filter);
+    let depedOfficials = await this.dataSource.manager
+      .createQueryBuilder(DepEdPersonnel, 'dp')
+      .getMany();
 
-    // console.log(newData)
+    let studentValues = await this.dataSource.manager
+      .createQueryBuilder(StudentValues, 'sv')
+      .leftJoin(StudentList, 'sl', 'sl.id = sv.studentId')
+      .where('sv.studentid = :id', { id: newData[0].ListID })
+      .andWhere('sv.school_yearId = :filter', { filter })
+      .andWhere('sv.quarter LIKE :term', {
+        term: `%${'Term'}%`,
+      })
+      .getRawMany();
+
     if (gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12') {
       const pivoted = Object.values(
         newData.reduce((acc, row) => {
@@ -1093,7 +1177,6 @@ export class PdfGeneratorService {
         secondSem: secondSemSubjects,
       };
     }
-    console.log(studentData);
 
     let headerImg = join(
       process.cwd(),
@@ -1113,6 +1196,11 @@ export class PdfGeneratorService {
         gradeLevel: gradeLevel,
         studentData: studentData ? studentData : [],
         junior: junior,
+        studentInfo: newData[0],
+        principal: depedOfficials[0],
+        firstTerm: studentValues[0],
+        secondTerm: studentValues[1],
+        thirdTerm: studentValues[2],
         // name:gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12'? arr[0].name: arr.name,
       },
     ];
@@ -1123,7 +1211,8 @@ export class PdfGeneratorService {
       });
       const page = await browser.newPage();
       // compile(template_name, data)
-      const content = await this.compile('students-achievementV2', data);
+      // const content = await this.compile('students-achievementV2', data);
+      const content = await this.compile('Form138_Blank_Template_Term', data);
       await page.setContent(content);
 
       const buffer = await page.pdf({
@@ -1134,7 +1223,7 @@ export class PdfGeneratorService {
           bottom: '0.20in',
           right: '0.50in',
         },
-        landscape: false,
+        landscape: true,
         printBackground: true,
         // displayHeaderFooter: true,
         // footerTemplate:
@@ -1146,6 +1235,19 @@ export class PdfGeneratorService {
     } catch (e) {
       console.log(e);
     }
+  }
+
+  async getAttendance(data, filter) {
+    // console.log('getAttendance', data[0]);
+    let student = data[0];
+    let attendanceQuery = await this.dataSource.manager
+      .createQueryBuilder(StudentAttendance, 'sa')
+      .where('sa.school_yearID = :filter', { filter })
+      .andWhere('sa.roomID = :roomID', { roomID: student.RoomID })
+      .groupBy('sa.attendanceDate')
+      .orderBy('sa.attendanceDate', 'ASC')
+      .getMany();
+    console.log('attendanceQuery', attendanceQuery);
   }
 
   async getAllStudentsFinalGrade(

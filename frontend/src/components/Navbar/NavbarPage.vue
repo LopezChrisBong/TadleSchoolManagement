@@ -1162,6 +1162,8 @@ export default {
   mounted() {
     this.userId = this.$store.state.user.id;
     this.userModule = this.$store.state.user.user.assignedModuleID;
+    this.$store.commit('SET_ASSIGNED_MODULE', this.userModule);
+    localStorage.setItem('AssignedModID', this.userModule);
     this.isValidated = this.$store.state.user.user.isValidated;
     this.loadYearForFilter();
     this.getLardoNotification();
@@ -1202,6 +1204,7 @@ export default {
           const activeYear = res.data.find((item) => item.status === 1);
           if (activeYear) {
             this.selectedFilter = activeYear.id;
+            this.$store.commit('setSyType', activeYear.syType);
           }
           this.$store.commit('setFilterSelected', this.selectedFilter);
           let data = res.data;
@@ -1211,6 +1214,11 @@ export default {
     },
     changeFilter(newValue) {
       this.$store.commit('setFilterSelected', newValue);
+      for (let index = 0; index < this.filterYears.length; index++) {
+        if (this.filterYears[index].id === newValue) {
+          this.$store.commit('setSyType', this.filterYears[index].syType);
+        }
+      }
     },
 
     openParentNotification(notif) {
@@ -1477,6 +1485,8 @@ export default {
         data,
       ).then((res) => {
         if (res.data.status == 200) {
+          this.$store.commit('SET_ASSIGNED_MODULE', this.newRoleData.id);
+          localStorage.setItem('AssignedModID', this.newRoleData.id);
           this.isLoading = false;
           location.reload();
         } else if (res.data.status == 400) {

@@ -30,4 +30,10 @@ export class CreateStudentReportDisciplinaryDto {
 
   @ApiProperty()
   status: number;
+
+  @ApiProperty()
+  report_date: string;
+
+  @ApiProperty()
+  report_time: string;
 }

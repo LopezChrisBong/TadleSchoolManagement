@@ -141,6 +141,11 @@ export class EnrollStudentController {
     return this.enrollStudentService.AddSchedule(createAvailabilityDto);
   }
 
+  @Post('AddScheduleAdmin')
+  AddScheduleAdmin(@Body() createAvailabilityDto: CreateAvailabilityDto) {
+    return this.enrollStudentService.AddScheduleAdmin(createAvailabilityDto);
+  }
+
   // @UseGuards(JWTAuthGuard)
   // @ApiBearerAuth()
   @Post('updateEnrolledStudent')

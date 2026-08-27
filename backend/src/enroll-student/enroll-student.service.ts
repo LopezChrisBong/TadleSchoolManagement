@@ -112,7 +112,7 @@ export class EnrollStudentService {
           const studentInList = await this.studentListRepository.findOneBy({
             studentId: studentExist.id,
             school_yearId: newStudent[i].school_yearId,
-            grade_level: newStudent[i].grade_level,
+            // grade_level: newStudent[i].grade_level,
           });
 
           if (!studentInList) {
@@ -213,44 +213,44 @@ export class EnrollStudentService {
     }
   }
 
-  // async AddSchedule(createAvailabilityDto: CreateAvailabilityDto) {
-  //   try {
-  //     const conflict = await this.checkConflict(createAvailabilityDto);
+  async AddScheduleAdmin(createAvailabilityDto: CreateAvailabilityDto) {
+    try {
+      const conflict = await this.checkConflict(createAvailabilityDto);
 
-  //     if (conflict) {
-  //       return {
-  //         msg: 'Conflict detected. Schedule cannot be added. Faculty may already have scheduled for this time!',
-  //         status: HttpStatus.BAD_REQUEST,
-  //         conflictDetails: conflict,
-  //       };
-  //     }
+      if (conflict) {
+        return {
+          msg: 'Conflict detected. Schedule cannot be added. Faculty may already have scheduled for this time!',
+          status: HttpStatus.BAD_REQUEST,
+          conflictDetails: conflict,
+        };
+      }
 
-  //     const newSchedule = this.availabilityRepository.create(
-  //       createAvailabilityDto,
-  //     );
-  //     await this.availabilityRepository.save(newSchedule);
+      const newSchedule = this.availabilityRepository.create(
+        createAvailabilityDto,
+      );
+      await this.availabilityRepository.save(newSchedule);
 
-  //     return {
-  //       msg: 'Schedule added successfully.',
-  //       status: HttpStatus.CREATED,
-  //     };
-  //   } catch (error) {
-  //     console.error('Error adding schedule:', error);
-  //     return {
-  //       msg: 'Failed to add schedule.',
-  //       status: HttpStatus.BAD_REQUEST,
-  //     };
-  //   }
-  //   // }
-  // }
+      return {
+        msg: 'Schedule added successfully.',
+        status: HttpStatus.CREATED,
+      };
+    } catch (error) {
+      console.error('Error adding schedule:', error);
+      return {
+        msg: 'Failed to add schedule.',
+        status: HttpStatus.BAD_REQUEST,
+      };
+    }
+    // }
+  }
 
   async AddSchedule(createAvailabilityDto: CreateAvailabilityDto) {
     const savedDays: string[] = [];
     const skippedDays: string[] = [];
 
-    let dayData = [createAvailabilityDto.day];
+    // let dayData = [createAvailabilityDto.day];
     try {
-      for (const day of dayData) {
+      for (const day of createAvailabilityDto.day) {
         const data = {
           teacherID: createAvailabilityDto.teacherID,
           subjectId: createAvailabilityDto.subjectId,
@@ -318,6 +318,9 @@ export class EnrollStudentService {
         .leftJoin(RoomsSection, 'room', 'room.id = availability.roomId')
         .leftJoin(Subject, 'sub', 'sub.id = availability.subjectId')
         .where('availability.day = :day', { day: newData.day })
+        .andWhere('availability.school_yearId = :school_yearId', {
+          school_yearId: newData.school_yearId,
+        })
         .andWhere(
           new Brackets((qb) => {
             qb.where(
@@ -370,6 +373,9 @@ export class EnrollStudentService {
       const conflicts = await this.availabilityRepository
         .createQueryBuilder('availability')
         .where('availability.day = :day', { day: data.day })
+        .andWhere('availability.school_yearId = :school_yearId', {
+          school_yearId: data.school_yearId,
+        })
         .andWhere(
           new Brackets((qb) => {
             // Dili mag repeat ang subject in the same room per day

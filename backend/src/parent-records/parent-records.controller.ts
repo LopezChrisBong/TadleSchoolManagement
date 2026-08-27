@@ -87,6 +87,14 @@ export class ParentRecordsController {
     );
   }
 
+  @Get('getStudentAlerts/:filter/:studentID')
+  getStudentAlerts(
+    @Param('filter') filter: string,
+    @Param('studentID') studentID: string,
+  ) {
+    return this.parentRecordsService.getStudentAlerts(+filter, +studentID);
+  }
+
   @Get('getMyReport/:filter/:teacherID')
   getMyReport(
     @Param('filter') filter: string,
