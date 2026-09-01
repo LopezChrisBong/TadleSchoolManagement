@@ -218,7 +218,9 @@
             <!-- Empty state: Lardo -->
             <div
               v-if="
-                !lardoNotification.length && !lardoNotificationForFaculty.length
+                !lardoNotification.length &&
+                !lardoNotificationForFaculty.length &&
+                $store.state.user.user.assignedModuleID != 22
               "
               v-show="status === 'Lardo'"
               class="empty-state"
@@ -280,10 +282,59 @@
                 </div>
               </v-card>
             </div>
+            <!-- At Risk Faculty -->
+            <div
+              v-else-if="atRiskNotificationForFaculty.length"
+              class="mb-6"
+              v-show="status === 'At-Risk'"
+            >
+              <div class="section-title">At-Risk Notification</div>
+
+              <v-card
+                v-for="(notif, index) in atRiskNotificationForFaculty"
+                :key="'notif-' + index"
+                class="notif-card notif-card--risk clickable"
+                variant="flat"
+                @click="openAdviserNotification(notif)"
+              >
+                <div class="d-flex align-start">
+                  <v-avatar
+                    size="42"
+                    class="me-3 notif-avatar notif-avatar--risk"
+                  >
+                    <v-icon size="20" color="white"
+                      >mdi-alert-circle-outline</v-icon
+                    >
+                  </v-avatar>
+
+                  <div class="flex-grow-1">
+                    <div class="text-body-2 font-weight-medium">
+                      {{ notif.student_name }}
+                    </div>
+                    <div class="text-caption text-medium-emphasis">
+                      {{ notif.remarks }}
+                    </div>
+                  </div>
+
+                  <v-badge v-if="!notif.read" color="error" dot />
+                </div>
+                <div class="recommendation-block mt-2">
+                  <div
+                    class="text-caption font-weight-bold recommendation-label"
+                  >
+                    Decision Support Recommendation
+                  </div>
+                  <div class="text-caption">{{ notif.recommendation }}</div>
+                </div>
+              </v-card>
+            </div>
 
             <!-- Empty state: At-Risk -->
             <div
-              v-if="!atRiskNotification.length"
+              v-if="
+                !atRiskNotification.length &&
+                !atRiskNotificationForFaculty.length
+              "
               v-show="status === 'At-Risk'"
               class="empty-state"
             >
@@ -767,6 +818,7 @@
           </div>
 
           <!-- At-Risk Adviser -->
+
           <div
             v-if="atRiskNotification.length"
             class="mb-8"
@@ -810,7 +862,6 @@
               </div>
             </v-card>
           </div>
-
           <!-- At-Risk Faculty -->
           <div v-if="atRiskNotificationForFaculty.length" class="mb-8">
             <div class="section-title">At-Risk Notification</div>
@@ -1230,7 +1281,14 @@ export default {
           (res) => {
             console.log(res);
             if (notif.route) {
-              this.$router.push('/' + this.userType + notif.route);
+              if (localStorage.getItem('AssignedModID') == 22) {
+                this.$router.push('/' + this.userType + '');
+              } else if (localStorage.getItem('AssignedModID') == 1) {
+                this.$router.push('/' + this.userType + '/dashboard');
+              } else {
+                this.$router.push('/' + this.userType + '/students-records');
+              }
+              // this.$router.push('/' + this.userType + notif.route);
             }
           },
         );

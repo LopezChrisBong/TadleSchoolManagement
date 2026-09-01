@@ -267,7 +267,10 @@ export default {
     roomOptions() {
       const rooms = this.data
         .filter(
-          (d) => !this.selectedGrade || d.grade_level === this.selectedGrade,
+          (d) =>
+            !this.selectedGrade ||
+            this.normalize(d.grade_level) ===
+              this.normalize(this.selectedGrade),
         )
         .map((d) => d.room_name)
         .filter(Boolean);
@@ -276,9 +279,12 @@ export default {
     filteredData() {
       return this.data.filter((item) => {
         const gradeMatch =
-          !this.selectedGrade || item.grade_level === this.selectedGrade;
+          !this.selectedGrade ||
+          this.normalize(item.grade_level) ===
+            this.normalize(this.selectedGrade);
         const roomMatch =
-          !this.selectedRoom || item.room_name === this.selectedRoom;
+          !this.selectedRoom ||
+          this.normalize(item.room_name) === this.normalize(this.selectedRoom);
         return gradeMatch && roomMatch;
       });
     },
@@ -317,6 +323,11 @@ export default {
   methods: {
     pagination(data) {
       this.paginationData = data;
+    },
+    normalize(val) {
+      return String(val ?? '')
+        .trim()
+        .toLowerCase();
     },
 
     initialize() {

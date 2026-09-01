@@ -255,12 +255,17 @@ export class EnrollStudentController {
     );
   }
 
-  @Get('getAllValuesData/:filter/:studentID')
+  @Get('getAllValuesData/:filter/:studentID/:quarter')
   getAllValuesData(
     @Param('filter') filter: string,
     @Param('studentID') studentID: string,
+    @Param('quarter') quarter: string,
   ) {
-    return this.enrollStudentService.getAllValuesData(+filter, +studentID);
+    return this.enrollStudentService.getAllValuesData(
+      +filter,
+      +studentID,
+      +quarter,
+    );
   }
 
   @Get('MySchedule/:filter')

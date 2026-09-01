@@ -75,7 +75,7 @@ BEGIN
                 NEW.school_yearID,
                 rs.grade_level,
                 rs.room_section, -- map to room_name
-                '/advisory-rooms',
+                '/students-records',
                 FALSE,
                 v_remarks,
                 v_subject_title

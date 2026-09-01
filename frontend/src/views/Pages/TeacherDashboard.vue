@@ -1,43 +1,24 @@
 <template>
   <v-container fluid class="pa-6 dashboard-bg">
     <!-- HEADER -->
-    <!-- <v-row class="mb-6" align="center" justify="space-between">
-      <v-col cols="12" md="6">
-        <div class="text-h5 font-weight-bold">Advisor Dashboard</div>
-
-        <div class="d-flex align-center mt-3">
-          <v-avatar size="50" class="me-3">
-            <v-img src="https://i.pravatar.cc/100?img=5" />
-          </v-avatar>
-
-          <div>
-            <div class="font-weight-medium">Mrs. Santos</div>
-            <div class="text-caption text-grey">
-              Adviser of: Grade 8 - Section A
-            </div>
-            <div class="text-caption text-grey">
-              School Year: 2023–2024 | Quarter: Q3
-            </div>
-          </div>
+    <div class="d-flex align-center justify-space-between flex-wrap ga-4 mb-6">
+      <div>
+        <div class="text-overline text-medium-emphasis mb-1">
+          Advisor Dashboard
         </div>
-      </v-col>
-
-      <v-col cols="12" md="3" class="text-md-right mt-4 mt-md-0">
-        <v-btn color="amber-darken-2" size="large" rounded="lg" elevation="2">
-          Submit Class Report →
-        </v-btn>
-      </v-col>
-    </v-row> -->
+        <div class="text-h5 font-weight-bold text-slate">Class Overview</div>
+      </div>
+    </div>
 
     <!-- STATS CARDS -->
     <v-row class="mb-6" dense>
       <v-col cols="12" md="4">
-        <v-card class="pa-4 stat-card" elevation="0">
+        <v-card class="pa-4 stat-card" rounded="lg" border elevation="0">
           <div class="stat-icon-wrap blue-icon">
-            <v-icon icon="mdi-account-group-outline" size="24" />
+            <v-icon icon="mdi-account-group-outline" size="22" />
           </div>
           <div>
-            <div class="text-h6 font-weight-bold">
+            <div class="text-h6 font-weight-bold text-slate">
               {{ studentCount ? studentCount : 0 }}
             </div>
             <div class="text-caption text-medium-emphasis">Total Students</div>
@@ -46,12 +27,12 @@
       </v-col>
 
       <v-col cols="12" md="4">
-        <v-card class="pa-4 stat-card red-light" elevation="0">
+        <v-card class="pa-4 stat-card" rounded="lg" border elevation="0">
           <div class="stat-icon-wrap red-icon">
-            <v-icon icon="mdi-alert-outline" size="24" />
+            <v-icon icon="mdi-alert-outline" size="22" />
           </div>
           <div>
-            <div class="text-h6 font-weight-bold">
+            <div class="text-h6 font-weight-bold text-slate">
               {{ atRiskCount ? atRiskCount : 0 }}
             </div>
             <div class="text-caption text-medium-emphasis">
@@ -62,12 +43,12 @@
       </v-col>
 
       <v-col cols="12" md="4">
-        <v-card class="pa-4 stat-card orange-light" elevation="0">
+        <v-card class="pa-4 stat-card" rounded="lg" border elevation="0">
           <div class="stat-icon-wrap orange-icon">
-            <v-icon icon="mdi-clipboard-alert-outline" size="24" />
+            <v-icon icon="mdi-clipboard-alert-outline" size="22" />
           </div>
           <div>
-            <div class="text-h6 font-weight-bold">
+            <div class="text-h6 font-weight-bold text-slate">
               {{ lardoCount ? lardoCount : 0 }}
             </div>
             <div class="text-caption text-medium-emphasis">LARDO Student/s</div>
@@ -79,47 +60,72 @@
     <!-- CHARTS -->
     <v-row class="mb-6" dense>
       <v-col cols="12" md="7">
-        <v-card class="pa-4" elevation="0">
-          <v-card-title class="font-weight-bold px-0"
-            >Student Overview</v-card-title
-          >
+        <v-card class="pa-4" rounded="lg" border elevation="0">
+          <div class="section-eyebrow mb-1">
+            <v-icon icon="mdi-chart-bar" size="16" class="me-1" />
+            OVERVIEW
+          </div>
+          <v-card-title class="font-weight-bold px-0 pt-0 text-slate">
+            Student Overview
+          </v-card-title>
           <div class="chart-wrap">
             <Bar
               v-if="hasOverviewData"
               :data="overviewChartData"
               :options="barOptions"
             />
-            <div v-else class="empty-chart">No data yet.</div>
+            <v-empty-state
+              v-else
+              icon="mdi-chart-bar"
+              title="No data yet"
+              text="Stats will appear once students are enrolled."
+              class="empty-chart-state"
+            />
           </div>
         </v-card>
       </v-col>
 
       <v-col cols="12" md="5">
-        <v-card class="pa-4" elevation="0">
-          <v-card-title class="font-weight-bold px-0"
-            >Risk Level Breakdown</v-card-title
-          >
+        <v-card class="pa-4" rounded="lg" border elevation="0">
+          <div class="section-eyebrow mb-1">
+            <v-icon icon="mdi-chart-donut" size="16" class="me-1" />
+            BREAKDOWN
+          </div>
+          <v-card-title class="font-weight-bold px-0 pt-0 text-slate">
+            Risk Level Breakdown
+          </v-card-title>
           <div class="chart-wrap">
             <Doughnut
               v-if="hasRiskData"
               :data="riskChartData"
               :options="doughnutOptions"
             />
-            <div v-else class="empty-chart">No at-risk students to chart.</div>
+            <v-empty-state
+              v-else
+              icon="mdi-check-circle-outline"
+              title="Nothing to chart"
+              text="No at-risk students currently."
+              class="empty-chart-state"
+            />
           </div>
         </v-card>
       </v-col>
     </v-row>
 
     <v-row dense>
-      <!-- LEFT COLUMN -->
-      <v-col cols="12" md="8">
+      <!-- LEFT / MAIN COLUMN -->
+      <v-col cols="12" md="12">
         <!-- AT RISK TABLE -->
-        <v-card class="mb-6 pa-4" elevation="0">
+        <v-card class="mb-6 pa-4" rounded="lg" border elevation="0">
           <v-card-title
-            class="font-weight-bold d-flex align-center flex-wrap ga-3 px-0"
+            class="font-weight-bold d-flex align-center flex-wrap ga-3 px-0 pt-0 text-slate"
           >
-            At-Risk Students
+            <v-icon
+              icon="mdi-school-outline"
+              size="20"
+              class="me-2 text-red-lighten-1"
+            />
+            Students at Risk of Grade Failure
             <v-spacer />
             <v-text-field
               v-model="search"
@@ -128,6 +134,7 @@
               prepend-inner-icon="mdi-magnify"
               variant="outlined"
               hide-details
+              clearable
               style="max-width: 220px"
             />
           </v-card-title>
@@ -145,9 +152,9 @@
                 size="small"
                 variant="flat"
               >
-                <span class="text-white">
-                  {{ riskInfo(item.transmuted_grade).label }}
-                </span>
+                <span class="text-white">{{
+                  riskInfo(item.transmuted_grade).label
+                }}</span>
               </v-chip>
             </template>
             <template v-slot:[`item.grade`]="{ item }">
@@ -167,101 +174,93 @@
             </template>
 
             <template v-slot:no-data>
-              <div class="py-8 text-center text-medium-emphasis">
-                <v-icon
-                  icon="mdi-check-circle-outline"
-                  size="32"
-                  class="mb-2"
-                />
-                <div>No at-risk students found.</div>
-              </div>
+              <v-empty-state
+                icon="mdi-check-circle-outline"
+                title="No at-risk students found"
+                text="Everyone's currently on track."
+              />
             </template>
           </v-data-table>
         </v-card>
 
-        <!-- BOTTOM ROW -->
-        <!-- <v-row dense>
-          <v-col cols="12" md="6">
-            <v-card class="pa-4 mb-6" elevation="2">
-              <div class="font-weight-bold mb-3">
-                Upcoming Remedial Sessions
-              </div>
-              <div v-for="(s, i) in remedials" :key="i" class="mb-2">
-                <v-icon size="18" class="me-2">mdi-calendar</v-icon>
-                {{ s }}
-              </div>
-            </v-card>
-          </v-col>
+        <!-- LARDO TABLE -->
+        <v-card class="mb-6 pa-4" rounded="lg" border elevation="0">
+          <v-card-title
+            class="font-weight-bold d-flex align-center flex-wrap ga-3 px-0 pt-0 text-slate"
+          >
+            <v-icon
+              icon="mdi-clipboard-alert-outline"
+              size="20"
+              class="me-2 text-orange-darken-1"
+            />
+            Learner's At-Risk of Dropping Out (LARDO)
+            <v-spacer />
+            <v-text-field
+              v-model="search"
+              density="compact"
+              placeholder="Search"
+              prepend-inner-icon="mdi-magnify"
+              variant="outlined"
+              hide-details
+              clearable
+              style="max-width: 220px"
+            />
+          </v-card-title>
 
-          <v-col cols="12" md="6">
-            <v-card class="pa-4 mb-6" elevation="2">
-              <div class="font-weight-bold mb-3">Important Reminders</div>
-              <div v-for="(r, i) in reminders" :key="i" class="mb-2">
-                <v-icon size="18" class="me-2">mdi-bell</v-icon>
-                {{ r }}
+          <v-data-table
+            :headers="headers1"
+            :items="lardoStudents"
+            :search="search"
+            density="comfortable"
+            class="risk-table"
+          >
+            <template v-slot:[`item.name`]="{ item }">
+              <div class="d-flex align-center justify-center ga-2">
+                <span class="font-weight-medium" style="font-size: 10px">{{
+                  item.name
+                }}</span>
               </div>
-            </v-card>
-          </v-col>
-        </v-row> -->
+            </template>
 
-        <!-- REPORT BUTTONS -->
-        <!-- <v-card class="pa-4 mb-6" elevation="2">
-          <div class="font-weight-bold mb-3">Report</div>
+            <template v-slot:[`item.remarks`]="{ item }">
+              <div class="d-flex justify-end">
+                <span class="text-black" style="font-size: 10px">
+                  {{ item.remarks }}
+                </span>
+              </div>
+            </template>
 
-          <v-row dense>
-            <v-col cols="12" md="3">
-              <v-btn
-                :to="'/' + 'employee/students-records'"
-                router
-                block
-                color="blue"
-                >SF2: Attendance</v-btn
-              >
-            </v-col>
-            <v-col cols="12" md="3">
-              <v-btn
-                :to="'/' + 'employee/students-records'"
-                router
-                block
-                color="indigo"
-                >Class Record</v-btn
-              >
-            </v-col>
-            <v-col cols="12" md="3">
-              <v-btn
-                :to="'/' + 'employee/students-records'"
-                router
-                block
-                color="deep-purple"
-                >SF9: Report Card</v-btn
-              >
-            </v-col>
-            <v-col cols="12" md="3">
-              <v-btn
-                :to="'/' + 'employee/students-records'"
-                router
-                block
-                color="cyan"
-                >SF10: Student Record</v-btn
-              >
-            </v-col>
-          </v-row>
-        </v-card> -->
+            <template v-slot:no-data>
+              <v-empty-state
+                icon="mdi-check-circle-outline"
+                title="No at-risk students found"
+                text="Everyone's currently on track."
+              />
+            </template>
+          </v-data-table>
+        </v-card>
       </v-col>
 
-      <!-- RIGHT COLUMN -->
-      <v-col cols="12" md="4">
+      <!-- SECONDARY COLUMN -->
+      <v-col cols="12" md="12">
         <!-- MISBEHAVIOR -->
-        <v-card class="mb-6" elevation="0">
-          <v-card-title class="font-weight-bold">
+        <v-card class="mb-6 pa-4" rounded="lg" border elevation="0">
+          <v-card-title
+            class="font-weight-bold px-0 pt-0 text-slate d-flex align-center"
+          >
+            <v-icon
+              icon="mdi-account-alert-outline"
+              size="20"
+              class="me-2 text-amber-darken-2"
+            />
             Student Misbehavior Reports
           </v-card-title>
 
-          <v-list density="compact">
+          <v-list density="compact" class="px-0">
             <v-list-item
               v-for="(m, i) in paginatedMisbehave"
               :key="i"
-              class="border-bottom py-2"
+              class="border-bottom py-2 px-0"
             >
               <div class="d-flex justify-space-between align-center">
                 <v-list-item-title>{{ m.name }}</v-list-item-title>
@@ -276,14 +275,17 @@
               </div>
             </v-list-item>
 
-            <v-list-item v-if="!paginatedMisbehave.length">
-              <div class="text-caption text-medium-emphasis py-2">
-                No misbehavior reports.
-              </div>
+            <v-list-item v-if="!paginatedMisbehave.length" class="px-0">
+              <v-empty-state
+                icon="mdi-emoticon-happy-outline"
+                title="No misbehavior reports"
+                text="Nothing flagged for this period."
+                density="compact"
+              />
             </v-list-item>
           </v-list>
 
-          <div class="d-flex justify-center pa-4" v-if="misbehaveList.length">
+          <div class="d-flex justify-center pt-4" v-if="misbehaveList.length">
             <v-pagination
               v-model="misPage"
               :length="misPageCount"
@@ -292,71 +294,10 @@
             />
           </div>
         </v-card>
-
-        <!-- ALERTS -->
-        <v-card class="mb-6" elevation="0">
-          <v-card-title class="font-weight-bold">
-            At-Risk & LARDO Alerts
-          </v-card-title>
-
-          <v-list density="compact">
-            <v-list-item
-              v-for="(a, i) in paginatedAlerts"
-              :key="i"
-              class="py-2"
-            >
-              <template v-slot:prepend>
-                <v-icon
-                  :color="a.transmuted_grade ? 'red' : 'orange'"
-                  icon="mdi-alert"
-                  size="20"
-                  class="me-2"
-                />
-              </template>
-              <span class="text-body-2">
-                {{
-                  a.transmuted_grade
-                    ? 'At-Risk: ' + a.name + ', ' + a.remarks
-                    : 'LARDO: ' + a.name + ', ' + a.remarks
-                }}
-              </span>
-            </v-list-item>
-
-            <v-list-item v-if="!paginatedAlerts.length">
-              <div class="text-caption text-medium-emphasis py-2">
-                No alerts.
-              </div>
-            </v-list-item>
-          </v-list>
-
-          <div class="d-flex justify-center pa-4" v-if="alertStudents.length">
-            <v-pagination
-              v-model="page"
-              :length="pageCount"
-              total-visible="5"
-              density="compact"
-            />
-          </div>
-        </v-card>
-
-        <!-- NOTIFICATIONS -->
-        <!-- <v-card elevation="2">
-          <v-card-title class="font-weight-bold">
-            Recent Notifications
-          </v-card-title>
-
-          <v-list density="compact">
-            <v-list-item v-for="(n, i) in notifications" :key="i">
-              <v-icon size="18" class="me-2">mdi-information</v-icon>
-              {{ n }}
-            </v-list-item>
-          </v-list>
-        </v-card> -->
       </v-col>
     </v-row>
   </v-container>
 </template>
-
 <script>
 import { Bar, Doughnut } from 'vue-chartjs';
 import {
@@ -396,15 +337,24 @@ export default {
       atRiskStudents: [],
       alertStudents: [],
       misbehaveList: [],
+      lardoStudents: [],
       headers: [
         { title: 'LRN', key: 'lrn' },
         { title: 'Student Name', key: 'name' },
         // { title: 'Risk Level', key: 'transmuted_grade' },
-        { title: 'Remarks', key: 'remarks' },
+        { title: 'Action', key: 'remarks' },
         { title: 'Grade', key: 'grade' },
-        { title: 'Action', key: 'action', align: 'end' },
+        { title: 'Recommendation', key: 'action', align: 'end' },
       ],
 
+      headers1: [
+        { title: 'LRN', key: 'lrn', align: 'start', width: '200' },
+        { title: 'Student Name', key: 'name', align: 'center', width: '200' },
+        // { title: 'Risk Level', key: 'transmuted_grade' },
+        { title: 'Action', key: 'remarks', align: 'end', width: '200' },
+        // { title: 'Grade', key: 'grade' },
+        // { title: 'Recommendation', key: 'action', align: 'end' },
+      ],
       students: [
         {
           lrn: '1885338',
@@ -601,6 +551,7 @@ export default {
           this.atRiskStudents = res.data.atRiskStudents;
           this.misbehaveList = res.data.misbehaveList;
           this.alertStudents = res.data.alertStudents;
+          this.lardoStudents = res.data.lardoStudents;
 
           console.log('getFacultyDashboardData', res.data);
         }
@@ -609,23 +560,37 @@ export default {
   },
 };
 </script>
+
 <style scoped>
 .dashboard-bg {
-  background: #f5f6fa;
+  background: #f8fafc;
   min-height: 100vh;
 }
 
+.text-slate {
+  color: #1e293b;
+}
+
+.section-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+}
+
 .stat-card {
-  border-radius: 16px;
   display: flex;
   align-items: center;
   gap: 14px;
+  border-color: #e2e8f0 !important;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
 }
 
 .stat-icon-wrap {
@@ -639,28 +604,20 @@ export default {
 }
 
 .blue-icon {
-  background: #bbdefb;
-  color: #1565c0;
+  background: #dbeafe;
+  color: #1d4ed8;
 }
 .red-icon {
-  background: #ffcdd2;
-  color: #c62828;
+  background: #fee2e2;
+  color: #dc2626;
 }
 .orange-icon {
-  background: #ffe0b2;
-  color: #ef6c00;
-}
-
-.red-light {
-  background: #ffebee;
-}
-
-.orange-light {
-  background: #fff3e0;
+  background: #ffedd5;
+  color: #ea580c;
 }
 
 .border-bottom {
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #eef2f6;
 }
 
 .risk-table :deep(thead th) {
@@ -668,7 +625,12 @@ export default {
   font-size: 12px !important;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  opacity: 0.6;
+  color: #fdfeff !important;
+  opacity: 1;
+}
+
+.risk-table :deep(tbody tr:hover) {
+  background: #f8fafc;
 }
 
 .chart-wrap {
@@ -676,12 +638,7 @@ export default {
   position: relative;
 }
 
-.empty-chart {
+.empty-chart-state {
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(0, 0, 0, 0.4);
-  font-size: 13px;
 }
 </style>

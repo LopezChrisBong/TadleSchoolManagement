@@ -334,11 +334,16 @@
                   2nd Semester
                 </th>
               </tr>
-              <tr>
+              <tr v-if="syType == 0">
                 <th class="text-center">1st Qtr.</th>
                 <th class="text-center">2nd Qtr.</th>
                 <th class="text-center">3rd Qtr.</th>
                 <th class="text-center">4th Qtr.</th>
+              </tr>
+              <tr v-if="syType == 1">
+                <th class="text-center">1st Term</th>
+                <th class="text-center">2nd Term</th>
+                <th class="text-center">3rd Term</th>
               </tr>
             </thead>
             <tbody>
@@ -349,15 +354,18 @@
                   belief of others.
                 </td>
                 <td class="text-center">
+                  {{ firstTerm ? firstTerm.md1_values : 'None' }}
                   {{ firstQuarter ? firstQuarter.md1_values : 'None' }}
                 </td>
                 <td class="text-center">
+                  {{ secondTerm ? secondTerm.md1_values : 'None' }}
                   {{ secondQuarter ? secondQuarter.md1_values : 'None' }}
                 </td>
                 <td class="text-center">
+                  {{ thirdTerm ? thirdTerm.md1_values : 'None' }}
                   {{ thirdQuarter ? thirdQuarter.md1_values : 'None' }}
                 </td>
-                <td class="text-center">
+                <td class="text-center" v-if="syType == 0">
                   {{ fourthQuarter ? fourthQuarter.md1_values : 'None' }}
                 </td>
               </tr>
@@ -366,15 +374,18 @@
                   Show adherence to ethical principles by upholding truth.
                 </td>
                 <td class="text-center">
+                  {{ firstTerm ? firstTerm.md2_values : 'None' }}
                   {{ firstQuarter ? firstQuarter.md2_values : 'None' }}
                 </td>
                 <td class="text-center">
+                  {{ secondTerm ? secondTerm.md2_values : 'None' }}
                   {{ secondQuarter ? secondQuarter.md2_values : 'None' }}
                 </td>
                 <td class="text-center">
+                  {{ thirdTerm ? thirdTerm.md2_values : 'None' }}
                   {{ thirdQuarter ? thirdQuarter.md2_values : 'None' }}
                 </td>
-                <td class="text-center">
+                <td class="text-center" v-if="syType == 0">
                   {{ fourthQuarter ? fourthQuarter.md2_values : 'None' }}
                 </td>
               </tr>
@@ -384,30 +395,36 @@
                   Is sensitive to individual, social and cultural differences.
                 </td>
                 <td class="text-center">
+                  {{ firstTerm ? firstTerm.mt1_values : 'None' }}
                   {{ firstQuarter ? firstQuarter.mt1_values : 'None' }}
                 </td>
                 <td class="text-center">
+                  {{ secondTerm ? secondTerm.mt1_values : 'None' }}
                   {{ secondQuarter ? secondQuarter.mt1_values : 'None' }}
                 </td>
                 <td class="text-center">
+                  {{ thirdTerm ? thirdTerm.mt1_values : 'None' }}
                   {{ thirdQuarter ? thirdQuarter.mt1_values : 'None' }}
                 </td>
-                <td class="text-center">
+                <td class="text-center" v-if="syType == 0">
                   {{ fourthQuarter ? fourthQuarter.mt1_values : 'None' }}
                 </td>
               </tr>
               <tr>
                 <td>Demonstrates contributions towards solidarity.</td>
                 <td class="text-center">
+                  {{ firstTerm ? firstTerm.mt2_values : 'None' }}
                   {{ firstQuarter ? firstQuarter.mt2_values : 'None' }}
                 </td>
                 <td class="text-center">
+                  {{ secondTerm ? secondTerm.mt2_values : 'None' }}
                   {{ secondQuarter ? secondQuarter.mt2_values : 'None' }}
                 </td>
                 <td class="text-center">
+                  {{ thirdTerm ? thirdTerm.mt2_values : 'None' }}
                   {{ thirdQuarter ? thirdQuarter.mt2_values : 'None' }}
                 </td>
-                <td class="text-center">
+                <td class="text-center" v-if="syType == 0">
                   {{ fourthQuarter ? fourthQuarter.mt2_values : 'None' }}
                 </td>
               </tr>
@@ -419,15 +436,18 @@
                   judiciously, economically.
                 </td>
                 <td class="text-center">
+                  {{ firstTerm ? firstTerm.mk1_values : 'None' }}
                   {{ firstQuarter ? firstQuarter.mk1_values : 'None' }}
                 </td>
                 <td class="text-center">
+                  {{ secondTerm ? secondTerm.mk1_values : 'None' }}
                   {{ secondQuarter ? secondQuarter.mk1_values : 'None' }}
                 </td>
                 <td class="text-center">
+                  {{ thirdTerm ? thirdTerm.mk1_values : 'None' }}
                   {{ thirdQuarter ? thirdQuarter.mk1_values : 'None' }}
                 </td>
-                <td class="text-center">
+                <td class="text-center" v-if="syType == 0">
                   {{ fourthQuarter ? fourthQuarter.mk1_values : 'None' }}
                 </td>
               </tr>
@@ -440,15 +460,18 @@
                   and responsibilities of a Filipino citizen.
                 </td>
                 <td class="text-center">
+                  {{ firstTerm ? firstTerm.mb1_values : 'None' }}
                   {{ firstQuarter ? firstQuarter.mb1_values : 'None' }}
                 </td>
                 <td class="text-center">
+                  {{ secondTerm ? secondTerm.mb1_values : 'None' }}
                   {{ secondQuarter ? secondQuarter.mb1_values : 'None' }}
                 </td>
                 <td class="text-center">
+                  {{ thirdTerm ? thirdTerm.mb1_values : 'None' }}
                   {{ thirdQuarter ? thirdQuarter.mb1_values : 'None' }}
                 </td>
-                <td class="text-center">
+                <td class="text-center" v-if="syType == 0">
                   {{ fourthQuarter ? fourthQuarter.mb1_values : 'None' }}
                 </td>
               </tr>
@@ -458,15 +481,18 @@
                   in the school, community and country.
                 </td>
                 <td class="text-center">
+                  {{ firstTerm ? firstTerm.mb2_values : 'None' }}
                   {{ firstQuarter ? firstQuarter.mb2_values : 'None' }}
                 </td>
                 <td class="text-center">
+                  {{ secondTerm ? secondTerm.mb2_values : 'None' }}
                   {{ secondQuarter ? secondQuarter.mb2_values : 'None' }}
                 </td>
                 <td class="text-center">
+                  {{ thirdTerm ? thirdTerm.mb2_values : 'None' }}
                   {{ thirdQuarter ? thirdQuarter.mb2_values : 'None' }}
                 </td>
-                <td class="text-center">
+                <td class="text-center" v-if="syType == 0">
                   {{ fourthQuarter ? fourthQuarter.mb2_values : 'None' }}
                 </td>
               </tr>
@@ -621,7 +647,7 @@ export default {
         'GET',
       ).then((res) => {
         if (res.data && Array.isArray(res.data) && res.data.length > 0) {
-          console.log('Daaradawad', res.data[0].mb1_values);
+          console.log('Daaradawad', res.data);
           this.updateID = res.data[0].id;
           this.mb1_values = res.data[0].mb1_values;
           this.mb2_values = res.data[0].mb2_values;
@@ -757,7 +783,12 @@ export default {
     openDialogVlaues() {
       this.ViewAllValueDialog = true;
       this.axiosCall(
-        '/enroll-student/getAllValuesData/' + this.filter + '/' + this.data.id,
+        '/enroll-student/getAllValuesData/' +
+          this.filter +
+          '/' +
+          this.data.id +
+          '/' +
+          this.syType,
         'GET',
       ).then((res) => {
         // if (res.data && Array.isArray(res.data) && res.data.length > 0) {
@@ -766,6 +797,9 @@ export default {
         this.secondQuarter = res.data[1];
         this.thirdQuarter = res.data[2];
         this.fourthQuarter = res.data[3];
+        this.firstTerm = res.data[9];
+        this.secondTerm = res.data[10];
+        this.thirdTerm = res.data[11];
         // }
       });
     },

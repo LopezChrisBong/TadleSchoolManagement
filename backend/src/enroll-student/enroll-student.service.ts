@@ -804,12 +804,15 @@ export class EnrollStudentService {
     return data;
   }
 
-  async getAllValuesData(filter: number, studentID: number) {
+  async getAllValuesData(filter: number, studentID: number, quarter: number) {
     const data = await this.dataSource.manager
       .createQueryBuilder(StudentValues, 'SV')
       .select('*')
       .where('SV.studentId = :studentID', { studentID })
       .andWhere('SV.school_yearId = :filter', { filter })
+      .andWhere('SV.quarter LIKE :term', {
+        term: quarter == 1 ? `%${'Term'}%` : `%${'Quarter'}%`,
+      })
       .orderBy(
         `
         CASE 
@@ -821,6 +824,9 @@ export class EnrollStudentService {
           WHEN SV.semester = '1st Semester' AND SV.quarter = '2nd Quarter' THEN 6
           WHEN SV.semester = '2nd Semester' AND SV.quarter = '1st Quarter' THEN 7
           WHEN SV.semester = '2nd Semester' AND SV.quarter = '2nd Quarter' THEN 8
+          WHEN SV.semester = 'Junior High' AND SV.quarter = '1st Term' THEN 9
+          WHEN SV.semester = 'Junior High' AND SV.quarter = '2nd Term' THEN 10
+          WHEN SV.semester = 'Junior High' AND SV.quarter = '3rd Term' THEN 11
           ELSE 99
         END
       `,
@@ -833,10 +839,14 @@ export class EnrollStudentService {
       { semester: 'Junior High', quarter: '2nd Quarter' },
       { semester: 'Junior High', quarter: '3rd Quarter' },
       { semester: 'Junior High', quarter: '4th Quarter' },
+      { semester: 'Junior High', quarter: '4th Quarter' },
       { semester: '1st Semester', quarter: '1st Quarter' },
       { semester: '1st Semester', quarter: '2nd Quarter' },
       { semester: '2nd Semester', quarter: '1st Quarter' },
       { semester: '2nd Semester', quarter: '2nd Quarter' },
+      { semester: 'Junior High', quarter: '1st Term' },
+      { semester: 'Junior High', quarter: '2nd Term' },
+      { semester: 'Junior High', quarter: '3rd Term' },
     ];
 
     const filled = quarters.map((q) => {
@@ -858,7 +868,7 @@ export class EnrollStudentService {
         }
       );
     });
-
+    console.log(data, quarter, filled);
     return filled;
   }
 
@@ -937,6 +947,7 @@ export class EnrollStudentService {
     const students = await this.dataSource
       .createQueryBuilder(StudentList, 'sl')
       .where('sl.roomId IN (:...roomIds)', { roomIds })
+      .andWhere('sl.school_yearId = :filter', { filter })
       .getMany();
 
     const studentIds = students.map((s) => s.studentId);
@@ -1019,7 +1030,7 @@ export class EnrollStudentService {
     const lardoCount = lardoStudents.length;
 
     const alertStudents = [...lardoStudents, ...atRiskStudents];
-    console.log(misbehaveList);
+    console.log(students);
     return {
       data: rooms,
       studentCount,

@@ -55,7 +55,7 @@ BEGIN
             NEW.school_yearID,
             rs.grade_level,
             rs.room_section, -- mapped to room_name
-            '/advisory-rooms',
+            '/students-records',
             FALSE,
             v_remarks,
             v_subject_title
@@ -73,6 +73,7 @@ part 2:
 DROP TRIGGER IF EXISTS trg_after_insert_at_risk_for_faculty;
 
 DELIMITER $$
+
 
 CREATE TRIGGER trg_after_insert_at_risk_for_faculty
 AFTER INSERT ON student_quarter_final_grade
@@ -229,7 +230,7 @@ BEGIN
                 NEW.school_yearID,
                 rs.grade_level,
                 rs.room_section,
-                '/advisory-rooms',
+                '/students-records',
                 FALSE,
                 v_remarks,
                 v_subject_title
