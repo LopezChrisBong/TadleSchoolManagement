@@ -3,9 +3,11 @@ import { CreateEnrollStudentDto } from './dto/create-enroll-student.dto';
 import { UpdateEnrollStudentDto } from './dto/update-enroll-student.dto';
 import {
   AtRiskStudentForFacultyNotification,
+  AtRiskStudentNotification,
   Availability,
   EnrollStudent,
   LardoStudentForFacultyNotification,
+  LardoStudentNotification,
   RoomsSection,
   StudentList,
   StudentQuarterFinalGrade,
@@ -1022,26 +1024,28 @@ export class EnrollStudentService {
     //   .andWhere('risk.transmuted_grade < 80')
     //   .groupBy('ES.id')
     //   .getRawMany();
-    const atRiskStudents = await this.dataSource
-      .createQueryBuilder(EnrollStudent, 'ES')
-      .select([
-        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
-        'ES.id as id',
-        'ES.lrnNo as lrn',
-        'risk.remarks as remarks',
-        'risk.transmuted_grade as transmuted_grade',
-        'risk.subject_title as subject_title',
-      ])
-      .innerJoin(
-        AtRiskStudentForFacultyNotification,
-        'risk',
-        'ES.id = risk.studentID',
-      )
-      .where('risk.studentID IN (:...studentIds)', { studentIds })
-      .andWhere('risk.school_yearID = :filter', { filter })
-      .andWhere('risk.transmuted_grade < 80')
-      .andWhere(
-        `
+    let atRiskStudents;
+    if (assignedModules == 2) {
+      atRiskStudents = await this.dataSource
+        .createQueryBuilder(EnrollStudent, 'ES')
+        .select([
+          "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
+          'ES.id as id',
+          'ES.lrnNo as lrn',
+          'risk.remarks as remarks',
+          'risk.transmuted_grade as transmuted_grade',
+          'risk.subject_title as subject_title',
+        ])
+        .innerJoin(
+          AtRiskStudentForFacultyNotification,
+          'risk',
+          'ES.id = risk.studentID',
+        )
+        .where('risk.studentID IN (:...studentIds)', { studentIds })
+        .andWhere('risk.school_yearID = :filter', { filter })
+        .andWhere('risk.transmuted_grade < 80')
+        .andWhere(
+          `
         risk.id = (
           SELECT MAX(r2.id)
           FROM at_risk_student_for_faculty_notification r2
@@ -1050,8 +1054,36 @@ export class EnrollStudentService {
             AND r2.transmuted_grade < 80
         )
       `,
-      )
-      .getRawMany();
+        )
+        .getRawMany();
+    } else if (assignedModules == 21) {
+      atRiskStudents = await this.dataSource
+        .createQueryBuilder(EnrollStudent, 'ES')
+        .select([
+          "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
+          'ES.id as id',
+          'ES.lrnNo as lrn',
+          'risk.remarks as remarks',
+          'risk.transmuted_grade as transmuted_grade',
+          'risk.subject_title as subject_title',
+        ])
+        .innerJoin(AtRiskStudentNotification, 'risk', 'ES.id = risk.studentID')
+        .where('risk.studentID IN (:...studentIds)', { studentIds })
+        .andWhere('risk.school_yearID = :filter', { filter })
+        .andWhere('risk.transmuted_grade < 80')
+        .andWhere(
+          `
+    risk.id = (
+      SELECT MAX(r2.id)
+      FROM at_risk_student_notification r2
+      WHERE r2.studentID = risk.studentID
+        AND r2.school_yearID = :filter
+        AND r2.transmuted_grade < 80
+    )
+  `,
+        )
+        .getRawMany();
+    }
 
     for (let i = 0; i < atRiskStudents.length; i++) {
       console.log(atRiskStudents[i].transmuted_grade);
@@ -1097,24 +1129,26 @@ export class EnrollStudentService {
     //   .andWhere('report.school_yearID = :filter', { filter })
     //   .groupBy('ES.id')
     //   .getRawMany();
-    const lardoStudents = await this.dataSource
-      .createQueryBuilder(EnrollStudent, 'ES')
-      .select([
-        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
-        'ES.id as id',
-        'ES.lrnNo as lrn',
-        'report.remarks as remarks',
-        'report.subject_title as subject_title',
-      ])
-      .innerJoin(
-        LardoStudentForFacultyNotification,
-        'report',
-        'ES.id = report.studentID',
-      )
-      .where('report.studentID IN (:...studentIds)', { studentIds })
-      .andWhere('report.school_yearID = :filter', { filter })
-      .andWhere(
-        `
+    let lardoStudents;
+    if (assignedModules == 2) {
+      lardoStudents = await this.dataSource
+        .createQueryBuilder(EnrollStudent, 'ES')
+        .select([
+          "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
+          'ES.id as id',
+          'ES.lrnNo as lrn',
+          'report.remarks as remarks',
+          'report.subject_title as subject_title',
+        ])
+        .innerJoin(
+          LardoStudentForFacultyNotification,
+          'report',
+          'ES.id = report.studentID',
+        )
+        .where('report.studentID IN (:...studentIds)', { studentIds })
+        .andWhere('report.school_yearID = :filter', { filter })
+        .andWhere(
+          `
           report.created_at = (
             SELECT MAX(r2.created_at)
             FROM lardo_student_for_faculty_notification r2
@@ -1122,9 +1156,39 @@ export class EnrollStudentService {
               AND r2.school_yearID = :filter
           )
         `,
-      )
-      .setParameter('filter', filter)
-      .getRawMany();
+        )
+        .setParameter('filter', filter)
+        .getRawMany();
+    } else if (assignedModules == 21) {
+      lardoStudents = await this.dataSource
+        .createQueryBuilder(EnrollStudent, 'ES')
+        .select([
+          "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
+          'ES.id as id',
+          'ES.lrnNo as lrn',
+          'report.remarks as remarks',
+          'report.subject_title as subject_title',
+        ])
+        .innerJoin(
+          LardoStudentNotification,
+          'report',
+          'ES.id = report.studentID',
+        )
+        .where('report.studentID IN (:...studentIds)', { studentIds })
+        .andWhere('report.school_yearID = :filter', { filter })
+        .andWhere(
+          `
+          report.created_at = (
+            SELECT MAX(r2.created_at)
+            FROM lardo_student_for_faculty_notification r2
+            WHERE r2.studentID = report.studentID
+              AND r2.school_yearID = :filter
+          )
+        `,
+        )
+        .setParameter('filter', filter)
+        .getRawMany();
+    }
 
     for (let i = 0; i < lardoStudents.length; i++) {
       console.log(lardoStudents[i].transmuted_grade);
@@ -1174,7 +1238,7 @@ export class EnrollStudentService {
     const lardoCount = lardoStudents.length;
 
     const alertStudents = [...lardoStudents, ...atRiskStudents];
-    console.log(students);
+    console.log(lardoStudents);
     return {
       data: rooms,
       studentCount,

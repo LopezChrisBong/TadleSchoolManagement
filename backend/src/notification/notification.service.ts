@@ -20,6 +20,7 @@ import {
   Notification,
   LardoStudentForFacultyNotification,
   AtRiskStudentForFacultyNotification,
+  StudentReportDisciplinary,
 } from 'src/entities';
 import { DataSource, Repository } from 'typeorm';
 import { UpdateLardoStudentNotificationDto } from './dto/update-lardo-student-notification.dto';
@@ -84,7 +85,7 @@ export class NotificationService {
       .getRawMany();
 
     for (let i = 0; i < data.length; i++) {
-      console.log(data[i].transmuted_grade);
+      // console.log(data[i].transmuted_grade);
 
       let recommendation = '';
 
@@ -105,7 +106,7 @@ export class NotificationService {
       // Store extracted recommendation separately
       data[i].recommendation = recommendation;
     }
-    console.log('getAtRiskStudent', data);
+    // console.log('getAtRiskStudent', data);
     return data;
   }
 
@@ -153,7 +154,25 @@ export class NotificationService {
       .orderBy('N.read', 'ASC')
       .getRawMany();
 
-    console.log(data);
+    // console.log(data);
+    return data;
+  }
+
+  async getPrefectSeniorHighReport(assignedMod: number) {
+    let SHS = ['Grade 11', 'Grade 12'];
+    let JHS = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 12'];
+    let data = await this.dataSource.manager
+      .createQueryBuilder(StudentReportDisciplinary, 'SR')
+      .select([
+        'SR.*',
+        "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ',ES.fname,' ',SUBSTRING(ES.mname, 1, 1) ,'. ') ,concat(ES.lname, ' ', ES.fname)) as student_name",
+      ])
+      .leftJoin(EnrollStudent, 'ES', 'ES.id = SR.studentID')
+      .where('SR.grade_level IN (:...studentIds)', {
+        studentIds: assignedMod == 23 ? SHS : JHS,
+      })
+      .orderBy('SR.read', 'ASC')
+      .getRawMany();
     return data;
   }
 
@@ -220,6 +239,26 @@ export class NotificationService {
   ) {
     try {
       this.dataSource.manager.update(AtRiskStudentNotification, id, {
+        read: updateAtRiskStudentNotificationDto.read,
+      });
+      return {
+        msg: 'Updated successfully!',
+        status: HttpStatus.CREATED,
+      };
+    } catch (error) {
+      return {
+        msg: 'Something went wrong!' + error,
+        status: HttpStatus.BAD_REQUEST,
+      };
+    }
+  }
+
+  updatePrefect(
+    id: number,
+    updateAtRiskStudentNotificationDto: UpdateAtRiskStudentNotificationDto,
+  ) {
+    try {
+      this.dataSource.manager.update(StudentReportDisciplinary, id, {
         read: updateAtRiskStudentNotificationDto.read,
       });
       return {

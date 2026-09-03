@@ -161,14 +161,14 @@
               {{ item.transmuted_grade }}
             </template>
 
-            <template v-slot:[`item.recommendation`]="{ item }">
+            <template v-slot:[`item.remarks`]="{ item }">
               <v-btn
                 size="small"
                 :color="riskInfo(item.transmuted_grade).color"
                 variant="flat"
               >
                 <span class="text-white" style="font-size: 10px">
-                  {{ item.recommendation }}
+                  {{ item.remarks }}
                 </span>
               </v-btn>
             </template>
@@ -230,6 +230,20 @@
               </div>
             </template>
 
+            <template v-slot:[`item.actions`]="{ item }">
+              <div class="d-flex justify-end">
+                <v-btn
+                  size="small"
+                  variant="flat"
+                  color="pink"
+                  prepend-icon="mdi-eye-outline"
+                  @click="openLardoDialog(item)"
+                >
+                  View
+                </v-btn>
+              </div>
+            </template>
+
             <template v-slot:no-data>
               <v-empty-state
                 icon="mdi-check-circle-outline"
@@ -239,6 +253,84 @@
             </template>
           </v-data-table>
         </v-card>
+
+        <!-- LARDO Details Dialog -->
+        <v-dialog v-model="lardoDialog" max-width="480">
+          <v-card rounded="lg" v-if="selectedLardoStudent">
+            <v-card-title class="d-flex align-center px-5 pt-5 pb-2">
+              <v-icon
+                icon="mdi-clipboard-alert-outline"
+                size="22"
+                class="me-2 text-orange-darken-1"
+              />
+              <span class="font-weight-bold">At-Risk Report</span>
+              <v-spacer />
+              <v-btn
+                icon="mdi-close"
+                variant="text"
+                size="small"
+                @click="lardoDialog = false"
+              />
+            </v-card-title>
+
+            <v-divider />
+
+            <v-card-text class="px-5 py-4">
+              <div class="mb-3">
+                <div class="text-caption text-medium-emphasis">Student</div>
+                <div class="text-body-1 font-weight-medium">
+                  {{ selectedLardoStudent.name }}
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <div class="text-caption text-medium-emphasis">LRN</div>
+                <div class="text-body-2">{{ selectedLardoStudent.lrn }}</div>
+              </div>
+
+              <div class="mb-3">
+                <div class="text-caption text-medium-emphasis">Subject</div>
+                <div class="text-body-2">
+                  {{ selectedLardoStudent.subject_title }}
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <div class="text-caption text-medium-emphasis">Remarks</div>
+                <div class="text-body-2">
+                  {{ selectedLardoStudent.remarks }}
+                </div>
+              </div>
+
+              <div>
+                <div class="text-caption text-medium-emphasis">
+                  Recommendation
+                </div>
+                <v-chip
+                  color="warning"
+                  variant="tonal"
+                  size="small"
+                  class="mt-1"
+                >
+                  {{ selectedLardoStudent.recommendation }}
+                </v-chip>
+              </div>
+            </v-card-text>
+
+            <v-divider />
+
+            <v-card-actions class="px-5 py-3">
+              <v-spacer />
+              <v-btn
+                variant="flat"
+                color="primary"
+                @click="lardoDialog = false"
+              >
+                Close
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-col>
 
       <!-- SECONDARY COLUMN -->
@@ -344,18 +436,25 @@ export default {
       alertStudents: [],
       misbehaveList: [],
       lardoStudents: [],
+      lardoDialog: false,
+      selectedLardoStudent: null,
       headers: [
-        { title: 'LRN', key: 'lrn', width: '200' },
+        { title: 'LRN', key: 'lrn', align: 'start', width: '200' },
         { title: 'Student Name', key: 'name', width: '200' },
         { title: 'Grade', key: 'grade', width: '100' },
-        { title: 'Action', key: 'remarks', width: '200' },
-
         {
-          title: 'Recommendation',
-          key: 'recommendation',
-          align: 'end',
+          title: 'Recommendataion',
+          key: 'remarks',
+          align: 'center',
           width: '200',
         },
+
+        // {
+        //   title: 'Recommendation',
+        //   key: 'recommendation',
+        //   align: 'end',
+        //   width: '200',
+        // },
       ],
 
       headers1: [
@@ -369,7 +468,7 @@ export default {
           width: '200',
         },
         // { title: 'Grade', key: 'grade' },
-        // { title: 'Recommendation', key: 'action', align: 'end' },
+        { title: 'Action', key: 'actions', align: 'end' },
       ],
       students: [
         {
@@ -516,6 +615,10 @@ export default {
   methods: {
     initialize() {
       this.getFacultyDashboardData();
+    },
+    openLardoDialog(item) {
+      this.selectedLardoStudent = item;
+      this.lardoDialog = true;
     },
     riskInfo(grade) {
       if (grade == null) {
