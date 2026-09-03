@@ -14,10 +14,10 @@ export class Subject {
   @Column({ type: 'varchar' })
   subject_title: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   semester: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   senior_level: string;
 
   @Column({ type: 'varchar', nullable: true })
@@ -26,7 +26,7 @@ export class Subject {
   @Column({ type: 'longtext', nullable: true })
   sub_subject: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ type: 'varchar', nullable: true })
   grade_level: string;
 
   @Column({ type: 'int' })

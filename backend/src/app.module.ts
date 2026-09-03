@@ -25,6 +25,7 @@ import { ParentRecordsModule } from './parent-records/parent-records.module';
 import { NotificationModule } from './notification/notification.module';
 import { SchoolEventsModule } from './school-events/school-events.module';
 import { AnnouncementModule } from './announcement/announcement.module';
+import { ESigsModule } from './e-sigs/e-sigs.module';
 
 @Module({
   imports: [
@@ -68,6 +69,7 @@ import { AnnouncementModule } from './announcement/announcement.module';
     NotificationModule,
     SchoolEventsModule,
     AnnouncementModule,
+    ESigsModule,
   ],
 
   controllers: [AppController],

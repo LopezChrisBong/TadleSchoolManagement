@@ -192,13 +192,14 @@ export class RoomsSectionController {
     );
   }
 
-  @Get('conflictDayTime/:teacherID/:subjectID/:timeFrom/:timeTo/:days')
+  @Get('conflictDayTime/:teacherID/:subjectID/:timeFrom/:timeTo/:days/:filter')
   conflictDayTime(
     @Param('teacherID') teacherID: string,
     @Param('subjectID') subjectID: string,
     @Param('timeFrom') timeFrom: string,
     @Param('timeTo') timeTo: string,
     @Param('days') days: string,
+    @Param('filter') filter: string,
   ) {
     return this.roomsSectionService.conflictDayTime(
       +teacherID,
@@ -206,6 +207,7 @@ export class RoomsSectionController {
       timeFrom,
       timeTo,
       days,
+      +filter,
     );
   }
 

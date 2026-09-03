@@ -501,6 +501,7 @@ export default {
         this.fadeAwayMessage.message = 'Please fill all fields above first';
         this.day = null;
       } else {
+        let filter = this.$store.getters.getFilterSelected;
         this.axiosCall(
           '/rooms-section/conflictDayTime/' +
             this.teacher +
@@ -511,12 +512,13 @@ export default {
             '/' +
             this.time_slot_to +
             '/' +
-            this.day,
+            this.day +
+            '/' +
+            filter,
           'GET',
         ).then((res) => {
           console.log('Teacher conflict', res.data);
           this.conflictDays = res.data;
-          // this.TeachersList = res.data;
         });
       }
     },

@@ -2,7 +2,13 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthService } from 'src/auth/auth.service';
 import { hashPassword } from 'src/auth/utils/bcrypt';
-import { RoomsSection, TeacherGradeLevel, Users, UserType } from 'src/entities';
+import {
+  DepEdPersonnel,
+  RoomsSection,
+  TeacherGradeLevel,
+  Users,
+  UserType,
+} from 'src/entities';
 
 import { UserTypeService } from 'src/user-type/user-type.service';
 import { Brackets, DataSource, Repository } from 'typeorm';
@@ -654,6 +660,30 @@ export class UserDetailsService {
       male,
       female,
     };
+  }
+
+  async getDepEdPersonnel() {
+    let data = await this.dataSource.manager
+      .createQueryBuilder(DepEdPersonnel, 'deped')
+      .getMany();
+    return data;
+  }
+  async updateDepedName(id: number, updateUserDetailDto: UpdateUserDetailDto) {
+    try {
+      await this.dataSource.manager.update(DepEdPersonnel, id, {
+        name: updateUserDetailDto.fname,
+      });
+
+      return {
+        msg: 'Update successful.',
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      return {
+        msg: error,
+        status: HttpStatus.BAD_REQUEST,
+      };
+    }
   }
 
   async remove(id: number) {

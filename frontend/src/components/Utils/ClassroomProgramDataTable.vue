@@ -161,24 +161,24 @@
   </div>
 </template>
 <script>
-import eventBus from "@/eventBus";
-import ClassroomProgramDialog from "../../components/Dialogs/Forms/ClassroomProgramDialog.vue";
+import eventBus from '@/eventBus';
+import ClassroomProgramDialog from '../../components/Dialogs/Forms/ClassroomProgramDialog.vue';
 export default {
   components: {
     ClassroomProgramDialog,
   },
   data: () => ({
-    search: "",
-    groupBy: [{ key: "day", order: "ASD" }],
-    sortBy: [{ key: "day", order: "ASD" }],
+    search: '',
+    groupBy: [{ key: 'day', order: 'ASD' }],
+    sortBy: [{ key: 'day', order: 'ASD' }],
     dayOrder: [
-      "Sunday",
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
     ],
 
     // headers: [
@@ -223,76 +223,76 @@ export default {
     // ],
     headers: [
       {
-        align: "start",
-        key: "day",
+        align: 'start',
+        key: 'day',
         width: 250,
       },
       {
-        title: "Time",
-        key: "time",
+        title: 'Time',
+        key: 'time',
         width: 200,
       },
       {
-        title: "Faculty Name",
-        key: "name",
+        title: 'Faculty Name',
+        key: 'name',
         width: 200,
       },
       {
-        title: "Subject",
-        key: "subject_title",
+        title: 'Subject',
+        key: 'subject_title',
         width: 200,
       },
       {
-        title: "Action",
-        key: "action",
+        title: 'Action',
+        key: 'action',
         width: 200,
       },
     ],
     tools: [
       {
-        title: "Time",
-        value: "time",
+        title: 'Time',
+        value: 'time',
         width: 200,
       },
       {
-        title: "Faculty Name",
-        value: "name",
-        width: 200,
-      },
-
-      {
-        title: "Subject",
-        value: "subject_title",
+        title: 'Faculty Name',
+        value: 'name',
         width: 200,
       },
 
       {
-        title: "Action",
-        value: "action",
+        title: 'Subject',
+        value: 'subject_title',
+        width: 200,
+      },
+
+      {
+        title: 'Action',
+        value: 'action',
         width: 200,
       },
     ],
     data: [],
     verified: [],
     perPageChoices: [
-      { text: "5", value: 5 },
-      { text: "10", value: 10 },
-      { text: "20", value: 20 },
-      { text: "50", value: 50 },
-      { text: "100", value: 100 },
-      { text: "250", value: 250 },
-      { text: "500", value: 500 },
+      { text: '5', value: 5 },
+      { text: '10', value: 10 },
+      { text: '20', value: 20 },
+      { text: '50', value: 50 },
+      { text: '100', value: 100 },
+      { text: '250', value: 250 },
+      { text: '500', value: 500 },
     ],
     grade: null,
-    activeTab: { id: 1, name: "Grade 7", active: true },
+    activeTab: { id: 1, name: 'Grade 7', active: true },
     tab: 1,
     tabList: [
-      { id: 1, name: "Grade 7", active: true },
-      { id: 2, name: "Grade 8", active: false },
-      { id: 3, name: "Grade 9", active: false },
-      { id: 4, name: "Grade 10", active: false },
-      { id: 5, name: "Grade 11", active: false },
-      { id: 6, name: "Grade 12", active: false },
+      { id: 1, name: 'Grade 7', active: true },
+      { id: 2, name: 'Grade 8', active: false },
+      { id: 3, name: 'Grade 9', active: false },
+      { id: 4, name: 'Grade 10', active: false },
+      { id: 5, name: 'Grade 11', active: false },
+      { id: 6, name: 'Grade 12', active: false },
     ],
     section: null,
     sectionList: [],
@@ -311,9 +311,9 @@ export default {
     confirmDialog: false,
     fadeAwayMessage: {
       show: false,
-      type: "success",
-      header: "Successfully Deleted!",
-      message: "",
+      type: 'success',
+      header: 'Successfully Deleted!',
+      message: '',
       top: 10,
     },
   }),
@@ -332,7 +332,7 @@ export default {
 
   mounted() {
     this.initialize();
-    eventBus.on("closeAddScheduleDialog", () => {
+    eventBus.on('closeAddScheduleDialog', () => {
       this.getClassroom(this.section);
     });
     // eventBus.on("closeMyDesignationDialog", () => {
@@ -340,7 +340,7 @@ export default {
     // });
   },
   beforeUnmount() {
-    eventBus.off("closeAddScheduleDialog");
+    eventBus.off('closeAddScheduleDialog');
     // eventBus.off("closeMyDesignationDialog");
   },
 
@@ -368,19 +368,19 @@ export default {
 
   methods: {
     customSort(items, sortBy) {
-      console.log("Console", sortBy);
+      console.log('Console', sortBy);
       return [...items].sort((a, b) => {
         for (const { key, order } of sortBy) {
-          if (key === "day") {
+          if (key === 'day') {
             const aIndex = this.dayOrder.indexOf(a[key]) ?? 99;
             const bIndex = this.dayOrder.indexOf(b[key]) ?? 99;
             if (aIndex !== bIndex) {
-              return (aIndex - bIndex) * (order === "desc" ? -1 : 1);
+              return (aIndex - bIndex) * (order === 'desc' ? -1 : 1);
             }
           } else {
             // fallback to normal string/number comparison
-            if (a[key] < b[key]) return order === "desc" ? 1 : -1;
-            if (a[key] > b[key]) return order === "desc" ? -1 : 1;
+            if (a[key] < b[key]) return order === 'desc' ? 1 : -1;
+            if (a[key] > b[key]) return order === 'desc' ? -1 : 1;
           }
         }
         return 0;
@@ -401,9 +401,9 @@ export default {
       );
       // alert(itemsWithSameId[0].name);
 
-      this.axiosCall("/rooms-section/" + itemsWithSameId[0].name, "GET").then(
+      this.axiosCall('/rooms-section/' + itemsWithSameId[0].name, 'GET').then(
         (res) => {
-          console.log("Classroom List", res.data);
+          console.log('Classroom List', res.data);
           this.sectionList = res.data;
           this.section = res.data[0].id;
         },
@@ -414,24 +414,24 @@ export default {
       let filter = this.$store.getters.getFilterSelected;
       let grade =
         this.tab == 1
-          ? "Grade 7"
+          ? 'Grade 7'
           : this.tab == 2
-          ? "Grade 8"
+          ? 'Grade 8'
           : this.tab == 3
-          ? "Grade 9"
+          ? 'Grade 9'
           : this.tab == 4
-          ? "Grade 10"
+          ? 'Grade 10'
           : this.tab == 5
-          ? "Grade 11"
-          : "Grade 12";
+          ? 'Grade 11'
+          : 'Grade 12';
       this.axiosCall(
-        "/enroll-student/getClassProgramm/" +
+        '/enroll-student/getClassProgramm/' +
           grade +
-          "/" +
+          '/' +
           section +
-          "/" +
+          '/' +
           filter,
-        "GET",
+        'GET',
       ).then((res) => {
         if (res) {
           this.data = res.data;
@@ -446,38 +446,38 @@ export default {
 
     switchItem(item) {
       if (this.tab == 1) {
-        this.axiosCall("/my-core-time/toggleActive/" + item.id, "PATCH").then(
+        this.axiosCall('/my-core-time/toggleActive/' + item.id, 'PATCH').then(
           (res) => {
             if (res) {
               if (res.data.status == 200) {
                 this.fadeAwayMessage.show = true;
-                this.fadeAwayMessage.type = "success";
-                this.fadeAwayMessage.header = "System Message";
+                this.fadeAwayMessage.type = 'success';
+                this.fadeAwayMessage.header = 'System Message';
                 this.fadeAwayMessage.message = res.data.msg;
                 this.initialize();
               } else {
                 this.fadeAwayMessage.show = true;
-                this.fadeAwayMessage.type = "error";
-                this.fadeAwayMessage.header = "System Message";
+                this.fadeAwayMessage.type = 'error';
+                this.fadeAwayMessage.header = 'System Message';
                 this.fadeAwayMessage.message = res.data.msg;
               }
             }
           },
         );
       } else if (this.tab == 2) {
-        this.axiosCall("/my-designation/toggleActive/" + item.id, "PATCH").then(
+        this.axiosCall('/my-designation/toggleActive/' + item.id, 'PATCH').then(
           (res) => {
             if (res) {
               if (res.data.status == 200) {
                 this.fadeAwayMessage.show = true;
-                this.fadeAwayMessage.type = "success";
-                this.fadeAwayMessage.header = "System Message";
+                this.fadeAwayMessage.type = 'success';
+                this.fadeAwayMessage.header = 'System Message';
                 this.fadeAwayMessage.message = res.data.msg;
                 this.initialize();
               } else {
                 this.fadeAwayMessage.show = true;
-                this.fadeAwayMessage.type = "error";
-                this.fadeAwayMessage.header = "System Message";
+                this.fadeAwayMessage.type = 'error';
+                this.fadeAwayMessage.header = 'System Message';
                 this.fadeAwayMessage.message = res.data.msg;
               }
             }
@@ -507,6 +507,9 @@ export default {
       //   this.getVerifiedUsers();
       //   this.tab = tab.id;
       // }
+      if (this.sectionList.length == 0) {
+        this.section = null;
+      }
       this.tabList.forEach((t) => {
         t.active = t.id === tab.id;
       });
@@ -515,79 +518,79 @@ export default {
       let filter = this.$store.getters.getFilterSelected;
       if (this.tab == 1) {
         this.coreTimeData = [{ id: null }];
-        this.action = "Add";
-        this.grade = "Grade 7";
+        this.action = 'Add';
+        this.grade = 'Grade 7';
         this.section;
         this.filter = filter;
       } else if (this.tab == 2) {
         this.coreTimeData = [{ id: null }];
-        this.action = "Add";
-        this.grade = "Grade 8";
+        this.action = 'Add';
+        this.grade = 'Grade 8';
         this.section;
         this.filter = filter;
       } else if (this.tab == 3) {
         this.coreTimeData = [{ id: null }];
-        this.action = "Add";
-        this.grade = "Grade 9";
+        this.action = 'Add';
+        this.grade = 'Grade 9';
         this.section;
         this.filter = filter;
       } else if (this.tab == 4) {
         this.coreTimeData = [{ id: null }];
-        this.action = "Add";
-        this.grade = "Grade 10";
+        this.action = 'Add';
+        this.grade = 'Grade 10';
         this.section;
         this.filter = filter;
       } else if (this.tab == 5) {
         this.coreTimeData = [{ id: null }];
-        this.action = "Add";
-        this.grade = "Grade 11";
+        this.action = 'Add';
+        this.grade = 'Grade 11';
         this.section;
         this.filter = filter;
       } else if (this.tab == 6) {
         this.coreTimeData = [{ id: null }];
-        this.action = "Add";
-        this.grade = "Grade 12";
+        this.action = 'Add';
+        this.grade = 'Grade 12';
         this.section;
         this.filter = filter;
       }
     },
     editItem(item) {
-      console.log("Update", item);
+      console.log('Update', item);
       let filter = this.$store.getters.getFilterSelected;
       if (this.tab == 1) {
         this.coreTimeData = item;
-        this.action = "Update";
-        this.grade = "Grade 7";
+        this.action = 'Update';
+        this.grade = 'Grade 7';
         this.section;
         this.filter = filter;
       } else if (this.tab == 2) {
         this.coreTimeData = item;
-        this.action = "Update";
-        this.grade = "Grade 8";
+        this.action = 'Update';
+        this.grade = 'Grade 8';
         this.section;
         this.filter = filter;
       } else if (this.tab == 3) {
         this.coreTimeData = item;
-        this.action = "Update";
-        this.grade = "Grade 9";
+        this.action = 'Update';
+        this.grade = 'Grade 9';
         this.section;
         this.filter = filter;
       } else if (this.tab == 4) {
         this.coreTimeData = item;
-        this.action = "Update";
-        this.grade = "Grade 10";
+        this.action = 'Update';
+        this.grade = 'Grade 10';
         this.section;
         this.filter = filter;
       } else if (this.tab == 5) {
         this.coreTimeData = item;
-        this.action = "Update";
-        this.grade = "Grade 11";
+        this.action = 'Update';
+        this.grade = 'Grade 11';
         this.section;
         this.filter = filter;
       } else if (this.tab == 6) {
         this.coreTimeData = item;
-        this.action = "Update";
-        this.grade = "Grade 12";
+        this.action = 'Update';
+        this.grade = 'Grade 12';
         this.section;
         this.filter = filter;
       }
@@ -595,27 +598,27 @@ export default {
 
     viewItem(item) {
       this.coreTimeData = item;
-      this.action = "View";
+      this.action = 'View';
     },
 
     deleteItem() {
       this.axiosCall(
-        "/enroll-student/deleteAvailabilitySchedule/" + this.deleteData.availId,
-        "DELETE",
+        '/enroll-student/deleteAvailabilitySchedule/' + this.deleteData.availId,
+        'DELETE',
       ).then((res) => {
         if (res.data.status == 200) {
           this.dialog = false;
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "success";
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.type = 'success';
+          this.fadeAwayMessage.header = 'System Message';
           this.fadeAwayMessage.message = res.data.msg;
           this.confirmDialog = false;
           this.initialize();
         } else if (res.data.status == 400) {
           this.confirmDialog = false;
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
           this.fadeAwayMessage.message = res.data.msg;
         }
       });

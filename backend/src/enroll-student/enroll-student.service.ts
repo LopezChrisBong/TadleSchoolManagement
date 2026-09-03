@@ -112,7 +112,7 @@ export class EnrollStudentService {
           const studentInList = await this.studentListRepository.findOneBy({
             studentId: studentExist.id,
             school_yearId: newStudent[i].school_yearId,
-            grade_level: newStudent[i].grade_level,
+            // grade_level: newStudent[i].grade_level,
           });
 
           if (!studentInList) {
@@ -213,40 +213,42 @@ export class EnrollStudentService {
     }
   }
 
-  // async AddSchedule(createAvailabilityDto: CreateAvailabilityDto) {
+  async AddScheduleAdmin(createAvailabilityDto: CreateAvailabilityDto) {
+    try {
+      const conflict = await this.checkConflict(createAvailabilityDto);
 
-  //   try {
-  //     const conflict = await this.checkConflict(createAvailabilityDto);
+      if (conflict) {
+        return {
+          msg: 'Conflict detected. Schedule cannot be added. Faculty may already have scheduled for this time!',
+          status: HttpStatus.BAD_REQUEST,
+          conflictDetails: conflict,
+        };
+      }
 
-  //     if (conflict) {
-  //       return {
-  //         msg: 'Conflict detected. Schedule cannot be added. Faculty may already have scheduled for this time!',
-  //         status: HttpStatus.BAD_REQUEST,
-  //         conflictDetails: conflict,
-  //       };
-  //     }
+      const newSchedule = this.availabilityRepository.create(
+        createAvailabilityDto,
+      );
+      await this.availabilityRepository.save(newSchedule);
 
-  //     const newSchedule = this.availabilityRepository.create(createAvailabilityDto);
-  //     await this.availabilityRepository.save(newSchedule);
-
-  //     return {
-  //       msg: 'Schedule added successfully.',
-  //       status: HttpStatus.CREATED,
-  //     };
-  //   } catch (error) {
-  //     console.error('Error adding schedule:', error);
-  //     return {
-  //       msg: 'Failed to add schedule.',
-  //       status: HttpStatus.BAD_REQUEST,
-  //     };
-  //   }
-  //   // }
-  // }
+      return {
+        msg: 'Schedule added successfully.',
+        status: HttpStatus.CREATED,
+      };
+    } catch (error) {
+      console.error('Error adding schedule:', error);
+      return {
+        msg: 'Failed to add schedule.',
+        status: HttpStatus.BAD_REQUEST,
+      };
+    }
+    // }
+  }
 
   async AddSchedule(createAvailabilityDto: CreateAvailabilityDto) {
     const savedDays: string[] = [];
     const skippedDays: string[] = [];
 
+    // let dayData = [createAvailabilityDto.day];
     try {
       for (const day of createAvailabilityDto.day) {
         const data = {
@@ -316,6 +318,9 @@ export class EnrollStudentService {
         .leftJoin(RoomsSection, 'room', 'room.id = availability.roomId')
         .leftJoin(Subject, 'sub', 'sub.id = availability.subjectId')
         .where('availability.day = :day', { day: newData.day })
+        .andWhere('availability.school_yearId = :school_yearId', {
+          school_yearId: newData.school_yearId,
+        })
         .andWhere(
           new Brackets((qb) => {
             qb.where(
@@ -368,6 +373,9 @@ export class EnrollStudentService {
       const conflicts = await this.availabilityRepository
         .createQueryBuilder('availability')
         .where('availability.day = :day', { day: data.day })
+        .andWhere('availability.school_yearId = :school_yearId', {
+          school_yearId: data.school_yearId,
+        })
         .andWhere(
           new Brackets((qb) => {
             // Dili mag repeat ang subject in the same room per day
@@ -414,7 +422,8 @@ export class EnrollStudentService {
 
   async EnrollStudent(curr_user: any) {
     const user = await this.dataSource.query(
-      'SELECT * FROM user_detail where id ="' + curr_user.userdetail.id + '"',
+      'SELECT * FROM user_detail where id = ? ',
+      [curr_user.userdetail.id],
     );
 
     let school_level;
@@ -493,12 +502,32 @@ export class EnrollStudentService {
         'ES.semester  as track',
         'ES.strand  as track',
       ])
-      .where('ES.statusEnrolled = 0')
+      // .where('ES.statusEnrolled = 0')
+      .where('ES.statusEnrolled = 1')
       // .andWhere('ES.seniorJunior IN (:...values)', {
       //   values: [school_level, school_level1],
       // })
       .getRawMany();
 
+    return data;
+  }
+
+  async getStudentDataList(filter: number) {
+    let data = await this.dataSource.manager
+      .createQueryBuilder(EnrollStudent, 'ES')
+      .select([
+        "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
+        'ES.*',
+        'rs.room_section as room_name',
+      ])
+      .leftJoin(StudentList, 'sl', 'sl.studentId = ES.id')
+      .leftJoin(RoomsSection, 'rs', 'rs.id = sl.roomId')
+      // .where('sl.school_yearId = :filter', { filter })
+      // .andWhere('rs.id = :roomID', { roomID })
+      // .andWhere('sl.grade_level = :gradeLevel', { gradeLevel })
+      .getRawMany();
+
+    console.log(filter, data);
     return data;
   }
 
@@ -775,12 +804,24 @@ export class EnrollStudentService {
     return data;
   }
 
-  async getAllValuesData(filter: number, studentID: number) {
+  async getAllValuesData(
+    filter: number,
+    studentID: number,
+    quarter: number,
+    gradeLevel: string,
+  ) {
+    console.log('getAllValues: ', filter, studentID, quarter, gradeLevel);
     const data = await this.dataSource.manager
       .createQueryBuilder(StudentValues, 'SV')
       .select('*')
       .where('SV.studentId = :studentID', { studentID })
       .andWhere('SV.school_yearId = :filter', { filter })
+      .andWhere('SV.quarter LIKE :term', {
+        term:
+          quarter == 1 && gradeLevel === 'Junior High'
+            ? `%${'Term'}%`
+            : `%${'Quarter'}%`,
+      })
       .orderBy(
         `
         CASE 
@@ -792,6 +833,9 @@ export class EnrollStudentService {
           WHEN SV.semester = '1st Semester' AND SV.quarter = '2nd Quarter' THEN 6
           WHEN SV.semester = '2nd Semester' AND SV.quarter = '1st Quarter' THEN 7
           WHEN SV.semester = '2nd Semester' AND SV.quarter = '2nd Quarter' THEN 8
+          WHEN SV.semester = 'Junior High' AND SV.quarter = '1st Term' THEN 9
+          WHEN SV.semester = 'Junior High' AND SV.quarter = '2nd Term' THEN 10
+          WHEN SV.semester = 'Junior High' AND SV.quarter = '3rd Term' THEN 11
           ELSE 99
         END
       `,
@@ -808,6 +852,9 @@ export class EnrollStudentService {
       { semester: '1st Semester', quarter: '2nd Quarter' },
       { semester: '2nd Semester', quarter: '1st Quarter' },
       { semester: '2nd Semester', quarter: '2nd Quarter' },
+      { semester: 'Junior High', quarter: '1st Term' },
+      { semester: 'Junior High', quarter: '2nd Term' },
+      { semester: 'Junior High', quarter: '3rd Term' },
     ];
 
     const filled = quarters.map((q) => {
@@ -829,7 +876,7 @@ export class EnrollStudentService {
         }
       );
     });
-
+    console.log(data, quarter, filled);
     return filled;
   }
 
@@ -844,13 +891,15 @@ export class EnrollStudentService {
       .createQueryBuilder(EnrollStudent, 'ES')
       .select([
         'ES.id as id',
-        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ', SUBSTRING(ES.mname, 1, 1), '. ', ES.lname), concat(ES.fname, ' ', ES.lname)) as name",
+        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ', ES.lname, ' ',  SUBSTRING(ES.mname, 1, 1), '. '), concat(ES.lname, ' ', ES.fname)) as name",
         'SQF.transmuted_grade as final_grade',
         'SQF.initial_grade as initial_grade',
         'SQF.quarter as quarter',
         'SQF.semester as semester',
         'S.subject_title as subject_title',
         'ES.lrnNo as lrnNo',
+        'ES.sex as sex',
+        'ES.lname as lname',
       ])
       .leftJoin(StudentList, 'SL', 'ES.id = SL.studentId')
       .leftJoin(StudentQuarterFinalGrade, 'SQF', 'SQF.studentID = ES.id')
@@ -861,16 +910,35 @@ export class EnrollStudentService {
       .andWhere('ES.statusEnrolled = 1');
 
     if (quarter !== 'All') {
-      query = query.andWhere('SQF.quarter = :quarter', { quarter });
+      query.andWhere('SQF.quarter = :quarter', { quarter });
     }
+    query.orderBy('ES.lname', 'ASC');
 
     let data = await query.getRawMany();
-    // console.log(data);
+    console.log(data);
     return data;
   }
 
-  async getFacultyDashboardData(curr_user: any, filter: number) {
+  async getFacultyDashboardData(
+    curr_user: any,
+    filter: number,
+    assignedModules: number,
+  ) {
     // Get rooms handled by teacher
+    let roomData = await this.dataSource
+      .createQueryBuilder(RoomsSection, 'RS')
+      .select([
+        'RS.id as id',
+        'RS.room_section as room_section',
+        'RS.grade_level as grade_level',
+      ])
+      .where('RS.teacherId = :teacherId', {
+        teacherId: curr_user.userdetail.id,
+      })
+      .getRawOne();
+
+    console.log('roomData', roomData.id, curr_user.userdetail.id);
+
     const rooms = await this.dataSource
       .createQueryBuilder(RoomsSection, 'RS')
       .select([
@@ -888,7 +956,7 @@ export class EnrollStudentService {
 
     const roomIds = rooms.map((r) => r.id);
 
-    if (!roomIds.length) {
+    if (!roomIds.length || !roomData) {
       return {
         data: [],
         studentCount: 0,
@@ -902,10 +970,20 @@ export class EnrollStudentService {
     }
 
     // Get all students in those rooms
-    const students = await this.dataSource
-      .createQueryBuilder(StudentList, 'sl')
-      .where('sl.roomId IN (:...roomIds)', { roomIds })
-      .getMany();
+    let students;
+    if (assignedModules === 2) {
+      students = await this.dataSource
+        .createQueryBuilder(StudentList, 'sl')
+        .where('sl.roomId IN (:...roomIds)', { roomIds })
+        .andWhere('sl.school_yearId = :filter', { filter })
+        .getMany();
+    } else {
+      students = await this.dataSource
+        .createQueryBuilder(StudentList, 'sl')
+        .where('sl.roomId = :roomId', { roomId: roomData.id })
+        .andWhere('sl.school_yearId = :filter', { filter })
+        .getMany();
+    }
 
     const studentIds = students.map((s) => s.studentId);
     const studentCount = students.length;
@@ -924,6 +1002,26 @@ export class EnrollStudentService {
     }
 
     //  Get At Risk Students (single query)
+    // const atRiskStudents = await this.dataSource
+    //   .createQueryBuilder(EnrollStudent, 'ES')
+    //   .select([
+    //     "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
+    //     'ES.id as id',
+    //     'ES.lrnNo as lrn',
+    //     'risk.remarks as remarks',
+    //     'risk.transmuted_grade as transmuted_grade',
+    //     'risk.subject_title as subject_title',
+    //   ])
+    //   .innerJoin(
+    //     AtRiskStudentForFacultyNotification,
+    //     'risk',
+    //     'ES.id = risk.studentID',
+    //   )
+    //   .where('risk.studentID IN (:...studentIds)', { studentIds })
+    //   .andWhere('risk.school_yearID = :filter', { filter })
+    //   .andWhere('risk.transmuted_grade < 80')
+    //   .groupBy('ES.id')
+    //   .getRawMany();
     const atRiskStudents = await this.dataSource
       .createQueryBuilder(EnrollStudent, 'ES')
       .select([
@@ -941,10 +1039,64 @@ export class EnrollStudentService {
       )
       .where('risk.studentID IN (:...studentIds)', { studentIds })
       .andWhere('risk.school_yearID = :filter', { filter })
-      .groupBy('ES.id')
+      .andWhere('risk.transmuted_grade < 80')
+      .andWhere(
+        `
+        risk.id = (
+          SELECT MAX(r2.id)
+          FROM at_risk_student_for_faculty_notification r2
+          WHERE r2.studentID = risk.studentID
+            AND r2.school_yearID = :filter
+            AND r2.transmuted_grade < 80
+        )
+      `,
+      )
       .getRawMany();
 
+    for (let i = 0; i < atRiskStudents.length; i++) {
+      console.log(atRiskStudents[i].transmuted_grade);
+
+      let recommendation = '';
+
+      if (atRiskStudents[i].remarks) {
+        const match = atRiskStudents[i].remarks.match(
+          /Recommendation:\s*(.*)$/i,
+        );
+
+        if (match) {
+          // Get the recommendation text
+          recommendation = match[1].trim();
+
+          // Remove "Recommendation: ..." from remarks
+          atRiskStudents[i].remarks = atRiskStudents[i].remarks
+            .replace(/\s*Recommendation:.*$/i, '')
+            .trim();
+        }
+      }
+
+      // Store extracted recommendation separately
+      atRiskStudents[i].recommendation = recommendation;
+    }
+
     // Get LARDO Students (single query)
+    // const lardoStudents = await this.dataSource
+    //   .createQueryBuilder(EnrollStudent, 'ES')
+    //   .select([
+    //     "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
+    //     'ES.id as id',
+    //     'ES.lrnNo as lrn',
+    //     'report.remarks as remarks',
+    //     'report.subject_title as subject_title',
+    //   ])
+    //   .innerJoin(
+    //     LardoStudentForFacultyNotification,
+    //     'report',
+    //     'ES.id = report.studentID',
+    //   )
+    //   .where('report.studentID IN (:...studentIds)', { studentIds })
+    //   .andWhere('report.school_yearID = :filter', { filter })
+    //   .groupBy('ES.id')
+    //   .getRawMany();
     const lardoStudents = await this.dataSource
       .createQueryBuilder(EnrollStudent, 'ES')
       .select([
@@ -961,8 +1113,43 @@ export class EnrollStudentService {
       )
       .where('report.studentID IN (:...studentIds)', { studentIds })
       .andWhere('report.school_yearID = :filter', { filter })
-      .groupBy('ES.id')
+      .andWhere(
+        `
+          report.created_at = (
+            SELECT MAX(r2.created_at)
+            FROM lardo_student_for_faculty_notification r2
+            WHERE r2.studentID = report.studentID
+              AND r2.school_yearID = :filter
+          )
+        `,
+      )
+      .setParameter('filter', filter)
       .getRawMany();
+
+    for (let i = 0; i < lardoStudents.length; i++) {
+      console.log(lardoStudents[i].transmuted_grade);
+
+      let recommendation = '';
+
+      if (lardoStudents[i].remarks) {
+        const match = lardoStudents[i].remarks.match(
+          /Recommendation:\s*(.*)$/i,
+        );
+
+        if (match) {
+          // Get the recommendation text
+          recommendation = match[1].trim();
+
+          // Remove "Recommendation: ..." from remarks
+          lardoStudents[i].remarks = lardoStudents[i].remarks
+            .replace(/\s*Recommendation:.*$/i, '')
+            .trim();
+        }
+      }
+
+      // Store extracted recommendation separately
+      lardoStudents[i].recommendation = recommendation;
+    }
 
     //  Get Misbehaving Students
     const misbehaveList = await this.dataSource
@@ -987,7 +1174,7 @@ export class EnrollStudentService {
     const lardoCount = lardoStudents.length;
 
     const alertStudents = [...lardoStudents, ...atRiskStudents];
-    console.log(misbehaveList);
+    console.log(students);
     return {
       data: rooms,
       studentCount,

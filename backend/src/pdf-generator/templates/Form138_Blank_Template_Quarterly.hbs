@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>DepEd Form 138</title>
+<style>
+  @page {
+    size: legal landscape;
+    margin: 0.3in;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Times New Roman", Times, serif;
+    font-size: 10.5px;
+    color: #000;
+    margin: 0;
+    background: #e9e9e9;
+  }
+  .page {
+    background: #fff;
+    width: 13.4in;
+    height: 7.9in;
+    margin: 20px auto;
+    padding: 0.25in;
+    display: flex;
+    gap: 24px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.25);
+    overflow: hidden;
+  }
+  .col { flex: 1; min-width: 0; }
+  h1.form-title { font-size: 15px; margin: 0 0 2px 0; }
+  h2.section-title {
+    text-align: center;
+    font-size: 13px;
+    margin: 6px 0 8px 0;
+    text-transform: uppercase;
+  }
+  h3.sub-title {
+    text-align: center;
+    font-size: 13px;
+    margin: 4px 0 6px 0;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  th, td {
+    border: 1px solid #000;
+    padding: 2px 4px;
+    text-align: center;
+    vertical-align: middle;
+  }
+  th { background: #d9d9d9; font-weight: bold; }
+  td.label, th.label {
+    text-align: left;
+    font-weight: bold;
+    background: #fff;
+  }
+  td input, td textarea {
+    border: none;
+    width: 100%;
+    text-align: center;
+    font-family: inherit;
+    font-size: 11px;
+    background: transparent;
+  }
+  td textarea {
+    resize: none;
+    height: 28px;
+    text-align: left;
+  }
+  .fillline {
+    border: none;
+    border-bottom: 1px solid #000;
+    font-family: inherit;
+    font-size: 12px;
+    background: transparent;
+    padding: 1px 2px;
+    text-align: center;
+  }
+  .field-row {
+    margin: 4px 0;
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+  .field-row label { font-weight: bold; white-space: nowrap; }
+  .field-row .fillline.wide { flex: 1; min-width: 120px; }
+  .field-row .fillline.medium { width: 140px; }
+  .header-block { text-align: center; margin-bottom: 8px; }
+  .header-block .republic { font-size: 12px; }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+  .school-id { font-size: 11px; text-align: right; }
+  .school-id input { border: none; border-bottom: 1px solid #000; width: 90px; font-family: inherit; }
+  .division-line input {
+    border: none; border-bottom: 1px solid #000;
+    font-family: inherit; font-size: 15px; font-weight: bold; font-style: italic;
+    text-align: center; width: 260px;
+  }
+  .region-line input {
+    border: none; border-bottom: 1px solid #000;
+    font-family: inherit; font-size: 12px;
+    text-align: center; width: 160px;
+  }
+  .brgy-line input {
+    border: none; border-bottom: 1px solid #000;
+    font-family: inherit; font-size: 10px;
+    text-align: center;
+  }
+  p.body-text { margin: 4px 0; font-size: 10.5px; line-height: 1.3; }
+  .sig-block { margin: 8px 0 2px 0; text-align: left; }
+  .sig-block.right { text-align: right; }
+  .sig-block .sig-line {
+    border: none; border-bottom: 1px solid #000;
+    width: 200px; background: transparent; font-family: inherit;
+    text-align: center;
+  }
+  .sig-block .sig-caption { font-size: 9px; display: block; margin-top: 1px; }
+  h4.mini-title { text-align: center; font-size: 11px; margin: 8px 0 5px 0; }
+  .parent-sig-row {
+    display: flex; align-items: baseline; gap: 10px; margin: 9px 0;
+  }
+  .parent-sig-row label { font-weight: normal; width: 90px; }
+  .parent-sig-row .fillline { flex: 1; }
+  .legend-table { width: auto; }
+  .legend-table td { text-align: left; }
+  .name-line { font-size: 11px; margin-bottom: 4px; }
+  .name-line input { border: none; border-bottom: 1px solid #000; width: 260px; font-family: inherit; }
+  @media print {
+    body { background: #fff; }
+    .page { box-shadow: none; margin: 0; page-break-after: always; }
+    .no-print { display: none; }
+  }
+  .toolbar {
+    max-width: 13in; margin: 10px auto; text-align: center;
+  }
+  .toolbar button {
+    font-family: Arial, sans-serif; font-size: 13px; padding: 8px 16px;
+    cursor: pointer; border: 1px solid #333; background: #f4f4f4; border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+{{#each this}}
+
+<div class='container'>
+<div class="toolbar no-print">
+  <button onclick="window.print()">Print / Save as PDF</button>
+</div>
+
+<!-- ============ PAGE 1 ============ -->
+<div class="page">
+  <!-- LEFT COLUMN -->
+  <div class="col">
+    <h2 class="section-title">Report on Attendance</h2>
+    <table>
+      <tr>
+        <th></th>
+        <th>JULY</th><th>AUG</th><th>SEPT</th><th>OCT</th><th>NOV</th>
+        <th>DEC</th><th>JAN</th><th>FEB</th><th>MAR</th><th>APR</th><th>TOTAL</th>
+      </tr>
+      <tr>
+        <td class="label">No. of School Days</td>
+        <td><input type="text"></td><td><input type="text"></td><td><input type="text"></td>
+        <td><input type="text"></td><td><input type="text"></td><td><input type="text"></td>
+        <td><input type="text"></td><td><input type="text"></td><td><input type="text"></td>
+        <td><input type="text"></td><td><input type="text"></td>
+      </tr>
+      <tr>
+        <td class="label">No. of days present</td>
+        <td><input type="text"></td><td><input type="text"></td><td><input type="text"></td>
+        <td><input type="text"></td><td><input type="text"></td><td><input type="text"></td>
+        <td><input type="text"></td><td><input type="text"></td><td><input type="text"></td>
+        <td><input type="text"></td><td><input type="text"></td>
+      </tr>
+      <tr>
+        <td class="label">No. of days absent</td>
+        <td><input type="text"></td><td><input type="text"></td><td><input type="text"></td>
+        <td><input type="text"></td><td><input type="text"></td><td><input type="text"></td>
+        <td><input type="text"></td><td><input type="text"></td><td><input type="text"></td>
+        <td><input type="text"></td><td><input type="text"></td>
+      </tr>
+    </table>
+
+    <h3 class="sub-title">Parent / Guardian's Signature</h3>
+    <div class="parent-sig-row">
+       {{#ifCond firstEsig true}}
+          <img style="display:flex; top:0 px; left:0px; position:absolute; margin-top: -50px; margin-left: 300px;"
+            src='data:image/png;base64, {{parentEsig}}'
+            width='5%'
+            alt=''
+          />
+       {{else}}
+      {{/ifCond}}
+      <label>1st Quarter</label><input type="text" class="fillline">
+    </div>
+    <div class="parent-sig-row">
+         {{#ifCond secondEsig true}}
+           <img style="display:flex; top:0 px; left:0px; position:absolute; margin-top: -50px; margin-left: 300px;"
+            src='data:image/png;base64, {{parentEsig}}'
+            width='5%'
+            alt=''
+          />
+         {{else}}
+         {{/ifCond}}
+      <label>2nd Quarter</label><input type="text" class="fillline">
+    </div>
+    <div class="parent-sig-row">
+          {{#ifCond thirdEsig true}}
+           
+          <img style="display:flex; top:0 px; left:0px; position:absolute; margin-top: -50px; margin-left: 300px;"
+            src='data:image/png;base64, {{parentEsig}}'
+            width='5%'
+            alt=''
+          />
+          {{else}}
+          {{/ifCond}}
+      <label>3rd Quarter</label><input type="text" class="fillline">
+    </div>
+    <div class="parent-sig-row">
+         {{#ifCond fourthEsig true}}
+          <img style="display:flex; top:0 px; left:0px; position:absolute; margin-top: -50px; margin-left: 300px;"
+            src='data:image/png;base64, {{parentEsig}}'
+            width='5%'
+            alt=''
+          />
+          {{else}}
+          {{/ifCond}}
+      <label>4th Quarter</label><input type="text" class="fillline">
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="col" style="padding-left:50px">
+    <div class="header-top">
+      <h1 class="form-title">DepEd FORM 138</h1>
+      <div class="school-id">School ID: 316401</div>
+    </div>
+    <div class="header-block">
+      <div class="republic">Republic of the Philippines</div>
+      <div class="republic">Department of Education</div>
+      <div class="region-line">Region XI</div>
+      <div class="division-line">Panabo City Division <br>Southern Davao National High School</div>
+      <div class="brgy-line">Brgy. Southern Davao, Panabo City</div>
+    </div>
+
+    <div class="name-line" >Name: <input style="text-transform: uppercase;" type="text" class="fillline medium" value="{{studentInfo.name}}"></div>
+    <div class="field-row">
+      <label>Age:</label><input type="text" class="fillline medium" value="{{calcAge2 studentInfo.bdate}}">
+      <label>Sex:</label><input type="text" class="fillline medium" value="{{studentInfo.sex}}">
+    </div>
+    <div class="field-row">
+      <label>Grade:</label><input type="text" class="fillline medium" value="{{studentInfo.grade_level}}">
+      <label>Section:</label><input style="text-transform: uppercase;" type="text" class="fillline medium" value="{{studentInfo.section}}">
+    </div>
+    <div class="field-row">
+      <label>School Year:</label><input type="text" class="fillline medium"  value="{{studentInfo.schoolYear}}">
+      <label>LRN:</label><input type="text" class="fillline medium"  value="{{studentInfo.LRN}}">
+    </div>
+
+    <p class="body-text"><strong>Dear Parents:</strong></p>
+    <p class="body-text">This report card shows the ability and progress your child has made in the different learning areas as well as his/her core values.</p>
+    <p class="body-text">The school welcomes you should you desire to know more about your child's progress.</p>
+
+    <div class="sig-block right">
+      <input style="text-transform: uppercase;" type="text" class="sig-line" value="{{studentInfo.teacherName}}">
+      <span style="margin-right: 80px;" class="sig-caption">Adviser</span>
+    </div>
+    <div class="sig-block left">
+      <input style="text-transform: uppercase;" type="text" class="sig-line" value="{{principal.name}}">
+      <span style="margin-left: 80px;" class="sig-caption">Principal</span>
+    </div>
+
+    <h4 class="mini-title">Certificate of Transfer</h4>
+    <div class="field-row">
+      <label>Admitted to Grade</label><input type="text" class="fillline medium">
+      <label>Section:</label><input type="text" class="fillline medium">
+    </div>
+    <div class="field-row">
+      <label>Eligibility for Admission to Grade:</label><input type="text" class="fillline wide">
+    </div>
+    <div class="field-row">
+      <label>Approved:</label>
+    </div>
+    <div class="sig-block right">
+      <input type="text" class="sig-line">
+      <span style="margin-right: 80px;" class="sig-caption">Adviser</span>
+    </div>
+    <div class="sig-block left">
+      <input style="text-transform: uppercase;" type="text" class="sig-line" value="{{principal.name}}">
+      <span style="margin-left: 80px;" class="sig-caption">Principal</span>
+    </div>
+
+    <h4 class="mini-title">Cancellation of Eligibility to Transfer</h4>
+    <div class="field-row">
+      <label>Admitted in:</label><input type="text" class="fillline wide">
+    </div>
+    <div class="field-row">
+      <label>Date:</label><input type="text" class="fillline wide">
+    </div>
+    <div class="sig-block right">
+      <input style="text-transform: uppercase;" type="text" class="sig-line" value="{{principal.name}}">
+      <span style="margin-right: 80px;"  class="sig-caption">Principal</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ PAGE 2 ============ -->
+<div class="page">
+  <!-- LEFT COLUMN -->
+  <div class="col">
+    <div style="text-transform: uppercase;" class="name-line">{{studentInfo.name}}</div>
+    <h2 class="section-title">Report on Learning Progress and Achievement</h2>
+    <table>
+      <tr>
+        <th rowspan="2">Learning Areas</th>
+        {{#ifCond junior true}}
+        <th colspan="4" align="center" style="width:20%">Quarter</th>
+        {{else}}
+        <th colspan="2" align="center" style="width:20%">Quarter</th>
+        {{/ifCond}}
+        <th rowspan="2">Final<br>Grades</th>
+        <th rowspan="2">Remarks</th>
+      </tr>
+      <tr><th>1</th><th>2</th>{{#ifCond junior true}} <th>3</th><th>4</th>{{else}} {{/ifCond}}</tr>
+      {{#ifCond junior false}}
+      <tr>
+        <th align="right" colspan="5" class="strong">First Semester</th>
+      </tr>
+      {{else}}
+      {{/ifCond}}
+      {{#ifCond junior false}}
+      {{#studentData}}
+      {{#firstSem}}
+      <tr>
+      <td align="center">{{subject}}</td>
+      <td align="center">{{this.[1st Quarter]}}</td>
+      <td align="center">{{this.[2nd Quarter]}}</td>
+      
+      {{#ifCond junior true}}
+      <td align="center">{{this.[3rd Quarter]}}</td>
+      <td align="center">{{this.[4th Quarter]}}</td>
+      {{else}}
+      {{/ifCond}}
+  
+      <td align="center"><b>{{finalGrade}}</b></td>
+      <td align="center">{{remarks}}</td>
+      </tr>
+      {{/firstSem}}
+      <tr>
+        <th align="right" colspan="5" class="strong">Second Semester</th>
+      </tr>
+      {{#secondSem}}
+      <tr>
+      <td align="center">{{subject}}</td>
+      <td align="center">{{this.[1st Quarter]}}</td>
+      <td align="center">{{this.[2nd Quarter]}}</td>
+      {{#ifCond junior true}}
+      <td align="center">{{this.[3rd Quarter]}}</td>
+      <td align="center">{{this.[4th Quarter]}}</td>
+      {{else}}
+      {{/ifCond}}
+      <td align="center"><b>{{finalGrade}}</b></td>
+      <td align="center">{{remarks}}</td>
+    </tr>
+    {{/secondSem}}
+      {{/studentData}}
+      {{else}}
+      {{#studentData}}
+      {{#juniorHigh}}
+      <tr>
+      {{#ifCond subject 'General Average'}}
+      <td align="right" colspan="{{this.conspan}}" class="strong">{{subject}}:</td>
+      <td align="center"><b>{{finalGrade}}</b></td>
+      <td align="center">{{remarks}}</td>
+      {{else}}
+      <td align="left" colspan="{{this.conspan}}">{{subject}}</td>
+      <td align="center">{{this.[1st Quarter]}}</td>
+      <td align="center">{{this.[2nd Quarter]}}</td>
+      <td align="center">{{this.[3rd Quarter]}}</td>
+      <td align="center">{{this.[4th Quarter]}}</td>
+      <td align="center"><b>{{finalGrade}}</b></td>
+      <td align="center">{{remarks}}</td>
+      {{/ifCond}}
+      </tr>
+      {{/juniorHigh}}
+      {{/studentData}}
+      {{/ifCond}}
+
+      {{!-- <tr><td class="label">Filipino</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+      <tr><td class="label">English</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+      <tr><td class="label">Mathematics</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+      <tr><td class="label">Science</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+      <tr><td class="label">Araling Panlipunan (AP)</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+      <tr><td class="label">Edukasyon sa Pagpapakatao (EsP)</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+      <tr><td class="label">TLE</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+      <tr><td class="label">MAPEH</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+      <tr><td class="label">Music</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+      <tr><td class="label">Arts</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+      <tr><td class="label">Physical Education</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+      <tr><td class="label">Health</td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+      <tr><th style="text-align:center;" colspan="5">General Average</th><td><input></td><td><input></td></tr> --}}
+    </table>
+
+    <h4 class="mini-title" style="text-align:left;">Learning Modality:</h4>
+    <table>
+      <tr><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th></tr>
+      <tr><td><input></td><td><input></td><td><input></td><td><input></td></tr>
+    </table>
+
+    <table>
+      <tr><th>Descriptors</th><th>Grading Scale</th><th>Remarks</th></tr>
+      <tr><td class="label">Outstanding</td><td>90 - 100</td><td>Passed</td></tr>
+      <tr><td class="label">Very Satisfactory</td><td>85-89</td><td>Passed</td></tr>
+      <tr><td class="label">Satisfactory</td><td>80-84</td><td>Passed</td></tr>
+      <tr><td class="label">Fairly Satisfactory</td><td>75-79</td><td>Passed</td></tr>
+      <tr><td class="label">Did Not Meet Expectations</td><td>below 75</td><td>Failed</td></tr>
+    </table>
+  </div>
+
+  <!-- RIGHT COLUMN -->
+  <div class="col">
+    <h2 class="section-title">Report on Learner's Observed Values</h2>
+    <table>
+      <tr>
+        <th rowspan="2">Core Values</th>
+        <th rowspan="2">Behavior Statement</th>
+        <th colspan="4">Quarter</th>
+      </tr>
+      <tr><th>1</th><th>2</th><th>3</th><th>4</th></tr>
+
+      <tr>
+        <td class="label" rowspan="2">1. Maka-Diyos</td>
+        <td style="text-align:left;">Express one's spiritual beliefs while respecting the spiritual belief of others.</td>
+        <td><input value="{{firstTerm.sv_md1_values}}"></td><td><input value="{{secondTerm.sv_md1_values}}"></td><td><input value="{{thirdTerm.sv_md1_values}}"></td><td><input value="{{fourthTerm.sv_md1_values}}"></td>
+      </tr>
+      <tr>
+        <td style="text-align:left;">Show adherence to ethical principles by upholding truth.</td>
+        <td><input value="{{firstTerm.sv_md2_values}}"></td><td><input value="{{secondTerm.sv_md2_values}}"></td><td><input value="{{thirdTerm.sv_md2_values}}"></td><td><input value="{{fourthTerm.sv_md2_values}}"></td>
+      </tr>
+
+      <tr>
+        <td class="label" rowspan="2">2. Makatao</td>
+        <td style="text-align:left;">Is sensitive to individual, social, and cultural differences.</td>
+        <td><input value="{{firstTerm.sv_mt1_values}}"></td><td><input value="{{secondTerm.sv_mt1_values}}"></td><td><input value="{{thirdTerm.sv_mt1_values}}"></td><td><input value="{{fourthTerm.sv_mt1_values}}"></td>
+      </tr>
+      <tr>
+        <td style="text-align:left;">Demonstrates contributions towards solidarity.</td>
+        <td><input value="{{firstTerm.sv_mt2_values}}"></td><td><input value="{{secondTerm.sv_mt2_values}}"></td><td><input value="{{thirdTerm.sv_mt2_values}}"></td><td><input value="{{fourthTerm.sv_mt2_values}}"></td>
+      </tr>
+
+      <tr>
+        <td class="label">3. Maka-kalikasan</td>
+        <td style="text-align:left;">Cares for the environment and utilizes resources wisely, judiciously, and economically.</td>
+        <td><input value="{{firstTerm.sv_mk1_values}}"></td><td><input value="{{secondTerm.sv_mk1_values}}"></td><td><input value="{{thirdTerm.sv_mk1_values}}"></td><td><input value="{{fourthTerm.sv_mk1_values}}"></td>
+      </tr>
+
+      <tr>
+        <td class="label" rowspan="2">4. Makabansa</td>
+        <td style="text-align:left;">Demonstrate pride in being a Filipino; exercises the rights and responsibilities of a Filipino citizen.</td>
+        <td><input value="{{firstTerm.sv_mb1_values}}"></td><td><input value="{{secondTerm.sv_mb1_values}}"></td><td><input value="{{thirdTerm.sv_mb1_values}}"></td><td><input value="{{fourthTerm.sv_mb1_values}}"></td>
+      </tr>
+      <tr>
+        <td style="text-align:left;">Demonstrates appropriate behavior in carrying out activities in the school, community and country.</td>
+        <td><input value="{{firstTerm.sv_mb2_values}}"></td><td><input value="{{secondTerm.sv_mb2_values}}"></td><td><input value="{{thirdTerm.sv_mb2_values}}"></td><td><input value="{{fourthTerm.sv_mb2_values}}"></td>
+      </tr>
+    </table>
+
+    <h4 class="mini-title" style="text-align:left;">Marking &nbsp;&nbsp;&nbsp; Non-Numerical Rating</h4>
+    <table class="legend-table">
+      <tr><td class="label">AO</td><td>Always Observed</td></tr>
+      <tr><td class="label">SO</td><td>Sometimes Observed</td></tr>
+      <tr><td class="label">RO</td><td>Rarely Observed</td></tr>
+      <tr><td class="label">NO</td><td>Not Observed</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+{{/each}}
+</body>
+</html>

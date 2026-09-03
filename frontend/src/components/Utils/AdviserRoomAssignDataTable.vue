@@ -1,46 +1,58 @@
 <template>
-  <v-container fluid>
-    <!-- Header with Tabs & Search -->
-    <v-row class="align-center mb-4 mt-2">
-      <v-col cols="12" md="4" class="text-h6">
-        <span v-if="room_name">{{ room_name }}</span>
-      </v-col>
+  <v-container fluid class="pa-6 class-list-bg">
+    <!-- Header -->
+    <v-card class="pa-4 mb-4 border" elevation="0" rounded="lg">
+      <v-row align="center" dense>
+        <v-col cols="12" md="4">
+          <div class="d-flex align-center ga-2">
+            <v-avatar size="36" color="#fce4ec" class="mr-1">
+              <v-icon icon="mdi-google-classroom" color="#d6357e" size="20" />
+            </v-avatar>
+            <span class="text-h6 font-weight-bold">{{
+              room_name || 'My Class'
+            }}</span>
+          </div>
+        </v-col>
 
-      <v-col cols="12" md="6" offset-md="2" class="d-flex">
-        <v-text-field
-          v-model="search"
-          label="Search"
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          density="compact"
-          hide-details
-          clearable
-          class="mr-2"
-          color="primary"
-        />
-        <v-btn
-          v-if="edit"
-          class="me-2"
-          prepend-icon="mdi-plus"
-          rounded="lg"
-          :color="$vuetify.theme.themes.light.submitBtns"
-          text="Add"
-          border
-          @click="add()"
-        ></v-btn>
-        <v-btn
-          x-small
-          color="blue"
-          class="white--text mx-1"
-          @click="viewFinalGrade(item)"
-        >
-          <v-icon size="14">mdi-eye-outline</v-icon> View Grade
-        </v-btn>
-      </v-col>
-    </v-row>
+        <v-col cols="12" md="8" class="d-flex justify-md-end flex-wrap ga-2">
+          <v-text-field
+            v-model="search"
+            label="Search students..."
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            density="compact"
+            hide-details
+            clearable
+            color="#d6357e"
+            rounded="lg"
+            style="max-width: 260px"
+          />
+          <v-btn
+            v-if="edit"
+            prepend-icon="mdi-plus"
+            rounded="lg"
+            color="#d6357e"
+            variant="flat"
+            class="text-white font-weight-bold"
+            @click="add()"
+          >
+            Add
+          </v-btn>
+          <v-btn
+            prepend-icon="mdi-eye-outline"
+            rounded="lg"
+            color="#d6357e"
+            variant="tonal"
+            @click="viewFinalGrade()"
+          >
+            View Grade
+          </v-btn>
+        </v-col>
+      </v-row>
+    </v-card>
 
     <!-- Data Table -->
-    <v-card class="elevation-1">
+    <v-card class="border" elevation="0" rounded="lg">
       <v-data-table
         :items="data"
         :headers="headers"
@@ -48,58 +60,125 @@
         :items-per-page="10"
         :group-by="[{ key: 'sex', order: 'asc' }]"
         :loading="loading"
-        loading-text="Loading users..."
-        class="rounded"
-        dense
+        loading-text="Loading students..."
+        density="comfortable"
+        class="class-table"
       >
-        <template v-slot:[`item.actions`]="{ item }">
-          <div class="d-flex">
-            <v-btn
-              v-if="item.graded == 1"
-              x-small
-              color="white"
-              class="black--text mx-1"
-              @click="
-                syType == 0
-                  ? viewStudentAchievements(item)
-                  : viewStudentAchievementsV2(item)
-              "
-            >
-              <v-icon size="14">mdi-printer-outline</v-icon>
-              Form 138
-            </v-btn>
-            <v-btn
-              x-small
-              color="green"
-              class="white--text mx-1"
-              @click="valuesItem(item)"
-            >
-              <v-icon size="14">mdi-account-box-plus-outline</v-icon> Values
-            </v-btn>
+        <template
+          v-slot:group-header="{ item, columns, toggleGroup, isGroupOpen }"
+        >
+          <tr class="group-header-row">
+            <td :colspan="columns.length">
+              <v-btn
+                :icon="
+                  isGroupOpen(item) ? 'mdi-chevron-down' : 'mdi-chevron-right'
+                "
+                size="x-small"
+                variant="text"
+                @click="toggleGroup(item)"
+              />
+              <v-icon
+                :icon="
+                  item.value === 'Male'
+                    ? 'mdi-gender-male'
+                    : 'mdi-gender-female'
+                "
+                :color="item.value === 'Male' ? 'blue' : 'pink'"
+                size="18"
+                class="mx-1"
+              />
+              <span class="font-weight-medium">{{ item.value }}</span>
+              <v-chip
+                size="x-small"
+                variant="tonal"
+                color="#d6357e"
+                class="ml-2"
+              >
+                {{ item.items.length }}
+              </v-chip>
+            </td>
+          </tr>
+        </template>
 
-            <v-btn
-              x-small
-              color="orange"
-              class="white--text mx-1"
-              @click="dropItem(item)"
-            >
-              <v-icon size="14">mdi-account-cancel</v-icon> Drop
-            </v-btn>
-            <v-btn
-              x-small
-              color="#C62828"
-              class="white--text mx-1"
-              @click="deleteItem(item)"
-            >
-              <v-icon size="14">mdi-trash-can-outline</v-icon> Delete
-            </v-btn>
+        <template v-slot:[`item.name`]="{ item }">
+          <div class="d-flex align-center py-2">
+            <v-avatar size="30" color="#fce4ec" class="mr-3">
+              <span
+                class="text-caption font-weight-bold"
+                style="color: #d6357e"
+              >
+                {{ initials(item.name) }}
+              </span>
+            </v-avatar>
+            <span class="font-weight-medium">{{ item.name }}</span>
+          </div>
+        </template>
+
+        <template v-slot:[`item.actions`]="{ item }">
+          <div class="d-flex justify-center ga-1">
+            <v-tooltip v-if="item.graded == 1" text="Form 138" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  icon="mdi-printer-outline"
+                  size="small"
+                  variant="text"
+                  color="blue-grey"
+                  @click="
+                    syType == 0 || grade == 'Grade 11' || grade == 'Grade 12'
+                      ? viewStudentAchievements(item)
+                      : viewStudentAchievementsV2(item)
+                  "
+                />
+              </template>
+            </v-tooltip>
+
+            <v-tooltip text="Values" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  icon="mdi-account-box-plus-outline"
+                  size="small"
+                  variant="text"
+                  color="green"
+                  @click="valuesItem(item)"
+                />
+              </template>
+            </v-tooltip>
+
+            <v-tooltip text="Drop" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  icon="mdi-account-cancel"
+                  size="small"
+                  variant="text"
+                  color="orange"
+                  @click="dropItem(item)"
+                />
+              </template>
+            </v-tooltip>
+
+            <v-tooltip text="Delete" location="top">
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  icon="mdi-trash-can-outline"
+                  size="small"
+                  variant="text"
+                  color="red"
+                  @click="deleteItem(item)"
+                />
+              </template>
+            </v-tooltip>
           </div>
         </template>
 
         <template #no-data>
-          <v-alert type="info" border="start" color="white">
-            No users found.
-          </v-alert>
+          <div class="py-8 text-center text-medium-emphasis">
+            <v-icon icon="mdi-account-off-outline" size="32" class="mb-2" />
+            <div>No students found.</div>
+          </div>
         </template>
       </v-data-table>
     </v-card>
@@ -118,65 +197,84 @@
     />
 
     <!-- Delete Confirmation Dialog -->
-    <v-dialog v-model="dialogConfirmDelete" max-width="500">
-      <v-card>
-        <v-card-title class="text-h6">Confirm Delete!</v-card-title>
+    <v-dialog v-model="dialogConfirmDelete" max-width="420">
+      <v-card rounded="lg">
+        <v-card-title class="d-flex align-center ga-2 text-h6">
+          <v-icon icon="mdi-alert-circle-outline" color="error" />
+          Confirm Delete
+        </v-card-title>
         <v-card-text>
-          Are you sure you want to delete this student?
+          Are you sure you want to delete this student? This action can't be
+          undone.
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="dialogConfirmDelete = false"
+          <v-btn
+            variant="text"
+            rounded="lg"
+            @click="dialogConfirmDelete = false"
             >Cancel</v-btn
           >
-          <v-btn color="error" class="white--text" @click="confirmDelete()">
-            Confirm
-          </v-btn>
+          <v-btn
+            color="error"
+            variant="flat"
+            rounded="lg"
+            @click="confirmDelete()"
+            >Confirm</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
 
-    <!-- Delete Confirmation Dialog -->
-    <v-dialog v-model="dialogConfirmDrop" max-width="500">
-      <v-card>
-        <v-card-title class="text-h6">Confirm Drop!</v-card-title>
+    <!-- Drop Confirmation Dialog -->
+    <v-dialog v-model="dialogConfirmDrop" max-width="420">
+      <v-card rounded="lg">
+        <v-card-title class="d-flex align-center ga-2 text-h6">
+          <v-icon icon="mdi-alert-circle-outline" color="warning" />
+          Confirm Drop
+        </v-card-title>
         <v-card-text> Are you sure you want to drop this student? </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn variant="text" @click="dialogConfirmDrop = false"
+          <v-btn variant="text" rounded="lg" @click="dialogConfirmDrop = false"
             >Cancel</v-btn
           >
-          <v-btn color="error" class="white--text" @click="confirmDrop()">
-            Confirm
-          </v-btn>
+          <v-btn
+            color="warning"
+            variant="flat"
+            rounded="lg"
+            @click="confirmDrop()"
+            >Confirm</v-btn
+          >
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- view dialog -->
     <v-dialog v-model="dialog" max-width="500px">
-      <v-card>
-        <v-card-title>
-          <div class="d-flex justify-space-between">
-            <span class="headline">Add Students</span>
-            <v-btn
-              variant="text"
-              icon="mdi-close"
-              density="compact"
-              color="red"
-              @click="dialog = false"
-            ></v-btn>
-          </div>
+      <v-card rounded="lg">
+        <v-card-title
+          class="d-flex justify-space-between align-center px-5 py-4"
+          style="background: #d6357e; color: #fff"
+        >
+          <span class="text-h6 font-weight-bold">Add Students</span>
+          <v-btn
+            variant="text"
+            icon="mdi-close"
+            density="compact"
+            color="white"
+            @click="dialog = false"
+          ></v-btn>
         </v-card-title>
-        <v-card-text>
+        <v-card-text class="pa-5">
           <v-row>
             <v-col cols="12" class="d-flex"> love </v-col>
           </v-row>
         </v-card-text>
-        <v-card-actions>
+        <v-card-actions class="pa-3">
           <v-spacer />
-          <v-btn color="#147452" class="white--text" @click="save()">
-            <v-icon>mdi-check-circle</v-icon>
+          <v-btn color="#147452" variant="flat" rounded="lg" class="text-white">
+            <v-icon start>mdi-check-circle</v-icon>
             Save
           </v-btn>
         </v-card-actions>
@@ -216,8 +314,6 @@ export default {
     headers: [
       { title: 'LRN', value: 'lrnNo', align: 'start', sortable: true },
       { title: 'Name', value: 'name', align: 'start', sortable: true },
-      // { title: 'First Name', value: 'fname', align: 'start' },
-      // { title: 'Name', value: 'name', align: 'start' },
       {
         title: 'Actions',
         value: 'actions',
@@ -280,8 +376,9 @@ export default {
     filterYear: {
       handler(newData, oldData) {
         if (oldData != newData) {
+          this.data = [];
+          this.student_activeList = [];
           this.initialize();
-          this.getTaggedStudent();
         }
       },
       deep: true,
@@ -303,8 +400,16 @@ export default {
       this.syType = this.$store.getters.getSyType;
       this.getTaggedStudent();
     },
+    initials(name) {
+      if (!name) return '';
+      return name
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((n) => n[0].toUpperCase())
+        .join('');
+    },
     valuesItem(item) {
-      console.log(item);
       this.updateData = item;
       this.action = 'Add';
     },
@@ -313,7 +418,7 @@ export default {
         '/enroll-student/AddClassStudent/EnrolledStudent/' +
           grade +
           '/' +
-          this.filterYear,
+          this.filter,
         'GET',
       ).then((res) => {
         if (res.data) {
@@ -327,20 +432,14 @@ export default {
     },
     getTaggedStudent() {
       this.axiosCall(
-        '/rooms-section/getMyClassList/' +
-          this.userRoleID +
-          '/' +
-          this.filterYear,
+        '/rooms-section/getMyClassList/' + this.userRoleID + '/' + this.filter,
         'GET',
       ).then((res) => {
         if (res.data && Array.isArray(res.data) && res.data.length > 0) {
           let data = res.data;
-          //   console.log("Data Value", data);
-          console.log('Grade Level', res.data[0].grade_level);
           if (data[0].name != null) {
             for (let i = 0; i < data.length; i++) {
               data[i].name = this.toTitleCase(data[i].name);
-              // this.studentData.push(data[i].id);
             }
             this.data = data;
           }
@@ -354,7 +453,7 @@ export default {
           this.fadeAwayMessage.type = 'error';
           this.fadeAwayMessage.header = 'System Message';
           this.fadeAwayMessage.message =
-            'Please contact admin to set you room advisory!';
+            'Please contact the admin to have your room advisory set up.';
         }
       });
     },
@@ -374,7 +473,6 @@ export default {
         { id: null, roomID: this.classID, grade_level: this.grade },
       ];
       this.action = 'Add';
-      // this.dialog = true;
     },
     save() {
       if (this.studentData.length > 0) {
@@ -382,14 +480,12 @@ export default {
           classID: this.classID,
           stundent_list: JSON.stringify(this.studentData),
         };
-        console.log('Add Student', data);
 
         this.axiosCall(
           '/rooms-section/addMyStudentClassRoom',
           'POST',
           data,
         ).then((res) => {
-          console.log(res);
           if (res.data.status == 201) {
             this.fadeAwayMessage.show = true;
             this.fadeAwayMessage.type = 'success';
@@ -422,7 +518,6 @@ export default {
       this.action = 'View';
     },
     viewStudentAchievements(item) {
-      // console.log("print", item.grade_level);
       window.open(
         process.env.VUE_APP_SERVER +
           '/pdf-generator/getStudentAchievements/' +
@@ -438,7 +533,6 @@ export default {
       );
     },
     viewStudentAchievementsV2(item) {
-      // console.log('print', item.grade_level);
       window.open(
         process.env.VUE_APP_SERVER +
           '/pdf-generator/getStudentAchievementsV2/' +
@@ -475,7 +569,6 @@ export default {
       });
     },
     async confirmDrop() {
-      // console.log("drop", this.dropData);
       let data = {
         statusEnrolled: 2,
       };
@@ -504,11 +597,27 @@ export default {
 };
 </script>
 <style scoped>
-/* .v-tab {
-  color: rgb(0, 133, 82) !important;
+.class-list-bg {
+  min-height: 100vh;
 }
-.v-tab--active {
-  color: rgb(255, 255, 255) !important;
-  background-color: blue !important;
-} */
+
+.v-card.border {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+.class-table :deep(thead th) {
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  opacity: 0.6;
+}
+
+.group-header-row {
+  background: #f5f6fa;
+}
+
+.group-header-row td {
+  padding: 6px 12px !important;
+}
 </style>

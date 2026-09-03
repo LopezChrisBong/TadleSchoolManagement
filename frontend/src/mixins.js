@@ -301,6 +301,7 @@ export default {
       localStorage.removeItem("token");
       localStorage.removeItem("vuex");
       localStorage.removeItem("_secure__ls__metadata");
+      localStorage.removeItem("AssignedModID");
       this.$store.dispatch("setEmail", null);
       this.$store.dispatch("setEmp", null);
       this.$store.dispatch("setIsAuthenticated", 0);

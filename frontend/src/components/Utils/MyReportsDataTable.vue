@@ -1,35 +1,34 @@
 <template>
   <v-container fluid>
-    <!-- Header with Tabs & Search -->
-    <v-row class="align-center mb-4 mt-2 flex-items">
-      <v-col cols="12" md="6" class="flex-items"> </v-col>
+    <!-- Header with Title & Search -->
+    <v-row class="align-center mb-4 mt-2">
+      <v-col cols="12" md="6">
+        <div class="d-flex align-center">
+          <v-icon size="28" color="primary" class="mr-2"
+            >mdi-file-document-alert-outline</v-icon
+          >
+          <span class="text-h6 font-weight-bold">Student Reports</span>
+        </div>
+      </v-col>
 
-      <v-col cols="12" md="4" offset-md="2" class="d-flex">
+      <v-col cols="12" md="6" class="d-flex justify-end">
         <v-text-field
           v-model="search"
-          label="Search"
+          label="Search reports"
           prepend-inner-icon="mdi-magnify"
           variant="outlined"
           density="compact"
           hide-details
           clearable
-          class="mr-2"
+          single-line
+          style="max-width: 320px"
           color="primary"
         />
-        <!-- <v-btn
-          class="me-2"
-          prepend-icon="mdi-plus"
-          rounded="lg"
-          :color="$vuetify.theme.themes.light.submitBtns"
-          text="Add"
-          border
-          @click="add()"
-        ></v-btn> -->
       </v-col>
     </v-row>
 
     <!-- Data Table -->
-    <v-card class="elevation-1">
+    <v-card class="elevation-2 rounded-lg">
       <v-data-table
         :items="data"
         :class="isMobile"
@@ -37,133 +36,237 @@
         :search="search"
         :items-per-page="10"
         :loading="loading"
-        loading-text="Loading users..."
-        class="rounded"
-        dense
+        loading-text="Loading reports..."
+        class="rounded-lg report-table"
       >
+        <template v-slot:[`item.name`]="{ item }">
+          <div class="d-flex align-center py-2">
+            <v-avatar size="32" color="primary" variant="tonal" class="mr-3">
+              <span class="text-caption font-weight-bold">
+                {{ initials(item.name) }}
+              </span>
+            </v-avatar>
+            <span class="font-weight-medium">{{ item.name }}</span>
+          </div>
+        </template>
+
         <template v-slot:[`item.report_type`]="{ item }">
-          {{
-            item.report_type == 1 ? 'Academic Concern' : 'Disciplinary Concern'
-          }}
+          <v-chip
+            size="small"
+            variant="tonal"
+            :color="item.report_type == 1 ? 'blue' : 'deep-orange'"
+          >
+            {{ item.report_type == 1 ? 'Academic' : 'Disciplinary' }}
+          </v-chip>
+        </template>
+
+        <template v-slot:[`item.created_at`]="{ item }">
+          <span class="text-body-2">{{ formatDate(item.created_at) }}</span>
         </template>
 
         <template v-slot:[`item.tagged`]="{ item }">
-          <span v-for="tag in item.tagged" :key="tag.id">
-            {{ tag.name }}
-          </span>
+          <div v-if="item.tagged && item.tagged.length">
+            <v-chip
+              v-for="tag in item.tagged.slice(0, 2)"
+              :key="tag.id"
+              size="x-small"
+              variant="tonal"
+              class="mr-1 mb-1"
+            >
+              {{ tag.name }}
+            </v-chip>
+            <v-chip
+              v-if="item.tagged.length > 2"
+              size="x-small"
+              variant="text"
+              color="grey"
+            >
+              +{{ item.tagged.length - 2 }} more
+            </v-chip>
+          </div>
+          <span v-else class="text-caption text-medium-emphasis">—</span>
         </template>
+
         <template v-slot:[`item.status`]="{ item }">
           <v-chip
-            :color="
-              item.status == 0
-                ? 'yellow'
-                : item.status == 1
-                ? 'orange'
-                : item.status == 2
-                ? 'red'
-                : 'green'
-            "
-            >{{
-              item.status == 0
-                ? 'Adviser Review'
-                : item.status == 1
-                ? 'Prefect Review'
-                : item.status == 2
-                ? 'Parent Review'
-                : 'Resolved'
-            }}</v-chip
+            size="small"
+            variant="flat"
+            :color="statusColor(item.status)"
+            class="text-white font-weight-medium"
           >
+            <v-icon start size="14">{{ statusIcon(item.status) }}</v-icon>
+            {{ statusLabel(item.status) }}
+          </v-chip>
         </template>
+
         <template v-slot:[`item.actions`]="{ item }">
           <v-btn
             size="small"
             color="primary"
-            variant="outlined"
+            variant="tonal"
             @click="viewItem(item)"
-            block
-            class="my-1"
+            rounded="lg"
           >
-            <v-icon start size="18"> mdi-eye </v-icon>
+            <v-icon start size="18">mdi-eye-outline</v-icon>
             View
           </v-btn>
         </template>
 
         <template #no-data>
-          <v-alert type="info" border="start" color="white">
-            No data found.
+          <v-alert type="info" variant="tonal" border="start" class="ma-4">
+            No reports found.
           </v-alert>
         </template>
       </v-data-table>
     </v-card>
 
-    <v-dialog v-model="reportDialog" max-width="600" eager scrollable>
-      <v-card>
-        <v-card-title class="d-flex dialog-header align-center">
-          <span v-if="studentReportData">
-            Reported Student {{ studentReportData.name }}</span
-          >
+    <!-- Report Detail Dialog -->
+    <v-dialog v-model="reportDialog" max-width="640" eager scrollable>
+      <v-card rounded="lg" v-if="studentReportData">
+        <v-card-title
+          class="d-flex align-center px-5 py-4"
+          :style="{
+            background: statusColor(studentReportData.status),
+            color: '#fff',
+          }"
+        >
+          <v-icon start color="white">mdi-account-alert</v-icon>
+          <span class="text-subtitle-1 font-weight-bold">
+            {{ studentReportData.name }}
+          </span>
           <v-spacer></v-spacer>
+          <v-chip
+            color="white"
+            variant="flat"
+            size="small"
+            class="font-weight-medium"
+          >
+            <span :style="{ color: statusColor(studentReportData.status) }">
+              {{ statusLabel(studentReportData.status) }}
+            </span>
+          </v-chip>
           <v-btn
             icon="mdi-close"
             variant="text"
             color="white"
+            size="small"
+            class="ml-2"
             @click="reportDialog = false"
           >
           </v-btn>
         </v-card-title>
 
-        <v-card-text style="max-height: 700px" class="">
-          <v-row>
-            <v-col cols="12">
-              <v-autocomplete
-                v-model="studentReportData.report_type"
-                :rules="[formRules.required]"
-                variant="outlined"
-                density="comfortable"
-                class="rounded-lg"
-                readonly
-                item-title="description"
-                item-value="id"
-                label="Report Type"
-                color="pink"
-                :items="[
-                  { id: 1, description: 'Academic Concern' },
-                  { id: 2, description: 'Disciplinary Concern' },
-                ]"
-              >
-              </v-autocomplete>
-            </v-col>
-            <v-col cols="12">
-              <v-textarea
-                v-model="studentReportData.report_description"
-                label="Report Description"
-                row-height="30"
-                rows="3"
-                color="pink"
-                variant="outlined"
-                readonly
-                auto-grow
-              ></v-textarea>
-            </v-col>
-            <v-col>
-              <div>Tagged students:</div>
-              <div
-                style="
-                  border: 1px pink solid;
-                  padding: 10px;
-                  border-radius: 10px;
-                "
-              >
-                <span v-for="tag in studentReportData.tagged" :key="tag.id">
-                  {{ tag.name }}
-                  <span v-if="studentReportData.tagged.length >= 1">,</span>
-                </span>
+        <v-card-text class="pa-5" style="max-height: 65vh">
+          <v-row dense>
+            <v-col cols="6">
+              <div class="text-caption text-medium-emphasis">Reported By</div>
+              <div class="text-body-2 font-weight-medium">
+                {{ studentReportData.teacher_name }}
               </div>
             </v-col>
+            <v-col cols="6">
+              <div class="text-caption text-medium-emphasis">Date</div>
+              <div class="text-body-2 font-weight-medium">
+                {{ formatDate(studentReportData.created_at) }}
+              </div>
+            </v-col>
+            <v-col cols="6">
+              <div class="text-caption text-medium-emphasis">Subject</div>
+              <div class="text-body-2 font-weight-medium">
+                {{ studentReportData.subject_title }}
+              </div>
+            </v-col>
+            <v-col cols="6">
+              <div class="text-caption text-medium-emphasis">Grade Level</div>
+              <div class="text-body-2 font-weight-medium">
+                {{ studentReportData.grade_level }}
+              </div>
+            </v-col>
+            <v-col cols="6">
+              <div class="text-caption text-medium-emphasis">
+                Date of Incident
+              </div>
+              <div class="text-body-2 font-weight-medium">
+                {{
+                  studentReportData.report_date
+                    ? formatDate(studentReportData.report_date)
+                    : '—'
+                }}
+              </div>
+            </v-col>
+            <v-col cols="6">
+              <div class="text-caption text-medium-emphasis">
+                Time of Incident
+              </div>
+              <div class="text-body-2 font-weight-medium">
+                {{
+                  studentReportData.report_time
+                    ? formatTime(studentReportData.report_time)
+                    : '—'
+                }}
+              </div>
+            </v-col>
+            <v-col cols="6">
+              <div class="text-caption text-medium-emphasis">Report Type</div>
+              <v-chip
+                size="small"
+                :color="
+                  studentReportData.report_type == 1 ? 'blue' : 'deep-orange'
+                "
+                variant="tonal"
+                class="mt-1"
+              >
+                {{
+                  studentReportData.report_type == 1
+                    ? 'Academic Concern'
+                    : 'Disciplinary Concern'
+                }}
+              </v-chip>
+            </v-col>
           </v-row>
+
+          <v-divider class="my-4"></v-divider>
+
+          <div class="text-caption text-medium-emphasis mb-1">
+            Report Description
+          </div>
+          <v-sheet
+            border
+            rounded="lg"
+            class="pa-3 mb-4 text-body-2"
+            color="grey-lighten-4"
+          >
+            {{
+              studentReportData.report_description || 'No description provided.'
+            }}
+          </v-sheet>
+
+          <div class="text-caption text-medium-emphasis mb-1">
+            Tagged Students
+          </div>
+          <v-sheet border rounded="lg" class="pa-3" color="grey-lighten-5">
+            <template
+              v-if="studentReportData.tagged && studentReportData.tagged.length"
+            >
+              <v-chip
+                v-for="tag in studentReportData.tagged"
+                :key="tag.id"
+                size="small"
+                class="mr-2 mb-2"
+                prepend-icon="mdi-account"
+                variant="tonal"
+              >
+                {{ tag.name }}
+              </v-chip>
+            </template>
+            <span v-else class="text-body-2 text-medium-emphasis">
+              No tagged students.
+            </span>
+          </v-sheet>
         </v-card-text>
+
         <v-divider></v-divider>
-        <v-card-actions>
+        <v-card-actions class="pa-3">
           <v-spacer></v-spacer>
           <v-btn color="red" variant="outlined" @click="reportDialog = false">
             Close
@@ -193,12 +296,13 @@ export default {
     userRoleID: null,
     headers: [
       { title: 'Name', value: 'name', align: 'start' },
-      { title: 'Reported BY:', value: 'teacher_name', align: 'center' },
+      { title: 'Reported By', value: 'teacher_name', align: 'center' },
       { title: 'Subject', value: 'subject_title', align: 'center' },
       { title: 'Grade Level', value: 'grade_level', align: 'center' },
       { title: 'Type', value: 'report_type', align: 'center' },
       { title: 'Tagged Student', value: 'tagged', align: 'center' },
       { title: 'Status', value: 'status', align: 'center' },
+      { title: 'Date', value: 'created_at', align: 'center' },
       {
         title: 'Actions',
         value: 'actions',
@@ -207,7 +311,7 @@ export default {
         width: 100,
       },
     ],
-    studentReportData: [],
+    studentReportData: null,
     reportDialog: false,
     data: [],
     userId: null,
@@ -258,7 +362,6 @@ export default {
     initialize() {
       this.userId = this.$store.state.user.id;
       this.filter = this.$store.getters.getFilterSelected;
-      console.log(this.userId, this.filter);
       this.axiosCall(
         '/parent-records/getMyReport/' + this.filter + '/' + this.userId,
         'GET',
@@ -277,6 +380,57 @@ export default {
       this.studentReportData = item;
       this.reportDialog = true;
     },
+    initials(name) {
+      if (!name) return '';
+      return name
+        .split(' ')
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((n) => n[0].toUpperCase())
+        .join('');
+    },
+    statusLabel(status) {
+      return status == 0
+        ? 'Adviser Review'
+        : status == 1
+        ? 'Prefect Review'
+        : status == 2
+        ? 'Parent Review'
+        : 'Resolved';
+    },
+    statusColor(status) {
+      return status == 0
+        ? '#e6a800'
+        : status == 1
+        ? '#e67e00'
+        : status == 2
+        ? '#d32f2f'
+        : '#2e7d32';
+    },
+    statusIcon(status) {
+      return status == 0
+        ? 'mdi-account-tie'
+        : status == 1
+        ? 'mdi-shield-account'
+        : status == 2
+        ? 'mdi-account-child'
+        : 'mdi-check-circle';
+    },
   },
 };
 </script>
+
+<style scoped>
+.report-table :deep(thead) {
+  background-color: rgb(var(--v-theme-primary), 0.06);
+}
+.report-table :deep(th) {
+  font-weight: 700 !important;
+  font-size: 0.78rem !important;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.report-table :deep(tbody tr:hover) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+</style>

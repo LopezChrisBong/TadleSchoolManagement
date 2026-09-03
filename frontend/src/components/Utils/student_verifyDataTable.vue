@@ -4,7 +4,7 @@
       <v-card-text>
         <v-row align="center" dense>
           <v-col cols="12" md="6" class="d-flex flex-wrap ga-2">
-            <v-btn
+            <!-- <v-btn
               size="small"
               v-for="tab in tabList"
               :key="tab.id"
@@ -13,7 +13,27 @@
               :variant="tab.active ? 'flat' : 'tonal'"
               rounded="lg"
               >{{ tab.name }}</v-btn
-            >
+            > -->
+            <v-autocomplete
+              v-model="selectedGrade"
+              :items="gradeOptions"
+              label="Grade Level"
+              variant="outlined"
+              density="compact"
+              hide-details
+              clearable
+              style="max-width: 200px"
+            />
+            <v-autocomplete
+              v-model="selectedRoom"
+              :items="roomOptions"
+              label="Room"
+              variant="outlined"
+              density="compact"
+              hide-details
+              clearable
+              style="max-width: 200px"
+            />
           </v-col>
           <v-spacer></v-spacer>
           <v-col cols="12" md="6" class="d-flex justify-end ga-3">
@@ -33,7 +53,7 @@
     <v-card rounded="xl" elevation="1">
       <v-data-table
         :headers="tab == 1 ? headers : headers1"
-        :items="data"
+        :items="filteredData"
         :items-per-page="10"
         :search="search"
         @update:options="options"
@@ -49,7 +69,7 @@
 
         <template v-slot:[`item.statusEnrolled`]="{ item }">
           <v-chip :color="item.statusEnrolled === 1 ? 'green' : 'orange'">
-            {{ item.statusEnrolled === 1 ? "Enrolled" : "Droped" }}
+            {{ item.statusEnrolled === 1 ? 'Enrolled' : 'Droped' }}
           </v-chip>
         </template>
 
@@ -63,9 +83,9 @@
               v-if="tab == 2"
             >
               <v-icon size="14">{{
-                tab == 1 ? "mdi-pencil-outline" : "mdi-eye"
+                tab == 1 ? 'mdi-pencil-outline' : 'mdi-eye'
               }}</v-icon>
-              {{ tab == 1 ? "Verify" : "Update" }}
+              {{ tab == 1 ? 'Verify' : 'Update' }}
             </v-btn>
 
             <v-btn
@@ -137,34 +157,44 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
-import AccountVerificationDialog from "../../components/Dialogs/Forms/student_verifyDialog.vue";
-import ViewAccountVerificationDialog from "../../components/Dialogs/Views/ViewStudentVerificationDialog.vue";
+import eventBus from '@/eventBus';
+import AccountVerificationDialog from '../../components/Dialogs/Forms/student_verifyDialog.vue';
+import ViewAccountVerificationDialog from '../../components/Dialogs/Views/ViewStudentVerificationDialog.vue';
 export default {
   components: {
     AccountVerificationDialog,
     ViewAccountVerificationDialog,
   },
   data: () => ({
-    search: "",
+    search: '',
+    selectedGrade: null,
+    selectedRoom: null,
+    gradeOptions: [
+      'Grade 7',
+      'Grade 8',
+      'Grade 9',
+      'Grade 10',
+      'Grade 11',
+      'Grade 12',
+    ],
     headers: [
-      { title: "Name", value: "name", align: "start" },
+      { title: 'Name', value: 'name', align: 'start' },
       {
-        title: "Actions",
-        value: "actions",
-        align: "end",
+        title: 'Actions',
+        value: 'actions',
+        align: 'end',
         sortable: false,
         width: 200,
       },
     ],
     headers1: [
-      { title: "Name", value: "name", align: "start" },
-      { title: "Enrolled", value: "updated_at", align: "center" },
-      { title: "Status", value: "statusEnrolled", align: "center" },
+      { title: 'Name', value: 'name', align: 'start' },
+      // { title: 'Enrolled', value: 'updated_at', align: 'center' },
+      // { title: 'Status', value: 'statusEnrolled', align: 'center' },
       {
-        title: "Actions",
-        value: "actions",
-        align: "center",
+        title: 'Actions',
+        value: 'actions',
+        align: 'center',
         sortable: false,
         width: 200,
       },
@@ -172,19 +202,19 @@ export default {
     data: [],
     verified: [],
     perPageChoices: [
-      { text: "5", value: 5 },
-      { text: "10", value: 10 },
-      { text: "20", value: 20 },
-      { text: "50", value: 50 },
-      { text: "100", value: 100 },
-      { text: "250", value: 250 },
-      { text: "500", value: 500 },
+      { text: '5', value: 5 },
+      { text: '10', value: 10 },
+      { text: '20', value: 20 },
+      { text: '50', value: 50 },
+      { text: '100', value: 100 },
+      { text: '250', value: 250 },
+      { text: '500', value: 500 },
     ],
-    activeTab: { id: 1, name: "For Verification", active: true },
-    tab: 1,
+    activeTab: { id: 2, name: 'Enrolled', active: true },
+    tab: 2,
     tabList: [
-      { id: 1, name: "For Verification", active: true },
-      { id: 2, name: "Enrolled", active: false },
+      { id: 1, name: 'For Verification', active: true },
+      { id: 2, name: 'Enrolled', active: false },
     ],
     totalCount: 0,
     deleteData: null,
@@ -199,23 +229,23 @@ export default {
     dialogConfirmDelete: false,
     fadeAwayMessage: {
       show: false,
-      type: "success",
-      header: "Successfully Deleted!",
-      message: "",
+      type: 'success',
+      header: 'Successfully Deleted!',
+      message: '',
       top: 10,
     },
   }),
 
   mounted() {
     this.initialize();
-    eventBus.on("closeStudentVerificationDialog", () => {
+    eventBus.on('closeStudentVerificationDialog', () => {
       if (this.tab == 1) {
         this.initialize();
       } else if (this.tab == 2) {
         this.getVerifiedUsers();
       }
     });
-    eventBus.on("closeAccountsVerificationDialog", () => {
+    eventBus.on('closeAccountsVerificationDialog', () => {
       if (this.tab == 1) {
         this.initialize();
       } else if (this.tab == 2) {
@@ -224,15 +254,47 @@ export default {
     });
   },
   beforeUnmount() {
-    eventBus.off("closeStudentVerificationDialog");
-    eventBus.off("closeAccountsVerificationDialog");
+    eventBus.off('closeStudentVerificationDialog');
+    eventBus.off('closeAccountsVerificationDialog');
   },
   computed: {
     filterYear() {
       return this.$store.getters.getFilterSelected;
     },
+    // Rooms pulled from whatever's already in `data` — swap this for a
+    // dedicated API call if room_name isn't a field on these items,
+    // or if you want the full room list regardless of current results.
+    roomOptions() {
+      const rooms = this.data
+        .filter(
+          (d) =>
+            !this.selectedGrade ||
+            this.normalize(d.grade_level) ===
+              this.normalize(this.selectedGrade),
+        )
+        .map((d) => d.room_name)
+        .filter(Boolean);
+      return [...new Set(rooms)].sort();
+    },
+    filteredData() {
+      return this.data.filter((item) => {
+        const gradeMatch =
+          !this.selectedGrade ||
+          this.normalize(item.grade_level) ===
+            this.normalize(this.selectedGrade);
+        const roomMatch =
+          !this.selectedRoom ||
+          this.normalize(item.room_name) === this.normalize(this.selectedRoom);
+        return gradeMatch && roomMatch;
+      });
+    },
   },
   watch: {
+    selectedGrade() {
+      if (this.selectedRoom && !this.roomOptions.includes(this.selectedRoom)) {
+        this.selectedRoom = null;
+      }
+    },
     options: {
       handler() {
         if (this.tab == 1) {
@@ -262,14 +324,21 @@ export default {
     pagination(data) {
       this.paginationData = data;
     },
+    normalize(val) {
+      return String(val ?? '')
+        .trim()
+        .toLowerCase();
+    },
 
     initialize() {
       this.loading = true;
-      this.tab = 1;
-      this.activeTab = { id: 1, name: "For Verification" };
-      this.axiosCall("/enroll-student/EnrollStudent", "GET").then((res) => {
+      this.filter = this.$store.getters.getFilterSelected;
+      this.axiosCall(
+        '/enroll-student/getStudentDataList/' + this.filter,
+        'GET',
+      ).then((res) => {
         if (res) {
-          console.log("Enrolled", res.data);
+          console.log('Enrolled', res.data);
           let data = res.data;
           data.forEach((element, i) => {
             data[i].name = this.toTitleCase(element.name);
@@ -283,8 +352,7 @@ export default {
 
     getVerifiedUsers() {
       this.loading = true;
-
-      this.axiosCall("/enroll-student/EnrolledStudent", "GET").then((res) => {
+      this.axiosCall('/enroll-student/EnrolledStudent', 'GET').then((res) => {
         if (res) {
           let data = res.data;
           data.forEach((element, i) => {
@@ -317,10 +385,10 @@ export default {
     editItem(item) {
       if (this.tab == 1) {
         this.updateData = item;
-        this.action = "Verify";
+        this.action = 'Verify';
       } else {
         this.updateData = item;
-        this.action = "Update";
+        this.action = 'Update';
       }
     },
 
@@ -328,10 +396,10 @@ export default {
       console.log(item);
       if (this.tab == 1) {
         this.viewData = item;
-        this.action = "View";
+        this.action = 'View';
       } else {
         this.viewData = item;
-        this.action = "Update";
+        this.action = 'Update';
       }
     },
     // confirmDelete() {

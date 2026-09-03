@@ -61,7 +61,7 @@ export class MailService {
     await this.mailerService.sendMail({
       to: user.email,
       // from: '"Support Team" <support@example.com>', // override default from
-      subject: 'Welcome to Southern SMS! Confirm your Email',
+      subject: 'Welcome to Southern CMS! Confirm your Email',
       template: 'otp1', // `.hbs` extension is appended automatically
       context: {
         // ✏️ filling curly brackets with content
@@ -85,7 +85,7 @@ export class MailService {
     await this.mailerService.sendMail({
       to: user.email,
       // from: '"Support Team" <support@example.com>', // override default from
-      subject: 'Welcome to Southern SMS! Temporary Password',
+      subject: 'Welcome to Southern CMS! Temporary Password',
       template: 'reset-password', // `.hbs` extension is appended automatically
       context: {
         // ✏️ filling curly brackets with content
@@ -109,7 +109,7 @@ export class MailService {
     await this.mailerService.sendMail({
       to: user.email,
       // from: '"Support Team" <support@example.com>', // override default from
-      subject: 'Welcome to Southern SMS!',
+      subject: 'Welcome to Southern CMS!',
       template: 'confirmation', // `.hbs` extension is appended automatically
       attachments: [
         {

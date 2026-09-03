@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- MAIN CLASS RECORD DIALOG -->
     <v-dialog
       v-model="dialog"
       fullscreen
@@ -10,16 +11,24 @@
     >
       <v-form ref="UserVerifyFormref" @submit.prevent>
         <v-card>
-          <v-card-title dark class="d-flex dialog-header align-center">
-            <span v-if="data" style="text-transform: uppercase">
-              {{ data.subject_title }} {{ data.grade_level }}
-              {{ data.room_section }} Student Classrecords
-            </span>
+          <v-card-title class="dialog-header d-flex align-center ga-3">
+            <div class="header-icon-badge">
+              <v-icon icon="mdi-notebook-edit-outline" size="20" />
+            </div>
+            <div class="d-flex flex-column" style="min-width: 0">
+              <span v-if="data" class="header-title text-truncate">
+                {{ data.subject_title }} {{ data.grade_level }}
+                {{ data.room_section }}
+              </span>
+              <span class="header-subtitle">Student Class Records</span>
+            </div>
             <v-spacer></v-spacer>
             <v-btn
               icon="mdi-close"
               variant="text"
               color="white"
+              density="comfortable"
+              class="close-btn"
               @click="closeD()"
             >
             </v-btn>
@@ -27,171 +36,254 @@
 
           <v-card-text style="max-height: 700px" class="my-5">
             <v-container>
-              <v-row>
-                <v-col cols="12" md="3" class="d-flex">
-                  <v-autocomplete
-                    v-if="data"
-                    v-model="quarter"
-                    :items="
-                      data.grade_level == 'Grade 11' ||
-                      data.grade_level == 'Grade 12'
-                        ? ['1st Quarter', '2nd Quarter']
-                        : syType == 0
-                        ? [
-                            '1st Quarter',
-                            '2nd Quarter',
-                            '3rd Quarter',
-                            '4th Quarter',
-                          ]
-                        : ['1st Term', '2nd Term', '3rd Term']
-                    "
-                    chips
-                    variant="outlined"
-                    density="compact"
-                    label="Quarter"
-                    @update:modelValue="changeQuarter"
-                  ></v-autocomplete>
-                </v-col>
-                <v-col cols="12" md="3" class="d-flex">
-                  <v-autocomplete
-                    v-model="semester"
-                    :label="
-                      data &&
-                      !['Grade 11', 'Grade 12'].includes(data.grade_level)
-                        ? 'Grade Level'
-                        : 'Semester'
-                    "
-                    :disabled="
-                      data &&
-                      !['Grade 11', 'Grade 12'].includes(data.grade_level)
-                    "
-                    :items="['1st Semester', '2nd Semester']"
-                    chips
-                    variant="outlined"
-                    density="compact"
-                    @update:modelValue="changeQuarter"
-                  ></v-autocomplete>
-                </v-col>
-                <v-col cols="12" md="3" class="d-flex">
-                  <v-text-field
-                    v-model="dinominator"
-                    label="Highest Posible Score"
-                    variant="outlined"
-                    density="compact"
-                    type="number"
-                    style="max-width: 300px"
-                    color="green"
-                  ></v-text-field>
-                </v-col>
-                <v-col cols="12" md="3" class="d-flex">
-                  <v-text-field
-                    v-model="title"
-                    label="Title"
-                    :maxlength="25"
-                    variant="outlined"
-                    counter
-                    density="compact"
-                    style="max-width: 300px"
-                    color="green"
-                  ></v-text-field>
-                </v-col>
-                <v-col
-                  cols="12"
-                  md="3"
-                  class="d-flex"
-                  v-if="sub_subject != null"
-                >
-                  <v-autocomplete
-                    v-model="sub_subject"
-                    label="Sub Subject"
-                    :items="subSubjectList"
-                    item-value="id"
-                    item-title="description"
-                    :disabled="subSubjectList != [] ? false : true"
-                    chips
-                    variant="outlined"
-                    density="compact"
-                    @update:modelValue="changeQuarter"
-                  ></v-autocomplete>
-                </v-col>
-                <v-col cols="12">
-                  <div class="flex-items mb-2" style="overflow: auto">
-                    <v-tab
-                      v-for="tab in tabList"
-                      :key="tab.id"
-                      :value="tab.id"
-                      @click="changeTab(tab)"
-                      :class="[
-                        ' pa-3 mx-3 transition-all',
-                        tab.active
-                          ? 'bg-blue-lighten-1 text-white'
-                          : 'bg-grey-lighten-4',
-                      ]"
-                      rounded="lg"
-                      >{{ tab.name }}</v-tab
-                    >
-                    <v-spacer></v-spacer>
-                    <v-btn color="pink" @click="openGeneratedGrade()">
-                      <v-icon size="18"
-                        >mdi-arrow-top-left-bold-box-outline</v-icon
-                      >Generate Grade</v-btn
-                    >
-                    <v-btn color="green" @click="openQuizList()" class="mx-2">
-                      <v-icon size="18">mdi-eye</v-icon>Quizes</v-btn
-                    >
-                    <v-btn
-                      @click="openStudentsQuiz()"
-                      v-if="data ? data.subjectId != 6 : ''"
-                    >
-                      <v-icon size="18">mdi-printer</v-icon>Print</v-btn
-                    >
-                    <v-btn @click="openMAPEHQuiz()" v-else>
-                      <v-icon size="18">mdi-printer</v-icon>Print
-                    </v-btn>
-                  </div>
-
-                  <v-data-table
-                    :headers="tab != 3 ? headers : headers1"
-                    :items="studentList"
-                    :group-by="[{ key: 'sex', order: 'asc' }]"
-                    density="compact"
-                    item-key="name"
+              <v-card class="pa-4 mb-4 border" elevation="0" rounded="lg">
+                <v-row dense>
+                  <v-col cols="12" md="3" class="d-flex">
+                    <v-autocomplete
+                      v-if="data"
+                      v-model="quarter"
+                      :items="
+                        data.grade_level == 'Grade 11' ||
+                        data.grade_level == 'Grade 12'
+                          ? ['1st Quarter', '2nd Quarter']
+                          : syType == 0
+                          ? [
+                              '1st Quarter',
+                              '2nd Quarter',
+                              '3rd Quarter',
+                              '4th Quarter',
+                            ]
+                          : ['1st Term', '2nd Term', '3rd Term']
+                      "
+                      chips
+                      variant="outlined"
+                      density="compact"
+                      label="Quarter"
+                      hide-details
+                      @update:modelValue="changeQuarter"
+                    ></v-autocomplete>
+                  </v-col>
+                  <v-col cols="12" md="3" class="d-flex">
+                    <v-autocomplete
+                      v-model="semester"
+                      :label="
+                        data &&
+                        !['Grade 11', 'Grade 12'].includes(data.grade_level)
+                          ? 'Grade Level'
+                          : 'Semester'
+                      "
+                      :disabled="
+                        data &&
+                        !['Grade 11', 'Grade 12'].includes(data.grade_level)
+                      "
+                      :items="['1st Semester', '2nd Semester']"
+                      chips
+                      variant="outlined"
+                      density="compact"
+                      hide-details
+                      @update:modelValue="changeQuarter"
+                    ></v-autocomplete>
+                  </v-col>
+                  <v-col cols="12" md="3" class="d-flex">
+                    <v-text-field
+                      v-model="dinominator"
+                      label="Highest Possible Score"
+                      variant="outlined"
+                      density="compact"
+                      type="number"
+                      hide-details
+                      color="green"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col cols="12" md="3" class="d-flex">
+                    <v-text-field
+                      v-model="title"
+                      label="Title"
+                      :maxlength="25"
+                      variant="outlined"
+                      counter
+                      density="compact"
+                      hide-details
+                      color="green"
+                    ></v-text-field>
+                  </v-col>
+                  <v-col
+                    cols="12"
+                    md="3"
+                    class="d-flex"
+                    v-if="sub_subject != null"
                   >
-                    <template v-slot:[`item.quarterScore`]="{ item }">
-                      <div class="d-flex justify-center align-center mt-3">
-                        <v-text-field
-                          v-model.number="item.quarterScore"
-                          type="number"
-                          :disabled="dinominator == null ? true : false"
-                          variant="outlined"
-                          density="compact"
-                          :max="dinominator"
-                          width="100px"
-                          @input="onInputGradeScore(item)"
-                        ></v-text-field>
-                      </div>
-                    </template>
-                    <template v-slot:[`item.records`]="{ item }">
-                      <!-- {{ scoresNeeded(item) }} -->
-                      <div v-if="scoresNeeded(item) == 'Passed'">
-                        <v-icon size="40" color="pink">mdi-check</v-icon>
-                      </div>
-                      <div v-else v-html="scoresNeeded(item)"></div>
-                    </template>
-                    <!-- <template v-slot:[`item.action`]="{ item }">
-                      <div class="d-flex justify-center align-center">
-                        <v-btn
-                          class="mx-2"
-                          x-small
-                          color="blue"
-                          outlined
-                          @click="editItem(item)"
+                    <v-autocomplete
+                      v-model="sub_subject"
+                      label="Sub Subject"
+                      :items="subSubjectList"
+                      item-value="id"
+                      item-title="description"
+                      :disabled="subSubjectList != [] ? false : true"
+                      chips
+                      variant="outlined"
+                      density="compact"
+                      hide-details
+                      @update:modelValue="changeQuarter"
+                    ></v-autocomplete>
+                  </v-col>
+                </v-row>
+              </v-card>
+
+              <v-row>
+                <v-col cols="12">
+                  <v-card class="pa-3 mb-3 border" elevation="0" rounded="lg">
+                    <div
+                      class="d-flex align-center flex-wrap ga-2"
+                      style="overflow: auto"
+                    >
+                      <v-tabs
+                        v-model="tab"
+                        color="blue"
+                        density="compact"
+                        class="record-tabs"
+                      >
+                        <v-tab
+                          v-for="tabItem in tabList"
+                          :key="tabItem.id"
+                          :value="tabItem.id"
+                          rounded="lg"
+                          class="mx-1"
+                          @click="changeTab(tabItem)"
                         >
-                          <v-icon size="18">mdi-pencil</v-icon>
-                        </v-btn>
-                      </div></template
-                    > -->
-                  </v-data-table>
+                          {{ tabItem.name }}
+                        </v-tab>
+                      </v-tabs>
+
+                      <v-spacer></v-spacer>
+
+                      <v-btn
+                        color="pink"
+                        variant="tonal"
+                        size="small"
+                        @click="openGeneratedGrade()"
+                      >
+                        <v-icon size="16" start
+                          >mdi-arrow-top-left-bold-box-outline</v-icon
+                        >
+                        Generate Grade
+                      </v-btn>
+                      <v-btn
+                        color="green"
+                        variant="tonal"
+                        size="small"
+                        class="mx-1"
+                        @click="openQuizList()"
+                      >
+                        <v-icon size="16" start>mdi-eye</v-icon>
+                        Quizzes
+                      </v-btn>
+                      <v-btn
+                        variant="tonal"
+                        size="small"
+                        @click="openStudentsQuiz()"
+                        v-if="data ? data.subjectId != 6 : ''"
+                      >
+                        <v-icon size="16" start>mdi-printer</v-icon>
+                        Print
+                      </v-btn>
+                      <v-btn
+                        variant="tonal"
+                        size="small"
+                        @click="openMAPEHQuiz()"
+                        v-else
+                      >
+                        <v-icon size="16" start>mdi-printer</v-icon>
+                        Print
+                      </v-btn>
+                    </div>
+                  </v-card>
+
+                  <v-card class="border" elevation="0" rounded="lg">
+                    <v-data-table
+                      :headers="tab != 3 ? headers : headers1"
+                      :items="studentList"
+                      :group-by="[{ key: 'sex', order: 'asc' }]"
+                      density="compact"
+                      item-key="name"
+                      class="records-table"
+                    >
+                      <template
+                        v-slot:group-header="{
+                          item,
+                          columns,
+                          toggleGroup,
+                          isGroupOpen,
+                        }"
+                      >
+                        <tr class="group-header-row">
+                          <td :colspan="columns.length">
+                            <v-btn
+                              :icon="
+                                isGroupOpen(item)
+                                  ? 'mdi-chevron-down'
+                                  : 'mdi-chevron-right'
+                              "
+                              size="x-small"
+                              variant="text"
+                              @click="toggleGroup(item)"
+                            />
+                            <v-icon
+                              :icon="
+                                item.value === 'Male'
+                                  ? 'mdi-gender-male'
+                                  : 'mdi-gender-female'
+                              "
+                              :color="item.value === 'Male' ? 'blue' : 'pink'"
+                              size="16"
+                              class="mx-1"
+                            />
+                            <span class="font-weight-medium">{{
+                              item.value
+                            }}</span>
+                          </td>
+                        </tr>
+                      </template>
+
+                      <template v-slot:[`item.quarterScore`]="{ item }">
+                        <div class="d-flex justify-center align-center mt-3">
+                          <v-text-field
+                            v-model.number="item.quarterScore"
+                            type="number"
+                            :disabled="dinominator == null ? true : false"
+                            variant="outlined"
+                            density="compact"
+                            :max="dinominator"
+                            width="100px"
+                            @input="onInputGradeScore(item)"
+                          ></v-text-field>
+                        </div>
+                      </template>
+                      <template v-slot:[`item.records`]="{ item }">
+                        <div v-if="scoresNeeded(item) == 'Passed'">
+                          <v-icon size="28" color="green"
+                            >mdi-check-circle</v-icon
+                          >
+                        </div>
+                        <div
+                          v-else
+                          v-html="scoresNeeded(item)"
+                          class="text-caption"
+                        ></div>
+                      </template>
+
+                      <template #no-data>
+                        <div class="py-8 text-center text-medium-emphasis">
+                          <v-icon
+                            icon="mdi-account-off-outline"
+                            size="32"
+                            class="mb-2"
+                          />
+                          <div>No students found.</div>
+                        </div>
+                      </template>
+                    </v-data-table>
+                  </v-card>
                 </v-col>
               </v-row>
             </v-container>
@@ -201,11 +293,11 @@
           <v-card-actions class="pa-5">
             <v-spacer></v-spacer>
             <v-btn color="red" variant="outlined" @click="closeD()">
-              <v-icon>mdi-close-circle-outline</v-icon>
+              <v-icon start>mdi-close-circle-outline</v-icon>
               Close
             </v-btn>
             <v-btn color="green" v-if="edit" variant="flat" @click="save()">
-              <v-icon>mdi-check</v-icon>
+              <v-icon start>mdi-check</v-icon>
               Save
             </v-btn>
           </v-card-actions>
@@ -213,6 +305,7 @@
       </v-form>
     </v-dialog>
 
+    <!-- CONFIRM DIALOG -->
     <v-dialog v-model="confirmDialog" persistent max-width="420">
       <v-card rounded="lg" elevation="8">
         <v-card-title class="d-flex align-center text-warning">
@@ -224,7 +317,6 @@
 
         <v-card-text class="text-body-1">
           Are you sure you want to <strong>submit</strong> this grade?
-          <!-- {{ tab != 4 ? 'quiz' : 'exam' }}? -->
         </v-card-text>
 
         <v-card-actions class="justify-end">
@@ -247,18 +339,27 @@
       </v-card>
     </v-dialog>
 
+    <!-- GENERATED GRADES DIALOG -->
     <v-dialog v-model="gradesDialog" max-width="900" persistent scrollable>
       <v-card>
-        <v-card-title class="d-flex dialog-header align-center">
-          <span v-if="data" style="text-transform: uppercase">
-            {{ data.subject_title }} {{ data.grade_level }}
-            {{ data.room_section }} Student Grade</span
-          >
+        <v-card-title class="dialog-header d-flex align-center ga-3">
+          <div class="header-icon-badge">
+            <v-icon icon="mdi-clipboard-text-outline" size="20" />
+          </div>
+          <div class="d-flex flex-column" style="min-width: 0">
+            <span v-if="data" class="header-title text-truncate">
+              {{ data.subject_title }} {{ data.grade_level }}
+              {{ data.room_section }}
+            </span>
+            <span class="header-subtitle">Student Grade</span>
+          </div>
           <v-spacer></v-spacer>
           <v-btn
             icon="mdi-close"
             variant="text"
             color="white"
+            density="comfortable"
+            class="close-btn"
             @click="
               gradesDialog = false;
               gradeData = [];
@@ -267,56 +368,34 @@
           </v-btn>
         </v-card-title>
 
-        <v-card-text style="max-height: 700px" class="">
+        <v-card-text style="max-height: 700px" class="pa-4">
           <v-row>
             <v-col cols="12">
               <v-data-table
                 :headers="headersGenerated"
                 :items="gradeData"
                 :group-by="[{ key: 'sex', order: 'asc' }]"
+                density="comfortable"
+                class="records-table"
                 v-if="sub_subject == null"
               >
                 <template v-slot:[`item.status`]="{ item }">
                   <v-chip
-                    :border="`${getColor(
-                      item.transmuted_grade,
-                    )} thin opacity-25`"
                     :color="getColor(item.transmuted_grade)"
                     size="small"
-                    class="pa-2"
-                    >{{
-                      item.transmuted_grade >= 80
-                        ? 'Passed'
-                        : item.transmuted_grade >= 75
-                        ? 'Warning'
-                        : 'At-Risk'
-                    }}</v-chip
+                    variant="flat"
                   >
+                    <span class="text-white">
+                      {{
+                        item.transmuted_grade >= 80
+                          ? 'Passed'
+                          : item.transmuted_grade >= 75
+                          ? 'Warning'
+                          : 'At-Risk'
+                      }}
+                    </span>
+                  </v-chip>
                 </template>
-                <!-- <template v-slot:[`item.initial_grade`]="{ item }">
-                  <div class="d-flex justify-center align-center mt-3">
-                    <v-text-field
-                      v-model="item.initial_grade"
-                      type="number"
-                      :readonly="edit == true ? false : true"
-                      variant="outlined"
-                      density="compact"
-                      width="100px"
-                    ></v-text-field>
-                  </div>
-                </template>
-                <template v-slot:[`item.transmuted_grade`]="{ item }">
-                  <div class="d-flex justify-center align-center mt-3">
-                    <v-text-field
-                      v-model="item.transmuted_grade"
-                      type="number"
-                      :readonly="edit == true ? false : true"
-                      variant="outlined"
-                      density="compact"
-                      width="100px"
-                    ></v-text-field>
-                  </div>
-                </template> -->
               </v-data-table>
               <v-data-table
                 :headers="headersMapeh"
@@ -329,6 +408,8 @@
                 :group-by="groupBy"
                 :sort-by="sortBy"
                 :custom-sort="customSort"
+                density="comfortable"
+                class="records-table"
                 v-if="sub_subject != null"
               >
                 <template
@@ -339,7 +420,7 @@
                     isGroupOpen,
                   }"
                 >
-                  <tr>
+                  <tr class="group-header-row">
                     <td
                       :colspan="columns.length"
                       class="cursor-pointer"
@@ -354,7 +435,6 @@
                           size="small"
                           variant="outlined"
                         ></v-btn>
-
                         <span class="ms-4">{{ item.value }}</span>
                       </div>
                     </td>
@@ -362,20 +442,20 @@
                 </template>
                 <template v-slot:[`item.status`]="{ item }">
                   <v-chip
-                    :border="`${getColor(
-                      item.transmuted_grade,
-                    )} thin opacity-25`"
                     :color="getColor(item.transmuted_grade)"
                     size="small"
-                    class="pa-2"
-                    >{{
-                      item.transmuted_grade >= 80
-                        ? 'Passed'
-                        : item.transmuted_grade >= 75
-                        ? 'Warning'
-                        : 'At-Risk'
-                    }}</v-chip
+                    variant="flat"
                   >
+                    <span class="text-white">
+                      {{
+                        item.transmuted_grade >= 80
+                          ? 'Passed'
+                          : item.transmuted_grade >= 75
+                          ? 'Warning'
+                          : 'At-Risk'
+                      }}
+                    </span>
+                  </v-chip>
                 </template>
               </v-data-table>
             </v-col>
@@ -407,24 +487,35 @@
       </v-card>
     </v-dialog>
 
+    <!-- QUIZ LIST DIALOG -->
     <v-dialog v-model="quizListDialog" fullscreen eager scrollable>
       <v-card>
-        <v-card-title class="d-flex dialog-header align-center">
-          <span v-if="data" style="text-transform: uppercase">
-            {{ data.subject_title }} {{ data.grade_level }}
-            {{ data.room_section }} Student Quizes ({{
-              tab == 1
-                ? 'Written Works'
-                : tab == 2
-                ? 'Performance Task'
-                : 'Periodic Assessment'
-            }})</span
-          >
+        <v-card-title class="dialog-header d-flex align-center ga-3">
+          <div class="header-icon-badge">
+            <v-icon icon="mdi-clipboard-list-outline" size="20" />
+          </div>
+          <div class="d-flex flex-column" style="min-width: 0">
+            <span v-if="data" class="header-title text-truncate">
+              {{ data.subject_title }} {{ data.grade_level }}
+              {{ data.room_section }}
+            </span>
+            <span class="header-subtitle">
+              Student Quizzes ({{
+                tab == 1
+                  ? 'Written Works'
+                  : tab == 2
+                  ? 'Performance Task'
+                  : 'Periodic Assessment'
+              }})
+            </span>
+          </div>
           <v-spacer></v-spacer>
           <v-btn
             icon="mdi-close"
             variant="text"
             color="white"
+            density="comfortable"
+            class="close-btn"
             @click="
               (quizListDialog = false),
                 (editScoreData = false),
@@ -435,81 +526,141 @@
           </v-btn>
         </v-card-title>
 
-        <v-card-text style="max-height: 700px" class="">
+        <v-card-text style="max-height: 700px" class="pa-4">
           <v-row>
             <v-col cols="12">
-              <v-data-table
-                :headers="headersQuizList"
-                :items="items"
-                :group-by="[{ key: 'sex', order: 'asc' }]"
-              >
-                <!-- Dynamic quiz columns -->
-                <template
-                  v-for="header in headersQuizList"
-                  v-slot:[`item.${header.key}`]="{ item }"
-                  :key="header.key"
+              <v-card class="border" elevation="0" rounded="lg">
+                <v-data-table
+                  :headers="headersQuizList"
+                  :items="items"
+                  :group-by="[{ key: 'sex', order: 'asc' }]"
+                  density="comfortable"
+                  class="records-table"
                 >
-                  <div
-                    v-if="header.key.startsWith('Quiz')"
-                    class="d-flex justify-center align-center mt-3"
+                  <template
+                    v-slot:group-header="{
+                      item,
+                      columns,
+                      toggleGroup,
+                      isGroupOpen,
+                    }"
                   >
-                    <v-text-field
-                      v-model.number="item[header.key].value"
-                      type="number"
-                      :readonly="
-                        !editScoreData && editingStudentID !== item.studentID
-                      "
-                      :max="item[header.key].max"
-                      variant="outlined"
-                      density="compact"
-                      style="max-width: 100px"
-                      hide-details
-                      @input="onInputScore(item, header.key)"
-                    />
-                    <span class="d-flex mx-2 justify-center align-center"
-                      >/{{ item[header.key].max }}</span
-                    >
-                  </div>
+                    <tr class="group-header-row">
+                      <td :colspan="columns.length">
+                        <v-btn
+                          :icon="
+                            isGroupOpen(item)
+                              ? 'mdi-chevron-down'
+                              : 'mdi-chevron-right'
+                          "
+                          size="x-small"
+                          variant="text"
+                          @click="toggleGroup(item)"
+                        />
+                        <v-icon
+                          :icon="
+                            item.value === 'Male'
+                              ? 'mdi-gender-male'
+                              : 'mdi-gender-female'
+                          "
+                          :color="item.value === 'Male' ? 'blue' : 'pink'"
+                          size="16"
+                          class="mx-1"
+                        />
+                        <span class="font-weight-medium">{{ item.value }}</span>
+                      </td>
+                    </tr>
+                  </template>
 
-                  <div v-else-if="header.key === 'name'">
-                    {{ item.name }}
-                  </div>
-                </template>
-
-                <template
-                  v-slot:[`item.actions`]="{ item }"
-                  v-if="editQuizData"
-                >
-                  <div class="d-flex">
-                    <!-- Show Edit if not currently editing this student -->
-                    <v-btn
-                      class="mx-2"
-                      x-small
-                      v-if="!editScoreData"
-                      color="#dc0b70"
-                      outlined
-                      @click="
-                        editItemQuiz(item), (editingStudentID = item.studentID)
-                      "
+                  <!-- Dynamic quiz columns -->
+                  <template
+                    v-for="header in headersQuizList"
+                    v-slot:[`item.${header.key}`]="{ item }"
+                    :key="header.key"
+                  >
+                    <div
+                      v-if="header.key.startsWith('Quiz')"
+                      class="d-flex justify-center align-center mt-3"
                     >
-                      <v-icon size="18">mdi-pencil</v-icon>
-                      Edit
-                    </v-btn>
+                      <v-text-field
+                        v-model.number="item[header.key].value"
+                        type="number"
+                        :readonly="
+                          !editScoreData && editingStudentID !== item.studentID
+                        "
+                        :max="item[header.key].max"
+                        variant="outlined"
+                        density="compact"
+                        style="max-width: 100px"
+                        hide-details
+                        @input="onInputScore(item, header.key)"
+                      />
+                      <span class="d-flex mx-2 justify-center align-center">
+                        /{{ item[header.key].max }}
+                      </span>
+                    </div>
 
-                    <!-- Show Save if currently editing this student -->
-                    <v-btn
-                      class="mx-2"
-                      x-small
-                      v-if="editingStudentID === item.studentID"
-                      color="#dc0b70"
-                      outlined
-                      @click="saveItemQuiz(item)"
-                    >
-                      Save <v-icon size="18">mdi-arrow-right</v-icon>
-                    </v-btn>
-                  </div>
-                </template>
-              </v-data-table>
+                    <div v-else-if="header.key === 'name'">
+                      {{ item.name }}
+                    </div>
+                  </template>
+
+                  <template
+                    v-slot:[`item.actions`]="{ item }"
+                    v-if="editQuizData"
+                  >
+                    <div class="d-flex justify-center">
+                      <v-tooltip
+                        text="Edit"
+                        location="top"
+                        v-if="!editScoreData"
+                      >
+                        <template v-slot:activator="{ props }">
+                          <v-btn
+                            v-bind="props"
+                            icon="mdi-pencil"
+                            size="small"
+                            variant="text"
+                            color="pink"
+                            @click="
+                              editItemQuiz(item),
+                                (editingStudentID = item.studentID)
+                            "
+                          />
+                        </template>
+                      </v-tooltip>
+
+                      <v-tooltip
+                        text="Save"
+                        location="top"
+                        v-if="editingStudentID === item.studentID"
+                      >
+                        <template v-slot:activator="{ props }">
+                          <v-btn
+                            v-bind="props"
+                            icon="mdi-content-save-outline"
+                            size="small"
+                            variant="text"
+                            color="pink"
+                            @click="saveItemQuiz(item)"
+                          />
+                        </template>
+                      </v-tooltip>
+                    </div>
+                  </template>
+
+                  <template #no-data>
+                    <div class="py-8 text-center text-medium-emphasis">
+                      <v-icon
+                        icon="mdi-clipboard-off-outline"
+                        size="32"
+                        class="mb-2"
+                      />
+                      <div>No quiz data found.</div>
+                    </div>
+                  </template>
+                </v-data-table>
+              </v-card>
             </v-col>
           </v-row>
         </v-card-text>
@@ -532,7 +683,7 @@
           <v-btn
             variant="flat"
             color="#147452"
-            class="white--text"
+            class="text-white"
             v-if="edit"
             @click="editQuizListData()"
           >
@@ -583,8 +734,11 @@ export default {
   },
   data() {
     return {
-      groupBy: [{ key: 'name', order: 'ASD' }],
-      sortBy: [{ key: 'name', order: 'ASD' }],
+      // 'ASD' isn't a valid sort order for Vuetify's data-table (it expects
+      // 'asc' / 'desc'), so grouping/sorting on the MAPEH table was likely
+      // silently ignoring this and falling back to default order.
+      groupBy: [{ key: 'name', order: 'asc' }],
+      sortBy: [{ key: 'name', order: 'asc' }],
       readonly: true,
       dialog: false,
       syType: null,
@@ -695,12 +849,12 @@ export default {
         this.dialog = true;
         this.initialize();
         if (data.id) {
-          console.log('Love', data);
           data.grade_level == 'Grade 11' || data.grade_level == 'Grade 12'
             ? (this.semester = '1st Semester')
             : (this.semester = 'Junior High');
           this.subSubjectList =
             data.sub_subject != null ? JSON.parse(data.sub_subject) : [];
+
           this.sub_subject =
             data.sub_subject != null ? this.subSubjectList[0].id : null;
         }
@@ -714,7 +868,12 @@ export default {
     initialize() {
       this.filter = this.$store.getters.getFilterSelected;
       this.syType = this.$store.getters.getSyType;
-      this.quarter = this.syType == 0 ? '1st Quarter' : '1st Term';
+      this.quarter =
+        this.syType == 0 ||
+        this.data.grade_level == 'Grade 11' ||
+        this.data.grade_level == 'Grade 12'
+          ? '1st Quarter'
+          : '1st Term';
       this.userRoleID = this.$store.state.user.id;
       this.getTaggedStudent();
     },
@@ -739,18 +898,14 @@ export default {
     saveItemQuiz(item) {
       let data = {
         data: JSON.stringify(item),
-        // attendanceDate: this.formatDate3(this.attendanceDate),
         quarter: this.quarter,
         semester: this.semester,
-        // school_yearID: this.filter,
       };
-      console.log('saveQuiz', data);
       this.axiosCall(
         '/rooms-section/updateStudentGrade/' + item.studentID,
         'PATCH',
         data,
       ).then((res) => {
-        console.log(res.data);
         if (res.data.status == 200) {
           this.dialogConfirmSave = false;
           this.fadeAwayMessage.show = true;
@@ -761,7 +916,6 @@ export default {
           this.editScoreData = false;
           this.editQuizData = false;
           this.editingStudentID = null;
-          // location.reload();
         } else if (res.data.status == 400) {
           this.fadeAwayMessage.show = true;
           this.fadeAwayMessage.type = 'error';
@@ -771,24 +925,12 @@ export default {
       });
     },
     editItemQuiz(item) {
-      // Object.keys(item).forEach((key) => {
-      //   if (key.startsWith("Quiz")) {
-      //     const quiz = item[key]; // quiz = { id, value }
-
-      //     if (quiz && typeof quiz.value === "string") {
-      //       // only update the value, keep id
-      //       quiz.value = parseInt(quiz.value.split("/")[0], 10);
-      //     }
-      //   }
-      // });
-
       this.editScoreData = true;
       console.log('Editing:', item);
     },
     openGeneratedGrade() {
       this.gradesDialog = true;
       let subjectID = this.sub_subject == null ? 'noData' : this.sub_subject;
-      console.log(this.sub_subject);
       this.axiosCall(
         '/rooms-section/getGeneratedGrade/' +
           this.data.roomId +
@@ -804,7 +946,6 @@ export default {
           subjectID,
         'GET',
       ).then((res) => {
-        console.log('Data Grades', res.data);
         if (res.data) {
           this.gradeData = res.data;
         }
@@ -836,40 +977,34 @@ export default {
             this.sub_subject,
           'GET',
         ).then((res) => {
-          console.log('Data Students', res.data);
-          // if (res.data && Array.isArray(res.data) && res.data.length > 0) {
-          // this.studentList = res.data;
           this.buildTable(res.data);
-          // this.edit = false;
-          // } else {
-          //   this.initialize();
-          //   this.edit = true;
-          // }
         });
       }
     },
+    // Now matches the >=80 / >=75 / below-75 thresholds used everywhere
+    // else in this file (the status chip text, the SF9 logic). Previously
+    // `grade < 80` was checked first, so `grade < 75` never fired and
+    // every failing grade showed as 'warning' instead of 'error'.
     getColor(grade) {
-      if (grade < 80) {
-        this.status = 'Warning';
-        return 'warning';
-      } else if (grade < 75) {
+      if (grade < 75) {
         this.status = 'At-Risk';
         return 'error';
+      } else if (grade < 80) {
+        this.status = 'Warning';
+        return 'warning';
       } else {
         this.status = 'Passed';
         return 'success';
       }
     },
-    changeTab(tab) {
-      this.activeTab = tab;
-      this.tab = tab.id;
+    changeTab(tabItem) {
+      this.activeTab = tabItem;
+      this.tab = tabItem.id;
       this.changeQuarter();
-      // Optional: mark this tab active
       this.tabList.forEach((t) => {
-        t.active = t.id === tab.id;
+        t.active = t.id === tabItem.id;
       });
-      //  Only reload class record for this tab
-      if (tab.id == 3) {
+      if (tabItem.id == 3) {
         this.decisionSupport();
       }
     },
@@ -884,84 +1019,24 @@ export default {
           this.data.roomId,
         'GET',
       ).then((res) => {
-        console.log('Data Students', res.data);
         if (res.data) {
           this.studentList = res.data;
         }
       });
     },
-    // buildTable(data) {
-    //   this.headersQuizList = [
-    //     { title: 'Name', align: 'start', sortable: false, key: 'name' },
-    //   ];
-
-    //   // unique quiz labels
-    //   this.quizLabels = [...new Set(data.map((r) => r.quiz_label))];
-
-    //   this.quizLabels.forEach((quiz) => {
-    //     const normalizedKey = quiz.replace(/\s+/g, ''); // "Quiz 1" -> "Quiz1"
-    //     this.headersQuizList.push({
-    //       // title: quiz, // show "Quiz 1" in header
-    //       title: 'Scores / Denominator', // show "Quiz 1" in header
-    //       align: 'center',
-    //       sortable: false,
-    //       key: normalizedKey, // but data key is "Quiz1"
-    //     });
-    //   });
-
-    //   this.headersQuizList.push({
-    //     title: 'Action',
-    //     align: 'end',
-    //     sortable: false,
-    //     key: 'actions',
-    //     width: 40,
-    //   });
-
-    //   // build items
-    //   const students = {};
-    //   data.forEach((r) => {
-    //     if (!students[r.SG_studentID]) {
-    //       students[r.SG_studentID] = {
-    //         name: r.name,
-    //         studentID: r.SG_studentID,
-    //         roomID: r.SG_roomID,
-    //         school_yearID: r.SG_school_yearID,
-    //         subjectID: r.SG_subjectID,
-    //       };
-    //     }
-
-    //     const normalizedKey = r.quiz_label.replace(/\s+/g, ''); // same normalization
-    //     students[r.SG_studentID][normalizedKey] = {
-    //       id: r.SG_id,
-    //       value: r.SG_quarterScore,
-    //       max: r.SG_highest_posible_score,
-    //     };
-    //   });
-
-    //   this.items = Object.values(students);
-
-    //   // console.log("Headers:", this.headersQuizList);
-    //   console.log('Items:', this.items);
-    // },
-
     buildTable(data) {
       this.headersQuizList = [
         { title: 'Name', align: 'start', sortable: false, key: 'name' },
       ];
 
-      // Get unique quiz labels
       this.quizLabels = [...new Set(data.map((r) => r.quiz_label))];
 
       this.quizLabels.forEach((quiz) => {
         const normalizedKey = quiz.replace(/\s+/g, '');
-
-        // Find one record for this quiz to get the title
         const quizRecord = data.find((r) => r.quiz_label === quiz);
 
         this.headersQuizList.push({
-          title: quizRecord?.SG_title?.trim()
-            ? quizRecord.SG_title // use SG_title if exists
-            : quiz, // fallback to Quiz 1, Quiz 2...
+          title: quizRecord?.SG_title?.trim() ? quizRecord.SG_title : quiz,
           align: 'center',
           sortable: false,
           key: normalizedKey,
@@ -976,7 +1051,6 @@ export default {
         width: 40,
       });
 
-      // Build items
       const students = {};
       data.forEach((r) => {
         if (!students[r.SG_studentID]) {
@@ -1000,9 +1074,6 @@ export default {
       });
 
       this.items = Object.values(students);
-
-      console.log('Headers:', this.headersQuizList);
-      console.log('Items:', this.items);
     },
     checkConflict() {
       this.axiosCall(
@@ -1020,7 +1091,6 @@ export default {
       ).then((res) => {
         if (res.data) {
           this.conflictData = res.data.count_gen;
-          console.log('Conflict', res.data.count_gen);
 
           if (res.data.count_gen == 0) {
             this.edit = true;
@@ -1089,32 +1159,42 @@ export default {
         this.showAlert = true;
         setTimeout(() => (this.showAlert = false), 3000);
       } else if (!this.checkAllGrades()) {
-        this.type = 'error';
-        this.message =
-          'Some student have no score given please check before saving!';
-        this.showAlert = true;
-        setTimeout(() => (this.showAlert = false), 5000);
+        // this.type = 'error';
+        // this.message =
+        //   'Some student have no score given please check before saving!';
+        // this.showAlert = true;
+        // setTimeout(() => (this.showAlert = false), 5000);
+        this.studentList.forEach((student) => {
+          if (
+            student.quarterScore === null ||
+            student.quarterScore === undefined ||
+            student.quarterScore === ''
+          ) {
+            student.quarterScore = 0;
+          }
+        });
+
+        this.studentList.every(
+          (student) =>
+            student.quarterScore !== null && student.quarterScore !== undefined,
+        );
+
+        this.confirmDialog = true;
       } else {
-        // this.confirmSave();
         this.confirmDialog = true;
       }
     },
     confirmSubmitGrade() {
       if (this.sub_subject != null) {
         this.newData = this.getTransformData(this.gradeData);
-        // console.log("New Data", this.newData);
-      } else {
-        console.log('OldData', this.gradeData);
       }
 
       if (this.gradeData.length <= 0 && this.newData.length <= 0) {
-        console.log(this.newData.length);
         this.fadeAwayMessage.show = true;
         this.fadeAwayMessage.type = 'error';
         this.fadeAwayMessage.header = 'System Message';
         this.fadeAwayMessage.message = 'No data to submit!';
       } else {
-        console.log('submitted');
         this.savedata = 'submit';
         this.confirmDialog = true;
       }
@@ -1164,7 +1244,6 @@ export default {
         }, {}),
       );
 
-      // console.log(transformed);
       return transformed;
     },
     confirmSubmitGradeToParents() {
@@ -1181,10 +1260,8 @@ export default {
         school_yearID: this.filter,
         teacherID: userId,
       };
-      console.log('Submitttt', data);
       this.axiosCall('/rooms-section/quarterFinalGrade', 'POST', data).then(
         (res) => {
-          console.log(res);
           if (res.data.status == 201) {
             this.closeD();
             this.fadeAwayMessage.show = true;
@@ -1211,10 +1288,8 @@ export default {
         type: this.tab,
         title: this.title,
       };
-      console.log(data);
       this.axiosCall('/rooms-section/studentGrade', 'POST', data).then(
         (res) => {
-          console.log(res);
           if (res.data.status == 201) {
             this.fadeAwayMessage.show = true;
             this.fadeAwayMessage.type = 'success';
@@ -1246,7 +1321,6 @@ export default {
       this.quizListDialog = false;
       this.gradesDialog = false;
 
-      // reset tabs
       this.tab = 1;
       this.activeTab = {
         id: 1,
@@ -1254,14 +1328,13 @@ export default {
         active: true,
       };
 
-      this.tabList = this.tabList.map((tab) => ({
-        ...tab,
-        active: tab.id === 1,
+      this.tabList = this.tabList.map((tabItem) => ({
+        ...tabItem,
+        active: tabItem.id === 1,
       }));
     },
     decisionSupport() {
       let subjectID = this.sub_subject == null ? 'noData' : this.sub_subject;
-      console.log(this.sub_subject);
       this.axiosCall(
         '/rooms-section/getGeneratedGrade/' +
           this.data.roomId +
@@ -1277,7 +1350,6 @@ export default {
           subjectID,
         'GET',
       ).then((res) => {
-        console.log('decisionData', res.data);
         if (res.data) {
           this.decisionData = res.data;
         }
@@ -1285,24 +1357,12 @@ export default {
     },
     scoresNeeded(rec) {
       const record = this.decisionData.find((d) => d.studentID === rec.id);
-      // let ws = 60 - record?.initial_grade;
-      // let grade = (
-      //   (ws / (this.data.writen_works * 100)) *
-      //   this.dinominator *
-      //   100
-      // ).toFixed(0);
-      let remaining = 62 - record?.initial_grade; // 14.46
-      let weight = this.data.writen_works / 100; // 0.30
-      let highest = this.dinominator; // 50
+      let remaining = 62 - record?.initial_grade;
+      let weight = this.data.writen_works / 100;
+      let highest = this.dinominator;
 
       let grade = (remaining / weight) * (highest / 100);
 
-      // console.log(
-      //   "scoresNeeded",
-      //   record?.transmuted_grade,
-      //   this.dinominator,
-      //   grade * 100,
-      // );
       if (remaining <= 0) {
         return 'Passed';
       }
@@ -1310,8 +1370,6 @@ export default {
         Suggested score needed: ${grade.toFixed(0)} / ${this.dinominator}`;
     },
     openStudentsQuiz() {
-      // alert('1');
-      // let filter = this.$store.getters.getFilterSelected;
       window.open(
         process.env.VUE_APP_SERVER +
           '/pdf-generator/getStudentSQuizes/' +
@@ -1356,3 +1414,67 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.dialog-header {
+  background: linear-gradient(135deg, #ad1457, #e35e93);
+  color: white;
+  padding: 16px 20px;
+}
+
+.header-icon-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.header-title {
+  font-weight: 700;
+  font-size: 15px;
+  text-transform: uppercase;
+}
+
+.header-subtitle {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+.close-btn {
+  flex-shrink: 0;
+}
+
+.v-card.border {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+.record-tabs :deep(.v-tab) {
+  text-transform: none;
+  font-weight: 500;
+}
+
+.record-tabs :deep(.v-tab--selected) {
+  background: #bbdefb;
+  color: #1565c0 !important;
+}
+
+.records-table :deep(thead th) {
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  opacity: 0.6;
+}
+
+.group-header-row {
+  background: #f5f6fa;
+}
+
+.group-header-row td {
+  padding: 6px 12px !important;
+}
+</style>

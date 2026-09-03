@@ -11,12 +11,17 @@ import {
   AddStrand,
   AddTracks,
   Availability,
+  DepEdPersonnel,
   EnrollStudent,
+  ESig,
+  ParentRecord,
   RoomsSection,
   SchoolYear,
+  StudentAttendance,
   StudentGrade,
   StudentList,
   StudentQuarterFinalGrade,
+  StudentValues,
   Subject,
   TeacherSubject,
   UserDetail,
@@ -134,6 +139,24 @@ hbs.registerHelper('calcAge', function (value) {
   var diff_ms = Date.now() - dob.getTime();
   var age_dt = new Date(diff_ms);
   return Math.abs(age_dt.getUTCFullYear() - 1970);
+});
+
+hbs.registerHelper('calcAge2', function (value) {
+  if (!value) return 0;
+
+  const dob = new Date(value);
+
+  const today = new Date();
+
+  let age = today.getFullYear() - dob.getFullYear();
+
+  const monthDiff = today.getMonth() - dob.getMonth();
+
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) {
+    age--;
+  }
+
+  return age;
 });
 
 hbs.registerHelper('ifEqual', function (value, conditionVal) {
@@ -444,7 +467,17 @@ export class PdfGeneratorService {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+
+        // For Chromium Updated and Fix
+        //         headless: 'new',
+        // executablePath: '/usr/bin/chromium-browser',
+        // args: [
+        //   '--no-sandbox',
+        //   '--disable-setuid-sandbox',
+        //   '--disable-dev-shm-usage',
+        //   '--disable-gpu',
+        // ],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -491,24 +524,51 @@ export class PdfGeneratorService {
       .select([
         'ES.id as id',
         "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ', SUBSTRING(ES.mname, 1, 1), '. ', ES.lname), concat(ES.fname, ' ', ES.lname)) as name",
+        "IF (!ISNULL(UD.mname) AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ', SUBSTRING(UD.mname, 1, 1), '. ', UD.lname), concat(UD.fname, ' ', UD.lname)) as teacherName",
         'SQF.transmuted_grade as final_grade',
         'SQF.initial_grade as initial_grade',
         'SQF.quarter as quarter',
         'SQF.semester as semester',
         'S.subject_title as subject_title',
         'SQF.sub_subject as sub_subject',
+        'ES.bdate as bdate',
+        'RS.room_section as section',
+        'RS.grade_level as grade_level',
+        'RS.id as RoomID',
+        'ES.lrnNo as LRN',
+        'ES.sex as sex',
+        'S.id as subjecID',
+        'SL.id as ListID',
+        "concat(SY.school_year_from,'-',  SY.school_year_to) as schoolYear",
       ])
       .leftJoin(StudentList, 'SL', 'ES.id = SL.studentId')
+      .leftJoin(RoomsSection, 'RS', 'RS.id = SL.roomId')
+      .leftJoin(SchoolYear, 'SY', 'SY.id = SL.school_yearId')
       .leftJoin(StudentQuarterFinalGrade, 'SQF', 'SQF.studentID = ES.id')
       .leftJoin(Subject, 'S', 'S.id = SQF.subjectID')
+      .leftJoin(UserDetail, 'UD', 'UD.id = RS.teacherId')
       .where('SQF.school_yearID = :filter', { filter })
       .andWhere('SQF.roomID = :roomID', { roomID })
       .andWhere('SQF.studentID = :studentID', { studentID })
       .andWhere('ES.grade_level = :gradeLevel', { gradeLevel })
+      .andWhere('SL.school_yearId = :filter', { filter })
       .andWhere('ES.statusEnrolled = 1');
     let newData = await query.getRawMany();
+    let attendanceData = await this.getAttendance(newData, filter);
+    let depedOfficials = await this.dataSource.manager
+      .createQueryBuilder(DepEdPersonnel, 'dp')
+      .getMany();
 
-    // console.log(newData)
+    let studentValues = await this.dataSource.manager
+      .createQueryBuilder(StudentValues, 'sv')
+      .leftJoin(StudentList, 'sl', 'sl.id = sv.studentId')
+      .where('sv.studentid = :id', { id: newData[0].ListID })
+      .andWhere('sv.school_yearId = :filter', { filter })
+      .andWhere('sv.quarter LIKE :term', {
+        term: `%${'Quarter'}%`,
+      })
+      .getRawMany();
+
     if (gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12') {
       const pivoted = Object.values(
         newData.reduce((acc, row) => {
@@ -570,8 +630,9 @@ export class PdfGeneratorService {
 
       arr = JSON.parse(JSON.stringify(pivoted));
       arrs = arr[0].semesters;
-      firstSemSubjects = arrs['1st Semester'].subjects;
-      secondSemSubjects = arrs['2nd Semester'].subjects;
+      firstSemSubjects = arrs['1st Semester']?.subjects || [];
+
+      secondSemSubjects = arrs['2nd Semester']?.subjects || [];
       // console.log('Second',secondSemSubjects)
     } else {
       const pivoted = Object.values(
@@ -738,20 +799,76 @@ export class PdfGeneratorService {
 
       juniorHigh = arrs['Junior High'].subjects;
     }
+    let parentData = await this.dataSource.manager
+      .createQueryBuilder(UserDetail, 'UD')
+      .select([
+        "IF (!ISNULL(UD.mname) AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ', SUBSTRING(UD.mname, 1, 1), '. ', UD.lname), concat(UD.fname, ' ', UD.lname)) as teacherName",
+        'e.esign_filename as esign_filename',
+      ])
+      .leftJoin(ESig, 'e', 'e.user_detailID = UD.id')
+      .leftJoin(ParentRecord, 'pr', 'pr.parentID = UD.id')
+      .andWhere('pr.studentID = :studentID', { studentID })
+      .getRawOne();
+    let parentEsig;
+    if (parentData?.esign_filename) {
+      parentEsig = join(
+        process.cwd(),
+        process.env.FILE_PATH,
+        'uploadedEsigImg',
+        parentData?.esign_filename,
+      );
+    }
+    let parentEsigBase64 = '';
+    if (parentEsig) {
+      if (fs.existsSync(parentEsig)) {
+        parentEsigBase64 = fs.readFileSync(parentEsig).toString('base64');
+      }
+    }
 
+    console.log('BASE64:', parentEsigBase64.substring(0, 50));
+    console.log('parentEsig path:', parentEsig);
     let studentData = {};
+    let firstEsig = false;
+    let secondEsig = false;
+    let thirdEsig = false;
+    let fourthEsig = false;
     if (arrs['Junior High']) {
+      if (juniorHigh[0]['1st Quarter'] != null) {
+        firstEsig = true;
+      }
+      if (juniorHigh[0]['2nd Quarter'] != null) {
+        secondEsig = true;
+      }
+      if (juniorHigh[0]['3rd Quarter'] != null) {
+        thirdEsig = true;
+      }
+      if (juniorHigh[0]['4th Quarter'] != null) {
+        fourthEsig = true;
+      }
       junior = true;
       studentData = { juniorHigh: juniorHigh };
     } else {
       junior = false;
+      console.log('First Sem:', firstSemSubjects);
+      if (firstSemSubjects[0]['1st Quarter'] != null) {
+        firstEsig = true;
+      }
+      if (firstSemSubjects[0]['2nd Quarter'] != null) {
+        secondEsig = true;
+      }
+      if (secondSemSubjects[0]['1st Quarter'] != null) {
+        thirdEsig = true;
+      }
+      if (secondSemSubjects[0]['2nd Quarter'] != null) {
+        fourthEsig = true;
+      }
+      console.log('Second Sem:', secondSemSubjects);
       studentData = {
         firstSem: firstSemSubjects,
         secondSem: secondSemSubjects,
       };
     }
-    console.log(studentData);
-
+    console.log('studentData', studentData);
     let headerImg = join(
       process.cwd(),
       process.env.FILE_PATH + 'static/img/header.png',
@@ -770,17 +887,33 @@ export class PdfGeneratorService {
         gradeLevel: gradeLevel,
         studentData: studentData ? studentData : [],
         junior: junior,
+        studentInfo: newData[0],
+        principal: depedOfficials[0],
+        firstTerm: studentValues[0],
+        secondTerm: studentValues[1],
+        thirdTerm: studentValues[2],
+        fourthTerm: studentValues[3],
+        parentEsig: parentEsigBase64 ? parentEsigBase64 : null,
+        firstEsig: firstEsig,
+        secondEsig: secondEsig,
+        thirdEsig: thirdEsig,
+        fourthEsig: fourthEsig,
         // name:gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12'? arr[0].name: arr.name,
       },
     ];
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
-      const content = await this.compile('students-achievement', data);
+      // const content = await this.compile('students-achievement', data);
+      const content = await this.compile(
+        'Form138_Blank_Template_Quarterly',
+        data,
+      );
+
       await page.setContent(content);
 
       const buffer = await page.pdf({
@@ -791,7 +924,7 @@ export class PdfGeneratorService {
           bottom: '0.20in',
           right: '0.50in',
         },
-        landscape: false,
+        landscape: true,
         printBackground: true,
         // displayHeaderFooter: true,
         // footerTemplate:
@@ -823,24 +956,52 @@ export class PdfGeneratorService {
       .select([
         'ES.id as id',
         "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ', SUBSTRING(ES.mname, 1, 1), '. ', ES.lname), concat(ES.fname, ' ', ES.lname)) as name",
+        "IF (!ISNULL(UD.mname) AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ', SUBSTRING(UD.mname, 1, 1), '. ', UD.lname), concat(UD.fname, ' ', UD.lname)) as teacherName",
         'SQF.transmuted_grade as final_grade',
         'SQF.initial_grade as initial_grade',
         'SQF.quarter as quarter',
         'SQF.semester as semester',
         'S.subject_title as subject_title',
         'SQF.sub_subject as sub_subject',
+        'ES.bdate as bdate',
+        'S.id as subjecID',
+        'RS.room_section as section',
+        'RS.grade_level as grade_level',
+        'RS.id as RoomID',
+        'ES.lrnNo as LRN',
+        'ES.sex as sex',
+        'SL.id as ListID',
+        "concat(SY.school_year_from,'-',  SY.school_year_to) as schoolYear",
       ])
       .leftJoin(StudentList, 'SL', 'ES.id = SL.studentId')
+      .leftJoin(RoomsSection, 'RS', 'RS.id = SL.roomId')
+      .leftJoin(SchoolYear, 'SY', 'SY.id = SL.school_yearId')
       .leftJoin(StudentQuarterFinalGrade, 'SQF', 'SQF.studentID = ES.id')
       .leftJoin(Subject, 'S', 'S.id = SQF.subjectID')
+      .leftJoin(UserDetail, 'UD', 'UD.id = RS.teacherId')
       .where('SQF.school_yearID = :filter', { filter })
       .andWhere('SQF.roomID = :roomID', { roomID })
       .andWhere('SQF.studentID = :studentID', { studentID })
       .andWhere('ES.grade_level = :gradeLevel', { gradeLevel })
+      .andWhere('SL.school_yearId = :filter', { filter })
       .andWhere('ES.statusEnrolled = 1');
     let newData = await query.getRawMany();
+    console.log('newData', newData);
+    let attendanceData = await this.getAttendance(newData, filter);
+    let depedOfficials = await this.dataSource.manager
+      .createQueryBuilder(DepEdPersonnel, 'dp')
+      .getMany();
 
-    // console.log(newData)
+    let studentValues = await this.dataSource.manager
+      .createQueryBuilder(StudentValues, 'sv')
+      .leftJoin(StudentList, 'sl', 'sl.id = sv.studentId')
+      .where('sv.studentid = :id', { id: newData[0].ListID })
+      .andWhere('sv.school_yearId = :filter', { filter })
+      .andWhere('sv.quarter LIKE :term', {
+        term: `%${'Term'}%`,
+      })
+      .getRawMany();
+
     if (gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12') {
       const pivoted = Object.values(
         newData.reduce((acc, row) => {
@@ -864,13 +1025,15 @@ export class PdfGeneratorService {
           let subject = acc[id].semesters[semester].subjects.find(
             (s) => s.subject === subject_title,
           );
+
+          console.log('subject', subject);
           if (!subject) {
             subject = {
               subject: subject_title,
-              '1st Term': null,
-              '2nd Term': null,
-              '3rd Term': null,
-              // '4th Term': null,
+              '1st Quarter': null,
+              '2nd Quarter': null,
+              '3rd Quarter': null,
+              '4th Quarter': null,
               finalGrade: null,
               remarks: null,
             };
@@ -882,10 +1045,10 @@ export class PdfGeneratorService {
 
           // recalc final grade
           const grades = [
-            subject['1st Term'],
-            subject['2nd Term'],
-            subject['3rd Term'],
-            // subject['4th Term'],
+            subject['1st Quarter'],
+            subject['2nd Quarter'],
+            subject['3rd Quarter'],
+            subject['4th Quarter'],
           ].filter((g) => g !== null);
 
           if (grades.length > 0) {
@@ -902,8 +1065,8 @@ export class PdfGeneratorService {
 
       arr = JSON.parse(JSON.stringify(pivoted));
       arrs = arr[0].semesters;
-      firstSemSubjects = arrs['1st Semester'].subjects;
-      secondSemSubjects = arrs['2nd Semester'].subjects;
+      firstSemSubjects = arrs['1st Semester']?.subjects || [];
+      secondSemSubjects = arrs['2nd Semester']?.subjects || [];
       // console.log('Second',secondSemSubjects)
     } else {
       const pivoted = Object.values(
@@ -1003,7 +1166,6 @@ export class PdfGeneratorService {
               };
               sem.subjects.push(subject);
             }
-
             subject[quarter] = final_grade;
 
             const grades = [
@@ -1070,9 +1232,50 @@ export class PdfGeneratorService {
 
       juniorHigh = arrs['Junior High'].subjects;
     }
+    let parentData = await this.dataSource.manager
+      .createQueryBuilder(UserDetail, 'UD')
+      .select([
+        "IF (!ISNULL(UD.mname) AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ', SUBSTRING(UD.mname, 1, 1), '. ', UD.lname), concat(UD.fname, ' ', UD.lname)) as teacherName",
+        'e.esign_filename as esign_filename',
+      ])
+      .leftJoin(ESig, 'e', 'e.user_detailID = UD.id')
+      .leftJoin(ParentRecord, 'pr', 'pr.parentID = UD.id')
+      .andWhere('pr.studentID = :studentID', { studentID })
+      .getRawOne();
+
+    let parentEsig;
+    if (parentData?.esign_filename) {
+      parentEsig = join(
+        process.cwd(),
+        process.env.FILE_PATH,
+        'uploadedEsigImg',
+        parentData?.esign_filename,
+      );
+    }
+    let parentEsigBase64 = '';
+    if (parentEsig) {
+      if (fs.existsSync(parentEsig)) {
+        parentEsigBase64 = fs.readFileSync(parentEsig).toString('base64');
+      }
+    }
+
+    console.log('BASE64:', parentEsigBase64.substring(0, 50));
+    console.log('parentEsig path:', parentEsig);
 
     let studentData = {};
+    let firstEsig = false;
+    let secondEsig = false;
+    let thirdEsig = false;
     if (arrs['Junior High']) {
+      if (juniorHigh[0]['1st Term'] != null) {
+        firstEsig = true;
+      }
+      if (juniorHigh[0]['2nd Term'] != null) {
+        secondEsig = true;
+      }
+      if (juniorHigh[0]['3rd Term'] != null) {
+        thirdEsig = true;
+      }
       junior = true;
       studentData = { juniorHigh: juniorHigh };
     } else {
@@ -1082,7 +1285,6 @@ export class PdfGeneratorService {
         secondSem: secondSemSubjects,
       };
     }
-    console.log(studentData);
 
     let headerImg = join(
       process.cwd(),
@@ -1102,17 +1304,27 @@ export class PdfGeneratorService {
         gradeLevel: gradeLevel,
         studentData: studentData ? studentData : [],
         junior: junior,
+        studentInfo: newData[0],
+        principal: depedOfficials[0],
+        firstTerm: studentValues[0],
+        secondTerm: studentValues[1],
+        thirdTerm: studentValues[2],
+        parentEsig: parentEsigBase64 ? parentEsigBase64 : null,
+        firstEsig: firstEsig,
+        secondEsig: secondEsig,
+        thirdEsig: thirdEsig,
         // name:gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12'? arr[0].name: arr.name,
       },
     ];
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
-      const content = await this.compile('students-achievementV2', data);
+      // const content = await this.compile('students-achievementV2', data);
+      const content = await this.compile('Form138_Blank_Template_Term', data);
       await page.setContent(content);
 
       const buffer = await page.pdf({
@@ -1123,7 +1335,7 @@ export class PdfGeneratorService {
           bottom: '0.20in',
           right: '0.50in',
         },
-        landscape: false,
+        landscape: true,
         printBackground: true,
         // displayHeaderFooter: true,
         // footerTemplate:
@@ -1135,6 +1347,19 @@ export class PdfGeneratorService {
     } catch (e) {
       console.log(e);
     }
+  }
+
+  async getAttendance(data, filter) {
+    // console.log('getAttendance', data[0]);
+    let student = data[0];
+    let attendanceQuery = await this.dataSource.manager
+      .createQueryBuilder(StudentAttendance, 'sa')
+      .where('sa.school_yearID = :filter', { filter })
+      .andWhere('sa.roomID = :roomID', { roomID: student.RoomID })
+      .groupBy('sa.attendanceDate')
+      .orderBy('sa.attendanceDate', 'ASC')
+      .getMany();
+    console.log('attendanceQuery', attendanceQuery);
   }
 
   async getAllStudentsFinalGrade(
@@ -1178,7 +1403,11 @@ export class PdfGeneratorService {
 
     let rawData = await query.getRawMany();
     let newrawData;
-    if (schoolYear.syType == 0) {
+    if (
+      schoolYear.syType == 0 ||
+      gradeLevel == 'Grade 11' ||
+      gradeLevel == 'Grade 12'
+    ) {
       newrawData = await this.transformData(rawData);
     } else {
       newrawData = await this.transformDataV2(rawData);
@@ -1234,12 +1463,16 @@ export class PdfGeneratorService {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
       let content;
-      if (schoolYear.syType == 0) {
+      if (
+        schoolYear.syType == 0 ||
+        gradeLevel == 'Grade 11' ||
+        gradeLevel == 'Grade 12'
+      ) {
         content = await this.compile('student-all-grade', data);
       } else {
         content = await this.compile('student-all-gradev2', data);
@@ -1476,7 +1709,7 @@ export class PdfGeneratorService {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -1642,7 +1875,7 @@ export class PdfGeneratorService {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -1764,7 +1997,11 @@ export class PdfGeneratorService {
     return { headers, rows };
   }
 
-  async getSchoolForm10(school_yearID: number, teacherID: number) {
+  async getSchoolForm10(
+    school_yearID: number,
+    teacherID: number,
+    gradeLevel: string,
+  ) {
     let teacherData = await this.dataSource.manager
       .createQueryBuilder(UserDetail, 'UD')
       .select([
@@ -1809,7 +2046,11 @@ export class PdfGeneratorService {
 
     let quarter = [];
     let headerTitle;
-    if (schoolYear.syType == 0) {
+    if (
+      schoolYear.syType == 0 ||
+      gradeLevel == 'Grade 11' ||
+      gradeLevel == 'Grade 12'
+    ) {
       quarter = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'];
       headerTitle = 'QUARTER';
     } else {
@@ -1848,16 +2089,17 @@ export class PdfGeneratorService {
     let rawData = await query.getRawMany();
     console.log(schoolYear);
     let level;
-    if (
-      roomData.grade_level == 'Grade 11' ||
-      roomData.grade_level == 'Grade 12'
-    ) {
+    if (gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12') {
       level = 'Senior High';
     } else {
       level = 'Junior High';
     }
     let newData;
-    if (schoolYear.syType == 0) {
+    if (
+      schoolYear.syType == 0 ||
+      gradeLevel == 'Grade 11' ||
+      gradeLevel == 'Grade 12'
+    ) {
       newData = await this.transformGrades(rawData, level);
     } else {
       newData = await this.transformGradesV2(rawData, level);
@@ -1888,12 +2130,16 @@ export class PdfGeneratorService {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
       let content;
-      if (schoolYear.syType == 0) {
+      if (
+        schoolYear.syType == 0 ||
+        gradeLevel == 'Grade 11' ||
+        gradeLevel == 'Grade 12'
+      ) {
         content = await this.compile('school-form10', data);
       } else {
         content = await this.compile('school-form10v2', data);
@@ -2636,7 +2882,7 @@ export class PdfGeneratorService {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -2915,7 +3161,7 @@ export class PdfGeneratorService {
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)
@@ -2946,11 +3192,13 @@ export class PdfGeneratorService {
       .select([
         '*',
         'SL.id as studentListId',
+        "IF (!ISNULL(ud.mname)  AND LOWER(ud.mname) != 'n/a', concat(ud.fname, ' ',SUBSTRING(ud.mname, 1, 1) ,'. ',ud.lname) ,concat(ud.fname, ' ', ud.lname)) as teacherName",
         "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ',SUBSTRING(ES.mname, 1, 1) ,' ',ES.fname) ,concat(ES.lname, ' ', ES.fname)) as name",
         "IF (!ISNULL(ES.guardian_mname)  AND LOWER(ES.guardian_mname) != 'n/a', concat(ES.guardian_fname, ' ',SUBSTRING(ES.guardian_mname, 1, 1) ,' ',ES.guardian_lname) ,concat(ES.guardian_fname, ' ', ES.guardian_lname)) as guardian_name",
       ])
       .leftJoin(RoomsSection, 'room', 'room.id = SL.roomId')
       .leftJoin(EnrollStudent, 'ES', 'ES.id = SL.studentId')
+      .leftJoin(UserDetail, 'ud', 'room.teacherId = ud.id')
       .where('SL.school_yearId = "' + filter + '"')
       .andWhere('ES.sex = "Male"')
       .andWhere('SL.grade_level = "' + grade + '"')
@@ -2980,7 +3228,9 @@ export class PdfGeneratorService {
       .getRawMany();
     let count_female = rawData_female.length;
 
-    console.log(rawData_male, rawData_female, count_male, count_female);
+    let getDeped = await this.dataSource.manager
+      .createQueryBuilder(DepEdPersonnel, 'dep')
+      .getMany();
 
     let headerImg = join(
       process.cwd(),
@@ -3000,12 +3250,15 @@ export class PdfGeneratorService {
         count_male,
         count_female,
         total_student: Number(count_female) + Number(count_male),
+        teacherName: rawData_male[0].teacherName,
+        schoolHead: getDeped[0].name,
+        superIntendent: getDeped[1].name,
       },
     ];
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
-        args: ['--no-sandbox'],
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
       });
       const page = await browser.newPage();
       // compile(template_name, data)

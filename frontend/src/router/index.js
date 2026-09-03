@@ -44,6 +44,8 @@ import AdvisoryProgramm from '../views/Pages/AdvisoryProgramm.vue';
 import Events from '../views/Pages/Events.vue';
 import Announcement from '../views/Pages/Announcement.vue';
 import MyReports from '../views/Pages/MyReports.vue';
+import DepEdPersonnels from '@/views/Pages/DepEdPersonnels.vue';
+import ParentEsignature from '@/views/Pages/ParentEsignature.vue';
 // Vue.use(VueRouter);
 
 const routes = [
@@ -146,7 +148,7 @@ const routes = [
       {
         path: "student_verify",
         component: Student_verify,
-        meta: { title: "Verify Student", authRequired: true },
+        meta: { title: "Student List", authRequired: true },
       },
       {
         path: "user-type",
@@ -179,7 +181,7 @@ const routes = [
       {
         path: "classroom-programm",
         component: ClassroomProgramm,
-        meta: { title: "Classroom Program", authRequired: true },
+        meta: { title: "Classroom Schedules", authRequired: true },
       },
 
       {
@@ -242,7 +244,11 @@ const routes = [
         component: Announcement,
         meta: { title: "Announcement", authRequired: true },
       },
-      
+      {
+        path: "deped-personnels",
+        component: DepEdPersonnels,
+        meta: { title: "DepEd Personnels", authRequired: true },
+      },
       
       
       // {
@@ -267,7 +273,7 @@ const routes = [
       {
         path: "student_verify",
         component: Student_verify,
-        meta: { title: "Verify Student", authRequired: true },
+        meta: { title: "Student List", authRequired: true },
       },
       {
         path: "enroll-student",
@@ -339,11 +345,55 @@ const routes = [
         component: Profile,
         meta: { title: "My Profile", authRequired: true },
       },
-      
+      {
+        path: "faculty-list",
+        component: FacultyList,
+        meta: { title: "Faculty List", authRequired: true },
+      },
+      {
+        path: "acc_verify",
+        component: AccountVerification,
+        meta: { title: "Account Verification", authRequired: true },
+      },
+      {
+        path: "faculty-schedule",
+        component: AvailableFaculty,
+        meta: { title: "Faculty Schedule List", authRequired: true },
+      },
+      {
+        path: "transmuted-grade",
+        component: TransmutedGrade,
+        meta: { title: "Transmuted Grade", authRequired: true },
+      },
+      {
+        path: "add-school-year",
+        component: AddSchoolYear,
+        meta: { title: "Add School Year", authRequired: true },
+      },
+      {
+        path: "add-tracks",
+        component: AddTracks,
+        meta: { title: "Add Tracks", authRequired: true },
+      },
+      {
+        path: "add-strands",
+        component: AddStrands,
+        meta: { title: "Add Strands", authRequired: true },
+      },
+      {
+        path: "create-subject",
+        component: CreateSubject,
+        meta: { title: "Subjects", authRequired: true },
+      },
+      {
+        path: "high-school-rooms",
+        component: HighSchoolRooms,
+        meta: { title: "Classroom Schedules", authRequired: true },
+      },
       {
         path: "student_verify",
         component: Student_verify,
-        meta: { title: "Verify Student", authRequired: true },
+        meta: { title: "Student List", authRequired: true },
       },
       {
         path: "enroll-student",
@@ -375,7 +425,7 @@ const routes = [
       {
         path: "classroom-programm",
         component: ClassroomProgramm,
-        meta: { title: "Classroom Program", authRequired: true },
+        meta: { title: "Classroom Schedules", authRequired: true },
       },
       {
         path: "student-discipline",
@@ -407,65 +457,21 @@ const routes = [
         component: MyReports,
         meta: { title: "Reported Students", authRequired: true },
       },
+      {
+        path: "deped-personnels",
+        component: DepEdPersonnels,
+        meta: { title: "DepEd Personnels", authRequired: true },
+      },
+      {
+        path: "Esignature",
+        component: ParentEsignature,
+        meta: { title: "E-signature", authRequired: true },
+      }
+      
       
     ],
   },
-  //security
-  // {
-  //   path: "/security",
-  //   meta: { RouteForSecurity: true, authRequired: true },
-  //   component: MainLayout,
-  //   children: [
-  //     {
-  //       path: "/security",
-  //       alias: "/security/dashboard",
-  //       component: EmployeeDashboard,
-  //       meta: { title: "Dashboard", authRequired: true },
-  //     },
-  //     {
-  //       path: "profile",
-  //       component: Profile,
-  //       meta: { title: "My Profile", authRequired: true },
-  //     },
-  //     // {
-  //     //   path: "qr-scanner",
-  //     //   component: ReadQrCode,
-  //     //   meta: { title: "Read QR Code", authRequired: true },
-  //     // },
-  //     // {
-  //     //   path: "qr-logs",
-  //     //   component: LocatorsLog,
-  //     //   meta: { title: "Locator Slip QR Logs", authRequired: true },
-  //     // },
-  //   ],
-  // },
-  // //auditor
-  // {
-  //   path: "/auditor",
-  //   meta: { RouteForAuditor: true, authRequired: true },
-  //   component: MainLayout,
-  //   children: [
-  //     {
-  //       path: "/auditor",
-  //       alias: "/auditor/dashboard",
-  //       component: AuditorDashboard,
-  //       meta: { title: "Dashboard", authRequired: true },
-  //     },
-
-  //     {
-  //       path: "audit-ls",
-  //       component: AuditLocatorSlip,
-  //       meta: { title: "Locator Slip", authRequired: true },
-  //     },
-  //     {
-  //       path: "audit-to",
-  //       component: AuditTravelOrder,
-  //       meta: { title: "Travel Orders", authRequired: true },
-  //     },
-  
-     
-  //   ],
-  // },
+ 
 ];
 
 const router = createRouter({

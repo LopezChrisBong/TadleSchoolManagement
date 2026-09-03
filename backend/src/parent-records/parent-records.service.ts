@@ -19,6 +19,7 @@ import {
   Announcement,
   Comments,
   TeacherGradeLevel,
+  LardoStudentNotification,
 } from 'src/entities';
 import { Brackets, DataSource, Repository } from 'typeorm';
 import { CreateStudentReportDisciplinaryDto } from './dto/create-student-report-disciplinary.dto';
@@ -74,6 +75,8 @@ export class ParentRecordsService {
         teacherID: createStudentReportDisciplinaryDto.teacherID,
         report_type: createStudentReportDisciplinaryDto.report_type,
         grade_level: createStudentReportDisciplinaryDto.grade_level,
+        report_time: createStudentReportDisciplinaryDto.report_time,
+        report_date: createStudentReportDisciplinaryDto.report_date,
         report_description:
           createStudentReportDisciplinaryDto.report_description,
         tag_students: JSON.stringify(tagged),
@@ -209,7 +212,7 @@ export class ParentRecordsService {
     return data;
   }
 
-  async getMyChildrenList(curr_user: any) {
+  async getMyChildrenList(curr_user: any, filter: number) {
     let parentID = curr_user.userdetail.id;
     let data = await this.dataSource.manager
       .createQueryBuilder(EnrollStudent, 'ES')
@@ -280,9 +283,13 @@ export class ParentRecordsService {
         'ES.updated_at as updated_at',
         'ES.statusEnrolled as statusEnrolled',
         'ES.lrnNo as lrnNo',
+        'SL.roomId as roomId',
+        'SL.grade_level as grade_level',
       ])
       .leftJoin(ParentRecord, 'PR', 'PR.studentID = ES.id')
+      .leftJoin(StudentList, 'SL', 'SL.studentId = ES.id')
       .where('ES.statusEnrolled != 0')
+      .andWhere('SL.school_yearId = :filter', { filter })
       .andWhere('PR.parentID = :parentID', { parentID })
       .getRawMany();
 
@@ -385,6 +392,50 @@ export class ParentRecordsService {
     // console.log(data);
     return data;
   }
+  async getStudentAlerts(filter: number, studentID: number) {
+    const lardoData = await this.dataSource.manager
+      .createQueryBuilder(LardoStudentNotification, 'lsn')
+      .select([
+        'lsn.*',
+        "IF (!ISNULL(ud.mname)  AND LOWER(ud.mname) != 'n/a', concat(ud.fname, ' ',SUBSTRING(ud.mname, 1, 1) ,'. ',ud.lname) ,concat(ud.fname, ' ', ud.lname)) as teacher_name",
+      ])
+      .leftJoin(UserDetail, 'ud', 'ud.id = lsn.teacherID')
+      .where('lsn.studentID = :studentID', { studentID })
+      .andWhere('lsn.school_yearID = :filter', { filter })
+      .orderBy('lsn.created_at', 'DESC')
+      .addOrderBy('lsn.id', 'DESC')
+      .getRawOne();
+
+    let recommendation = '';
+
+    if (lardoData?.remarks) {
+      const match = lardoData.remarks.match(/Recommendation:\s*(.*)$/i);
+
+      if (match) {
+        recommendation = match[1].trim().replace(/\.$/, '');
+
+        lardoData.remarks = lardoData.remarks
+          .replace(/\s*Recommendation:.*$/i, '')
+          .trim();
+      }
+    }
+
+    if (lardoData) {
+      (
+        lardoData as LardoStudentNotification & { recommendation: string }
+      ).recommendation = recommendation;
+    }
+
+    const disciplineData = await this.dataSource.manager
+      .createQueryBuilder(StudentReportDisciplinary, 'srd')
+      .where('srd.studentID = :studentID', { studentID })
+      .andWhere('srd.school_yearID = :filter', { filter })
+      .orderBy('srd.created_at', 'DESC')
+      .addOrderBy('srd.id', 'DESC')
+      .getOne();
+    console.log('getStudentAlerts', lardoData, disciplineData);
+    return { lardoData, disciplineData };
+  }
 
   async getDisciplinaryReport(filter: number, tab: number, teacherID: number) {
     // console.log(filter,tab,teacherID)
@@ -411,6 +462,10 @@ export class ParentRecordsService {
         'S.subject_title as subject_title',
         'RS.room_section as room_section',
         'SRD.tag_students as tag_students',
+        'SRD.created_at as created_at',
+        'SRD.report_date as report_date',
+        'SRD.report_time as report_time',
+        'SRD.comments as comments',
       ])
       .leftJoin(StudentReportDisciplinary, 'SRD', 'SRD.studentID = ES.id')
       .leftJoin(RoomsSection, 'RS', 'RS.id = SRD.roomID')
@@ -500,6 +555,9 @@ export class ParentRecordsService {
         'RS.room_section as room_section',
         'SRD.tag_students as tag_students',
         'SRD.status as status',
+        'SRD.created_at as created_at',
+        'SRD.report_date as report_date',
+        'SRD.report_time as report_time',
       ])
       .leftJoin(StudentReportDisciplinary, 'SRD', 'SRD.studentID = ES.id')
       .leftJoin(RoomsSection, 'RS', 'RS.id = SRD.roomID')
@@ -593,6 +651,10 @@ export class ParentRecordsService {
         'S.subject_title as subject_title',
         'RS.room_section as room_section',
         'SRD.tag_students as tag_students',
+        'SRD.created_at as created_at',
+        'SRD.report_date as report_date',
+        'SRD.report_time as report_time',
+        'SRD.comments as comments',
       ])
       .leftJoin(StudentReportDisciplinary, 'SRD', 'SRD.studentID = ES.id')
       .leftJoin(RoomsSection, 'RS', 'RS.id = SRD.roomID')
@@ -1158,6 +1220,7 @@ export class ParentRecordsService {
     try {
       this.dataSource.manager.update(StudentReportDisciplinary, id, {
         status: updateStudentReportDiscipilinarydDto.status,
+        comments: updateStudentReportDiscipilinarydDto.comments,
       });
       return {
         msg: 'Updated successfully!',

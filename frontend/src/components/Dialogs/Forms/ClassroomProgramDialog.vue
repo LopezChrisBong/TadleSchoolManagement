@@ -176,7 +176,7 @@
               prepend-icon="mdi-check-circle"
               @click="accept()"
             >
-              {{ action === "Add" ? "Add Schedule" : "Update Schedule" }}
+              {{ action === 'Add' ? 'Add Schedule' : 'Update Schedule' }}
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -195,7 +195,7 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
 export default {
   props: {
     data: null,
@@ -217,14 +217,14 @@ export default {
       TeachersList: [],
       subject: null,
       subjectList: [],
-      day: "Monday",
+      day: 'Monday',
       id: null,
       dayList: [
-        { id: 1, name: "Monday" },
-        { id: 2, name: "Tuesday" },
-        { id: 3, name: "Wednesday" },
-        { id: 4, name: "Thursday" },
-        { id: 5, name: "Friday" },
+        { id: 1, name: 'Monday' },
+        { id: 2, name: 'Tuesday' },
+        { id: 3, name: 'Wednesday' },
+        { id: 4, name: 'Thursday' },
+        { id: 5, name: 'Friday' },
       ],
       time_slot_from: null,
       time_slot_to: null,
@@ -234,9 +234,9 @@ export default {
       assignedModulesList: [],
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
@@ -247,7 +247,7 @@ export default {
         this.dialog = true;
         this.initialize();
         if (data.id) {
-          console.log("Love", data);
+          console.log('Love', data);
           this.id = data.availId;
           this.time_slot_from = data.times_slot_from;
           this.time_slot_to = data.times_slot_to;
@@ -267,12 +267,12 @@ export default {
       this.getUserType();
       this.getClassroom();
       if (
-        this.grade == "Grade 1" ||
-        this.grade == "Grade 2" ||
-        this.grade == "Grade 3" ||
-        this.grade == "Grade 4" ||
-        this.grade == "Kinder 1" ||
-        this.grade == "Kinder 2"
+        this.grade == 'Grade 1' ||
+        this.grade == 'Grade 2' ||
+        this.grade == 'Grade 3' ||
+        this.grade == 'Grade 4' ||
+        this.grade == 'Kinder 1' ||
+        this.grade == 'Kinder 2'
       ) {
         this.TeachingRoleAdvisory();
       } else {
@@ -280,15 +280,15 @@ export default {
       }
     },
     getUserType() {
-      this.axiosCall("/user-type/getAllUsertype", "GET").then((res) => {
+      this.axiosCall('/user-type/getAllUsertype', 'GET').then((res) => {
         if (res.data) {
-          console.log("UserList", res.data);
+          console.log('UserList', res.data);
           this.usertypeList = res.data;
         }
       });
     },
     closeD() {
-      eventBus.emit("closeAddScheduleDialog", true);
+      eventBus.emit('closeAddScheduleDialog', true);
       this.teacher = null;
       this.subject = null;
       // this.section = "";
@@ -311,12 +311,12 @@ export default {
         );
         if (hours < 1) {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
           this.fadeAwayMessage.message =
-            "Please select time range above or equal to 1 hour!";
+            'Please select time range above or equal to 1 hour!';
         } else {
-          if (this.action == "Add") {
+          if (this.action == 'Add') {
             let data = {
               teacherID: this.teacher,
               subjectId: this.subject,
@@ -329,27 +329,29 @@ export default {
               school_yearId: filter,
             };
             console.log(data);
-            this.axiosCall("/enroll-student/addSchedule", "POST", data).then(
-              (res) => {
-                console.log(res);
-                if (res.data.status == 201) {
-                  this.dialog = false;
-                  this.fadeAwayMessage.show = true;
-                  this.fadeAwayMessage.type = "success";
-                  this.fadeAwayMessage.header = "System Message";
-                  this.fadeAwayMessage.message = res.data.msg;
-                  this.closeD();
-                } else {
-                  this.dialog = false;
-                  this.fadeAwayMessage.show = true;
-                  this.fadeAwayMessage.type = "error";
-                  this.fadeAwayMessage.header = "System Message";
-                  this.fadeAwayMessage.message = res.data.msg;
-                  this.closeD();
-                }
-              },
-            );
-          } else if (this.action == "Update") {
+            this.axiosCall(
+              '/enroll-student/AddScheduleAdmin',
+              'POST',
+              data,
+            ).then((res) => {
+              console.log(res);
+              if (res.data.status == 201) {
+                this.dialog = false;
+                this.fadeAwayMessage.show = true;
+                this.fadeAwayMessage.type = 'success';
+                this.fadeAwayMessage.header = 'System Message';
+                this.fadeAwayMessage.message = res.data.msg;
+                this.closeD();
+              } else {
+                this.dialog = false;
+                this.fadeAwayMessage.show = true;
+                this.fadeAwayMessage.type = 'error';
+                this.fadeAwayMessage.header = 'System Message';
+                this.fadeAwayMessage.message = res.data.msg;
+                this.closeD();
+              }
+            });
+          } else if (this.action == 'Update') {
             let data = {
               teacherID: this.teacher,
               subjectId: this.subject,
@@ -362,20 +364,20 @@ export default {
               hours: hours,
             };
             this.axiosCall(
-              "/enroll-student/updateClassProgram/" + this.id,
-              "PATCH",
+              '/enroll-student/updateClassProgram/' + this.id,
+              'PATCH',
               data,
             ).then((res) => {
               if (res.data.status == 200) {
                 this.fadeAwayMessage.show = true;
-                this.fadeAwayMessage.type = "success";
-                this.fadeAwayMessage.header = "System Message";
+                this.fadeAwayMessage.type = 'success';
+                this.fadeAwayMessage.header = 'System Message';
                 this.fadeAwayMessage.message = res.data.msg;
                 this.closeD();
               } else {
                 this.fadeAwayMessage.show = true;
-                this.fadeAwayMessage.type = "error";
-                this.fadeAwayMessage.header = "System Message";
+                this.fadeAwayMessage.type = 'error';
+                this.fadeAwayMessage.header = 'System Message';
                 this.fadeAwayMessage.message = res.data.msg;
               }
             });
@@ -387,7 +389,7 @@ export default {
     calculateHoursDifference(startTime, endTime) {
       // Helper function to convert time to minutes
       const timeToMinutes = (time) => {
-        const [hours, minutes] = time.split(":").map(Number);
+        const [hours, minutes] = time.split(':').map(Number);
         return hours * 60 + minutes;
       };
 
@@ -406,17 +408,17 @@ export default {
 
     getAllActiveSubjects(id) {
       let grade;
-      if (this.grade == "Grade 11" || this.grade == "Grade 12") {
-        grade = "Senior High";
+      if (this.grade == 'Grade 11' || this.grade == 'Grade 12') {
+        grade = 'Senior High';
       } else {
-        grade = "Junior High";
+        grade = 'Junior High';
       }
       this.axiosCall(
-        "/subjects/getSpicificSubject/" + id + "/" + this.filter + "/" + grade,
-        "GET",
+        '/subjects/getSpicificSubject/' + id + '/' + this.filter + '/' + grade,
+        'GET',
       ).then((res) => {
         if (res) {
-          console.log("Subject List", res.data);
+          console.log('Subject List', res.data);
           this.subjectList = res.data;
         }
       });
@@ -425,10 +427,10 @@ export default {
     getClassroom() {
       //   let grade = this.grade.toString();
       this.axiosCall(
-        "/rooms-section/" + this.grade + "/" + this.section,
-        "GET",
+        '/rooms-section/' + this.grade + '/' + this.section,
+        'GET',
       ).then((res) => {
-        console.log("ClassName", res.data[0].teacherId);
+        console.log('ClassName', res.data[0].teacherId);
         // this.adviser = res.data[0].teacherId;
         this.className = res.data[0].room_section;
       });
@@ -436,23 +438,23 @@ export default {
 
     getRoleTeachers() {
       this.axiosCall(
-        "/user-details/getAllVerifiedUser/TeachingRole/" + this.grade,
-        "GET",
+        '/user-details/getAllVerifiedUser/TeachingRole/' + this.grade,
+        'GET',
       ).then((res) => {
-        console.log("Teacher Role1", res.data);
+        console.log('Teacher Role1', res.data);
         this.TeachersList = res.data;
       });
     },
 
     TeachingRoleAdvisory() {
       this.axiosCall(
-        "/user-details/getAdviser/RoomAdvisory/" +
+        '/user-details/getAdviser/RoomAdvisory/' +
           this.adviser +
-          "/" +
+          '/' +
           this.grade,
-        "GET",
+        'GET',
       ).then((res) => {
-        console.log("Teacher Role2", res.data);
+        console.log('Teacher Role2', res.data);
         this.TeachersList = res.data;
       });
     },

@@ -45,6 +45,7 @@ export class Helper {
   static UPLOAD_ROOT = join(__dirname, '..', '..', 'upload_img');
   static STUDENT_ROOT = join(__dirname, '..', '..', 'student_file');
   static EVENT_ROOT = join(__dirname, '..', '..', 'event_file');
+  static ESIGN_ROOT = join(__dirname, '..', '..', 'uploadedEsigImg');
 
   static ensureDir(path: string) {
     if (!fs.existsSync(path)) {
@@ -66,6 +67,10 @@ export class Helper {
   static student_files(req, file, cb) {
     Helper.ensureDir(Helper.STUDENT_ROOT);
     cb(null, Helper.STUDENT_ROOT);
+  }
+  static esign_filepath(req, file, cb) {
+    Helper.ensureDir(Helper.ESIGN_ROOT);
+    cb(null, Helper.ESIGN_ROOT);
   }
 
   static event_files(req, file, cb) {

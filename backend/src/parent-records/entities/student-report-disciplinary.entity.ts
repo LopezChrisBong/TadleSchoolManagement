@@ -38,6 +38,15 @@ export class StudentReportDisciplinary {
   @Column({ type: 'longtext', nullable: true })
   tag_students: string;
 
+  @Column({ type: 'longtext', nullable: true })
+  report_date: string;
+
+  @Column({ type: 'longtext', nullable: true })
+  report_time: string;
+
+  @Column({ type: 'longtext', nullable: true })
+  comments: string;
+
   @Column({ type: 'int', default: false })
   status: number;
 

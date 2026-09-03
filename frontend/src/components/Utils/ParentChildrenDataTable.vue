@@ -61,7 +61,24 @@
             @click="classRecord(item)"
           >
             <v-icon start size="18">mdi-eye</v-icon>
-            Class Record
+            Report Card
+          </v-btn>
+          <v-btn
+            size="small"
+            color="pink"
+            class="my-1"
+            variant="outlined"
+            block
+            @click="
+              syType == 0 ||
+              item.grade_level == 'Grade 11' ||
+              item.grade_level == 'Grade 12'
+                ? viewStudentAchievements(item)
+                : viewStudentAchievementsV2(item)
+            "
+          >
+            <v-icon start size="18">mdi-file-document</v-icon>
+            Form 138
           </v-btn>
         </template>
 
@@ -231,6 +248,7 @@ export default {
     ],
     data: [],
     filter: null,
+    syType: null,
     studentID: null,
     enrolledStudentData: [],
     fadeAwayMessage: {
@@ -282,8 +300,12 @@ export default {
     },
     initialize() {
       this.filter = this.$store.getters.getFilterSelected;
+      this.syType = this.$store.getters.getSyType;
       this.loading = false;
-      this.axiosCall('/parent-records/getMyChildrenList', 'GET').then((res) => {
+      this.axiosCall(
+        '/parent-records/getMyChildrenList/' + this.filter,
+        'GET',
+      ).then((res) => {
         if (res) {
           // console.log(res.data);
           let data = res.data;
@@ -396,6 +418,37 @@ export default {
           }
         });
       }
+    },
+
+    viewStudentAchievements(item) {
+      window.open(
+        process.env.VUE_APP_SERVER +
+          '/pdf-generator/getStudentAchievements/' +
+          item.id +
+          '/' +
+          item.roomId +
+          '/' +
+          this.filter +
+          '/' +
+          item.grade_level +
+          '',
+        '_blank',
+      );
+    },
+    viewStudentAchievementsV2(item) {
+      window.open(
+        process.env.VUE_APP_SERVER +
+          '/pdf-generator/getStudentAchievementsV2/' +
+          item.id +
+          '/' +
+          item.roomId +
+          '/' +
+          this.filter +
+          '/' +
+          item.grade_level +
+          '',
+        '_blank',
+      );
     },
   },
 };

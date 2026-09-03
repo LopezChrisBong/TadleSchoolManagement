@@ -1271,9 +1271,21 @@ export default {
     getAccessControlAssignedModules() {
       this.axiosCall('/assigned-modules/getSpecificModules', 'GET').then(
         (res) => {
-          // console.log("AssignedM", res.data);
-          let data = res.data;
-          this.assigneAccessModulesList = data;
+          let subModules = this.$store.state.user.user.subModules;
+
+          if (typeof subModules === 'string') {
+            try {
+              subModules = JSON.parse(subModules);
+            } catch (error) {
+              subModules = [];
+            }
+          }
+
+          subModules = Array.isArray(subModules) ? subModules : [];
+
+          this.assigneAccessModulesList = res.data.filter((item) =>
+            subModules.includes(Number(item.id)),
+          );
         },
       );
     },

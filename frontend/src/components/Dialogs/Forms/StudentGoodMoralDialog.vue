@@ -29,12 +29,15 @@
                       data.grade_level == 'Grade 11' ||
                       data.grade_level == 'Grade 12'
                         ? ['1st Quarter', '2nd Quarter']
-                        : [
+                        : syType == 0
+                        ? [
                             '1st Quarter',
                             '2nd Quarter',
                             '3rd Quarter',
                             '4th Quarter',
+                            'All',
                           ]
+                        : ['1st Term', '2nd Term', '3rd Term']
                     "
                     chips
                     variant="outlined"
@@ -314,10 +317,10 @@
                   "
                 >
                   {{
-                    data.grade_level == "Grade 11" ||
-                    data.grade_level == "Grade 12"
-                      ? "1st Semester"
-                      : "Junior High"
+                    data.grade_level == 'Grade 11' ||
+                    data.grade_level == 'Grade 12'
+                      ? '1st Semester'
+                      : 'Junior High'
                   }}
                 </th>
                 <th
@@ -331,11 +334,28 @@
                   2nd Semester
                 </th>
               </tr>
-              <tr>
+              <tr
+                v-if="
+                  syType == 0 ||
+                  data.grade_level == 'Grade 11' ||
+                  data.grade_level == 'Grade 12'
+                "
+              >
                 <th class="text-center">1st Qtr.</th>
                 <th class="text-center">2nd Qtr.</th>
                 <th class="text-center">3rd Qtr.</th>
                 <th class="text-center">4th Qtr.</th>
+              </tr>
+              <tr
+                v-if="
+                  syType == 1 &&
+                  data.grade_level != 'Grade 11' &&
+                  data.grade_level != 'Grade 12'
+                "
+              >
+                <th class="text-center">1st Term</th>
+                <th class="text-center">2nd Term</th>
+                <th class="text-center">3rd Term</th>
               </tr>
             </thead>
             <tbody>
@@ -346,16 +366,46 @@
                   belief of others.
                 </td>
                 <td class="text-center">
-                  {{ firstQuarter ? firstQuarter.md1_values : "None" }}
+                  {{ firstTerm ? firstTerm.md1_values : 'None' }}
+                  {{ firstQuarter ? firstQuarter.md1_values : 'None' }}
+                  {{
+                    firstSemFirstQuarter
+                      ? firstSemFirstQuarter.md1_values
+                      : 'None'
+                  }}
                 </td>
                 <td class="text-center">
-                  {{ secondQuarter ? secondQuarter.md1_values : "None" }}
+                  {{ secondTerm ? secondTerm.md1_values : 'None' }}
+                  {{ secondQuarter ? secondQuarter.md1_values : 'None' }}
+                  {{
+                    firstSemSecondQuarter
+                      ? firstSemSecondQuarter.md1_values
+                      : 'None'
+                  }}
                 </td>
                 <td class="text-center">
-                  {{ thirdQuarter ? thirdQuarter.md1_values : "None" }}
+                  {{ thirdTerm ? thirdTerm.md1_values : 'None' }}
+                  {{ thirdQuarter ? thirdQuarter.md1_values : 'None' }}
+                  {{
+                    secondSemFirstQuarter
+                      ? secondSemFirstQuarter.md1_values
+                      : 'None'
+                  }}
                 </td>
-                <td class="text-center">
-                  {{ fourthQuarter ? fourthQuarter.md1_values : "None" }}
+                <td
+                  class="text-center"
+                  v-if="
+                    syType == 0 ||
+                    data.grade_level == 'Grade 11' ||
+                    data.grade_level == 'Grade 12'
+                  "
+                >
+                  {{ fourthQuarter ? fourthQuarter.md1_values : 'None' }}
+                  {{
+                    secondSemSecondQuarter
+                      ? secondSemSecondQuarter.md1_values
+                      : 'None'
+                  }}
                 </td>
               </tr>
               <tr>
@@ -363,16 +413,46 @@
                   Show adherence to ethical principles by upholding truth.
                 </td>
                 <td class="text-center">
-                  {{ firstQuarter ? firstQuarter.md2_values : "None" }}
+                  {{ firstTerm ? firstTerm.md2_values : 'None' }}
+                  {{ firstQuarter ? firstQuarter.md2_values : 'None' }}
+                  {{
+                    firstSemFirstQuarter
+                      ? firstSemFirstQuarter.md2_values
+                      : 'None'
+                  }}
                 </td>
                 <td class="text-center">
-                  {{ secondQuarter ? secondQuarter.md2_values : "None" }}
+                  {{ secondTerm ? secondTerm.md2_values : 'None' }}
+                  {{ secondQuarter ? secondQuarter.md2_values : 'None' }}
+                  {{
+                    firstSemSecondQuarter
+                      ? firstSemSecondQuarter.md2_values
+                      : 'None'
+                  }}
                 </td>
                 <td class="text-center">
-                  {{ thirdQuarter ? thirdQuarter.md2_values : "None" }}
+                  {{ thirdTerm ? thirdTerm.md2_values : 'None' }}
+                  {{ thirdQuarter ? thirdQuarter.md2_values : 'None' }}
+                  {{
+                    secondSemFirstQuarter
+                      ? secondSemFirstQuarter.md2_values
+                      : 'None'
+                  }}
                 </td>
-                <td class="text-center">
-                  {{ fourthQuarter ? fourthQuarter.md2_values : "None" }}
+                <td
+                  class="text-center"
+                  v-if="
+                    syType == 0 ||
+                    data.grade_level == 'Grade 11' ||
+                    data.grade_level == 'Grade 12'
+                  "
+                >
+                  {{ fourthQuarter ? fourthQuarter.md2_values : 'None' }}
+                  {{
+                    secondSemSecondQuarter
+                      ? secondSemSecondQuarter.md2_values
+                      : 'None'
+                  }}
                 </td>
               </tr>
               <tr>
@@ -381,31 +461,91 @@
                   Is sensitive to individual, social and cultural differences.
                 </td>
                 <td class="text-center">
-                  {{ firstQuarter ? firstQuarter.mt1_values : "None" }}
+                  {{ firstTerm ? firstTerm.mt1_values : 'None' }}
+                  {{ firstQuarter ? firstQuarter.mt1_values : 'None' }}
+                  {{
+                    firstSemFirstQuarter
+                      ? firstSemFirstQuarter.mt1_values
+                      : 'None'
+                  }}
                 </td>
                 <td class="text-center">
-                  {{ secondQuarter ? secondQuarter.mt1_values : "None" }}
+                  {{ secondTerm ? secondTerm.mt1_values : 'None' }}
+                  {{ secondQuarter ? secondQuarter.mt1_values : 'None' }}
+                  {{
+                    firstSemSecondQuarter
+                      ? firstSemSecondQuarter.mt1_values
+                      : 'None'
+                  }}
                 </td>
                 <td class="text-center">
-                  {{ thirdQuarter ? thirdQuarter.mt1_values : "None" }}
+                  {{ thirdTerm ? thirdTerm.mt1_values : 'None' }}
+                  {{ thirdQuarter ? thirdQuarter.mt1_values : 'None' }}
+                  {{
+                    secondSemFirstQuarter
+                      ? secondSemFirstQuarter.mt1_values
+                      : 'None'
+                  }}
                 </td>
-                <td class="text-center">
-                  {{ fourthQuarter ? fourthQuarter.mt1_values : "None" }}
+                <td
+                  class="text-center"
+                  v-if="
+                    syType == 0 ||
+                    data.grade_level == 'Grade 11' ||
+                    data.grade_level == 'Grade 12'
+                  "
+                >
+                  {{ fourthQuarter ? fourthQuarter.mt1_values : 'None' }}
+                  {{
+                    secondSemSecondQuarter
+                      ? secondSemSecondQuarter.mt1_values
+                      : 'None'
+                  }}
                 </td>
               </tr>
               <tr>
                 <td>Demonstrates contributions towards solidarity.</td>
                 <td class="text-center">
-                  {{ firstQuarter ? firstQuarter.mt2_values : "None" }}
+                  {{ firstTerm ? firstTerm.mt2_values : 'None' }}
+                  {{ firstQuarter ? firstQuarter.mt2_values : 'None' }}
+                  {{
+                    firstSemFirstQuarter
+                      ? firstSemFirstQuarter.mt2_values
+                      : 'None'
+                  }}
                 </td>
                 <td class="text-center">
-                  {{ secondQuarter ? secondQuarter.mt2_values : "None" }}
+                  {{ secondTerm ? secondTerm.mt2_values : 'None' }}
+                  {{ secondQuarter ? secondQuarter.mt2_values : 'None' }}
+                  {{
+                    firstSemSecondQuarter
+                      ? firstSemSecondQuarter.mt2_values
+                      : 'None'
+                  }}
                 </td>
                 <td class="text-center">
-                  {{ thirdQuarter ? thirdQuarter.mt2_values : "None" }}
+                  {{ thirdTerm ? thirdTerm.mt2_values : 'None' }}
+                  {{ thirdQuarter ? thirdQuarter.mt2_values : 'None' }}
+                  {{
+                    secondSemFirstQuarter
+                      ? secondSemFirstQuarter.mt2_values
+                      : 'None'
+                  }}
                 </td>
-                <td class="text-center">
-                  {{ fourthQuarter ? fourthQuarter.mt2_values : "None" }}
+                <td
+                  class="text-center"
+                  v-if="
+                    syType == 0 ||
+                    data.grade_level == 'Grade 11' ||
+                    data.grade_level == 'Grade 12'
+                  "
+                >
+                  {{ fourthQuarter ? fourthQuarter.mt2_values : 'None' }}
+                  {{
+                    secondSemSecondQuarter
+                      ? secondSemSecondQuarter.mt2_values
+                      : 'None'
+                  }}
                 </td>
               </tr>
               <!-- 3. Maka-kalikasan -->
@@ -416,16 +556,46 @@
                   judiciously, economically.
                 </td>
                 <td class="text-center">
-                  {{ firstQuarter ? firstQuarter.mk1_values : "None" }}
+                  {{ firstTerm ? firstTerm.mk1_values : 'None' }}
+                  {{ firstQuarter ? firstQuarter.mk1_values : 'None' }}
+                  {{
+                    firstSemFirstQuarter
+                      ? firstSemFirstQuarter.mk1_values
+                      : 'None'
+                  }}
                 </td>
                 <td class="text-center">
-                  {{ secondQuarter ? secondQuarter.mk1_values : "None" }}
+                  {{ secondTerm ? secondTerm.mk1_values : 'None' }}
+                  {{ secondQuarter ? secondQuarter.mk1_values : 'None' }}
+                  {{
+                    firstSemSecondQuarter
+                      ? firstSemSecondQuarter.mk1_values
+                      : 'None'
+                  }}
                 </td>
                 <td class="text-center">
-                  {{ thirdQuarter ? thirdQuarter.mk1_values : "None" }}
+                  {{ thirdTerm ? thirdTerm.mk1_values : 'None' }}
+                  {{ thirdQuarter ? thirdQuarter.mk1_values : 'None' }}
+                  {{
+                    secondSemFirstQuarter
+                      ? secondSemFirstQuarter.mk1_values
+                      : 'None'
+                  }}
                 </td>
-                <td class="text-center">
-                  {{ fourthQuarter ? fourthQuarter.mk1_values : "None" }}
+                <td
+                  class="text-center"
+                  v-if="
+                    syType == 0 ||
+                    data.grade_level == 'Grade 11' ||
+                    data.grade_level == 'Grade 12'
+                  "
+                >
+                  {{ fourthQuarter ? fourthQuarter.mk1_values : 'None' }}
+                  {{
+                    secondSemSecondQuarter
+                      ? secondSemSecondQuarter.mk1_values
+                      : 'None'
+                  }}
                 </td>
               </tr>
 
@@ -437,16 +607,46 @@
                   and responsibilities of a Filipino citizen.
                 </td>
                 <td class="text-center">
-                  {{ firstQuarter ? firstQuarter.mb1_values : "None" }}
+                  {{ firstTerm ? firstTerm.mb1_values : 'None' }}
+                  {{ firstQuarter ? firstQuarter.mb1_values : 'None' }}
+                  {{
+                    firstSemFirstQuarter
+                      ? firstSemFirstQuarter.mb1_values
+                      : 'None'
+                  }}
                 </td>
                 <td class="text-center">
-                  {{ secondQuarter ? secondQuarter.mb1_values : "None" }}
+                  {{ secondTerm ? secondTerm.mb1_values : 'None' }}
+                  {{ secondQuarter ? secondQuarter.mb1_values : 'None' }}
+                  {{
+                    firstSemSecondQuarter
+                      ? firstSemSecondQuarter.mb1_values
+                      : 'None'
+                  }}
                 </td>
                 <td class="text-center">
-                  {{ thirdQuarter ? thirdQuarter.mb1_values : "None" }}
+                  {{ thirdTerm ? thirdTerm.mb1_values : 'None' }}
+                  {{ thirdQuarter ? thirdQuarter.mb1_values : 'None' }}
+                  {{
+                    secondSemFirstQuarter
+                      ? secondSemFirstQuarter.mb1_values
+                      : 'None'
+                  }}
                 </td>
-                <td class="text-center">
-                  {{ fourthQuarter ? fourthQuarter.mb1_values : "None" }}
+                <td
+                  class="text-center"
+                  v-if="
+                    syType == 0 ||
+                    data.grade_level == 'Grade 11' ||
+                    data.grade_level == 'Grade 12'
+                  "
+                >
+                  {{ fourthQuarter ? fourthQuarter.mb1_values : 'None' }}
+                  {{
+                    secondSemSecondQuarter
+                      ? secondSemSecondQuarter.mb1_values
+                      : 'None'
+                  }}
                 </td>
               </tr>
               <tr>
@@ -455,16 +655,26 @@
                   in the school, community and country.
                 </td>
                 <td class="text-center">
-                  {{ firstQuarter ? firstQuarter.mb2_values : "None" }}
+                  {{ firstTerm ? firstTerm.mb2_values : 'None' }}
+                  {{ firstQuarter ? firstQuarter.mb2_values : 'None' }}
                 </td>
                 <td class="text-center">
-                  {{ secondQuarter ? secondQuarter.mb2_values : "None" }}
+                  {{ secondTerm ? secondTerm.mb2_values : 'None' }}
+                  {{ secondQuarter ? secondQuarter.mb2_values : 'None' }}
                 </td>
                 <td class="text-center">
-                  {{ thirdQuarter ? thirdQuarter.mb2_values : "None" }}
+                  {{ thirdTerm ? thirdTerm.mb2_values : 'None' }}
+                  {{ thirdQuarter ? thirdQuarter.mb2_values : 'None' }}
                 </td>
-                <td class="text-center">
-                  {{ fourthQuarter ? fourthQuarter.mb2_values : "None" }}
+                <td
+                  class="text-center"
+                  v-if="
+                    syType == 0 ||
+                    data.grade_level == 'Grade 11' ||
+                    data.grade_level == 'Grade 12'
+                  "
+                >
+                  {{ fourthQuarter ? fourthQuarter.mb2_values : 'None' }}
                 </td>
               </tr>
             </tbody>
@@ -528,7 +738,7 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
 export default {
   components: {},
   props: {
@@ -554,21 +764,21 @@ export default {
       fourthQuarter: [],
       dialog: false,
       edit: true,
-      quarter: "1st Quarter",
+      quarter: null,
       semester: null,
       filter: null,
       userRoleID: null,
       markingList: [
-        { value: "AO", description: "Always Observed" },
-        { value: "SO", description: "Sometimes Observed" },
-        { value: "RO", description: "Rarely Observed" },
-        { value: "NO", description: "Not Observed" },
+        { value: 'AO', description: 'Always Observed' },
+        { value: 'SO', description: 'Sometimes Observed' },
+        { value: 'RO', description: 'Rarely Observed' },
+        { value: 'NO', description: 'Not Observed' },
       ],
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
@@ -580,10 +790,18 @@ export default {
       handler(data) {
         this.dialog = true;
         if (data.id) {
-          console.log("Data Moral", data);
-          data.grade_level == "Grade 11" || data.grade_level == "Grade 12"
-            ? (this.semester = "1st Semester")
-            : (this.semester = "Junior High");
+          console.log('Data Moral', data);
+          this.syType = this.$store.getters.getSyType;
+
+          this.quarter =
+            this.syType == 0 ||
+            this.data.grade_level == 'Grade 11' ||
+            this.data.grade_level == 'Grade 12'
+              ? '1st Quarter'
+              : '1st Term';
+          data.grade_level == 'Grade 11' || data.grade_level == 'Grade 12'
+            ? (this.semester = '1st Semester')
+            : (this.semester = 'Junior High');
           this.initialize();
           // this.updateID = data.id;
         } else {
@@ -602,20 +820,20 @@ export default {
     },
     getValuesData() {
       this.axiosCall(
-        "/enroll-student/getValuesData/" +
+        '/enroll-student/getValuesData/' +
           this.filter +
-          "/" +
+          '/' +
           this.data.id +
-          "/" +
+          '/' +
           this.data.roomId +
-          "/" +
+          '/' +
           this.quarter +
-          "/" +
+          '/' +
           this.semester,
-        "GET",
+        'GET',
       ).then((res) => {
         if (res.data && Array.isArray(res.data) && res.data.length > 0) {
-          console.log("Daaradawad", res.data[0].mb1_values);
+          console.log('Daaradawad', res.data);
           this.updateID = res.data[0].id;
           this.mb1_values = res.data[0].mb1_values;
           this.mb2_values = res.data[0].mb2_values;
@@ -630,17 +848,17 @@ export default {
     },
     changeQuarter() {
       this.axiosCall(
-        "/enroll-student/getValuesData/" +
+        '/enroll-student/getValuesData/' +
           this.filter +
-          "/" +
+          '/' +
           this.data.id +
-          "/" +
+          '/' +
           this.data.roomId +
-          "/" +
+          '/' +
           this.quarter +
-          "/" +
+          '/' +
           this.semester,
-        "GET",
+        'GET',
       ).then((res) => {
         if (res.data && Array.isArray(res.data) && res.data.length > 0) {
           this.updateID = res.data[0].id;
@@ -666,7 +884,7 @@ export default {
     },
 
     closeD() {
-      eventBus.emit("closeStudentBehaviorStatementDialog", false);
+      eventBus.emit('closeStudentBehaviorStatementDialog', false);
       this.dialog = false;
       this.edit = true;
       this.md1_values = null;
@@ -679,7 +897,7 @@ export default {
     },
 
     checkConflict(type) {
-      if (type == "ADD") {
+      if (type == 'ADD') {
         let data = {
           roomId: this.data.roomId,
           studentId: this.data.id,
@@ -695,7 +913,7 @@ export default {
           mb2_values: this.mb2_values,
         };
         console.log(data);
-        this.axiosCall("/enroll-student/studentValues", "POST", data).then(
+        this.axiosCall('/enroll-student/studentValues', 'POST', data).then(
           (res) => {
             console.log(res.data);
             // alert("Successfully Added");
@@ -703,18 +921,18 @@ export default {
             if (res.data.status == 201) {
               this.closeD();
               this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = "success";
-              this.fadeAwayMessage.header = "System Message";
-              this.fadeAwayMessage.message = "Successfully Added Subject!";
+              this.fadeAwayMessage.type = 'success';
+              this.fadeAwayMessage.header = 'System Message';
+              this.fadeAwayMessage.message = 'Successfully Added Subject!';
             } else if (res.data.status == 400) {
               this.fadeAwayMessage.show = true;
-              this.fadeAwayMessage.type = "error";
-              this.fadeAwayMessage.header = "System Message";
+              this.fadeAwayMessage.type = 'error';
+              this.fadeAwayMessage.header = 'System Message';
               this.fadeAwayMessage.message = res.data.msg;
             }
           },
         );
-      } else if (type == "UPDATE") {
+      } else if (type == 'UPDATE') {
         // alert("UPDATED");
         let data = {
           md1_values: this.md1_values,
@@ -727,21 +945,21 @@ export default {
         };
         console.log(data);
         this.axiosCall(
-          "/enroll-student/updateStudentValues/" + this.updateID,
-          "PATCH",
+          '/enroll-student/updateStudentValues/' + this.updateID,
+          'PATCH',
           data,
         ).then((res) => {
           console.log(res.data);
           if (res.data.status == 200) {
             this.closeD();
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "success";
-            this.fadeAwayMessage.header = "System Message";
-            this.fadeAwayMessage.message = "Successfully updated!!";
+            this.fadeAwayMessage.type = 'success';
+            this.fadeAwayMessage.header = 'System Message';
+            this.fadeAwayMessage.message = 'Successfully updated!!';
           } else if (res.data.status == 400) {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
             this.fadeAwayMessage.message = res.data.msg;
           }
         });
@@ -751,8 +969,15 @@ export default {
     openDialogVlaues() {
       this.ViewAllValueDialog = true;
       this.axiosCall(
-        "/enroll-student/getAllValuesData/" + this.filter + "/" + this.data.id,
-        "GET",
+        '/enroll-student/getAllValuesData/' +
+          this.filter +
+          '/' +
+          this.data.id +
+          '/' +
+          this.syType +
+          '/' +
+          this.data.seniorJunior,
+        'GET',
       ).then((res) => {
         // if (res.data && Array.isArray(res.data) && res.data.length > 0) {
         console.log(res.data);
@@ -760,6 +985,13 @@ export default {
         this.secondQuarter = res.data[1];
         this.thirdQuarter = res.data[2];
         this.fourthQuarter = res.data[3];
+        this.firstSemFirstQuarter = res.data[4];
+        this.firstSemSecondQuarter = res.data[5];
+        this.secondSemFirstQuarter = res.data[6];
+        this.secondSemSecondQuarter = res.data[7];
+        this.firstTerm = res.data[8];
+        this.secondTerm = res.data[9];
+        this.thirdTerm = res.data[10];
         // }
       });
     },

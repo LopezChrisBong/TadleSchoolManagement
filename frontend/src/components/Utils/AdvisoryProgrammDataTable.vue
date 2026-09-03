@@ -1,27 +1,38 @@
 <template>
   <div>
-    <v-row class="mx-2 mt-2">
-      <v-col cols="12" class="d-flex justify-space-between">
-        <h2 style="text-transform: uppercase">
-          {{
-            classData
-              ? classData.grade_level + '-' + classData.room_section
-              : ''
-          }}
-        </h2>
+    <v-row class="mx-2 mt-2" align="center">
+      <v-col cols="12" class="d-flex justify-space-between align-center">
+        <div class="d-flex align-center ga-2">
+          <v-avatar size="36" color="#fce4ec">
+            <v-icon
+              icon="mdi-calendar-clock-outline"
+              color="#d6357e"
+              size="20"
+            />
+          </v-avatar>
+          <h2 class="text-uppercase font-weight-bold">
+            {{
+              classData
+                ? classData.grade_level + '-' + classData.room_section
+                : ''
+            }}
+          </h2>
+        </div>
         <v-spacer></v-spacer>
         <v-btn
-          class="white--text ml-2 rounded-lg"
-          :color="$vuetify.theme.themes.light.submitBtns"
+          class="text-white ml-2 font-weight-bold"
+          color="#d6357e"
+          rounded="lg"
+          variant="flat"
           v-if="this.$store.state.user.user.isAdminApproved == 1"
           @click="add()"
         >
-          <v-icon left> mdi-plus-box-outline </v-icon>
+          <v-icon start> mdi-plus-box-outline </v-icon>
           Add New
         </v-btn>
       </v-col>
     </v-row>
-    <v-card class="ma-5 dt-container" elevation="1">
+    <v-card class="ma-5 dt-container border" elevation="0" rounded="lg">
       <v-data-table
         :headers="headers"
         :items="data"
@@ -30,33 +41,29 @@
         :search="search"
         @update:options="options"
         :loading="loading"
+        loading-text="Loading schedule..."
+        density="comfortable"
+        class="schedule-table"
       >
         <template v-slot:[`item.action`]="{ item }">
           <div class="text-no-wrap">
             <v-btn
-              x-small
-              color="#dc0b70"
+              size="small"
+              color="#d6357e"
               class="mx-1"
-              outlined
+              variant="outlined"
+              rounded="lg"
               @click="editItem(item)"
             >
-              <v-icon size="20">mdi-pencil-outline</v-icon>
+              <v-icon size="18">mdi-pencil-outline</v-icon>
             </v-btn>
-            <!-- <v-btn
-              x-small
-              color="#C62828"
-              class="white--text mx-1"
-              @click="confirmDelete(item)"
-            >
-              <v-icon size="14">mdi-trash-can-outline</v-icon>
-            </v-btn> -->
           </div>
         </template>
 
         <template
           v-slot:group-header="{ item, columns, toggleGroup, isGroupOpen }"
         >
-          <tr>
+          <tr class="group-header-row">
             <td
               :colspan="columns.length"
               class="cursor-pointer"
@@ -66,13 +73,19 @@
               <div class="d-flex align-center">
                 <v-btn
                   :icon="isGroupOpen(item) ? '$expand' : '$next'"
-                  color="medium-emphasis"
+                  color="#d6357e"
                   density="comfortable"
                   size="small"
                   variant="outlined"
                 ></v-btn>
 
-                <span class="ms-4"
+                <v-icon
+                  icon="mdi-calendar-outline"
+                  size="16"
+                  class="ms-3 me-1"
+                  color="#d6357e"
+                />
+                <span class="ms-1 font-weight-medium"
                   >Days:
                   {{
                     item.value == 1
@@ -89,6 +102,13 @@
               </div>
             </td>
           </tr>
+        </template>
+
+        <template #no-data>
+          <div class="py-8 text-center text-medium-emphasis">
+            <v-icon icon="mdi-calendar-remove-outline" size="32" class="mb-2" />
+            <div>No schedule found.</div>
+          </div>
         </template>
       </v-data-table>
     </v-card>
@@ -108,26 +128,36 @@
       :filter="filter"
     />
 
-    <v-dialog v-model="confirmDialog" persistent max-width="350">
-      <v-card color="white">
-        <div class="pa-4 #3a3b3a--text">
-          <div class="text-h6 mb-1">WARNING!</div>
-          <div class="text-body-1 mb-1">
-            <p style="text-align: justify">
-              <b>This action is irreversible.</b>
-            </p>
+    <v-dialog v-model="confirmDialog" persistent max-width="380">
+      <v-card color="white" rounded="lg">
+        <div class="pa-5">
+          <div class="d-flex align-center ga-2 mb-2">
+            <v-icon icon="mdi-alert-circle-outline" color="error" size="26" />
+            <span class="text-h6 font-weight-bold">Warning</span>
+          </div>
+          <div class="text-body-2 text-medium-emphasis">
+            <b>This action is irreversible.</b> Are you sure you want to
+            proceed?
           </div>
         </div>
 
-        <!-- <v-card-title class="text-h5">
-            Are you sure you want to proceed?
-          </v-card-title> -->
-        <v-card-actions>
+        <v-card-actions class="px-5 pb-4">
           <v-spacer></v-spacer>
-          <v-btn color="red" outlined @click="confirmDialog = false">
-            Close to Cancel
+          <v-btn
+            color="red"
+            variant="outlined"
+            rounded="lg"
+            @click="confirmDialog = false"
+          >
+            Cancel
           </v-btn>
-          <v-btn color="green" class="white--text" @click="deleteItem()">
+          <v-btn
+            color="#d6357e"
+            class="text-white"
+            variant="flat"
+            rounded="lg"
+            @click="deleteItem()"
+          >
             Confirm Delete
           </v-btn>
         </v-card-actions>
@@ -250,13 +280,9 @@ export default {
     eventBus.on('closeAddScheduleDialog', () => {
       this.getClassroom(this.section);
     });
-    // eventBus.on("closeMyDesignationDialog", () => {
-    //   this.initialize();
-    // });
   },
   beforeUnmount() {
     eventBus.off('closeAddScheduleDialog');
-    // eventBus.off("closeMyDesignationDialog");
   },
 
   watch: {
@@ -273,7 +299,6 @@ export default {
     filterYear: {
       handler(newData, oldData) {
         if (oldData != newData) {
-          console.log(oldData, newData);
           this.getClassroom(this.section);
         }
       },
@@ -293,7 +318,6 @@ export default {
       ).then((res) => {
         if (res) {
           this.classData = res.data;
-          console.log('Classroom', this.classData.room_section);
           this.getClassroom();
         } else {
           alert('no advisory');
@@ -394,3 +418,21 @@ export default {
   },
 };
 </script>
+<style scoped>
+.v-card.border {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+.schedule-table :deep(thead th) {
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  opacity: 0.6;
+}
+.group-header-row {
+  background: #f5f6fa;
+}
+.group-header-row td {
+  padding: 8px 12px !important;
+}
+</style>

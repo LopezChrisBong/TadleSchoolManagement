@@ -98,7 +98,7 @@
               <v-icon>mdi-close-circle</v-icon>
               Close
             </v-btn>
-            <v-btn
+            <!-- <v-btn
               v-if="update"
               :color="$vuetify.theme.themes.light.submitBtns"
               variant="flat"
@@ -115,7 +115,7 @@
               @click="saveAttendance()"
             >
               <v-icon>mdi-check-circle</v-icon>Save
-            </v-btn>
+            </v-btn> -->
           </v-card-actions>
         </v-card>
       </v-form>
@@ -186,6 +186,63 @@
                 ]"
               >
               </v-autocomplete>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-menu
+                v-model="dateMenu"
+                :close-on-content-click="false"
+                transition="scale-transition"
+                location="bottom"
+              >
+                <template v-slot:activator="{ props }">
+                  <v-text-field
+                    v-model="report_date"
+                    :rules="[formRules.required]"
+                    label="Date of Incident"
+                    prepend-inner-icon="mdi-calendar"
+                    variant="outlined"
+                    density="comfortable"
+                    class="rounded-lg"
+                    color="pink"
+                    readonly
+                    v-bind="props"
+                  ></v-text-field>
+                </template>
+                <v-date-picker
+                  v-model="report_date_raw"
+                  color="pink"
+                  @update:model-value="onDateSelect"
+                ></v-date-picker>
+              </v-menu>
+            </v-col>
+
+            <v-col cols="12" md="6">
+              <v-menu
+                v-model="timeMenu"
+                :close-on-content-click="false"
+                transition="scale-transition"
+                location="bottom"
+              >
+                <template v-slot:activator="{ props }">
+                  <v-text-field
+                    v-model="report_time"
+                    :rules="[formRules.required]"
+                    label="Time of Incident"
+                    prepend-inner-icon="mdi-clock-outline"
+                    variant="outlined"
+                    density="comfortable"
+                    class="rounded-lg"
+                    color="pink"
+                    readonly
+                    v-bind="props"
+                  ></v-text-field>
+                </template>
+                <v-time-picker
+                  v-model="report_time"
+                  color="pink"
+                  @update:model-value="timeMenu = false"
+                ></v-time-picker>
+              </v-menu>
             </v-col>
             <v-col cols="12">
               <v-textarea
@@ -259,7 +316,15 @@ export default {
   },
   data() {
     return {
+      dateMenu: false,
+      timeMenu: false,
+      report_date: null,
+      report_date_raw: null,
+      report_time: null,
       studentDataList: [],
+      formRules: {
+        required: (v) => !!v || 'This field is required',
+      },
       tagStudents: [],
       edit: true,
       dialog: false,
@@ -327,6 +392,10 @@ export default {
   },
 
   methods: {
+    onDateSelect(val) {
+      this.report_date = new Date(val).toLocaleDateString('en-CA');
+      this.dateMenu = false;
+    },
     initialize() {
       this.filter = this.$store.getters.getFilterSelected;
       this.userRoleID = this.$store.state.user.id;
@@ -355,6 +424,17 @@ export default {
     },
 
     submitReport() {
+      if (
+        this.report_description == null ||
+        !this.report_date ||
+        !this.report_time
+      ) {
+        this.fadeAwayMessage.show = true;
+        this.fadeAwayMessage.type = 'error';
+        this.fadeAwayMessage.header = 'System Message';
+        this.fadeAwayMessage.message = 'Please fill all fields!';
+        return;
+      }
       let userId = this.$store.state.user.id;
       let data = {
         studentID: this.studentData.id,
@@ -363,6 +443,8 @@ export default {
         teacherID: userId,
         report_type: this.report_type,
         report_description: this.report_description,
+        report_date: this.report_date,
+        report_time: this.report_time,
         grade_level: this.data.grade_level,
         roomID: this.data.roomId,
         tag_students: JSON.stringify(this.tagStudents),

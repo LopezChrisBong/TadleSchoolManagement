@@ -2,6 +2,7 @@ import { Announcement } from 'src/announcement/entities/announcement.entity';
 import { Comments } from 'src/announcement/entities/comments.entity';
 import { AssignedModule } from 'src/assigned-modules/entities/assigned-module.entity';
 import { Users } from 'src/auth/entities/auth.entity';
+import { ESig } from 'src/e-sigs/entities/e-sig.entity';
 import { Availability } from 'src/enroll-student/entities/availability.entity';
 import { EnrollStudent } from 'src/enroll-student/entities/enroll-student.entity';
 import { SchoolYear } from 'src/enroll-student/entities/scholl-year.entity';
@@ -27,6 +28,7 @@ import { TeacherGradeLevel } from 'src/subjects/entities/prefered-grade-level.en
 import { TeacherSubject } from 'src/subjects/entities/prefered-subject.entity';
 import { Subject } from 'src/subjects/entities/subject.entity';
 import { SysModule } from 'src/sys-modules/entities/sys-module.entity';
+import { DepEdPersonnel } from 'src/user-details/entities/deped-personnel.entity';
 import { UserDetail } from 'src/user-details/entities/user-detail.entity';
 import { UserRole } from 'src/user-role/entities/user-role.entity';
 import { UserType } from 'src/user-type/entities/user-type.entity';
@@ -64,6 +66,8 @@ const entities = [
   SchoolEvent,
   Announcement,
   Comments,
+  DepEdPersonnel,
+  ESig,
 ];
 
 export {
@@ -99,6 +103,8 @@ export {
   SchoolEvent,
   Announcement,
   Comments,
+  DepEdPersonnel,
+  ESig,
 };
 
 export default entities;

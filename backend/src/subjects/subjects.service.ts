@@ -25,9 +25,10 @@ export class SubjectsService {
 
   async create(createSubjectDto: CreateSubjectDto, curr_user: any) {
     const user = await this.dataSource.query(
-      'SELECT * FROM user_detail where id ="' + curr_user.userdetail.id + '"',
+      'SELECT * FROM user_detail where id = ? ',
+      [curr_user.userdetail.id],
     );
-
+    console.log(createSubjectDto);
     try {
       let data = this.dataSource.manager.create(Subject, {
         subject_title: createSubjectDto.subject_title,

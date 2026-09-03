@@ -198,16 +198,18 @@ export class PdfGeneratorController {
     res.end(buffer);
   }
 
-  @Get('/getSchoolForm10/:filter/:teacherID')
+  @Get('/getSchoolForm10/:filter/:teacherID/:gradeLevel')
   async getSchoolForm10(
     @Res() res,
     @Param('filter') filter: number,
     @Param('roomID') roomID: number,
     @Param('teacherID') teacherID: number,
+    @Param('gradeLevel') gradeLevel: string,
   ): Promise<void> {
     const buffer = await this.pdfGeneratorService.getSchoolForm10(
       filter,
       teacherID,
+      gradeLevel,
     );
     res.set({
       'Content-Type': 'application/pdf',

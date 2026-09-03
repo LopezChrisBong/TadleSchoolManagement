@@ -624,13 +624,15 @@ export class RoomsSectionService {
     subjectID: number,
     timeFrom: string,
     timeTo: string,
-    days: string, // "Mon,Tue,Wed"
+    days: string,
+    filter: number,
   ) {
     const conflict = await this.dataSource.manager.findBy(Availability, {
       teacherID,
       subjectId: subjectID,
       times_slot_from: timeFrom,
       times_slot_to: timeTo,
+      school_yearId: filter,
     });
 
     const dayArray = days.split(',').map((d) => d.trim());
@@ -638,7 +640,7 @@ export class RoomsSectionService {
     const conflictingDays = conflict
       .map((c) => c.day)
       .filter((day) => dayArray.includes(day));
-    // console.log(conflictingDays);
+    console.log(conflictingDays);
     return conflictingDays;
   }
 
@@ -834,7 +836,7 @@ export class RoomsSectionService {
           'SL.id as id',
           'RS.room_section as room_name',
           'RS.id as roomID',
-          "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
+          "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ',ES.fname,' ', SUBSTRING(ES.mname, 1, 1) ,'. ') ,concat(ES.lname, ' ', ES.fname)) as name",
         ])
         .leftJoin(RoomsSection, 'RS', 'RS.id = SL.roomId')
         .leftJoin(SchoolYear, 'SY', 'SY.id = SL.school_yearId')
@@ -842,6 +844,7 @@ export class RoomsSectionService {
         .where('RS.teacherId = :userId', { userId: userID })
         .andWhere('SY.id = :filter', { filter })
         .andWhere('ES.statusEnrolled = 1')
+        .orderBy('ES.lname', 'ASC')
         .getRawMany();
       // console.log('Wal',data)
       if (!data || data.length === 0) {
@@ -895,6 +898,7 @@ export class RoomsSectionService {
         .andWhere('SY.id = :filter', { filter: filter })
         .andWhere('RS.id = :roomID', { roomID: roomID })
         .andWhere('ES.statusEnrolled = 1')
+        .orderBy('ES.lname', 'ASC')
         .getRawMany();
 
       data = data.map((data) =>
@@ -922,7 +926,7 @@ export class RoomsSectionService {
         .select([
           '*',
           'ES.id as id',
-          "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
+          "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ',ES.fname,' ',SUBSTRING(ES.mname, 1, 1) ,'. ') ,concat(ES.lname, ' ', ES.fname)) as name",
         ])
         .leftJoin(StudentList, 'SL', 'ES.id = SL.studentId')
         .leftJoin(RoomsSection, 'RS', 'RS.id = SL.roomId')
@@ -931,6 +935,7 @@ export class RoomsSectionService {
         .where('SY.id = :filter', { filter: filter })
         .andWhere('RS.id = :roomID', { roomID: roomID })
         .andWhere('ES.statusEnrolled = 1')
+        .orderBy('ES.lname', 'ASC')
         .getRawMany();
       // console.log(data);
       return data;
@@ -988,8 +993,9 @@ export class RoomsSectionService {
         const gradeRecord = await this.dataSource.query(
           `SELECT transmuted_grade  
                 FROM transmuted_grade 
-                WHERE ? BETWEEN start_range AND end_range`,
-          [grades[i].initial_grade],
+                WHERE ? BETWEEN start_range AND end_range
+                LIMIT 1`,
+          [parseFloat(grades[i].initial_grade)],
         );
         if (gradeRecord.length > 0) {
           const last = gradeRecord.at(-1);
@@ -1030,19 +1036,22 @@ export class RoomsSectionService {
             semester,
           ],
         );
+
         if (submitted.length > 0) {
           const init = submitted[0].initial_grade;
           const trans = submitted[0].transmuted_grade;
 
           grades[i].initial_grade = init ? parseFloat(init) : null;
           grades[i].transmuted_grade = trans ? parseFloat(trans) : null;
+          console.log('grades[i].transmuted_grade', grades[i].transmuted_grade);
         } else {
           //  Otherwise, calculate from transmuted_grade ranges
           const gradeRecord = await this.dataSource.query(
             `SELECT transmuted_grade  
                 FROM transmuted_grade 
-                WHERE ? BETWEEN start_range AND end_range`,
-            [grades[i].initial_grade],
+                WHERE ? BETWEEN start_range AND end_range
+                LIMIT 1`,
+            [parseFloat(grades[i].initial_grade)],
           );
           // console.log('transmuted_grade',gradeRecord)
           if (gradeRecord.length > 0) {
