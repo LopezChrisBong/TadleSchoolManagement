@@ -124,7 +124,7 @@
   .sig-block .sig-caption { font-size: 9px; display: block; margin-top: 1px; }
   h4.mini-title { text-align: center; font-size: 11px; margin: 8px 0 5px 0; }
   .parent-sig-row {
-    display: flex; align-items: baseline; gap: 10px; margin: 9px 0;
+    display: flex; align-items: baseline; gap: 30px; margin: 50px 0;
   }
   .parent-sig-row label { font-weight: normal; width: 90px; }
   .parent-sig-row .fillline { flex: 1; }
@@ -190,17 +190,39 @@
 
     <h3 class="sub-title">Parent / Guardian's Signature</h3>
     <div class="parent-sig-row">
-      <label>1st Quarter</label><input type="text" class="fillline">
+          {{#ifCond firstEsig true}}
+          <img style="display:flex; top:0 px; left:0px; position:absolute; margin-top: -50px; margin-left: 300px;"
+            src='data:image/png;base64, {{parentEsig}}'
+            width='5%'
+            alt=''
+          />      
+          {{else}}
+      {{/ifCond}}
+      <label>1st Term</label><input type="text" class="fillline">
     </div>
     <div class="parent-sig-row">
-      <label>2nd Quarter</label><input type="text" class="fillline">
+           {{#ifCond secondEsig true}}
+           <img style="display:flex; top:0 px; left:0px; position:absolute; margin-top: -50px; margin-left: 300px;"
+            src='data:image/png;base64, {{parentEsig}}'
+            width='5%'
+            alt=''
+          />     
+           {{else}}
+           {{/ifCond}}
+      <label>2nd Term</label><input type="text" class="fillline">
     </div>
     <div class="parent-sig-row">
-      <label>3rd Quarter</label><input type="text" class="fillline">
+          {{#ifCond thirdEsig true}}
+          <img style="display:flex; top:0 px; left:0px; position:absolute; margin-top: -50px; margin-left: 300px;"
+            src='data:image/png;base64, {{parentEsig}}'
+            width='5%'
+            alt=''
+          />
+          {{else}}
+          {{/ifCond}}
+      <label>3rd Term</label><input type="text" class="fillline">
     </div>
-    <div class="parent-sig-row">
-      <label>4th Quarter</label><input type="text" class="fillline">
-    </div>
+
   </div>
 
   <!-- RIGHT COLUMN -->
@@ -309,8 +331,8 @@
        {{#firstSem}}
        <tr>
        <td align="center">{{subject}}</td>
-       <td align="center">{{this.[1st Term]}}</td>
-       <td align="center">{{this.[2nd Term]}}</td>
+       <td align="center">{{this.[1st Quarter]}}</td>
+       <td align="center">{{this.[2nd Quarter]}}</td>
        {{#ifCond junior true}}
        <td align="center">{{this.[3rd Term]}}</td>
        {{!-- <td align="center">{{this.[4th Term]}}</td> --}}

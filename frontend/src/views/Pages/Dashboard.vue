@@ -128,7 +128,7 @@ export default {
         { title: 'Adviser', key: 'adviser' },
         { title: 'Grade', key: 'grade_level' },
         { title: 'Section', key: 'room_name' },
-        { title: 'Actions', key: 'actions', sortable: false, align: 'end' },
+        // { title: 'Actions', key: 'actions', sortable: false, align: 'end' },
       ],
       juniorCount: null,
       seniorCount: null,

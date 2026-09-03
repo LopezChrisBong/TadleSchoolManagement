@@ -161,14 +161,14 @@
               {{ item.transmuted_grade }}
             </template>
 
-            <template v-slot:[`item.action`]="{ item }">
+            <template v-slot:[`item.recommendation`]="{ item }">
               <v-btn
                 size="small"
                 :color="riskInfo(item.transmuted_grade).color"
                 variant="flat"
               >
                 <span class="text-white" style="font-size: 10px">
-                  {{ riskInfo(item.transmuted_grade).action }}
+                  {{ item.recommendation }}
                 </span>
               </v-btn>
             </template>
@@ -275,7 +275,10 @@
               </div>
             </v-list-item>
 
-            <v-list-item v-if="!paginatedMisbehave.length" class="px-0">
+            <v-list-item
+              v-if="paginatedMisbehave && !paginatedMisbehave.length"
+              class="px-0"
+            >
               <v-empty-state
                 icon="mdi-emoticon-happy-outline"
                 title="No misbehavior reports"
@@ -285,7 +288,10 @@
             </v-list-item>
           </v-list>
 
-          <div class="d-flex justify-center pt-4" v-if="misbehaveList.length">
+          <div
+            class="d-flex justify-center pt-4"
+            v-if="misbehaveList && misbehaveList.length"
+          >
             <v-pagination
               v-model="misPage"
               :length="misPageCount"
@@ -339,19 +345,29 @@ export default {
       misbehaveList: [],
       lardoStudents: [],
       headers: [
-        { title: 'LRN', key: 'lrn' },
-        { title: 'Student Name', key: 'name' },
-        // { title: 'Risk Level', key: 'transmuted_grade' },
-        { title: 'Action', key: 'remarks' },
-        { title: 'Grade', key: 'grade' },
-        { title: 'Recommendation', key: 'action', align: 'end' },
+        { title: 'LRN', key: 'lrn', width: '200' },
+        { title: 'Student Name', key: 'name', width: '200' },
+        { title: 'Grade', key: 'grade', width: '100' },
+        { title: 'Action', key: 'remarks', width: '200' },
+
+        {
+          title: 'Recommendation',
+          key: 'recommendation',
+          align: 'end',
+          width: '200',
+        },
       ],
 
       headers1: [
         { title: 'LRN', key: 'lrn', align: 'start', width: '200' },
         { title: 'Student Name', key: 'name', align: 'center', width: '200' },
-        // { title: 'Risk Level', key: 'transmuted_grade' },
-        { title: 'Action', key: 'remarks', align: 'end', width: '200' },
+        { title: 'Action', key: 'remarks', align: 'center', width: '200' },
+        {
+          title: 'Recommendation',
+          key: 'recommendation',
+          align: 'end',
+          width: '200',
+        },
         // { title: 'Grade', key: 'grade' },
         // { title: 'Recommendation', key: 'action', align: 'end' },
       ],
@@ -539,8 +555,12 @@ export default {
 
     getFacultyDashboardData() {
       let filter = this.$store.getters.getFilterSelected;
+      let assignedModuleID = localStorage.getItem('AssignedModID');
       this.axiosCall(
-        '/enroll-student/getFacultyDashboardData/' + filter,
+        '/enroll-student/getFacultyDashboardData/' +
+          filter +
+          '/' +
+          assignedModuleID,
         'GET',
       ).then((res) => {
         if (res) {

@@ -31,7 +31,7 @@
           class="mr-2"
           color="primary"
         />
-        <v-btn
+        <!-- <v-btn
           class="me-2"
           prepend-icon="mdi-printer"
           rounded="lg"
@@ -43,7 +43,7 @@
           :color="$vuetify.theme.themes.light.submitBtns"
           text="Print"
           @click="printRecords()"
-        ></v-btn>
+        ></v-btn> -->
       </v-col>
     </v-row>
 
@@ -234,6 +234,16 @@
             auto-grow
             class="mt-2"
           ></v-textarea>
+          <v-textarea
+            v-if="assignedModuleID == 23 || assignedModuleID == 27"
+            v-model="studentReportData.comments"
+            label="Comments"
+            rows="3"
+            color="primary"
+            variant="outlined"
+            auto-grow
+            class="mt-2"
+          ></v-textarea>
 
           <div class="text-caption text-medium-emphasis mb-1 mt-2">
             Tagged Students
@@ -290,7 +300,7 @@
             @click="submitReport(1)"
           >
             <v-icon start size="18">mdi-send-outline</v-icon>
-            Submit
+            {{ assignedModuleID == 22 ? 'Counseling' : 'UnResolved' }}
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -313,6 +323,7 @@ export default {
   data: () => ({
     search: '',
     dialog: false,
+    assignedModuleID: null,
     userRoleID: null,
     headers: [
       { title: 'Name', value: 'name', align: 'start' },
@@ -382,6 +393,7 @@ export default {
 
   methods: {
     initialize() {
+      this.assignedModuleID = localStorage.getItem('AssignedModID');
       this.userId = this.$store.state.user.id;
       this.userRoleID = this.$store.state.user.user.user_roleID;
       this.filter = this.$store.getters.getFilterSelected;
@@ -403,13 +415,13 @@ export default {
       if (assingedModules == 2 || assingedModules == 21) {
         this.tabList = [
           { id: 1, name: 'Reports', active: true },
-          { id: 2, name: 'Submitted', active: false },
+          { id: 2, name: 'Counseling', active: false },
           { id: 3, name: 'Resolved', active: false },
         ];
       } else {
         this.tabList = [
           { id: 1, name: 'Adviser', active: true },
-          { id: 2, name: 'Parent', active: false },
+          { id: 2, name: 'UnResolved', active: false },
           { id: 3, name: 'Resolved', active: false },
         ];
       }
@@ -483,6 +495,15 @@ export default {
         .join('');
     },
     submitReport(num) {
+      if (this.assignedModuleID == 23 || this.assignedModuleID == 27) {
+        if (!this.studentReportData.comments) {
+          this.fadeAwayMessage.show = true;
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header =
+            'Please provide comments before submitting.';
+          return;
+        }
+      }
       let raw = this.$store.state.user.user.subModules;
 
       let subModules;
@@ -495,15 +516,18 @@ export default {
       if (!Array.isArray(subModules)) {
         subModules = [subModules];
       }
-      let assingedModules = this.$store.state.user.user.assignedModuleID;
       let data = [];
       if (num == 1) {
         data = {
-          status: assingedModules == 2 || assingedModules == 21 ? 1 : 2,
+          status:
+            this.assignedModuleID == 2 || this.assignedModuleID == 21 ? 1 : 2,
+          comments: this.studentReportData.comments,
         };
       } else {
         data = {
-          status: assingedModules == 2 || assingedModules == 21 ? 3 : 4,
+          status:
+            this.assignedModuleID == 2 || this.assignedModuleID == 21 ? 3 : 4,
+          comments: this.studentReportData.comments,
         };
       }
 

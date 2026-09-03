@@ -38,11 +38,11 @@ export class ParentRecordsController {
     return this.parentRecordsService.findAll();
   }
 
-  @Get('getMyChildrenList')
-  getMyChildrenList(@Headers() headers) {
+  @Get('getMyChildrenList/:filter')
+  getMyChildrenList(@Param('filter') filter: string, @Headers() headers) {
     var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
-    return this.parentRecordsService.getMyChildrenList(curr_user);
+    return this.parentRecordsService.getMyChildrenList(curr_user, +filter);
   }
 
   @Get('getMyChildrenAttendance/:studentID/:filter')

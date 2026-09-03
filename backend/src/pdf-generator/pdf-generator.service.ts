@@ -13,6 +13,8 @@ import {
   Availability,
   DepEdPersonnel,
   EnrollStudent,
+  ESig,
+  ParentRecord,
   RoomsSection,
   SchoolYear,
   StudentAttendance,
@@ -628,8 +630,9 @@ export class PdfGeneratorService {
 
       arr = JSON.parse(JSON.stringify(pivoted));
       arrs = arr[0].semesters;
-      firstSemSubjects = arrs['1st Semester'].subjects;
-      secondSemSubjects = arrs['2nd Semester'].subjects;
+      firstSemSubjects = arrs['1st Semester']?.subjects || [];
+
+      secondSemSubjects = arrs['2nd Semester']?.subjects || [];
       // console.log('Second',secondSemSubjects)
     } else {
       const pivoted = Object.values(
@@ -796,19 +799,76 @@ export class PdfGeneratorService {
 
       juniorHigh = arrs['Junior High'].subjects;
     }
+    let parentData = await this.dataSource.manager
+      .createQueryBuilder(UserDetail, 'UD')
+      .select([
+        "IF (!ISNULL(UD.mname) AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ', SUBSTRING(UD.mname, 1, 1), '. ', UD.lname), concat(UD.fname, ' ', UD.lname)) as teacherName",
+        'e.esign_filename as esign_filename',
+      ])
+      .leftJoin(ESig, 'e', 'e.user_detailID = UD.id')
+      .leftJoin(ParentRecord, 'pr', 'pr.parentID = UD.id')
+      .andWhere('pr.studentID = :studentID', { studentID })
+      .getRawOne();
+    let parentEsig;
+    if (parentData?.esign_filename) {
+      parentEsig = join(
+        process.cwd(),
+        process.env.FILE_PATH,
+        'uploadedEsigImg',
+        parentData?.esign_filename,
+      );
+    }
+    let parentEsigBase64 = '';
+    if (parentEsig) {
+      if (fs.existsSync(parentEsig)) {
+        parentEsigBase64 = fs.readFileSync(parentEsig).toString('base64');
+      }
+    }
 
+    console.log('BASE64:', parentEsigBase64.substring(0, 50));
+    console.log('parentEsig path:', parentEsig);
     let studentData = {};
+    let firstEsig = false;
+    let secondEsig = false;
+    let thirdEsig = false;
+    let fourthEsig = false;
     if (arrs['Junior High']) {
+      if (juniorHigh[0]['1st Quarter'] != null) {
+        firstEsig = true;
+      }
+      if (juniorHigh[0]['2nd Quarter'] != null) {
+        secondEsig = true;
+      }
+      if (juniorHigh[0]['3rd Quarter'] != null) {
+        thirdEsig = true;
+      }
+      if (juniorHigh[0]['4th Quarter'] != null) {
+        fourthEsig = true;
+      }
       junior = true;
       studentData = { juniorHigh: juniorHigh };
     } else {
       junior = false;
+      console.log('First Sem:', firstSemSubjects);
+      if (firstSemSubjects[0]['1st Quarter'] != null) {
+        firstEsig = true;
+      }
+      if (firstSemSubjects[0]['2nd Quarter'] != null) {
+        secondEsig = true;
+      }
+      if (secondSemSubjects[0]['1st Quarter'] != null) {
+        thirdEsig = true;
+      }
+      if (secondSemSubjects[0]['2nd Quarter'] != null) {
+        fourthEsig = true;
+      }
+      console.log('Second Sem:', secondSemSubjects);
       studentData = {
         firstSem: firstSemSubjects,
         secondSem: secondSemSubjects,
       };
     }
-
+    console.log('studentData', studentData);
     let headerImg = join(
       process.cwd(),
       process.env.FILE_PATH + 'static/img/header.png',
@@ -833,6 +893,11 @@ export class PdfGeneratorService {
         secondTerm: studentValues[1],
         thirdTerm: studentValues[2],
         fourthTerm: studentValues[3],
+        parentEsig: parentEsigBase64 ? parentEsigBase64 : null,
+        firstEsig: firstEsig,
+        secondEsig: secondEsig,
+        thirdEsig: thirdEsig,
+        fourthEsig: fourthEsig,
         // name:gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12'? arr[0].name: arr.name,
       },
     ];
@@ -921,6 +986,7 @@ export class PdfGeneratorService {
       .andWhere('SL.school_yearId = :filter', { filter })
       .andWhere('ES.statusEnrolled = 1');
     let newData = await query.getRawMany();
+    console.log('newData', newData);
     let attendanceData = await this.getAttendance(newData, filter);
     let depedOfficials = await this.dataSource.manager
       .createQueryBuilder(DepEdPersonnel, 'dp')
@@ -959,13 +1025,15 @@ export class PdfGeneratorService {
           let subject = acc[id].semesters[semester].subjects.find(
             (s) => s.subject === subject_title,
           );
+
+          console.log('subject', subject);
           if (!subject) {
             subject = {
               subject: subject_title,
-              '1st Term': null,
-              '2nd Term': null,
-              '3rd Term': null,
-              // '4th Term': null,
+              '1st Quarter': null,
+              '2nd Quarter': null,
+              '3rd Quarter': null,
+              '4th Quarter': null,
               finalGrade: null,
               remarks: null,
             };
@@ -977,10 +1045,10 @@ export class PdfGeneratorService {
 
           // recalc final grade
           const grades = [
-            subject['1st Term'],
-            subject['2nd Term'],
-            subject['3rd Term'],
-            // subject['4th Term'],
+            subject['1st Quarter'],
+            subject['2nd Quarter'],
+            subject['3rd Quarter'],
+            subject['4th Quarter'],
           ].filter((g) => g !== null);
 
           if (grades.length > 0) {
@@ -997,8 +1065,8 @@ export class PdfGeneratorService {
 
       arr = JSON.parse(JSON.stringify(pivoted));
       arrs = arr[0].semesters;
-      firstSemSubjects = arrs['1st Semester'].subjects;
-      secondSemSubjects = arrs['2nd Semester'].subjects;
+      firstSemSubjects = arrs['1st Semester']?.subjects || [];
+      secondSemSubjects = arrs['2nd Semester']?.subjects || [];
       // console.log('Second',secondSemSubjects)
     } else {
       const pivoted = Object.values(
@@ -1098,7 +1166,6 @@ export class PdfGeneratorService {
               };
               sem.subjects.push(subject);
             }
-
             subject[quarter] = final_grade;
 
             const grades = [
@@ -1165,9 +1232,50 @@ export class PdfGeneratorService {
 
       juniorHigh = arrs['Junior High'].subjects;
     }
+    let parentData = await this.dataSource.manager
+      .createQueryBuilder(UserDetail, 'UD')
+      .select([
+        "IF (!ISNULL(UD.mname) AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ', SUBSTRING(UD.mname, 1, 1), '. ', UD.lname), concat(UD.fname, ' ', UD.lname)) as teacherName",
+        'e.esign_filename as esign_filename',
+      ])
+      .leftJoin(ESig, 'e', 'e.user_detailID = UD.id')
+      .leftJoin(ParentRecord, 'pr', 'pr.parentID = UD.id')
+      .andWhere('pr.studentID = :studentID', { studentID })
+      .getRawOne();
+
+    let parentEsig;
+    if (parentData?.esign_filename) {
+      parentEsig = join(
+        process.cwd(),
+        process.env.FILE_PATH,
+        'uploadedEsigImg',
+        parentData?.esign_filename,
+      );
+    }
+    let parentEsigBase64 = '';
+    if (parentEsig) {
+      if (fs.existsSync(parentEsig)) {
+        parentEsigBase64 = fs.readFileSync(parentEsig).toString('base64');
+      }
+    }
+
+    console.log('BASE64:', parentEsigBase64.substring(0, 50));
+    console.log('parentEsig path:', parentEsig);
 
     let studentData = {};
+    let firstEsig = false;
+    let secondEsig = false;
+    let thirdEsig = false;
     if (arrs['Junior High']) {
+      if (juniorHigh[0]['1st Term'] != null) {
+        firstEsig = true;
+      }
+      if (juniorHigh[0]['2nd Term'] != null) {
+        secondEsig = true;
+      }
+      if (juniorHigh[0]['3rd Term'] != null) {
+        thirdEsig = true;
+      }
       junior = true;
       studentData = { juniorHigh: juniorHigh };
     } else {
@@ -1201,6 +1309,10 @@ export class PdfGeneratorService {
         firstTerm: studentValues[0],
         secondTerm: studentValues[1],
         thirdTerm: studentValues[2],
+        parentEsig: parentEsigBase64 ? parentEsigBase64 : null,
+        firstEsig: firstEsig,
+        secondEsig: secondEsig,
+        thirdEsig: thirdEsig,
         // name:gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12'? arr[0].name: arr.name,
       },
     ];
@@ -1291,7 +1403,11 @@ export class PdfGeneratorService {
 
     let rawData = await query.getRawMany();
     let newrawData;
-    if (schoolYear.syType == 0) {
+    if (
+      schoolYear.syType == 0 ||
+      gradeLevel == 'Grade 11' ||
+      gradeLevel == 'Grade 12'
+    ) {
       newrawData = await this.transformData(rawData);
     } else {
       newrawData = await this.transformDataV2(rawData);
@@ -1352,7 +1468,11 @@ export class PdfGeneratorService {
       const page = await browser.newPage();
       // compile(template_name, data)
       let content;
-      if (schoolYear.syType == 0) {
+      if (
+        schoolYear.syType == 0 ||
+        gradeLevel == 'Grade 11' ||
+        gradeLevel == 'Grade 12'
+      ) {
         content = await this.compile('student-all-grade', data);
       } else {
         content = await this.compile('student-all-gradev2', data);
@@ -1877,7 +1997,11 @@ export class PdfGeneratorService {
     return { headers, rows };
   }
 
-  async getSchoolForm10(school_yearID: number, teacherID: number) {
+  async getSchoolForm10(
+    school_yearID: number,
+    teacherID: number,
+    gradeLevel: string,
+  ) {
     let teacherData = await this.dataSource.manager
       .createQueryBuilder(UserDetail, 'UD')
       .select([
@@ -1922,7 +2046,11 @@ export class PdfGeneratorService {
 
     let quarter = [];
     let headerTitle;
-    if (schoolYear.syType == 0) {
+    if (
+      schoolYear.syType == 0 ||
+      gradeLevel == 'Grade 11' ||
+      gradeLevel == 'Grade 12'
+    ) {
       quarter = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'];
       headerTitle = 'QUARTER';
     } else {
@@ -1961,16 +2089,17 @@ export class PdfGeneratorService {
     let rawData = await query.getRawMany();
     console.log(schoolYear);
     let level;
-    if (
-      roomData.grade_level == 'Grade 11' ||
-      roomData.grade_level == 'Grade 12'
-    ) {
+    if (gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12') {
       level = 'Senior High';
     } else {
       level = 'Junior High';
     }
     let newData;
-    if (schoolYear.syType == 0) {
+    if (
+      schoolYear.syType == 0 ||
+      gradeLevel == 'Grade 11' ||
+      gradeLevel == 'Grade 12'
+    ) {
       newData = await this.transformGrades(rawData, level);
     } else {
       newData = await this.transformGradesV2(rawData, level);
@@ -2006,7 +2135,11 @@ export class PdfGeneratorService {
       const page = await browser.newPage();
       // compile(template_name, data)
       let content;
-      if (schoolYear.syType == 0) {
+      if (
+        schoolYear.syType == 0 ||
+        gradeLevel == 'Grade 11' ||
+        gradeLevel == 'Grade 12'
+      ) {
         content = await this.compile('school-form10', data);
       } else {
         content = await this.compile('school-form10v2', data);

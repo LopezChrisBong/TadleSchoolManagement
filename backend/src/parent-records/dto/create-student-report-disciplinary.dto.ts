@@ -36,4 +36,7 @@ export class CreateStudentReportDisciplinaryDto {
 
   @ApiProperty()
   report_time: string;
+
+  @ApiProperty()
+  comments: string;
 }

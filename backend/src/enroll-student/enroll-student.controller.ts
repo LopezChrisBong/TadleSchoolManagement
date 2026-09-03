@@ -56,13 +56,18 @@ export class EnrollStudentController {
     return this.enrollStudentService.importStudent(createImportStudentDto);
   }
 
-  @Get('getFacultyDashboardData/:filter')
-  getFacultyDashboardData(@Headers() headers, @Param('filter') filter: string) {
+  @Get('getFacultyDashboardData/:filter/:assignedModuleID')
+  getFacultyDashboardData(
+    @Headers() headers,
+    @Param('filter') filter: string,
+    @Param('assignedModuleID') assignedModuleID: string,
+  ) {
     var head_str = headers.authorization;
     const curr_user = currentUser(head_str);
     return this.enrollStudentService.getFacultyDashboardData(
       curr_user,
       +filter,
+      +assignedModuleID,
     );
   }
 
@@ -255,16 +260,18 @@ export class EnrollStudentController {
     );
   }
 
-  @Get('getAllValuesData/:filter/:studentID/:quarter')
+  @Get('getAllValuesData/:filter/:studentID/:quarter/:gradeLevel')
   getAllValuesData(
     @Param('filter') filter: string,
     @Param('studentID') studentID: string,
     @Param('quarter') quarter: string,
+    @Param('gradeLevel') gradeLevel: string,
   ) {
     return this.enrollStudentService.getAllValuesData(
       +filter,
       +studentID,
       +quarter,
+      gradeLevel,
     );
   }
 

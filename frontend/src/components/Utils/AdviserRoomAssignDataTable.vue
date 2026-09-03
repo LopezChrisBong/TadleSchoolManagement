@@ -125,7 +125,7 @@
                   variant="text"
                   color="blue-grey"
                   @click="
-                    syType == 0
+                    syType == 0 || grade == 'Grade 11' || grade == 'Grade 12'
                       ? viewStudentAchievements(item)
                       : viewStudentAchievementsV2(item)
                   "

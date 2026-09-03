@@ -926,7 +926,7 @@ export class RoomsSectionService {
         .select([
           '*',
           'ES.id as id',
-          "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ',ES.lname,' ',SUBSTRING(ES.mname, 1, 1) ,'. ') ,concat(ES.lname, ' ', ES.fname)) as name",
+          "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ',ES.fname,' ',SUBSTRING(ES.mname, 1, 1) ,'. ') ,concat(ES.lname, ' ', ES.fname)) as name",
         ])
         .leftJoin(StudentList, 'SL', 'ES.id = SL.studentId')
         .leftJoin(RoomsSection, 'RS', 'RS.id = SL.roomId')
@@ -993,8 +993,9 @@ export class RoomsSectionService {
         const gradeRecord = await this.dataSource.query(
           `SELECT transmuted_grade  
                 FROM transmuted_grade 
-                WHERE ? BETWEEN start_range AND end_range`,
-          [grades[i].initial_grade],
+                WHERE ? BETWEEN start_range AND end_range
+                LIMIT 1`,
+          [parseFloat(grades[i].initial_grade)],
         );
         if (gradeRecord.length > 0) {
           const last = gradeRecord.at(-1);
@@ -1035,19 +1036,22 @@ export class RoomsSectionService {
             semester,
           ],
         );
+
         if (submitted.length > 0) {
           const init = submitted[0].initial_grade;
           const trans = submitted[0].transmuted_grade;
 
           grades[i].initial_grade = init ? parseFloat(init) : null;
           grades[i].transmuted_grade = trans ? parseFloat(trans) : null;
+          console.log('grades[i].transmuted_grade', grades[i].transmuted_grade);
         } else {
           //  Otherwise, calculate from transmuted_grade ranges
           const gradeRecord = await this.dataSource.query(
             `SELECT transmuted_grade  
                 FROM transmuted_grade 
-                WHERE ? BETWEEN start_range AND end_range`,
-            [grades[i].initial_grade],
+                WHERE ? BETWEEN start_range AND end_range
+                LIMIT 1`,
+            [parseFloat(grades[i].initial_grade)],
           );
           // console.log('transmuted_grade',gradeRecord)
           if (gradeRecord.length > 0) {

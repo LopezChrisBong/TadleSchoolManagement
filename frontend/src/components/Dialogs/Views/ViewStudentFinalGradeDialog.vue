@@ -232,7 +232,12 @@ export default {
   methods: {
     initialize() {
       this.syType = this.$store.getters.getSyType;
-      this.quarter = this.syType == 0 ? '1st Quarter' : '1st Term';
+      this.quarter =
+        this.syType == 0 ||
+        this.data.grade_level == 'Grade 11' ||
+        this.data.grade_level == 'Grade 12'
+          ? '1st Quarter'
+          : '1st Term';
       this.genderTab = 'All';
       this.getAllStudentsGrade();
     },
@@ -418,6 +423,8 @@ export default {
           filter +
           '/' +
           userID +
+          '/' +
+          this.data.grade_level +
           '',
         '_blank',
       );

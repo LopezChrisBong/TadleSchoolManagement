@@ -1,14 +1,14 @@
 <template>
   <div>
     <!-- Employee Dashboard -->
-    <div v-if="$store.state.user.user.assignedModuleID == 22">
+    <div v-if="assignedModuleID == 22">
       <ParentDashboard />
     </div>
     <!-- Parent Dashboard -->
-    <div v-else-if="$store.state.user.user.assignedModuleID == 23">
+    <div v-else-if="assignedModuleID == 23 || assignedModuleID == 27">
       <PrefectDashboard />
     </div>
-    <div v-else-if="$store.state.user.user.assignedModuleID == 1">
+    <div v-else-if="assignedModuleID == 1">
       <Admin />
     </div>
     <!-- Parent Dashboard -->
@@ -27,10 +27,21 @@ export default {
   data() {
     return {
       user_roleID: null,
+      assignedModuleID: null,
     };
   },
   mounted() {
     this.user_roleID = this.$store.state.user.user.user_roleID;
+    if (localStorage.getItem('AssignedModID') == null) {
+      localStorage.setItem(
+        'AssignedModID',
+        this.$store.state.user.user.assignedModuleID,
+      );
+      this.assignedModuleID = localStorage.getItem('AssignedModID');
+    } else {
+      this.assignedModuleID = localStorage.getItem('AssignedModID');
+    }
+
     // console.log('USer', this.$store.state.user.user.assignedModuleID);
     // console.log('USer', localStorage.getItem('token'));
   },

@@ -44,6 +44,9 @@ export class StudentReportDisciplinary {
   @Column({ type: 'longtext', nullable: true })
   report_time: string;
 
+  @Column({ type: 'longtext', nullable: true })
+  comments: string;
+
   @Column({ type: 'int', default: false })
   status: number;
 

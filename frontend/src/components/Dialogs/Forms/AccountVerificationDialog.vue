@@ -30,7 +30,7 @@
                 <v-autocomplete
                   v-model="verifyModel.assignedModuleID"
                   :rules="userId === 3 ? [formRules.required] : []"
-                  :items="assignedModulesList"
+                  :items="availableMainModules"
                   item-value="id"
                   item-title="description"
                   label="Main Module"
@@ -70,7 +70,7 @@
                 <v-autocomplete
                   v-model="subModules"
                   :rules="[formRules.required]"
-                  :items="filteredAccessModules"
+                  :items="availableSubModules"
                   item-value="id"
                   item-title="description"
                   label="Sub Modules"
@@ -159,6 +159,26 @@ export default {
     };
   },
   computed: {
+    availableMainModules() {
+      return this.verifyModel.assignedModuleID == 21
+        ? this.assignedModulesList.filter((module) => module.id != 2)
+        : this.assignedModulesList;
+    },
+    availableSubModules() {
+      return this.filteredAccessModules.filter((module) => {
+        // Always remove the selected Main Module
+        if (module.id == this.verifyModel.assignedModuleID) {
+          return false;
+        }
+
+        // If Main Module is 21, also remove module ID 2
+        if (this.verifyModel.assignedModuleID == 21 && module.id == 2) {
+          return false;
+        }
+
+        return true;
+      });
+    },
     filteredAccessModules() {
       if (!this.verifyModel.assignedModuleID) {
         return this.assigneAccessModulesList;
@@ -202,6 +222,21 @@ export default {
         }
       },
       deep: true,
+    },
+    'verifyModel.assignedModuleID'(value) {
+      this.subModules = this.subModules.filter((id) => {
+        // Remove same ID as Main Module
+        if (id == value) {
+          return false;
+        }
+
+        // If Main Module is 21, remove ID 2
+        if (value == 21 && id == 2) {
+          return false;
+        }
+
+        return true;
+      });
     },
   },
   methods: {

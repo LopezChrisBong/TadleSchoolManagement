@@ -78,21 +78,34 @@ export class NotificationService {
       .createQueryBuilder(AtRiskStudentNotification, 'ARS')
       .select(['ARS.*'])
       .andWhere('ARS.teacherID = :id', { id })
+      .andWhere('ARS.transmuted_grade < 80')
       // .andWhere('ARS.read = 0')
-      .orderBy('ARS.read', 'ASC')
+      .orderBy('ARS.read', 'DESC')
       .getRawMany();
 
     for (let i = 0; i < data.length; i++) {
       console.log(data[i].transmuted_grade);
-      if (data[i].transmuted_grade < 70) {
-        Object.assign(data[i], {
-          recommendation: 'Remedial Class + Parent Meeting',
-        });
-      } else {
-        Object.assign(data[i], { recommendation: 'Teacher Consultation' });
+
+      let recommendation = '';
+
+      if (data[i].remarks) {
+        const match = data[i].remarks.match(/Recommendation:\s*(.*)$/i);
+
+        if (match) {
+          // Get the recommendation text
+          recommendation = match[1].trim();
+
+          // Remove "Recommendation: ..." from remarks
+          data[i].remarks = data[i].remarks
+            .replace(/\s*Recommendation:.*$/i, '')
+            .trim();
+        }
       }
+
+      // Store extracted recommendation separately
+      data[i].recommendation = recommendation;
     }
-    // console.log(data);
+    console.log('getAtRiskStudent', data);
     return data;
   }
 
@@ -101,19 +114,32 @@ export class NotificationService {
       .createQueryBuilder(AtRiskStudentForFacultyNotification, 'ARS')
       .select(['ARS.*'])
       .andWhere('ARS.teacherID = :id', { id })
+      .andWhere('ARS.transmuted_grade < 80')
       // .andWhere('ARS.read = 0')
       .orderBy('ARS.read', 'ASC')
       .getRawMany();
 
     for (let i = 0; i < data.length; i++) {
       console.log(data[i].transmuted_grade);
-      if (data[i].transmuted_grade < 70) {
-        Object.assign(data[i], {
-          recommendation: 'Remedial Class + Parent Meeting',
-        });
-      } else {
-        Object.assign(data[i], { recommendation: 'Teacher Consultation' });
+
+      let recommendation = '';
+
+      if (data[i].remarks) {
+        const match = data[i].remarks.match(/Recommendation:\s*(.*)$/i);
+
+        if (match) {
+          // Get the recommendation text
+          recommendation = match[1].trim();
+
+          // Remove "Recommendation: ..." from remarks
+          data[i].remarks = data[i].remarks
+            .replace(/\s*Recommendation:.*$/i, '')
+            .trim();
+        }
       }
+
+      // Store extracted recommendation separately
+      data[i].recommendation = recommendation;
     }
     return data;
   }
@@ -123,6 +149,7 @@ export class NotificationService {
       .createQueryBuilder(Notification, 'N')
       .select(['N.*'])
       .andWhere('N.parentID = :id', { id })
+      .andWhere('N.transmuted_grade < 80')
       .orderBy('N.read', 'ASC')
       .getRawMany();
 

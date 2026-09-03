@@ -2,6 +2,7 @@ import { Announcement } from 'src/announcement/entities/announcement.entity';
 import { Comments } from 'src/announcement/entities/comments.entity';
 import { AssignedModule } from 'src/assigned-modules/entities/assigned-module.entity';
 import { Users } from 'src/auth/entities/auth.entity';
+import { ESig } from 'src/e-sigs/entities/e-sig.entity';
 import { Availability } from 'src/enroll-student/entities/availability.entity';
 import { EnrollStudent } from 'src/enroll-student/entities/enroll-student.entity';
 import { SchoolYear } from 'src/enroll-student/entities/scholl-year.entity';
@@ -66,6 +67,7 @@ const entities = [
   Announcement,
   Comments,
   DepEdPersonnel,
+  ESig,
 ];
 
 export {
@@ -102,6 +104,7 @@ export {
   Announcement,
   Comments,
   DepEdPersonnel,
+  ESig,
 };
 
 export default entities;

@@ -868,7 +868,12 @@ export default {
     initialize() {
       this.filter = this.$store.getters.getFilterSelected;
       this.syType = this.$store.getters.getSyType;
-      this.quarter = this.syType == 0 ? '1st Quarter' : '1st Term';
+      this.quarter =
+        this.syType == 0 ||
+        this.data.grade_level == 'Grade 11' ||
+        this.data.grade_level == 'Grade 12'
+          ? '1st Quarter'
+          : '1st Term';
       this.userRoleID = this.$store.state.user.id;
       this.getTaggedStudent();
     },

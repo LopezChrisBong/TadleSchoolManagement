@@ -83,10 +83,7 @@
           <v-divider />
 
           <v-card-text class="pa-4">
-            <div
-              class="d-flex pa-1 mb-1"
-              v-if="$store.state.user.user.assignedModuleID != 22"
-            >
+            <div class="d-flex pa-1 mb-1" v-if="assignedModuleID != 22">
               <v-btn-toggle
                 v-model="status"
                 mandatory
@@ -134,16 +131,27 @@
                       {{ req.student_name }}
                     </div>
 
-                    <div class="text-caption text-medium-emphasis mb-2">
+                    <!-- <div class="text-caption text-medium-emphasis mb-2">
                       {{ req.remarks }}
+                    </div> -->
+                    <div class="text-caption font-weight-bold">
+                      Early Warning
                     </div>
+
+                    <div class="text-caption">
+                      {{ getEarlyWarning(req.remarks) }}
+                    </div>
+
                     <div class="recommendation-block">
                       <div
                         class="text-caption font-weight-bold recommendation-label"
                       >
                         Decision Support Recommendation
                       </div>
-                      <div class="text-caption">{{ req.recommendation }}</div>
+
+                      <div class="text-caption">
+                        {{ getRecommendation(req.remarks) }}
+                      </div>
                     </div>
                     <v-btn
                       size="small"
@@ -188,16 +196,27 @@
                       {{ req.student_name }}
                     </div>
 
-                    <div class="text-caption text-medium-emphasis mb-2">
+                    <!-- <div class="text-caption text-medium-emphasis mb-2">
                       {{ req.remarks }}
+                    </div> -->
+                    <div class="text-caption font-weight-bold">
+                      Early Warning
                     </div>
+
+                    <div class="text-caption">
+                      {{ getEarlyWarning(req.remarks) }}
+                    </div>
+
                     <div class="recommendation-block">
                       <div
                         class="text-caption font-weight-bold recommendation-label"
                       >
                         Decision Support Recommendation
                       </div>
-                      <div class="text-caption">{{ req.recommendation }}</div>
+
+                      <div class="text-caption">
+                        {{ getRecommendation(req.remarks) }}
+                      </div>
                     </div>
                     <v-btn
                       size="small"
@@ -220,7 +239,7 @@
               v-if="
                 !lardoNotification.length &&
                 !lardoNotificationForFaculty.length &&
-                $store.state.user.user.assignedModuleID != 22
+                assignedModuleID != 22
               "
               v-show="status === 'Lardo'"
               class="empty-state"
@@ -284,7 +303,9 @@
             </div>
             <!-- At Risk Faculty -->
             <div
-              v-else-if="atRiskNotificationForFaculty.length"
+              v-else-if="
+                atRiskNotificationForFaculty.length && !subModules.includes(21)
+              "
               class="mb-6"
               v-show="status === 'At-Risk'"
             >
@@ -666,10 +687,7 @@
         <v-divider />
 
         <v-card-text class="pa-6">
-          <div
-            class="d-flex pa-1 mb-2"
-            v-if="$store.state.user.user.assignedModuleID != 22"
-          >
+          <div class="d-flex pa-1 mb-2" v-if="assignedModuleID != 22">
             <v-btn-toggle
               v-model="status"
               mandatory
@@ -715,8 +733,14 @@
                     {{ req.student_name }}
                   </div>
 
-                  <div class="text-caption text-medium-emphasis mb-2">
+                  <!-- <div class="text-caption text-medium-emphasis mb-2">
                     {{ req.remarks }}
+                  </div> -->
+
+                  <div class="text-caption font-weight-bold">Early Warning</div>
+
+                  <div class="text-caption">
+                    {{ getEarlyWarning(req.remarks) }}
                   </div>
 
                   <div class="recommendation-block">
@@ -725,7 +749,10 @@
                     >
                       Decision Support Recommendation
                     </div>
-                    <div class="text-caption">{{ req.recommendation }}</div>
+
+                    <div class="text-caption">
+                      {{ getRecommendation(req.remarks) }}
+                    </div>
                   </div>
                   <v-btn
                     size="small"
@@ -770,8 +797,14 @@
                     {{ req.student_name }}
                   </div>
 
-                  <div class="text-caption text-medium-emphasis mb-2">
+                  <!-- <div class="text-caption text-medium-emphasis mb-2">
                     {{ req.remarks }}
+                  </div> -->
+
+                  <div class="text-caption font-weight-bold">Early Warning</div>
+
+                  <div class="text-caption">
+                    {{ getEarlyWarning(req.remarks) }}
                   </div>
 
                   <div class="recommendation-block">
@@ -780,7 +813,10 @@
                     >
                       Decision Support Recommendation
                     </div>
-                    <div class="text-caption">{{ req.recommendation }}</div>
+
+                    <div class="text-caption">
+                      {{ getRecommendation(req.remarks) }}
+                    </div>
                   </div>
                   <v-btn
                     size="small"
@@ -863,7 +899,12 @@
             </v-card>
           </div>
           <!-- At-Risk Faculty -->
-          <div v-if="atRiskNotificationForFaculty.length" class="mb-8">
+          <div
+            v-if="
+              atRiskNotificationForFaculty.length && !subModules.includes(21)
+            "
+            class="mb-8"
+          >
             <div class="section-title">At-Risk Notification</div>
 
             <v-card
@@ -1179,7 +1220,15 @@ export default {
         ...this.atRiskNotificationForFaculty,
         ...this.parentNotification,
       ];
-      return allNotifications.filter((n) => !n.read).length;
+      if (this.subModules && this.subModules.includes(21)) {
+        if (this.assignedModuleID == 21) {
+          return allNotifications.filter((n) => !n.read).length;
+        } else {
+          return 0;
+        }
+      } else {
+        return allNotifications.filter((n) => !n.read).length;
+      }
     },
     hasUnread() {
       return this.unreadCount > 0;
@@ -1212,7 +1261,8 @@ export default {
   },
   mounted() {
     this.userId = this.$store.state.user.id;
-    this.userModule = this.$store.state.user.user.assignedModuleID;
+    this.userModule = localStorage.getItem('AssignedModID');
+    this.subModules = this.$store.state.user.user.subModules;
     this.$store.commit('SET_ASSIGNED_MODULE', this.userModule);
     localStorage.setItem('AssignedModID', this.userModule);
     this.isValidated = this.$store.state.user.user.isValidated;
@@ -1230,6 +1280,19 @@ export default {
     }
   },
   methods: {
+    getEarlyWarning(remarks) {
+      if (!remarks) return '';
+
+      return remarks.replace(/Recommendation:\s*.*$/i, '').trim();
+    },
+
+    getRecommendation(remarks) {
+      if (!remarks) return '';
+
+      const match = remarks.match(/Recommendation:\s*(.*)$/i);
+
+      return match ? match[1].trim() : '';
+    },
     setInitialSelectedRole() {
       this.assigneAccessModulesList = this.assigneAccessModulesList.map(
         (item) => ({
@@ -1531,30 +1594,48 @@ export default {
         },
       );
     },
-    confirmChangeRole() {
+    async confirmChangeRole() {
       this.isLoading = true;
-      let userID = this.$store.state.user.user.id;
-      let data = {
+
+      const userID = this.$store.state.user.user.id;
+
+      const data = {
         assignedModuleID: this.newRoleData.id,
       };
-      this.axiosCall(
-        '/auth/changeAssignedModule/Role/' + userID,
-        'POST',
-        data,
-      ).then((res) => {
+
+      try {
+        const res = await this.axiosCall(
+          '/auth/changeAssignedModule/Role/' + userID,
+          'POST',
+          data,
+        );
+
         if (res.data.status == 200) {
+          // Update Vuex
           this.$store.commit('SET_ASSIGNED_MODULE', this.newRoleData.id);
+
+          // Update localStorage
           localStorage.setItem('AssignedModID', this.newRoleData.id);
+
           this.isLoading = false;
+
+          // Wait for router navigation
+          await this.$router.push('/');
+
+          // Reload after navigation has completed
           location.reload();
         } else if (res.data.status == 400) {
           this.isLoading = false;
+
           this.fadeAwayMessage.message = res.data.msg;
           this.fadeAwayMessage.show = true;
           this.fadeAwayMessage.type = 'error';
           this.fadeAwayMessage.header = 'System Message';
         }
-      });
+      } catch (error) {
+        this.isLoading = false;
+        console.error('Change role error:', error);
+      }
     },
   },
   beforeUnmount() {

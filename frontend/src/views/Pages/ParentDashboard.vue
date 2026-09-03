@@ -140,50 +140,48 @@
     <v-row v-if="lardoAlert || disciplineCase">
       <v-col cols="12" md="6" v-if="lardoAlert">
         <v-card class="pa-4 rounded-xl mb-4 border" elevation="0">
-          <div class="text-h6 font-weight-bold mb-4">
-            Alert & Discipline Status
-          </div>
+          <div class="text-h6 font-weight-bold mb-4">Alert status</div>
 
           <v-alert
-            v-if="lardoAlert"
             type="error"
             variant="flat"
             density="comfortable"
-            class="rounded-lg mb-3"
+            class="rounded-lg mb-4"
             icon="mdi-alert"
           >
-            <div class="font-weight-bold">LARDO ALERT</div>
-            <div class="text-caption">Learner At-Risk of Dropping Out</div>
+            <div class="font-weight-bold">LARDO alert</div>
+            <div class="text-caption">Learner at-risk of dropping out</div>
           </v-alert>
 
-          <div class="alert-detail-row">
-            <span class="text-medium-emphasis">Reason:</span>
-            <span class="font-weight-medium">{{ lardoAlert.remarks }}</span>
-          </div>
-          <div class="alert-detail-row">
-            <span class="text-medium-emphasis">Reported:</span>
-            <span class="font-weight-medium">{{
-              formatDate(lardoAlert.created_at)
-            }}</span>
-          </div>
-          <div class="alert-detail-row">
-            <span class="text-medium-emphasis">Status:</span>
-            <v-chip
-              size="small"
-              :color="lardoAlert.read ? 'grey' : 'red'"
-              variant="flat"
-              class="text-white"
-            >
-              {{ lardoAlert.read ? 'Acknowledged' : 'Unread' }}
-            </v-chip>
+          <div class="d-flex flex-column ga-3">
+            <div>
+              <div class="text-caption text-medium-emphasis">Reason</div>
+              <div class="text-body-2 font-weight-medium">
+                {{ lardoAlert.remarks }}
+              </div>
+            </div>
+            <div>
+              <div class="text-caption text-medium-emphasis">Teacher</div>
+              <div class="text-body-2 font-weight-medium">
+                {{ lardoAlert.teacher_name }}
+              </div>
+            </div>
+            <div>
+              <div class="text-caption text-medium-emphasis">
+                Recommendation
+              </div>
+              <div class="text-body-2 font-weight-medium">
+                {{ lardoAlert.recommendation }}
+              </div>
+            </div>
           </div>
         </v-card>
       </v-col>
 
       <v-col cols="12" md="6" v-if="disciplineCase">
         <v-card class="pa-4 rounded-xl mb-4 border" elevation="0">
-          <div class="d-flex align-center mb-4">
-            <div class="text-h6 font-weight-bold">Discipline Case</div>
+          <div class="d-flex align-center mb-5">
+            <div class="text-h6 font-weight-bold">Discipline case</div>
             <v-spacer />
             <v-chip
               size="small"
@@ -195,7 +193,7 @@
             </v-chip>
           </div>
 
-          <div class="d-flex align-center px-1 mb-4">
+          <div class="d-flex align-center px-1 mb-5">
             <template v-for="(step, i) in disciplineSteps" :key="step">
               <div
                 class="d-flex flex-column align-center"
@@ -204,13 +202,11 @@
                 <v-avatar
                   size="26"
                   :color="
-                    i <= disciplineStatusStep(disciplineCase.status)
-                      ? 'green'
-                      : 'grey-lighten-2'
+                    i <= currentDisciplineStep ? 'success' : 'grey-lighten-2'
                   "
                 >
                   <v-icon
-                    v-if="i <= disciplineStatusStep(disciplineCase.status)"
+                    v-if="i <= currentDisciplineStep"
                     size="15"
                     color="white"
                   >
@@ -223,9 +219,7 @@
                 v-if="i < disciplineSteps.length - 1"
                 class="flex-grow-1 mx-1 mb-4"
                 :color="
-                  i < disciplineStatusStep(disciplineCase.status)
-                    ? 'green'
-                    : 'grey-lighten-2'
+                  i < currentDisciplineStep ? 'success' : 'grey-lighten-2'
                 "
                 thickness="2"
               />
@@ -245,6 +239,17 @@
           >
             {{ disciplineStatusLabel(disciplineCase.status) }}
           </v-alert>
+
+          <v-btn
+            class="mt-5"
+            size="small"
+            variant="tonal"
+            prepend-icon="mdi-eye"
+            block
+            @click="disciplineDialog = true"
+          >
+            View details
+          </v-btn>
         </v-card>
       </v-col>
     </v-row>
@@ -266,7 +271,9 @@
 
             <div>
               <div class="font-weight-bold text-body-1">
-                {{ post.teacherName }}
+                <span style="text-transform: uppercase">{{
+                  post.teacherName
+                }}</span>
               </div>
               <div class="text-caption text-grey">
                 {{ formatDate(post.date) }}
@@ -356,6 +363,160 @@
         </div>
       </v-col>
     </v-row>
+    <v-dialog v-model="disciplineDialog" max-width="640" scrollable>
+      <v-card rounded="xl">
+        <v-card-title class="d-flex align-center pa-5">
+          <v-avatar
+            :color="reportTypeColor(disciplineCase.report_type)"
+            variant="tonal"
+            class="mr-3"
+          >
+            <v-icon :icon="reportTypeIcon(disciplineCase.report_type)" />
+          </v-avatar>
+
+          <div>
+            <div class="text-h6 font-weight-bold">
+              {{ reportTypeLabel(disciplineCase.report_type) }}
+            </div>
+            <div class="text-caption text-medium-emphasis">
+              Case #{{ disciplineCase.id }} ·
+              {{ formatDateTime(disciplineCase.createdAt) }}
+            </div>
+          </div>
+
+          <v-spacer />
+
+          <v-chip
+            size="small"
+            :color="disciplineCase.status === 4 ? 'success' : 'warning'"
+            variant="flat"
+          >
+            {{ disciplineStatusLabel(disciplineCase.status) }}
+          </v-chip>
+
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            size="small"
+            class="ml-1"
+            @click="disciplineDialog = false"
+          />
+        </v-card-title>
+
+        <v-divider />
+
+        <v-card-text class="pa-5">
+          <!-- Context row: who, where, when -->
+          <v-row dense>
+            <v-col cols="6" sm="3">
+              <div class="text-caption text-medium-emphasis">Student</div>
+              <div class="text-body-2 font-weight-medium">
+                {{ disciplineCase.studentID }}
+              </div>
+            </v-col>
+            <v-col cols="6" sm="3">
+              <div class="text-caption text-medium-emphasis">Teacher</div>
+              <div class="text-body-2 font-weight-medium">
+                {{ disciplineCase.teacherID }}
+              </div>
+            </v-col>
+            <v-col cols="6" sm="3">
+              <div class="text-caption text-medium-emphasis">Room</div>
+              <div class="text-body-2 font-weight-medium">
+                {{ disciplineCase.roomID }}
+              </div>
+            </v-col>
+            <v-col cols="6" sm="3">
+              <div class="text-caption text-medium-emphasis">Grade level</div>
+              <div class="text-body-2 font-weight-medium">
+                {{ disciplineCase.grade_level }}
+              </div>
+            </v-col>
+            <v-col cols="6" sm="3">
+              <div class="text-caption text-medium-emphasis">Subject</div>
+              <div class="text-body-2 font-weight-medium">
+                {{ disciplineCase.subjectID }}
+              </div>
+            </v-col>
+            <v-col cols="6" sm="3">
+              <div class="text-caption text-medium-emphasis">School year</div>
+              <div class="text-body-2 font-weight-medium">
+                {{ disciplineCase.school_yearID }}
+              </div>
+            </v-col>
+            <v-col cols="6" sm="6">
+              <div class="text-caption text-medium-emphasis">Reported</div>
+              <div class="text-body-2 font-weight-medium">
+                {{ disciplineCase.report_date }} ·
+                {{ disciplineCase.report_time }}
+              </div>
+            </v-col>
+          </v-row>
+
+          <v-divider class="my-4" />
+
+          <!-- Tagged students -->
+          <div class="mb-4">
+            <div class="text-caption text-medium-emphasis mb-1">
+              Tagged students
+            </div>
+            <div v-if="taggedStudentsList.length" class="d-flex flex-wrap ga-1">
+              <v-chip
+                v-for="student in taggedStudentsList"
+                :key="student"
+                size="small"
+                variant="tonal"
+                prepend-icon="mdi-account"
+              >
+                {{ student }}
+              </v-chip>
+            </div>
+            <div v-else class="text-body-2 text-medium-emphasis">
+              None tagged
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <div class="text-caption text-medium-emphasis mb-1">
+              Report description
+            </div>
+            <v-card
+              variant="tonal"
+              class="pa-3 rounded-lg text-body-2"
+              :color="disciplineCase.report_description ? undefined : 'grey'"
+            >
+              {{
+                disciplineCase.report_description || 'No description provided.'
+              }}
+            </v-card>
+          </div>
+
+          <!-- Comments -->
+          <div>
+            <div class="text-caption text-medium-emphasis mb-1">Comments</div>
+            <v-card
+              variant="tonal"
+              class="pa-3 rounded-lg text-body-2"
+              :color="disciplineCase.comments ? undefined : 'grey'"
+            >
+              {{ disciplineCase.comments || 'No comments provided.' }}
+            </v-card>
+          </div>
+
+          <div class="text-caption text-medium-emphasis mt-4">
+            Last updated {{ formatDateTime(disciplineCase.updatedAt) }}
+          </div>
+        </v-card-text>
+
+        <v-divider />
+
+        <v-card-actions class="pa-4">
+          <v-spacer />
+          <v-btn variant="text" @click="disciplineDialog = false">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -363,6 +524,7 @@
 export default {
   data: () => ({
     lardoAlert: null,
+    disciplineDialog: false,
     disciplineCase: null,
     disciplineSteps: ['Reported', 'Counseled', 'Referred to Prefect'],
     studentList: [],
@@ -381,11 +543,19 @@ export default {
     ],
   }),
   computed: {
+    currentDisciplineStep() {
+      return this.disciplineStatusStep(this.disciplineCase.status);
+    },
     attendanceColor() {
       const p = this.percent || 0;
       if (p >= 90) return 'green';
       if (p >= 75) return 'orange';
       return 'red';
+    },
+    taggedStudentsList() {
+      const raw = this.disciplineCase?.tag_students;
+      if (!raw) return [];
+      return Array.isArray(raw) ? raw : JSON.parse(raw);
     },
   },
   mounted() {
@@ -404,7 +574,28 @@ export default {
     initialize() {
       this.getMyStudent();
     },
-
+    disciplineStatusLabel(status) {
+      return (
+        { 0: 'Adviser review', 1: 'Prefect review', 4: 'Resolved' }[status] ??
+        'Unknown'
+      );
+    },
+    reportTypeLabel(type) {
+      return (
+        { 1: 'Academic concern', 2: 'Disciplinary concern' }[type] ?? 'Unknown'
+      );
+    },
+    reportTypeIcon(type) {
+      return (
+        { 1: 'mdi-school', 2: 'mdi-alert-octagon' }[type] ?? 'mdi-help-circle'
+      );
+    },
+    reportTypeColor(type) {
+      return { 1: 'blue', 2: 'red' }[type] ?? 'grey';
+    },
+    // formatDateTime(dt) {
+    //   // your existing implementation
+    // },
     disciplineStatusStep(status) {
       // status 0 -> step 0, 1 -> step 1, 4 -> step 2 (2/3 unused)
       if (status === 0) return 0;
@@ -412,15 +603,15 @@ export default {
       if (status === 4) return 2;
       return 0; // fallback
     },
-    disciplineStatusLabel(status) {
-      return status === 0
-        ? 'Under Adviser Review'
-        : status === 1
-        ? 'Referred to Prefect'
-        : status === 4
-        ? 'Resolved'
-        : 'Unknown';
-    },
+    // disciplineStatusLabel(status) {
+    //   return status === 0
+    //     ? 'Under Adviser Review'
+    //     : status === 1
+    //     ? 'Referred to Prefect'
+    //     : status === 4
+    //     ? 'Resolved'
+    //     : 'Unknown';
+    // },
     riskLevelColor(level) {
       const l = (level || '').toLowerCase();
       if (l === 'high') return 'red';
@@ -452,7 +643,11 @@ export default {
       });
     },
     getMyStudent() {
-      this.axiosCall('/parent-records/getMyChildrenList', 'GET').then((res) => {
+      this.filter = this.$store.getters.getFilterSelected;
+      this.axiosCall(
+        '/parent-records/getMyChildrenList/' + this.filter,
+        'GET',
+      ).then((res) => {
         if (res) {
           let data = res.data;
           data.forEach((element, i) => {
