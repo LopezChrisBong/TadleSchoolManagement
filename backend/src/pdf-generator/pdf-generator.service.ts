@@ -2681,6 +2681,11 @@ export class PdfGeneratorService {
       sub_subject ? JSON.stringify(sub_subject) : 'noData',
     );
 
+    let subject = await this.dataSource.manager
+      .createQueryBuilder(Subject, 's')
+      .where('s.id = :subjectID', { subjectID })
+      .getOne();
+    // console.log(subject)
     let combineData = Object.assign(
       { writenWorks: writenWorks },
       { performanceTask: performanceTask },
@@ -2695,6 +2700,10 @@ export class PdfGeneratorService {
             : w.quiz_label + ' (' + w.SG_highest_posible_score + ')',
         ),
       ),
+
+      'Total',
+      'PS',
+      `WS (${subject.writen_works}%)`,
     ];
 
     const performanceHeaders = [
@@ -2705,6 +2714,9 @@ export class PdfGeneratorService {
             : p.quiz_label + ' (' + p.SG_highest_posible_score + ')',
         ),
       ),
+      'Total',
+      'PS',
+      `WS (${subject.performance_task}%)`,
     ];
 
     const quarterlyHeaders = [
@@ -2715,12 +2727,16 @@ export class PdfGeneratorService {
             : q.quiz_label + ' (' + q.SG_highest_posible_score + ')',
         ),
       ),
+      'Total',
+      'PS',
+      `WS (${subject.quarter_assessment}%)`,
     ];
 
     const studentsMap = new Map<number, any>();
 
     function initStudent(id: number, name: string, sex: string) {
       studentsMap.set(id, {
+        studentID: id,
         name,
         sex,
         writtenWorks: new Array(writtenHeaders.length).fill(''),
@@ -2800,6 +2816,88 @@ export class PdfGeneratorService {
       }
     }
 
+    console.log('combineData.writenWorks', combineData.writenWorks, students);
+
+    for (const student of students) {
+      // ---------- WRITTEN WORKS ----------
+      {
+        const studentWW = combineData.writenWorks.filter(
+          (ww) => Number(ww.SG_studentID) === Number(student.studentID),
+        );
+
+        const firstEmpty = student.writtenWorks.indexOf('');
+        const total = student.writtenWorks
+          .slice(0, firstEmpty)
+          .reduce((sum, score) => sum + (Number(score) || 0), 0);
+        student.writtenWorks[firstEmpty] = total;
+
+        const secondEmpty = student.writtenWorks.indexOf('');
+        const totalPS = studentWW.reduce(
+          (sum, ww) => sum + (Number(ww.SG_highest_posible_score) || 0),
+          0,
+        );
+        student.writtenWorks[secondEmpty] = totalPS;
+
+        const thirdEmpty = student.writtenWorks.indexOf('');
+        student.writtenWorks[thirdEmpty] =
+          totalPS > 0
+            ? ((total / totalPS) * subject.writen_works).toFixed(2)
+            : 0;
+      }
+
+      // ---------- PERFORMANCE TASKS ----------
+      {
+        const studentPP = combineData.performanceTask.filter(
+          (pt) => Number(pt.SG_studentID) === Number(student.studentID),
+        );
+
+        const firstEmptyp = student.performanceTasks.indexOf('');
+        const totalp = student.performanceTasks
+          .slice(0, firstEmptyp)
+          .reduce((sum, score) => sum + (Number(score) || 0), 0);
+        student.performanceTasks[firstEmptyp] = totalp;
+
+        const secondEmptyp = student.performanceTasks.indexOf('');
+        const totalPSp = studentPP.reduce(
+          (sum, pt) => sum + (Number(pt.SG_highest_posible_score) || 0),
+          0,
+        );
+        student.performanceTasks[secondEmptyp] = totalPSp;
+
+        const thirdEmptyp = student.performanceTasks.indexOf('');
+        student.performanceTasks[thirdEmptyp] =
+          totalPSp > 0
+            ? ((totalp / totalPSp) * subject.performance_task).toFixed(2)
+            : 0;
+      }
+
+      // ---------- QUARTERLY ASSESSMENT ----------
+      {
+        const studentQA = combineData.quarterlyAssessment.filter(
+          (qa) => Number(qa.SG_studentID) === Number(student.studentID),
+        );
+
+        const firstEmptyq = student.quarterlyAssessment.indexOf('');
+        const totalq = student.quarterlyAssessment
+          .slice(0, firstEmptyq)
+          .reduce((sum, score) => sum + (Number(score) || 0), 0);
+        student.quarterlyAssessment[firstEmptyq] = totalq;
+
+        const secondEmptyq = student.quarterlyAssessment.indexOf('');
+        const totalPSq = studentQA.reduce(
+          (sum, qa) => sum + (Number(qa.SG_highest_posible_score) || 0),
+          0,
+        );
+        student.quarterlyAssessment[secondEmptyq] = totalPSq;
+
+        const thirdEmptyq = student.quarterlyAssessment.indexOf('');
+        student.quarterlyAssessment[thirdEmptyq] =
+          totalPSq > 0
+            ? ((totalq / totalPSq) * subject.quarter_assessment).toFixed(2)
+            : 0;
+      }
+    }
+
     let schoolYear = await this.dataSource.manager
       .createQueryBuilder(SchoolYear, 'SY')
       .select([
@@ -2809,11 +2907,6 @@ export class PdfGeneratorService {
       ])
       .where('SY.id = :school_yearID', { school_yearID })
       .getRawOne();
-
-    let subject = await this.dataSource.manager
-      .createQueryBuilder(Subject, 's')
-      .where('s.id = :subjectID', { subjectID })
-      .getOne();
 
     let teacher = await this.dataSource.manager
       .createQueryBuilder(UserDetail, 'ud')
@@ -2946,7 +3039,10 @@ export class PdfGeneratorService {
         school_yearID,
         sub_subject,
       );
-
+    let subject = await this.dataSource.manager
+      .createQueryBuilder(Subject, 's')
+      .where('s.id = :subjectID', { subjectID })
+      .getOne();
     let grade = await this.roomsSectionService.getGeneratedGrade(
       roomID,
       school_yearID,
@@ -2981,6 +3077,9 @@ export class PdfGeneratorService {
             : w.quiz_label + ' (' + w.SG_highest_posible_score + ')',
         ),
       ),
+      'Total',
+      'PS',
+      `WS (${subject.writen_works}%)`,
     ];
 
     const performanceHeaders = [
@@ -2991,6 +3090,9 @@ export class PdfGeneratorService {
             : p.quiz_label + ' (' + p.SG_highest_posible_score + ')',
         ),
       ),
+      'Total',
+      'PS',
+      `WS (${subject.performance_task}%)`,
     ];
 
     const quarterlyHeaders = [
@@ -3001,12 +3103,16 @@ export class PdfGeneratorService {
             : q.quiz_label + ' (' + q.SG_highest_posible_score + ')',
         ),
       ),
+      'Total',
+      'PS',
+      `WS (${subject.quarter_assessment}%)`,
     ];
 
     const studentsMap = new Map<number, any>();
 
     function initStudent(id: number, name: string, sex: string) {
       studentsMap.set(id, {
+        studentID: id,
         name,
         sex,
         writtenWorks: new Array(writtenHeaders.length).fill(''),
@@ -3086,6 +3192,86 @@ export class PdfGeneratorService {
       }
     }
 
+    for (const student of students) {
+      // ---------- WRITTEN WORKS ----------
+      {
+        const studentWW = combineData.writenWorks.filter(
+          (ww) => Number(ww.SG_studentID) === Number(student.studentID),
+        );
+
+        const firstEmpty = student.writtenWorks.indexOf('');
+        const total = student.writtenWorks
+          .slice(0, firstEmpty)
+          .reduce((sum, score) => sum + (Number(score) || 0), 0);
+        student.writtenWorks[firstEmpty] = total;
+
+        const secondEmpty = student.writtenWorks.indexOf('');
+        const totalPS = studentWW.reduce(
+          (sum, ww) => sum + (Number(ww.SG_highest_posible_score) || 0),
+          0,
+        );
+        student.writtenWorks[secondEmpty] = totalPS;
+
+        const thirdEmpty = student.writtenWorks.indexOf('');
+        student.writtenWorks[thirdEmpty] =
+          totalPS > 0
+            ? ((total / totalPS) * subject.writen_works).toFixed(2)
+            : 0;
+      }
+
+      // ---------- PERFORMANCE TASKS ----------
+      {
+        const studentPP = combineData.performanceTask.filter(
+          (pt) => Number(pt.SG_studentID) === Number(student.studentID),
+        );
+
+        const firstEmptyp = student.performanceTasks.indexOf('');
+        const totalp = student.performanceTasks
+          .slice(0, firstEmptyp)
+          .reduce((sum, score) => sum + (Number(score) || 0), 0);
+        student.performanceTasks[firstEmptyp] = totalp;
+
+        const secondEmptyp = student.performanceTasks.indexOf('');
+        const totalPSp = studentPP.reduce(
+          (sum, pt) => sum + (Number(pt.SG_highest_posible_score) || 0),
+          0,
+        );
+        student.performanceTasks[secondEmptyp] = totalPSp;
+
+        const thirdEmptyp = student.performanceTasks.indexOf('');
+        student.performanceTasks[thirdEmptyp] =
+          totalPSp > 0
+            ? ((totalp / totalPSp) * subject.performance_task).toFixed(2)
+            : 0;
+      }
+
+      // ---------- QUARTERLY ASSESSMENT ----------
+      {
+        const studentQA = combineData.quarterlyAssessment.filter(
+          (qa) => Number(qa.SG_studentID) === Number(student.studentID),
+        );
+
+        const firstEmptyq = student.quarterlyAssessment.indexOf('');
+        const totalq = student.quarterlyAssessment
+          .slice(0, firstEmptyq)
+          .reduce((sum, score) => sum + (Number(score) || 0), 0);
+        student.quarterlyAssessment[firstEmptyq] = totalq;
+
+        const secondEmptyq = student.quarterlyAssessment.indexOf('');
+        const totalPSq = studentQA.reduce(
+          (sum, qa) => sum + (Number(qa.SG_highest_posible_score) || 0),
+          0,
+        );
+        student.quarterlyAssessment[secondEmptyq] = totalPSq;
+
+        const thirdEmptyq = student.quarterlyAssessment.indexOf('');
+        student.quarterlyAssessment[thirdEmptyq] =
+          totalPSq > 0
+            ? ((totalq / totalPSq) * subject.quarter_assessment).toFixed(2)
+            : 0;
+      }
+    }
+
     let schoolYear = await this.dataSource.manager
       .createQueryBuilder(SchoolYear, 'SY')
       .select([
@@ -3095,11 +3281,6 @@ export class PdfGeneratorService {
       ])
       .where('SY.id = :school_yearID', { school_yearID })
       .getRawOne();
-
-    let subject = await this.dataSource.manager
-      .createQueryBuilder(Subject, 's')
-      .where('s.id = :subjectID', { subjectID })
-      .getOne();
 
     let teacher = await this.dataSource.manager
       .createQueryBuilder(UserDetail, 'ud')

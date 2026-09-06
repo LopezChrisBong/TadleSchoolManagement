@@ -294,14 +294,14 @@ export default {
     // AddAccountDialog,
   },
   data: () => ({
-    search: "",
+    search: '',
     dialog: false,
     headers: [
-      { title: "Name", value: "name", align: "start" },
+      { title: 'Name', value: 'name', align: 'start' },
       {
-        title: "Actions",
-        value: "actions",
-        align: "center",
+        title: 'Actions',
+        value: 'actions',
+        align: 'center',
         sortable: false,
         width: 100,
       },
@@ -314,36 +314,36 @@ export default {
     roomID: null,
     roomList: [],
     perPageChoices: [
-      { text: "5", value: 5 },
-      { text: "10", value: 10 },
-      { text: "20", value: 20 },
-      { text: "50", value: 50 },
-      { text: "100", value: 100 },
-      { text: "250", value: 250 },
-      { text: "500", value: 500 },
+      { text: '5', value: 5 },
+      { text: '10', value: 10 },
+      { text: '20', value: 20 },
+      { text: '50', value: 50 },
+      { text: '100', value: 100 },
+      { text: '250', value: 250 },
+      { text: '500', value: 500 },
     ],
-    activeTab: { id: 1, name: "Faculty", active: true },
+    activeTab: { id: 1, name: 'Faculty', active: true },
     tab: 1,
     tabList: [
-      { id: 1, name: "Faculty", active: true },
-      { id: 2, name: "Adviser", active: false },
+      { id: 1, name: 'Faculty', active: true },
+      { id: 2, name: 'Adviser', active: false },
     ],
     totalCount: 0,
     ratingPeriodBeginMenu: false,
     attendanceDate: null,
     attendanceList: [
-      { id: 1, description: "January" },
-      { id: 2, description: "February" },
-      { id: 3, description: "March" },
-      { id: 4, description: "April" },
-      { id: 5, description: "May" },
-      { id: 6, description: "June" },
-      { id: 7, description: "July" },
-      { id: 8, description: "August" },
-      { id: 9, description: "September" },
-      { id: 10, description: "October" },
-      { id: 11, description: "November" },
-      { id: 12, description: "December" },
+      { id: 1, description: 'January' },
+      { id: 2, description: 'February' },
+      { id: 3, description: 'March' },
+      { id: 4, description: 'April' },
+      { id: 5, description: 'May' },
+      { id: 6, description: 'June' },
+      { id: 7, description: 'July' },
+      { id: 8, description: 'August' },
+      { id: 9, description: 'September' },
+      { id: 10, description: 'October' },
+      { id: 11, description: 'November' },
+      { id: 12, description: 'December' },
     ],
     SF10Data: null,
     updateData: null,
@@ -358,9 +358,9 @@ export default {
     dialogConfirmDelete: false,
     fadeAwayMessage: {
       show: false,
-      type: "success",
-      header: "Successfully Deleted!",
-      message: "",
+      type: 'success',
+      header: 'Successfully Deleted!',
+      message: '',
       top: 10,
     },
   }),
@@ -416,8 +416,8 @@ export default {
       // console.log("Filted", filter);
       this.loading = false;
       this.axiosCall(
-        "/user-details/getAllFaculty/" + this.tab + "/" + filter,
-        "GET",
+        '/user-details/getAllFaculty/' + this.tab + '/' + filter,
+        'GET',
       ).then((res) => {
         if (res) {
           // console.log(res.data);
@@ -433,8 +433,8 @@ export default {
 
     async getMySubjectList(id) {
       const res = await this.axiosCall(
-        "/subjects/getAllSubjectSF2/" + id,
-        "GET",
+        '/subjects/getAllSubjectSF2/' + id,
+        'GET',
       );
 
       if (res.data && res.data.length > 0) {
@@ -456,21 +456,21 @@ export default {
     getMyClassRecord(id) {
       let filter = this.$store.getters.getFilterSelected;
       this.axiosCall(
-        "/subjects/getAllFacultySF2/" + filter + "/" + id,
-        "GET",
+        '/subjects/getAllFacultySF2/' + filter + '/' + id,
+        'GET',
       ).then((res) => {
         if (res.data.status != 500 && Array.isArray(res.data)) {
           res.data.forEach((element, i) => {
             res.data[i].room_section = this.toUpperCaseData(
-              element.room_section || "",
+              element.room_section || '',
             );
           });
           this.roomList = res.data;
         } else {
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "error";
-          this.fadeAwayMessage.header = "System Message";
-          this.fadeAwayMessage.message = "The faculty never set a grade level!";
+          this.fadeAwayMessage.type = 'error';
+          this.fadeAwayMessage.header = 'System Message';
+          this.fadeAwayMessage.message = 'The faculty never set a grade level!';
         }
       });
     },
@@ -495,21 +495,21 @@ export default {
     },
     add() {
       this.addData = [{ id: null }];
-      this.action = "Add";
+      this.action = 'Add';
     },
     personalInfo(dataEdit) {
       this.addData = dataEdit;
-      this.action = "Update";
+      this.action = 'Update';
     },
     credentials(dataEdit) {
       this.addData = dataEdit;
-      this.action = "Edit";
+      this.action = 'Edit';
     },
 
     editItem(item) {
       this.updateData = item;
       // this.updateData = [{ id: null }];
-      this.action = this.tab == 1 ? "Verify" : "Update";
+      this.action = this.tab == 1 ? 'Verify' : 'Update';
     },
     viewItem(item) {
       this.dialog = true;
@@ -524,42 +524,44 @@ export default {
       console.log(filter, this.roomID, this.subjectID);
       window.open(
         process.env.VUE_APP_SERVER +
-          "/pdf-generator/getSchoolForm2/" +
+          '/pdf-generator/getSchoolForm2/' +
           filter +
-          "/" +
+          '/' +
           this.roomID +
-          "/" +
+          '/' +
           this.subjectID +
-          "/" +
+          '/' +
           this.attendanceDate +
-          "/" +
+          '/' +
           this.dataEdit.id +
-          "",
-        "_blank",
+          '',
+        '_blank',
       );
     },
     printSF10(item) {
       let filter = this.$store.getters.getFilterSelected;
-      console.log(filter, Number(item.id));
+      console.log(filter, item);
       window.open(
         process.env.VUE_APP_SERVER +
-          "/pdf-generator/getSchoolForm10/" +
+          '/pdf-generator/getSchoolForm10/' +
           filter +
-          "/" +
+          '/' +
           Number(item.id) +
-          "",
-        "_blank",
+          '/' +
+          item.grade_level +
+          '',
+        '_blank',
       );
     },
 
     confirmDelete() {
-      this.axiosCall("/user-details/" + this.SF10Data.id, "DELETE").then(
+      this.axiosCall('/user-details/' + this.SF10Data.id, 'DELETE').then(
         (res) => {
           console.log(res.data);
           this.fadeAwayMessage.show = true;
-          this.fadeAwayMessage.type = "success";
-          this.fadeAwayMessage.header = "System Message";
-          this.fadeAwayMessage.message = "Account deleted successfully!";
+          this.fadeAwayMessage.type = 'success';
+          this.fadeAwayMessage.header = 'System Message';
+          this.fadeAwayMessage.message = 'Account deleted successfully!';
           this.initialize();
         },
       );

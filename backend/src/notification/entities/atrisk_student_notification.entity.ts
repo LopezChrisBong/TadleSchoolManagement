@@ -44,7 +44,7 @@ export class AtRiskStudentNotification {
   @Column({ type: 'varchar', nullable: false })
   subject_title: string;
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'varchar', nullable: true })
   quarter: string;
 
   @CreateDateColumn({

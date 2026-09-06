@@ -421,7 +421,7 @@ export default {
       } else {
         this.tabList = [
           { id: 1, name: 'Adviser', active: true },
-          { id: 2, name: 'UnResolved', active: false },
+          { id: 2, name: 'Suspended', active: false },
           { id: 3, name: 'Resolved', active: false },
         ];
       }

@@ -242,7 +242,7 @@
               v-if="
                 !lardoNotification.length &&
                 !lardoNotificationForFaculty.length &&
-                userModule != 22
+                [21, 2].includes(userModule)
               "
               v-show="status === 'Lardo'"
               class="empty-state"
@@ -356,7 +356,7 @@
               v-if="
                 !atRiskNotification.length &&
                 !atRiskNotificationForFaculty.length &&
-                userModule != 22
+                [21, 2].includes(userModule)
               "
               v-show="status === 'At-Risk'"
               class="empty-state"
@@ -909,7 +909,9 @@
           <!-- Empty state: Lardo -->
           <div
             v-if="
-              !lardoNotification.length && !lardoNotificationForFaculty.length
+              !lardoNotification.length &&
+              !lardoNotificationForFaculty.length &&
+              [21, 2].includes(userModule)
             "
             v-show="status === 'Lardo'"
             class="empty-state"
@@ -1018,7 +1020,9 @@
           <!-- Empty state: At-Risk -->
           <div
             v-if="
-              !atRiskNotification.length && !atRiskNotificationForFaculty.length
+              !atRiskNotification.length &&
+              !atRiskNotificationForFaculty.length &&
+              [21, 2].includes(userModule)
             "
             v-show="status === 'At-Risk'"
             class="empty-state"

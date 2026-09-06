@@ -1251,6 +1251,154 @@ export class EnrollStudentService {
     };
   }
 
+  async getPrefectDashboardData(
+    curr_user: any,
+    filter: number,
+    assignedModules: number,
+  ) {
+    const junior = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'];
+    const senior = ['Grade 11', 'Grade 12'];
+
+    const reportedData = await this.dataSource.manager
+      .createQueryBuilder(StudentReportDisciplinary, 'srd')
+      .select([
+        'srd.*',
+        "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as student",
+      ])
+      .leftJoin(EnrollStudent, 'es', 'es.id = srd.studentID')
+      .where('srd.grade_level IN (:...gradeLevel)', {
+        gradeLevel: assignedModules == 23 ? senior : junior,
+      })
+      .andWhere('srd.school_yearID = :filter', { filter })
+      .getRawMany();
+
+    const stats = [
+      {
+        title: 'Total Incidents',
+        value: reportedData.length,
+        icon: 'mdi-alert',
+        iconClass: 'blue-icon',
+      },
+      {
+        title: 'Pending Cases',
+        value: reportedData.filter((r) => r.status === 1).length,
+        icon: 'mdi-clock-outline',
+        iconClass: 'orange-icon',
+      },
+      {
+        title: 'Resolved Cases',
+        value: reportedData.filter((r) => r.status === 2 || r.status === 4)
+          .length,
+        icon: 'mdi-check-circle-outline',
+        iconClass: 'green-icon',
+      },
+      {
+        title: 'Suspensions',
+        value: reportedData.filter((r) => r.status === 3).length,
+        icon: 'mdi-account-off-outline',
+        iconClass: 'red-icon',
+      },
+    ];
+
+    const incidents = reportedData
+      .sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      )
+      .slice(0, 10)
+      .map((report) => ({
+        student: report.student,
+        studentID: report.studentID,
+        violation: report.report_description || 'No description',
+        date:
+          report.report_date ||
+          new Date(report.created_at).toISOString().split('T')[0],
+        status:
+          report.status === 1
+            ? 'Pending'
+            : report.status === 2
+              ? 'Resolved'
+              : report.status === 3
+                ? 'Suspended'
+                : report.status === 4
+                  ? 'Serious'
+                  : 'Unknown',
+      }));
+
+    const minor = reportedData.filter((r) => r.status === 1).length;
+
+    const major = reportedData.filter((r) => r.status === 2).length;
+
+    const severe = reportedData.filter((r) => r.status === 3).length;
+
+    const total = reportedData.length;
+
+    const behaviorSummary = [
+      {
+        label: 'Minor Offenses',
+        value: total ? Math.round((minor / total) * 100) : 0,
+        color: 'green',
+      },
+      {
+        label: 'Major Offenses',
+        value: total ? Math.round((major / total) * 100) : 0,
+        color: 'orange',
+      },
+      {
+        label: 'Severe Cases',
+        value: total ? Math.round((severe / total) * 100) : 0,
+        color: 'red',
+      },
+    ];
+
+    const offenderMap = new Map<
+      number,
+      {
+        name: string;
+        cases: number;
+        latestDate: Date;
+      }
+    >();
+
+    reportedData.forEach((report) => {
+      const studentID = Number(report.studentID);
+      const createdAt = new Date(report.created_at);
+
+      const existing = offenderMap.get(studentID);
+
+      if (existing) {
+        existing.cases++;
+
+        if (createdAt > existing.latestDate) {
+          existing.latestDate = createdAt;
+        }
+      } else {
+        offenderMap.set(studentID, {
+          name: report.student,
+          cases: 1,
+          latestDate: createdAt,
+        });
+      }
+    });
+
+    const latestOffenders = Array.from(offenderMap.values())
+      .sort((a, b) => b.latestDate.getTime() - a.latestDate.getTime())
+      .slice(0, 5)
+      .map((offender) => ({
+        name: offender.name,
+        cases: offender.cases,
+      }));
+
+    console.log('getPrefectDashboardData', reportedData);
+
+    return {
+      stats,
+      incidents,
+      topOffenders: latestOffenders,
+      behaviorSummary,
+    };
+  }
+
   async getAdminDashboardData(filter: string) {
     let junior = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'];
     let senior = ['Grade 11', 'Grade 12'];
