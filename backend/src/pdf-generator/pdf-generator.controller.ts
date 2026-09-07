@@ -323,6 +323,50 @@ export class PdfGeneratorController {
     res.end(buffer);
   }
 
+  @Get('/getAllStudenListByLevel/:filter/:grade')
+  async getAllStudenListByLevel(
+    @Res() res,
+    @Param('filter') filter: number,
+    @Param('grade') grade: string,
+  ): Promise<void> {
+    const buffer = await this.pdfGeneratorService.getAllStudenListByLevel(
+      filter,
+      grade,
+    );
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'inline; filename=example.pdf',
+      'Content-Length': buffer.length,
+
+      // prevent cache
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      Pragma: 'no-cache',
+      Expires: 0,
+    });
+
+    res.end(buffer);
+  }
+
+  @Get('/getAllAtRiskStudents/:filter')
+  async getAllAtRiskStudents(
+    @Res() res,
+    @Param('filter') filter: number,
+  ): Promise<void> {
+    const buffer = await this.pdfGeneratorService.getAllAtRiskStudents(filter);
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'inline; filename=example.pdf',
+      'Content-Length': buffer.length,
+
+      // prevent cache
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      Pragma: 'no-cache',
+      Expires: 0,
+    });
+
+    res.end(buffer);
+  }
+
   // @Get('getQRCode/:id')
   // async getQRCode(@Res() res, @Param('id') id: string): Promise<void> {
   //   const buffer = await this.pdfGeneratorService.getQRCode(id);

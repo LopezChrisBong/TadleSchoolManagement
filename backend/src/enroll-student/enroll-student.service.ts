@@ -1430,8 +1430,11 @@ export class EnrollStudentService {
       .leftJoin(UserDetail, 'ud', 'ud.id = rs.teacherId')
       .leftJoin(EnrollStudent, 'es', 'es.id = risk.studentID')
       .where('risk.school_yearID = :filter', { filter })
+      .groupBy('risk.subject_title')
+      .addGroupBy('sl.studentID')
+      .orderBy('es.lname', 'ASC')
       .getRawMany();
-    console.log(atRisk);
+    // console.log('getAdminDashboardData', atRisk);
     return {
       juniorCount: juniorCount,
       seniorCount: seniorCount,
