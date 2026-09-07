@@ -14,6 +14,7 @@ import {
   StudentReportDisciplinary,
   StudentValues,
   Subject,
+  TransmutedGrade,
   UserDetail,
   Users,
 } from 'src/entities';
@@ -1441,6 +1442,16 @@ export class EnrollStudentService {
       atRisk: atRisk,
       riskCout: atRisk.length,
     };
+  }
+
+  async getAllSubjectThatAtRisk(filter: string, id: number) {
+    let studentData = await this.dataSource.manager
+      .createQueryBuilder(AtRiskStudentForFacultyNotification, 'ars')
+      .where('ars.studentID = :id', { id })
+      .andWhere('ars.school_yearID = :filter', { filter })
+      .getMany();
+    console.log(studentData);
+    return studentData;
   }
 
   async getSchoolYear() {

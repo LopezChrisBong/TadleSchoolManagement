@@ -85,11 +85,18 @@ export class EnrollStudentController {
       +assignedModuleID,
     );
   }
-  
 
   @Get('getAdminDashboardData/:filter')
   getAdminDashboardData(@Param('filter') filter: string) {
     return this.enrollStudentService.getAdminDashboardData(filter);
+  }
+
+  @Get('getAllSubjectThatAtRisk/:filter/:id')
+  getAllSubjectThatAtRisk(
+    @Param('filter') filter: string,
+    @Param('id') id: string,
+  ) {
+    return this.enrollStudentService.getAllSubjectThatAtRisk(filter, +id);
   }
 
   @Post('studentValues')
