@@ -2105,7 +2105,9 @@ export class PdfGeneratorService {
     } else {
       newData = await this.transformGradesV2(rawData, level);
     }
-
+    let depedOfficials = await this.dataSource.manager
+      .createQueryBuilder(DepEdPersonnel, 'dp')
+      .getMany();
     // console.log(newData[0])
     let curDate = new Date();
 
@@ -2122,6 +2124,7 @@ export class PdfGeneratorService {
         schoolYear: schoolYear,
         teacherData: teacherData,
         rawData: newData,
+        principal: depedOfficials[0],
         // updatedRow:updatedRow,
         roomData: roomData,
         level: level,
@@ -2837,7 +2840,9 @@ export class PdfGeneratorService {
           (sum, ww) => sum + (Number(ww.SG_highest_posible_score) || 0),
           0,
         );
-        student.writtenWorks[secondEmpty] = totalPS;
+        student.writtenWorks[secondEmpty] = ((total / totalPS) * 100).toFixed(
+          2,
+        );
 
         const thirdEmpty = student.writtenWorks.indexOf('');
         student.writtenWorks[thirdEmpty] =
@@ -2863,7 +2868,10 @@ export class PdfGeneratorService {
           (sum, pt) => sum + (Number(pt.SG_highest_posible_score) || 0),
           0,
         );
-        student.performanceTasks[secondEmptyp] = totalPSp;
+        student.performanceTasks[secondEmptyp] = (
+          (totalp / totalPSp) *
+          100
+        ).toFixed(2);
 
         const thirdEmptyp = student.performanceTasks.indexOf('');
         student.performanceTasks[thirdEmptyp] =
@@ -2889,7 +2897,10 @@ export class PdfGeneratorService {
           (sum, qa) => sum + (Number(qa.SG_highest_posible_score) || 0),
           0,
         );
-        student.quarterlyAssessment[secondEmptyq] = totalPSq;
+        student.quarterlyAssessment[secondEmptyq] = (
+          (totalq / totalPSq) *
+          100
+        ).toFixed(2);
 
         const thirdEmptyq = student.quarterlyAssessment.indexOf('');
         student.quarterlyAssessment[thirdEmptyq] =

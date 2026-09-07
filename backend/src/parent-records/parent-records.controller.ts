@@ -161,6 +161,18 @@ export class ParentRecordsController {
     );
   }
 
+  @Patch('scheduleParentMeeting/:id')
+  scheduleParentMeeting(
+    @Param('id') id: string,
+    @Body()
+    updateStudentReportDiscipilinarydDto: UpdateStudentReportDiscipilinarydDto,
+  ) {
+    return this.parentRecordsService.scheduleParentMeeting(
+      +id,
+      updateStudentReportDiscipilinarydDto,
+    );
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.parentRecordsService.remove(+id);

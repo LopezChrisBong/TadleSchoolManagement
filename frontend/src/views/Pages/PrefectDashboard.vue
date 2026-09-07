@@ -210,32 +210,7 @@ export default {
 
   data() {
     return {
-      stats: [
-        {
-          title: 'Total Incidents',
-          value: 124,
-          icon: 'mdi-alert',
-          iconClass: 'blue-icon',
-        },
-        {
-          title: 'Pending Cases',
-          value: 32,
-          icon: 'mdi-clock-outline',
-          iconClass: 'orange-icon',
-        },
-        {
-          title: 'Resolved Cases',
-          value: 78,
-          icon: 'mdi-check-circle-outline',
-          iconClass: 'green-icon',
-        },
-        {
-          title: 'Suspensions',
-          value: 14,
-          icon: 'mdi-account-off-outline',
-          iconClass: 'red-icon',
-        },
-      ],
+      stats: [],
 
       headers: [
         {
@@ -256,59 +231,11 @@ export default {
         },
       ],
 
-      incidents: [
-        {
-          student: 'Juan Dela Cruz',
-          violation: 'Late Arrival',
-          date: '2026-03-10',
-          status: 'Pending',
-        },
-        {
-          student: 'Maria Santos',
-          violation: 'Uniform Violation',
-          date: '2026-03-09',
-          status: 'Resolved',
-        },
-        {
-          student: 'Pedro Reyes',
-          violation: 'Fighting',
-          date: '2026-03-08',
-          status: 'Serious',
-        },
-      ],
+      incidents: [],
 
-      topOffenders: [
-        {
-          name: 'Pedro Reyes',
-          cases: 5,
-        },
-        {
-          name: 'Juan Dela Cruz',
-          cases: 4,
-        },
-        {
-          name: 'Ana Lopez',
-          cases: 3,
-        },
-      ],
+      topOffenders: [],
 
-      behaviorSummary: [
-        {
-          label: 'Minor Offenses',
-          value: 60,
-          color: 'green',
-        },
-        {
-          label: 'Major Offenses',
-          value: 30,
-          color: 'orange',
-        },
-        {
-          label: 'Severe Cases',
-          value: 10,
-          color: 'red',
-        },
-      ],
+      behaviorSummary: [],
 
       barOptions: {
         responsive: true,
@@ -345,7 +272,9 @@ export default {
       statusColorHex: {
         Pending: '#fb8c00',
         Resolved: '#43a047',
-        Serious: '#e53935',
+        Adviser: '#e53935',
+        'Un-Resolved': '#e53935',
+        'Parent Meeting': '#d81b60',
       },
 
       behaviorColorHex: {
@@ -448,8 +377,12 @@ export default {
         case 'Resolved':
           return 'green';
 
-        case 'Serious':
+        case 'Adviser':
+        case 'Un-Resolved':
           return 'red';
+
+        case 'Parent Meeting':
+          return 'pink';
 
         default:
           return 'grey';
@@ -475,6 +408,10 @@ export default {
 };
 </script>
 <style scoped>
+.pink-icon {
+  background: #fce4ec;
+  color: #ad1457;
+}
 .discipline-bg {
   min-height: 100vh;
 }

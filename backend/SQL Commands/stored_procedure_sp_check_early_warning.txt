@@ -778,3 +778,276 @@ BEGIN
 
 END$$
 DELIMITER ;
+
+
+part 4 ////
+
+DROP PROCEDURE IF EXISTS sp_check_early_warning;
+DELIMITER $$
+
+CREATE PROCEDURE sp_check_early_warning(
+    IN p_studentID INT,
+    IN p_subjectID INT,
+    IN p_school_yearID INT,
+    IN p_roomID INT,
+    IN p_quarter VARCHAR(50),
+    IN p_userdetailID INT
+)
+BEGIN
+
+    DECLARE v_count INT DEFAULT 0;
+    DECLARE v_student_name VARCHAR(255);
+    DECLARE v_subject_title VARCHAR(255);
+    DECLARE v_written_percentage DECIMAL(5,2);
+    DECLARE v_performance_percentage DECIMAL(5,2);
+    DECLARE v_transmuted_grade DECIMAL(5,2);
+    DECLARE v_teacherID INT;
+    DECLARE v_grade_level VARCHAR(100);
+    DECLARE v_room_name VARCHAR(255);
+    DECLARE v_failed_subjects INT DEFAULT 0;
+    DECLARE v_remarks VARCHAR(255);
+
+    -- Require at least 3 grading components
+    SELECT COUNT(*)
+    INTO v_count
+    FROM student_grade
+    WHERE roomID = p_roomID
+      AND school_yearID = p_school_yearID
+      AND studentID = p_studentID
+      AND subjectID = p_subjectID
+      AND TRIM(quarter) = TRIM(p_quarter)
+      AND type IN (1,2);
+
+    IF v_count >= 3 THEN
+
+        -- Get written & performance percentages
+        SELECT written_percentage, performance_percentage
+        INTO v_written_percentage, v_performance_percentage
+        FROM student_subject_summary
+        WHERE studentID = p_studentID
+          AND subjectID = p_subjectID
+          AND school_yearID = p_school_yearID
+          AND TRIM(quarter) = TRIM(p_quarter)
+        LIMIT 1;
+
+        -- Risk grade = average of written_percentage and performance_percentage.
+        -- We no longer use total_grade / the transmuted_grade lookup table here,
+        -- since total_grade can be skewed low when a grading component
+        -- (e.g. assessment) hasn't been recorded yet.
+        SET v_transmuted_grade = (v_written_percentage + v_performance_percentage) / 2;
+
+        -- Proceed if grade is below 80 (covers 75–79 and below 75)
+        IF v_transmuted_grade IS NOT NULL AND v_transmuted_grade < 80 THEN
+
+            -- Count failed subjects (avg of written/performance < 75)
+            SELECT COUNT(*)
+            INTO v_failed_subjects
+            FROM student_subject_summary sss
+            WHERE sss.studentID = p_studentID
+              AND sss.school_yearID = p_school_yearID
+              AND TRIM(sss.quarter) = TRIM(p_quarter)
+              AND (sss.written_percentage + sss.performance_percentage) / 2 < 75;
+
+            -- Determine intervention
+            IF v_transmuted_grade BETWEEN 75 AND 79 THEN
+                SET v_remarks = 'Peer Tutoring & Remedial Support';
+
+            ELSEIF v_transmuted_grade < 75 THEN
+                IF v_failed_subjects >= 3 THEN
+                    SET v_remarks = 'Parent-Teacher Conference + Intensive Intervention';
+                ELSE
+                    SET v_remarks = 'Mandatory Remediation';
+                END IF;
+            END IF;
+
+            -- Student name
+            SELECT CONCAT(
+                    fname, ' ',
+                    IFNULL(CONCAT(LEFT(mname,1), '. '), ''),
+                    lname
+                )
+            INTO v_student_name
+            FROM enroll_student
+            WHERE id = p_studentID
+            LIMIT 1;
+
+            -- Subject title
+            SELECT subject_title
+            INTO v_subject_title
+            FROM subject
+            WHERE id = p_subjectID
+            LIMIT 1;
+
+            -- Teacher & room info
+            SELECT teacherId, grade_level, room_section
+            INTO v_teacherID, v_grade_level, v_room_name
+            FROM rooms_section
+            WHERE id = p_roomID
+            LIMIT 1;
+
+            -- =============================
+            -- PARENT NOTIFICATION (upsert)
+            -- =============================
+            IF EXISTS (
+                SELECT 1 FROM notification n
+                WHERE n.studentID = p_studentID
+                  AND n.subjectID = p_subjectID
+                  AND n.school_yearID = p_school_yearID
+                  AND TRIM(n.quarter) = TRIM(p_quarter)
+            ) THEN
+                UPDATE notification
+                SET transmuted_grade = v_transmuted_grade,
+                    remarks = v_remarks,
+                    student_name = v_student_name,
+                    subject_title = v_subject_title
+                WHERE studentID = p_studentID
+                  AND subjectID = p_subjectID
+                  AND school_yearID = p_school_yearID
+                  AND TRIM(quarter) = TRIM(p_quarter);
+            ELSE
+                INSERT INTO notification (
+                    studentID,
+                    student_name,
+                    parentID,
+                    subjectID,
+                    quarter,
+                    transmuted_grade,
+                    school_yearID,
+                    route,
+                    `read`,
+                    remarks,
+                    subject_title
+                )
+                SELECT
+                    p_studentID,
+                    v_student_name,
+                    pr.parentID,
+                    p_subjectID,
+                    p_quarter,
+                    v_transmuted_grade,
+                    p_school_yearID,
+                    '/parent-children',
+                    FALSE,
+                    v_remarks,
+                    v_subject_title
+                FROM parent_record pr
+                WHERE pr.studentID = p_studentID;
+            END IF;
+
+            -- =============================
+            -- TEACHER NOTIFICATION (upsert)
+            -- =============================
+            IF v_teacherID IS NOT NULL THEN
+
+                IF EXISTS (
+                    SELECT 1
+                    FROM at_risk_student_notification f
+                    WHERE f.studentID = p_studentID
+                      AND f.teacherID = v_teacherID
+                      AND f.school_yearID = p_school_yearID
+                      AND TRIM(f.subject_title) = TRIM(v_subject_title)
+                ) THEN
+                    UPDATE at_risk_student_notification
+                    SET transmuted_grade = v_transmuted_grade,
+                        remarks = v_remarks,
+                        student_name = v_student_name,
+                        grade_level = v_grade_level,
+                        room_name = v_room_name,
+                        updated_at = NOW()
+                    WHERE studentID = p_studentID
+                      AND teacherID = v_teacherID
+                      AND school_yearID = p_school_yearID
+                      AND TRIM(subject_title) = TRIM(v_subject_title);
+                ELSE
+                    INSERT INTO at_risk_student_notification (
+                        studentID,
+                        student_name,
+                        teacherID,
+                        transmuted_grade,
+                        school_yearID,
+                        route,
+                        `read`,
+                        remarks,
+                        grade_level,
+                        room_name,
+                        subject_title,
+                        created_at,
+                        updated_at
+                    )
+                    VALUES (
+                        p_studentID,
+                        v_student_name,
+                        v_teacherID,
+                        v_transmuted_grade,
+                        p_school_yearID,
+                        '/advisory-rooms',
+                        FALSE,
+                        v_remarks,
+                        v_grade_level,
+                        v_room_name,
+                        v_subject_title,
+                        NOW(),
+                        NOW()
+                    );
+                END IF;
+
+                IF EXISTS (
+                    SELECT 1
+                    FROM at_risk_student_for_faculty_notification f
+                    WHERE f.studentID = p_studentID
+                      AND f.teacherID = p_userdetailID
+                      AND f.school_yearID = p_school_yearID
+                      AND TRIM(f.subject_title) = TRIM(v_subject_title)
+                ) THEN
+                    UPDATE at_risk_student_for_faculty_notification
+                    SET transmuted_grade = v_transmuted_grade,
+                        remarks = v_remarks,
+                        student_name = v_student_name,
+                        grade_level = v_grade_level,
+                        room_name = v_room_name,
+                        updated_at = NOW()
+                    WHERE studentID = p_studentID
+                      AND teacherID = p_userdetailID
+                      AND school_yearID = p_school_yearID
+                      AND TRIM(subject_title) = TRIM(v_subject_title);
+                ELSE
+                    INSERT INTO at_risk_student_for_faculty_notification (
+                        studentID,
+                        student_name,
+                        teacherID,
+                        transmuted_grade,
+                        school_yearID,
+                        route,
+                        `read`,
+                        remarks,
+                        grade_level,
+                        room_name,
+                        subject_title,
+                        created_at,
+                        updated_at
+                    )
+                    VALUES (
+                        p_studentID,
+                        v_student_name,
+                        p_userdetailID,
+                        v_transmuted_grade,
+                        p_school_yearID,
+                        '/students-records',
+                        FALSE,
+                        v_remarks,
+                        v_grade_level,
+                        v_room_name,
+                        v_subject_title,
+                        NOW(),
+                        NOW()
+                    );
+                END IF;
+
+            END IF;
+
+        END IF;
+
+    END IF;
+
+END$$
+DELIMITER ;

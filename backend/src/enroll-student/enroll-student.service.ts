@@ -894,7 +894,7 @@ export class EnrollStudentService {
       .createQueryBuilder(EnrollStudent, 'ES')
       .select([
         'ES.id as id',
-        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ', ES.lname, ' ',  SUBSTRING(ES.mname, 1, 1), '. '), concat(ES.lname, ' ', ES.fname)) as name",
+        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ', ', ES.fname, ' ',  SUBSTRING(ES.mname, 1, 1), '. '), concat(ES.lname, ' ', ES.fname)) as name",
         'SQF.transmuted_grade as final_grade',
         'SQF.initial_grade as initial_grade',
         'SQF.quarter as quarter',
@@ -1264,7 +1264,7 @@ export class EnrollStudentService {
       .createQueryBuilder(StudentReportDisciplinary, 'srd')
       .select([
         'srd.*',
-        "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as student",
+        "IF (!ISNULL(es.mname)  AND LOWER(es.mname) != 'n/a', concat(es.fname, ' ',SUBSTRING(es.mname, 1, 1) ,'. ',es.lname) ,concat(es.fname, ' ', es.lname)) as student",
       ])
       .leftJoin(EnrollStudent, 'es', 'es.id = srd.studentID')
       .where('srd.grade_level IN (:...gradeLevel)', {
@@ -1288,14 +1288,14 @@ export class EnrollStudentService {
       },
       {
         title: 'Resolved Cases',
-        value: reportedData.filter((r) => r.status === 2 || r.status === 4)
+        value: reportedData.filter((r) => r.status === 3 || r.status === 4)
           .length,
         icon: 'mdi-check-circle-outline',
         iconClass: 'green-icon',
       },
       {
-        title: 'Suspensions',
-        value: reportedData.filter((r) => r.status === 3).length,
+        title: 'Un-Resolved',
+        value: reportedData.filter((r) => r.status === 2).length,
         icon: 'mdi-account-off-outline',
         iconClass: 'red-icon',
       },
@@ -1318,39 +1318,42 @@ export class EnrollStudentService {
           report.status === 1
             ? 'Pending'
             : report.status === 2
-              ? 'Resolved'
+              ? 'Un-Resolved'
               : report.status === 3
-                ? 'Suspended'
+                ? 'Resolved'
                 : report.status === 4
-                  ? 'Serious'
-                  : 'Unknown',
+                  ? 'Resolved'
+                  : 'Parent Meeting',
       }));
 
     const minor = reportedData.filter((r) => r.status === 1).length;
 
-    const major = reportedData.filter((r) => r.status === 2).length;
+    const major = reportedData.filter((r) => r.status === 5).length;
 
-    const severe = reportedData.filter((r) => r.status === 3).length;
+    const severe = reportedData.filter((r) => r.status === 2).length;
 
     const total = reportedData.length;
 
-    const behaviorSummary = [
-      {
-        label: 'Minor Offenses',
-        value: total ? Math.round((minor / total) * 100) : 0,
-        color: 'green',
-      },
-      {
-        label: 'Major Offenses',
-        value: total ? Math.round((major / total) * 100) : 0,
-        color: 'orange',
-      },
-      {
-        label: 'Severe Cases',
-        value: total ? Math.round((severe / total) * 100) : 0,
-        color: 'red',
-      },
-    ];
+    const behaviorSummary =
+      total > 0
+        ? [
+            {
+              label: 'Minor Offenses',
+              value: minor,
+              color: 'green',
+            },
+            {
+              label: 'Major Offenses',
+              value: major,
+              color: 'orange',
+            },
+            {
+              label: 'Severe Cases',
+              value: severe,
+              color: 'red',
+            },
+          ]
+        : [];
 
     const offenderMap = new Map<
       number,
