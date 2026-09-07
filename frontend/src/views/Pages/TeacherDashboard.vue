@@ -161,16 +161,29 @@
               {{ item.transmuted_grade }}
             </template>
 
-            <template v-slot:[`item.recommendation`]="{ item }">
+            <template v-slot:[`item.remarks`]="{ item }">
               <v-btn
                 size="small"
                 :color="riskInfo(item.transmuted_grade).color"
                 variant="flat"
               >
                 <span class="text-white" style="font-size: 10px">
-                  {{ item.recommendation }}
+                  {{ item.remarks }}
                 </span>
               </v-btn>
+            </template>
+            <template v-slot:[`item.actions`]="{ item }">
+              <div class="d-flex justify-end">
+                <v-btn
+                  size="small"
+                  variant="flat"
+                  color="pink"
+                  prepend-icon="mdi-eye-outline"
+                  @click="openAtRiskData(item)"
+                >
+                  View
+                </v-btn>
+              </div>
             </template>
 
             <template v-slot:no-data>
@@ -230,6 +243,20 @@
               </div>
             </template>
 
+            <template v-slot:[`item.actions`]="{ item }">
+              <div class="d-flex justify-end">
+                <v-btn
+                  size="small"
+                  variant="flat"
+                  color="pink"
+                  prepend-icon="mdi-eye-outline"
+                  @click="openLardoDialog(item)"
+                >
+                  View
+                </v-btn>
+              </div>
+            </template>
+
             <template v-slot:no-data>
               <v-empty-state
                 icon="mdi-check-circle-outline"
@@ -239,6 +266,84 @@
             </template>
           </v-data-table>
         </v-card>
+
+        <!-- LARDO Details Dialog -->
+        <v-dialog v-model="lardoDialog" max-width="480">
+          <v-card rounded="lg" v-if="selectedLardoStudent">
+            <v-card-title class="d-flex align-center px-5 pt-5 pb-2">
+              <v-icon
+                icon="mdi-clipboard-alert-outline"
+                size="22"
+                class="me-2 text-orange-darken-1"
+              />
+              <span class="font-weight-bold">At-Risk Report</span>
+              <v-spacer />
+              <v-btn
+                icon="mdi-close"
+                variant="text"
+                size="small"
+                @click="lardoDialog = false"
+              />
+            </v-card-title>
+
+            <v-divider />
+
+            <v-card-text class="px-5 py-4">
+              <div class="mb-3">
+                <div class="text-caption text-medium-emphasis">Student</div>
+                <div class="text-body-1 font-weight-medium">
+                  {{ selectedLardoStudent.name }}
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <div class="text-caption text-medium-emphasis">LRN</div>
+                <div class="text-body-2">{{ selectedLardoStudent.lrn }}</div>
+              </div>
+
+              <div class="mb-3">
+                <div class="text-caption text-medium-emphasis">Subject</div>
+                <div class="text-body-2">
+                  {{ selectedLardoStudent.subject_title }}
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <div class="text-caption text-medium-emphasis">Remarks</div>
+                <div class="text-body-2">
+                  {{ selectedLardoStudent.remarks }}
+                </div>
+              </div>
+
+              <div>
+                <div class="text-caption text-medium-emphasis">
+                  Recommendation
+                </div>
+                <v-chip
+                  color="warning"
+                  variant="tonal"
+                  size="small"
+                  class="mt-1"
+                >
+                  {{ selectedLardoStudent.recommendation }}
+                </v-chip>
+              </div>
+            </v-card-text>
+
+            <v-divider />
+
+            <v-card-actions class="px-5 py-3">
+              <v-spacer />
+              <v-btn
+                variant="flat"
+                color="primary"
+                @click="lardoDialog = false"
+              >
+                Close
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-col>
 
       <!-- SECONDARY COLUMN -->
@@ -302,6 +407,131 @@
         </v-card>
       </v-col>
     </v-row>
+    <!-- Dialog: Parent-Teacher Conference + Intensive Intervention -->
+    <v-dialog v-model="conferenceDialog" max-width="500">
+      <v-card>
+        <v-card-title class="bg-red-darken-1 text-white">
+          <v-icon start icon="mdi-alert-octagon-outline"></v-icon>
+          Intensive Intervention Required
+        </v-card-title>
+        <v-card-text class="pt-4">
+          <p class="mb-2">
+            <strong>{{ selectedData?.[0]?.student_name }}</strong> has multiple
+            failing subjects and requires immediate attention.
+          </p>
+
+          <v-card
+            v-for="subject in selectedData"
+            :key="subject.id"
+            variant="outlined"
+            class="mb-3"
+          >
+            <v-card-text class="py-2">
+              <div class="text-subtitle-2 font-weight-bold mb-1">
+                {{ subject.subject_title }}
+              </div>
+              <v-list density="compact">
+                <v-list-item>
+                  <template v-slot:prepend>
+                    <v-icon icon="mdi-chart-line"></v-icon>
+                  </template>
+                  <v-list-item-title>
+                    Grade: {{ subject.transmuted_grade }}
+                  </v-list-item-title>
+                </v-list-item>
+                <v-list-item>
+                  <template v-slot:prepend>
+                    <v-icon icon="mdi-clipboard-text-outline"></v-icon>
+                  </template>
+                  <v-list-item-title>
+                    Recommendation: {{ subject.remarks }}
+                  </v-list-item-title>
+                </v-list-item>
+                <v-list-item>
+                  <template v-slot:prepend>
+                    <v-icon icon="mdi-google-classroom"></v-icon>
+                  </template>
+                  <v-list-item-title>
+                    {{ subject.grade_level }} - {{ subject.room_name }}
+                  </v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-card-text>
+          </v-card>
+
+          <v-alert
+            v-if="selectedData?.length"
+            type="error"
+            variant="tonal"
+            class="mt-3"
+            density="compact"
+          >
+            A parent-teacher conference should be scheduled immediately.
+          </v-alert>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn variant="text" @click="conferenceDialog = false">Close</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Dialog: Other remarks (Peer Tutoring / Mandatory Remediation) -->
+    <v-dialog v-model="interventionDialog" max-width="500">
+      <v-card>
+        <v-card-title class="bg-amber-darken-1 text-white">
+          <v-icon start icon="mdi-information-outline"></v-icon>
+          Intervention Details
+        </v-card-title>
+        <v-card-text class="pt-4">
+          <p class="mb-2">
+            <strong>{{ selectedItem?.name }}</strong> is at risk and needs the
+            following support.
+          </p>
+          <v-list density="compact">
+            <v-list-item>
+              <template v-slot:prepend
+                ><v-icon icon="mdi-school-outline"></v-icon
+              ></template>
+              <v-list-item-title
+                >LRN: {{ selectedItem?.lrn }}</v-list-item-title
+              >
+            </v-list-item>
+            <v-list-item>
+              <template v-slot:prepend
+                ><v-icon icon="mdi-file-outline"></v-icon
+              ></template>
+              <v-list-item-title
+                >Subject: {{ selectedItem?.subject_title }}</v-list-item-title
+              >
+            </v-list-item>
+            <v-list-item>
+              <template v-slot:prepend
+                ><v-icon icon="mdi-chart-line"></v-icon
+              ></template>
+              <v-list-item-title
+                >Grade: {{ selectedItem?.transmuted_grade }}</v-list-item-title
+              >
+            </v-list-item>
+
+            <v-list-item>
+              <template v-slot:prepend
+                ><v-icon icon="mdi-clipboard-text-outline"></v-icon
+              ></template>
+              <v-list-item-title
+                >Recommendation: {{ selectedItem?.remarks }}</v-list-item-title
+              >
+            </v-list-item>
+          </v-list>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn variant="text" @click="interventionDialog = false"
+            >Close</v-btn
+          >
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 <script>
@@ -331,6 +561,10 @@ export default {
   components: { Bar, Doughnut },
   data() {
     return {
+      conferenceDialog: false,
+      interventionDialog: false,
+      selectedItem: null,
+      selectedData: null,
       page: 1,
       itemsPerPage: 10,
       misPage: 1,
@@ -344,15 +578,22 @@ export default {
       alertStudents: [],
       misbehaveList: [],
       lardoStudents: [],
+      lardoDialog: false,
+      selectedLardoStudent: null,
       headers: [
-        { title: 'LRN', key: 'lrn', width: '200' },
+        { title: 'LRN', key: 'lrn', align: 'start', width: '200' },
         { title: 'Student Name', key: 'name', width: '200' },
         { title: 'Grade', key: 'grade', width: '100' },
-        { title: 'Action', key: 'remarks', width: '200' },
+        {
+          title: 'Recommendataion',
+          key: 'remarks',
+          align: 'center',
+          width: '200',
+        },
 
         {
-          title: 'Recommendation',
-          key: 'recommendation',
+          title: 'Action',
+          key: 'actions',
           align: 'end',
           width: '200',
         },
@@ -369,7 +610,7 @@ export default {
           width: '200',
         },
         // { title: 'Grade', key: 'grade' },
-        // { title: 'Recommendation', key: 'action', align: 'end' },
+        { title: 'Action', key: 'actions', align: 'end' },
       ],
       students: [
         {
@@ -516,6 +757,36 @@ export default {
   methods: {
     initialize() {
       this.getFacultyDashboardData();
+    },
+    openLardoDialog(item) {
+      this.selectedLardoStudent = item;
+      this.lardoDialog = true;
+    },
+    openAtRiskData(item) {
+      if (
+        item.remarks === 'Parent-Teacher Conference + Intensive Intervention'
+      ) {
+        this.conferenceDialog = true;
+        this.getAllSubjectThatAtRisk(item.id);
+      } else {
+        this.selectedItem = item;
+        this.interventionDialog = true;
+      }
+    },
+    scheduleConference() {
+      // wire up your route/API call here
+      this.conferenceDialog = false;
+    },
+    getAllSubjectThatAtRisk(id) {
+      let filter = this.$store.getters.getFilterSelected;
+      this.axiosCall(
+        '/enroll-student/getAllSubjectThatAtRisk/' + filter + '/' + id,
+        'GET',
+      ).then((res) => {
+        if (res) {
+          this.selectedData = res.data;
+        }
+      });
     },
     riskInfo(grade) {
       if (grade == null) {

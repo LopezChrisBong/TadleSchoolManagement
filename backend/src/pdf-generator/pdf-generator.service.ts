@@ -10,6 +10,7 @@ import { SendNewEmailDto } from './dto/send-new-email.dto';
 import {
   AddStrand,
   AddTracks,
+  AtRiskStudentForFacultyNotification,
   Availability,
   DepEdPersonnel,
   EnrollStudent,
@@ -833,16 +834,16 @@ export class PdfGeneratorService {
     let thirdEsig = false;
     let fourthEsig = false;
     if (arrs['Junior High']) {
-      if (juniorHigh[0]['1st Quarter'] != null) {
+      if (juniorHigh?.[0]?.['1st Quarter'] != null) {
         firstEsig = true;
       }
-      if (juniorHigh[0]['2nd Quarter'] != null) {
+      if (juniorHigh?.[0]?.['2nd Quarter'] != null) {
         secondEsig = true;
       }
-      if (juniorHigh[0]['3rd Quarter'] != null) {
+      if (juniorHigh?.[0]?.['3rd Quarter'] != null) {
         thirdEsig = true;
       }
-      if (juniorHigh[0]['4th Quarter'] != null) {
+      if (juniorHigh?.[0]?.['4th Quarter'] != null) {
         fourthEsig = true;
       }
       junior = true;
@@ -850,16 +851,16 @@ export class PdfGeneratorService {
     } else {
       junior = false;
       console.log('First Sem:', firstSemSubjects);
-      if (firstSemSubjects[0]['1st Quarter'] != null) {
+      if (firstSemSubjects?.[0]?.['1st Quarter'] != null) {
         firstEsig = true;
       }
-      if (firstSemSubjects[0]['2nd Quarter'] != null) {
+      if (firstSemSubjects?.[0]?.['2nd Quarter'] != null) {
         secondEsig = true;
       }
-      if (secondSemSubjects[0]['1st Quarter'] != null) {
+      if (secondSemSubjects?.[0]?.['1st Quarter'] != null) {
         thirdEsig = true;
       }
-      if (secondSemSubjects[0]['2nd Quarter'] != null) {
+      if (secondSemSubjects?.[0]?.['2nd Quarter'] != null) {
         fourthEsig = true;
       }
       console.log('Second Sem:', secondSemSubjects);
@@ -1267,13 +1268,13 @@ export class PdfGeneratorService {
     let secondEsig = false;
     let thirdEsig = false;
     if (arrs['Junior High']) {
-      if (juniorHigh[0]['1st Term'] != null) {
+      if (juniorHigh?.[0]?.['1st Term'] != null) {
         firstEsig = true;
       }
-      if (juniorHigh[0]['2nd Term'] != null) {
+      if (juniorHigh?.[0]?.['2nd Term'] != null) {
         secondEsig = true;
       }
-      if (juniorHigh[0]['3rd Term'] != null) {
+      if (juniorHigh?.[0]?.['3rd Term'] != null) {
         thirdEsig = true;
       }
       junior = true;
@@ -2681,6 +2682,11 @@ export class PdfGeneratorService {
       sub_subject ? JSON.stringify(sub_subject) : 'noData',
     );
 
+    let subject = await this.dataSource.manager
+      .createQueryBuilder(Subject, 's')
+      .where('s.id = :subjectID', { subjectID })
+      .getOne();
+    // console.log(subject)
     let combineData = Object.assign(
       { writenWorks: writenWorks },
       { performanceTask: performanceTask },
@@ -2695,6 +2701,10 @@ export class PdfGeneratorService {
             : w.quiz_label + ' (' + w.SG_highest_posible_score + ')',
         ),
       ),
+
+      'Total',
+      'PS',
+      `WS (${subject.writen_works}%)`,
     ];
 
     const performanceHeaders = [
@@ -2705,6 +2715,9 @@ export class PdfGeneratorService {
             : p.quiz_label + ' (' + p.SG_highest_posible_score + ')',
         ),
       ),
+      'Total',
+      'PS',
+      `WS (${subject.performance_task}%)`,
     ];
 
     const quarterlyHeaders = [
@@ -2715,12 +2728,16 @@ export class PdfGeneratorService {
             : q.quiz_label + ' (' + q.SG_highest_posible_score + ')',
         ),
       ),
+      'Total',
+      'PS',
+      `WS (${subject.quarter_assessment}%)`,
     ];
 
     const studentsMap = new Map<number, any>();
 
     function initStudent(id: number, name: string, sex: string) {
       studentsMap.set(id, {
+        studentID: id,
         name,
         sex,
         writtenWorks: new Array(writtenHeaders.length).fill(''),
@@ -2800,6 +2817,88 @@ export class PdfGeneratorService {
       }
     }
 
+    console.log('combineData.writenWorks', combineData.writenWorks, students);
+
+    for (const student of students) {
+      // ---------- WRITTEN WORKS ----------
+      {
+        const studentWW = combineData.writenWorks.filter(
+          (ww) => Number(ww.SG_studentID) === Number(student.studentID),
+        );
+
+        const firstEmpty = student.writtenWorks.indexOf('');
+        const total = student.writtenWorks
+          .slice(0, firstEmpty)
+          .reduce((sum, score) => sum + (Number(score) || 0), 0);
+        student.writtenWorks[firstEmpty] = total;
+
+        const secondEmpty = student.writtenWorks.indexOf('');
+        const totalPS = studentWW.reduce(
+          (sum, ww) => sum + (Number(ww.SG_highest_posible_score) || 0),
+          0,
+        );
+        student.writtenWorks[secondEmpty] = totalPS;
+
+        const thirdEmpty = student.writtenWorks.indexOf('');
+        student.writtenWorks[thirdEmpty] =
+          totalPS > 0
+            ? ((total / totalPS) * subject.writen_works).toFixed(2)
+            : 0;
+      }
+
+      // ---------- PERFORMANCE TASKS ----------
+      {
+        const studentPP = combineData.performanceTask.filter(
+          (pt) => Number(pt.SG_studentID) === Number(student.studentID),
+        );
+
+        const firstEmptyp = student.performanceTasks.indexOf('');
+        const totalp = student.performanceTasks
+          .slice(0, firstEmptyp)
+          .reduce((sum, score) => sum + (Number(score) || 0), 0);
+        student.performanceTasks[firstEmptyp] = totalp;
+
+        const secondEmptyp = student.performanceTasks.indexOf('');
+        const totalPSp = studentPP.reduce(
+          (sum, pt) => sum + (Number(pt.SG_highest_posible_score) || 0),
+          0,
+        );
+        student.performanceTasks[secondEmptyp] = totalPSp;
+
+        const thirdEmptyp = student.performanceTasks.indexOf('');
+        student.performanceTasks[thirdEmptyp] =
+          totalPSp > 0
+            ? ((totalp / totalPSp) * subject.performance_task).toFixed(2)
+            : 0;
+      }
+
+      // ---------- QUARTERLY ASSESSMENT ----------
+      {
+        const studentQA = combineData.quarterlyAssessment.filter(
+          (qa) => Number(qa.SG_studentID) === Number(student.studentID),
+        );
+
+        const firstEmptyq = student.quarterlyAssessment.indexOf('');
+        const totalq = student.quarterlyAssessment
+          .slice(0, firstEmptyq)
+          .reduce((sum, score) => sum + (Number(score) || 0), 0);
+        student.quarterlyAssessment[firstEmptyq] = totalq;
+
+        const secondEmptyq = student.quarterlyAssessment.indexOf('');
+        const totalPSq = studentQA.reduce(
+          (sum, qa) => sum + (Number(qa.SG_highest_posible_score) || 0),
+          0,
+        );
+        student.quarterlyAssessment[secondEmptyq] = totalPSq;
+
+        const thirdEmptyq = student.quarterlyAssessment.indexOf('');
+        student.quarterlyAssessment[thirdEmptyq] =
+          totalPSq > 0
+            ? ((totalq / totalPSq) * subject.quarter_assessment).toFixed(2)
+            : 0;
+      }
+    }
+
     let schoolYear = await this.dataSource.manager
       .createQueryBuilder(SchoolYear, 'SY')
       .select([
@@ -2809,11 +2908,6 @@ export class PdfGeneratorService {
       ])
       .where('SY.id = :school_yearID', { school_yearID })
       .getRawOne();
-
-    let subject = await this.dataSource.manager
-      .createQueryBuilder(Subject, 's')
-      .where('s.id = :subjectID', { subjectID })
-      .getOne();
 
     let teacher = await this.dataSource.manager
       .createQueryBuilder(UserDetail, 'ud')
@@ -2946,7 +3040,10 @@ export class PdfGeneratorService {
         school_yearID,
         sub_subject,
       );
-
+    let subject = await this.dataSource.manager
+      .createQueryBuilder(Subject, 's')
+      .where('s.id = :subjectID', { subjectID })
+      .getOne();
     let grade = await this.roomsSectionService.getGeneratedGrade(
       roomID,
       school_yearID,
@@ -2981,6 +3078,9 @@ export class PdfGeneratorService {
             : w.quiz_label + ' (' + w.SG_highest_posible_score + ')',
         ),
       ),
+      'Total',
+      'PS',
+      `WS (${subject.writen_works}%)`,
     ];
 
     const performanceHeaders = [
@@ -2991,6 +3091,9 @@ export class PdfGeneratorService {
             : p.quiz_label + ' (' + p.SG_highest_posible_score + ')',
         ),
       ),
+      'Total',
+      'PS',
+      `WS (${subject.performance_task}%)`,
     ];
 
     const quarterlyHeaders = [
@@ -3001,12 +3104,16 @@ export class PdfGeneratorService {
             : q.quiz_label + ' (' + q.SG_highest_posible_score + ')',
         ),
       ),
+      'Total',
+      'PS',
+      `WS (${subject.quarter_assessment}%)`,
     ];
 
     const studentsMap = new Map<number, any>();
 
     function initStudent(id: number, name: string, sex: string) {
       studentsMap.set(id, {
+        studentID: id,
         name,
         sex,
         writtenWorks: new Array(writtenHeaders.length).fill(''),
@@ -3086,6 +3193,86 @@ export class PdfGeneratorService {
       }
     }
 
+    for (const student of students) {
+      // ---------- WRITTEN WORKS ----------
+      {
+        const studentWW = combineData.writenWorks.filter(
+          (ww) => Number(ww.SG_studentID) === Number(student.studentID),
+        );
+
+        const firstEmpty = student.writtenWorks.indexOf('');
+        const total = student.writtenWorks
+          .slice(0, firstEmpty)
+          .reduce((sum, score) => sum + (Number(score) || 0), 0);
+        student.writtenWorks[firstEmpty] = total;
+
+        const secondEmpty = student.writtenWorks.indexOf('');
+        const totalPS = studentWW.reduce(
+          (sum, ww) => sum + (Number(ww.SG_highest_posible_score) || 0),
+          0,
+        );
+        student.writtenWorks[secondEmpty] = totalPS;
+
+        const thirdEmpty = student.writtenWorks.indexOf('');
+        student.writtenWorks[thirdEmpty] =
+          totalPS > 0
+            ? ((total / totalPS) * subject.writen_works).toFixed(2)
+            : 0;
+      }
+
+      // ---------- PERFORMANCE TASKS ----------
+      {
+        const studentPP = combineData.performanceTask.filter(
+          (pt) => Number(pt.SG_studentID) === Number(student.studentID),
+        );
+
+        const firstEmptyp = student.performanceTasks.indexOf('');
+        const totalp = student.performanceTasks
+          .slice(0, firstEmptyp)
+          .reduce((sum, score) => sum + (Number(score) || 0), 0);
+        student.performanceTasks[firstEmptyp] = totalp;
+
+        const secondEmptyp = student.performanceTasks.indexOf('');
+        const totalPSp = studentPP.reduce(
+          (sum, pt) => sum + (Number(pt.SG_highest_posible_score) || 0),
+          0,
+        );
+        student.performanceTasks[secondEmptyp] = totalPSp;
+
+        const thirdEmptyp = student.performanceTasks.indexOf('');
+        student.performanceTasks[thirdEmptyp] =
+          totalPSp > 0
+            ? ((totalp / totalPSp) * subject.performance_task).toFixed(2)
+            : 0;
+      }
+
+      // ---------- QUARTERLY ASSESSMENT ----------
+      {
+        const studentQA = combineData.quarterlyAssessment.filter(
+          (qa) => Number(qa.SG_studentID) === Number(student.studentID),
+        );
+
+        const firstEmptyq = student.quarterlyAssessment.indexOf('');
+        const totalq = student.quarterlyAssessment
+          .slice(0, firstEmptyq)
+          .reduce((sum, score) => sum + (Number(score) || 0), 0);
+        student.quarterlyAssessment[firstEmptyq] = totalq;
+
+        const secondEmptyq = student.quarterlyAssessment.indexOf('');
+        const totalPSq = studentQA.reduce(
+          (sum, qa) => sum + (Number(qa.SG_highest_posible_score) || 0),
+          0,
+        );
+        student.quarterlyAssessment[secondEmptyq] = totalPSq;
+
+        const thirdEmptyq = student.quarterlyAssessment.indexOf('');
+        student.quarterlyAssessment[thirdEmptyq] =
+          totalPSq > 0
+            ? ((totalq / totalPSq) * subject.quarter_assessment).toFixed(2)
+            : 0;
+      }
+    }
+
     let schoolYear = await this.dataSource.manager
       .createQueryBuilder(SchoolYear, 'SY')
       .select([
@@ -3095,11 +3282,6 @@ export class PdfGeneratorService {
       ])
       .where('SY.id = :school_yearID', { school_yearID })
       .getRawOne();
-
-    let subject = await this.dataSource.manager
-      .createQueryBuilder(Subject, 's')
-      .where('s.id = :subjectID', { subjectID })
-      .getOne();
 
     let teacher = await this.dataSource.manager
       .createQueryBuilder(UserDetail, 'ud')
@@ -3263,6 +3445,169 @@ export class PdfGeneratorService {
       const page = await browser.newPage();
       // compile(template_name, data)
       const content = await this.compile('student-list', data);
+      await page.setContent(content);
+
+      const buffer = await page.pdf({
+        format: 'legal',
+        margin: {
+          top: '0.20in',
+          left: '0.50in',
+          bottom: '0.20in',
+          right: '0.50in',
+        },
+        landscape: false,
+        printBackground: true,
+      });
+      await browser.close();
+      return buffer;
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async getAllStudenListByLevel(filter: number, grade: string) {
+    let senior = ['Grade 11', 'Grade 12'];
+    let junior = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'];
+    let rawData_male = await this.dataSource.manager
+      .createQueryBuilder(StudentList, 'SL')
+      .select([
+        '*',
+        'SL.id as studentListId',
+        "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ',SUBSTRING(ES.mname, 1, 1) ,' ',ES.fname) ,concat(ES.lname, ' ', ES.fname)) as name",
+      ])
+      .leftJoin(EnrollStudent, 'ES', 'ES.id = SL.studentId')
+      .where('SL.school_yearId = "' + filter + '"')
+      .andWhere('ES.sex = "Male"')
+      .andWhere('SL.grade_level IN (:...grade_level)', {
+        grade_level: grade === 'Junior High' ? junior : senior,
+      })
+      .orderBy('ES.lname', 'ASC')
+      .getRawMany();
+    console.log(rawData_male);
+
+    let count_male = rawData_male.length;
+
+    let rawData_female = await this.dataSource.manager
+      .createQueryBuilder(StudentList, 'SL')
+      .select([
+        '*',
+        'SL.id as studentListId',
+        "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ',SUBSTRING(ES.mname, 1, 1) ,' ',ES.fname) ,concat(ES.lname, ' ', ES.fname)) as name",
+      ])
+      .leftJoin(EnrollStudent, 'ES', 'ES.id = SL.studentId')
+      .where('SL.school_yearId = "' + filter + '"')
+      .andWhere('ES.sex = "Female"')
+      .andWhere('SL.grade_level IN (:...grade_level)', {
+        grade_level: grade === 'Junior High' ? junior : senior,
+      })
+      .orderBy('ES.lname', 'ASC')
+      .getRawMany();
+    let count_female = rawData_female.length;
+
+    let getDeped = await this.dataSource.manager
+      .createQueryBuilder(DepEdPersonnel, 'dep')
+      .getMany();
+
+    let headerImg = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/header.png',
+    );
+    let footerImg = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/footer.png',
+    );
+
+    const data = [
+      {
+        header_img: this.base64_encode(headerImg, 'headerfooter'),
+        footer_img: this.base64_encode(footerImg, 'headerfooter'),
+        rawData_male: rawData_male ? rawData_male : [],
+        rawData_female: rawData_female ? rawData_female : [],
+        count_male,
+        count_female,
+        total_student: Number(count_female) + Number(count_male),
+        schoolHead: getDeped[0].name,
+        superIntendent: getDeped[1].name,
+        grade,
+      },
+    ];
+    try {
+      const browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      });
+      const page = await browser.newPage();
+      // compile(template_name, data)
+      const content = await this.compile('student-list-by-grade', data);
+      await page.setContent(content);
+
+      const buffer = await page.pdf({
+        format: 'legal',
+        margin: {
+          top: '0.20in',
+          left: '0.50in',
+          bottom: '0.20in',
+          right: '0.50in',
+        },
+        landscape: false,
+        printBackground: true,
+      });
+      await browser.close();
+      return buffer;
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async getAllAtRiskStudents(filter: number) {
+    let atRisk = await this.dataSource.manager
+      .createQueryBuilder(AtRiskStudentForFacultyNotification, 'risk')
+      .select([
+        'risk.*',
+        'es.lrnNo as lrn',
+        "IF (!ISNULL(ud.mname)  AND LOWER(ud.mname) != 'n/a', concat(ud.fname, ' ',SUBSTRING(ud.mname, 1, 1) ,'. ',ud.lname) ,concat(ud.fname, ' ', ud.lname)) as adviser",
+      ])
+      .leftJoin(StudentList, 'sl', 'sl.studentId = risk.studentID')
+      .leftJoin(RoomsSection, 'rs', 'rs.id = sl.roomId')
+      .leftJoin(UserDetail, 'ud', 'ud.id = rs.teacherId')
+      .leftJoin(EnrollStudent, 'es', 'es.id = risk.studentID')
+      .where('risk.school_yearID = :filter', { filter })
+      .groupBy('risk.subject_title')
+      .addGroupBy('sl.studentID')
+      .orderBy('es.fname', 'ASC')
+      .getRawMany();
+    console.log(atRisk);
+
+    let getDeped = await this.dataSource.manager
+      .createQueryBuilder(DepEdPersonnel, 'dep')
+      .getMany();
+
+    let headerImg = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/header.png',
+    );
+    let footerImg = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/footer.png',
+    );
+
+    const data = [
+      {
+        header_img: this.base64_encode(headerImg, 'headerfooter'),
+        footer_img: this.base64_encode(footerImg, 'headerfooter'),
+        schoolHead: getDeped[0].name,
+        superIntendent: getDeped[1].name,
+        atRisk,
+      },
+    ];
+    try {
+      const browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      });
+      const page = await browser.newPage();
+      // compile(template_name, data)
+      const content = await this.compile('at-risk-student-list', data);
       await page.setContent(content);
 
       const buffer = await page.pdf({

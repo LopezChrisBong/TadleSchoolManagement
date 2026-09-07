@@ -59,6 +59,11 @@ export class NotificationController {
     return this.notificationService.getParentNotification(+id);
   }
 
+  @Get('getPrefectSeniorHighReport/:assignedMod')
+  getPrefectSeniorHighReport(@Param('assignedMod') assignedMod: string) {
+    return this.notificationService.getPrefectSeniorHighReport(+assignedMod);
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -98,6 +103,18 @@ export class NotificationController {
     updateAtRiskStudentNotificationDto: UpdateAtRiskStudentNotificationDto,
   ) {
     return this.notificationService.updateAtRiskAdviser(
+      +id,
+      updateAtRiskStudentNotificationDto,
+    );
+  }
+
+  @Patch('updatePrefect/:id')
+  updatePrefect(
+    @Param('id') id: string,
+    @Body()
+    updateAtRiskStudentNotificationDto: UpdateAtRiskStudentNotificationDto,
+  ) {
+    return this.notificationService.updatePrefect(
       +id,
       updateAtRiskStudentNotificationDto,
     );

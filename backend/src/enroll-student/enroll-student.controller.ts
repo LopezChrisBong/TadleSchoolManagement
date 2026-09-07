@@ -71,9 +71,32 @@ export class EnrollStudentController {
     );
   }
 
+  @Get('getPrefectDashboardData/:filter/:assignedModuleID')
+  getPrefectDashboardData(
+    @Headers() headers,
+    @Param('filter') filter: string,
+    @Param('assignedModuleID') assignedModuleID: string,
+  ) {
+    var head_str = headers.authorization;
+    const curr_user = currentUser(head_str);
+    return this.enrollStudentService.getPrefectDashboardData(
+      curr_user,
+      +filter,
+      +assignedModuleID,
+    );
+  }
+
   @Get('getAdminDashboardData/:filter')
   getAdminDashboardData(@Param('filter') filter: string) {
     return this.enrollStudentService.getAdminDashboardData(filter);
+  }
+
+  @Get('getAllSubjectThatAtRisk/:filter/:id')
+  getAllSubjectThatAtRisk(
+    @Param('filter') filter: string,
+    @Param('id') id: string,
+  ) {
+    return this.enrollStudentService.getAllSubjectThatAtRisk(filter, +id);
   }
 
   @Post('studentValues')

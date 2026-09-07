@@ -83,7 +83,10 @@
           <v-divider />
 
           <v-card-text class="pa-4">
-            <div class="d-flex pa-1 mb-1" v-if="assignedModuleID != 22">
+            <div
+              class="d-flex pa-1 mb-1"
+              v-if="userModule == 21 || userModule == 2"
+            >
               <v-btn-toggle
                 v-model="status"
                 mandatory
@@ -106,7 +109,7 @@
 
             <!-- LARDO Notification -->
             <div
-              v-if="lardoNotification.length"
+              v-if="lardoNotification.length && userModule == 21"
               class="mb-6"
               v-show="status === 'Lardo'"
             >
@@ -171,7 +174,7 @@
 
             <!-- LARDO Faculty -->
             <div
-              v-if="lardoNotificationForFaculty.length"
+              v-if="lardoNotificationForFaculty.length && userModule == 2"
               class="mb-6"
               v-show="status === 'Lardo'"
             >
@@ -239,7 +242,7 @@
               v-if="
                 !lardoNotification.length &&
                 !lardoNotificationForFaculty.length &&
-                assignedModuleID != 22
+                [21, 2].includes(userModule)
               "
               v-show="status === 'Lardo'"
               class="empty-state"
@@ -257,7 +260,7 @@
 
             <!-- At Risk Adviser -->
             <div
-              v-if="atRiskNotification.length"
+              v-if="atRiskNotification.length && userModule == 21"
               class="mb-6"
               v-show="status === 'At-Risk'"
             >
@@ -303,9 +306,7 @@
             </div>
             <!-- At Risk Faculty -->
             <div
-              v-else-if="
-                atRiskNotificationForFaculty.length && !subModules.includes(21)
-              "
+              v-else-if="atRiskNotificationForFaculty.length && userModule == 2"
               class="mb-6"
               v-show="status === 'At-Risk'"
             >
@@ -316,7 +317,7 @@
                 :key="'notif-' + index"
                 class="notif-card notif-card--risk clickable"
                 variant="flat"
-                @click="openAdviserNotification(notif)"
+                @click="openFacultyNotification(notif)"
               >
                 <div class="d-flex align-start">
                   <v-avatar
@@ -354,7 +355,8 @@
             <div
               v-if="
                 !atRiskNotification.length &&
-                !atRiskNotificationForFaculty.length
+                !atRiskNotificationForFaculty.length &&
+                [21, 2].includes(userModule)
               "
               v-show="status === 'At-Risk'"
               class="empty-state"
@@ -371,7 +373,10 @@
             </div>
 
             <!-- Parent Notification -->
-            <div v-if="parentNotification.length" class="mb-2">
+            <div
+              v-if="parentNotification.length && userModule == 22"
+              class="mb-2"
+            >
               <v-card
                 v-for="(notif, index) in limitParentNotification"
                 :key="'notif-' + index"
@@ -400,6 +405,70 @@
 
                     <div class="text-caption text-medium-emphasis">
                       Remarks: {{ notif.remarks }}
+                    </div>
+                  </div>
+
+                  <v-badge v-if="!notif.read" color="error" dot />
+                </div>
+              </v-card>
+            </div>
+            <!-- Prefect Notification -->
+            <div
+              v-if="
+                prefectNotification.length &&
+                (userModule == 23 || userModule == 27)
+              "
+              class="mb-2"
+            >
+              <v-card
+                v-for="(notif, index) in limitPrefectNotification"
+                :key="'notif-' + index"
+                class="notif-card notif-card--parent clickable"
+                variant="flat"
+                @click="openPrefectNotification(notif)"
+              >
+                <div class="d-flex align-start">
+                  <v-avatar
+                    size="42"
+                    class="me-3 notif-avatar notif-avatar--parent"
+                    :class="
+                      notif.report_type === 2
+                        ? 'notif-avatar--disciplinary'
+                        : 'notif-avatar--academic'
+                    "
+                  >
+                    <v-icon size="20" color="white">
+                      {{
+                        notif.report_type === 2
+                          ? 'mdi-alert-octagon-outline'
+                          : 'mdi-account-child-outline'
+                      }}
+                    </v-icon>
+                  </v-avatar>
+
+                  <div class="flex-grow-1">
+                    <div class="d-flex align-center justify-space-between">
+                      <div class="text-body-2 font-weight-medium">
+                        {{ notif.student_name }}
+                      </div>
+                      <v-chip
+                        size="x-small"
+                        :color="notif.report_type === 2 ? 'error' : 'warning'"
+                        variant="tonal"
+                        class="ms-2"
+                      >
+                        {{
+                          notif.report_type === 2 ? 'Disciplinary' : 'Academic'
+                        }}
+                      </v-chip>
+                    </div>
+
+                    <div class="text-caption text-medium-emphasis">
+                      {{ notif.grade_level }}
+                    </div>
+
+                    <div class="text-caption text-medium-emphasis">
+                      {{ notif.report_description }}
                     </div>
                   </div>
 
@@ -687,7 +756,10 @@
         <v-divider />
 
         <v-card-text class="pa-6">
-          <div class="d-flex pa-1 mb-2" v-if="assignedModuleID != 22">
+          <div
+            class="d-flex pa-1 mb-2"
+            v-if="userModule == 21 || userModule == 2"
+          >
             <v-btn-toggle
               v-model="status"
               mandatory
@@ -708,7 +780,7 @@
 
           <!-- LARDO Notification -->
           <div
-            v-if="lardoNotification.length"
+            v-if="lardoNotification.length && userModule == 21"
             class="mb-8"
             v-show="status === 'Lardo'"
           >
@@ -772,7 +844,7 @@
 
           <!-- LARDO Faculty -->
           <div
-            v-if="lardoNotificationForFaculty.length"
+            v-if="lardoNotificationForFaculty.length && userModule == 2"
             class="mb-8"
             v-show="status === 'Lardo'"
           >
@@ -837,7 +909,9 @@
           <!-- Empty state: Lardo -->
           <div
             v-if="
-              !lardoNotification.length && !lardoNotificationForFaculty.length
+              !lardoNotification.length &&
+              !lardoNotificationForFaculty.length &&
+              [21, 2].includes(userModule)
             "
             v-show="status === 'Lardo'"
             class="empty-state"
@@ -856,7 +930,7 @@
           <!-- At-Risk Adviser -->
 
           <div
-            v-if="atRiskNotification.length"
+            v-if="atRiskNotification.length && userModule == 21"
             class="mb-8"
             v-show="status === 'At-Risk'"
           >
@@ -900,9 +974,8 @@
           </div>
           <!-- At-Risk Faculty -->
           <div
-            v-if="
-              atRiskNotificationForFaculty.length && !subModules.includes(21)
-            "
+            v-if="atRiskNotificationForFaculty.length && userModule == 2"
+            v-show="status === 'At-Risk'"
             class="mb-8"
           >
             <div class="section-title">At-Risk Notification</div>
@@ -947,7 +1020,9 @@
           <!-- Empty state: At-Risk -->
           <div
             v-if="
-              !atRiskNotification.length && !atRiskNotificationForFaculty.length
+              !atRiskNotification.length &&
+              !atRiskNotificationForFaculty.length &&
+              [21, 2].includes(userModule)
             "
             v-show="status === 'At-Risk'"
             class="empty-state"
@@ -962,7 +1037,10 @@
           </div>
 
           <!-- Parent Notification -->
-          <div v-if="parentNotification.length" class="mb-4">
+          <div
+            v-if="parentNotification.length && userModule == 22"
+            class="mb-4"
+          >
             <v-card
               v-for="(notif, index) in parentNotification"
               :key="'notif-' + index"
@@ -991,6 +1069,70 @@
 
                   <div class="text-caption text-medium-emphasis">
                     Remarks: {{ notif.remarks }}
+                  </div>
+                </div>
+
+                <v-badge v-if="!notif.read" color="error" dot />
+              </div>
+            </v-card>
+          </div>
+          <!-- Prefect Notification -->
+          <div
+            v-if="
+              prefectNotification.length &&
+              (userModule == 23 || userModule == 27)
+            "
+            class="mb-4"
+          >
+            <v-card
+              v-for="(notif, index) in prefectNotification"
+              :key="'notif-' + index"
+              class="notif-card notif-card--parent clickable"
+              variant="flat"
+              @click="openPrefectNotification(notif)"
+            >
+              <div class="d-flex align-start">
+                <v-avatar
+                  size="44"
+                  class="me-3 notif-avatar notif-avatar--parent"
+                  :class="
+                    notif.report_type === 2
+                      ? 'notif-avatar--disciplinary'
+                      : 'notif-avatar--academic'
+                  "
+                >
+                  <v-icon size="20" color="white">
+                    {{
+                      notif.report_type === 2
+                        ? 'mdi-alert-octagon-outline'
+                        : 'mdi-account-child-outline'
+                    }}
+                  </v-icon>
+                </v-avatar>
+
+                <div class="flex-grow-1">
+                  <div class="d-flex align-center justify-space-between">
+                    <div class="text-body-2 font-weight-medium">
+                      {{ notif.student_name }}
+                    </div>
+                    <v-chip
+                      size="x-small"
+                      :color="notif.report_type === 2 ? 'error' : 'warning'"
+                      variant="tonal"
+                      class="ms-2"
+                    >
+                      {{
+                        notif.report_type === 2 ? 'Disciplinary' : 'Academic'
+                      }}
+                    </v-chip>
+                  </div>
+
+                  <div class="text-caption text-medium-emphasis">
+                    {{ notif.grade_level }}
+                  </div>
+
+                  <div class="text-caption text-medium-emphasis">
+                    {{ notif.report_description }}
                   </div>
                 </div>
 
@@ -1208,27 +1350,40 @@ export default {
       atRiskNotificationForFaculty: [],
       atRiskNotification: [],
       parentNotification: [],
+      prefectNotification: [],
     };
   },
 
   computed: {
     unreadCount() {
-      const allNotifications = [
-        ...this.lardoNotification,
-        ...this.lardoNotificationForFaculty,
-        ...this.atRiskNotification,
-        ...this.atRiskNotificationForFaculty,
-        ...this.parentNotification,
-      ];
-      if (this.subModules && this.subModules.includes(21)) {
-        if (this.assignedModuleID == 21) {
-          return allNotifications.filter((n) => !n.read).length;
-        } else {
-          return 0;
-        }
+      let allNotifications = [];
+      if (this.userModule == 21) {
+        allNotifications = [
+          ...this.lardoNotification,
+          ...this.atRiskNotification,
+        ];
+      } else if (this.userModule == 2) {
+        allNotifications = [
+          ...this.lardoNotificationForFaculty,
+          ...this.atRiskNotificationForFaculty,
+        ];
+      } else if (this.userModule == 22) {
+        allNotifications = [...this.parentNotification];
+      } else if (this.userModule == 23) {
+        allNotifications = [...this.prefectNotification];
+      } else if (this.userModule == 27) {
+        allNotifications = [...this.prefectNotification];
       } else {
-        return allNotifications.filter((n) => !n.read).length;
+        allNotifications = [];
       }
+      //  allNotifications = [
+      //   ...this.lardoNotification,
+      //   ...this.lardoNotificationForFaculty,
+      //   ...this.atRiskNotification,
+      //   ...this.atRiskNotificationForFaculty,
+      //   ...this.parentNotification,
+      // ];
+      return allNotifications.filter((n) => !n.read).length;
     },
     hasUnread() {
       return this.unreadCount > 0;
@@ -1247,6 +1402,9 @@ export default {
     },
     limitParentNotification() {
       return this.parentNotification.slice(0, 5); // Returns the first 5 items
+    },
+    limitPrefectNotification() {
+      return this.prefectNotification.slice(0, 5); // Returns the first 5 items
     },
   },
   watch: {
@@ -1272,6 +1430,7 @@ export default {
     this.getAtRiskNotification();
     this.getAtRiskNotificationForFaculty();
     this.getParentNotification();
+    this.getPrefectSeniorHighReport();
     this.getAccessControlAssignedModules();
 
     if (this.$vuetify.display.xs) {
@@ -1334,7 +1493,17 @@ export default {
         }
       }
     },
-
+    openPrefectNotification(notif) {
+      this.notifMenu = false;
+      notif.read = true;
+      this.showAllNotifDialog = false;
+      this.axiosCall('/notification/updatePrefect/' + notif.id, 'PATCH', {
+        read: 1,
+      }).then((res) => {
+        console.log(res);
+        this.$router.push('/' + this.userType + '/student-discipline');
+      });
+    },
     openParentNotification(notif) {
       this.notifMenu = false;
       notif.read = true;
@@ -1571,6 +1740,15 @@ export default {
       ).then((res) => {
         console.log('Parent', res.data);
         this.parentNotification = res.data;
+      });
+    },
+    getPrefectSeniorHighReport() {
+      this.axiosCall(
+        '/notification/getPrefectSeniorHighReport/' + this.userModule,
+        'GET',
+      ).then((res) => {
+        console.log('Prefect', res.data);
+        this.prefectNotification = res.data;
       });
     },
     getAccessControlAssignedModules() {

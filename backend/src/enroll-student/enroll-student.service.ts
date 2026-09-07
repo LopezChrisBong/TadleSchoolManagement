@@ -3,15 +3,18 @@ import { CreateEnrollStudentDto } from './dto/create-enroll-student.dto';
 import { UpdateEnrollStudentDto } from './dto/update-enroll-student.dto';
 import {
   AtRiskStudentForFacultyNotification,
+  AtRiskStudentNotification,
   Availability,
   EnrollStudent,
   LardoStudentForFacultyNotification,
+  LardoStudentNotification,
   RoomsSection,
   StudentList,
   StudentQuarterFinalGrade,
   StudentReportDisciplinary,
   StudentValues,
   Subject,
+  TransmutedGrade,
   UserDetail,
   Users,
 } from 'src/entities';
@@ -1022,26 +1025,28 @@ export class EnrollStudentService {
     //   .andWhere('risk.transmuted_grade < 80')
     //   .groupBy('ES.id')
     //   .getRawMany();
-    const atRiskStudents = await this.dataSource
-      .createQueryBuilder(EnrollStudent, 'ES')
-      .select([
-        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
-        'ES.id as id',
-        'ES.lrnNo as lrn',
-        'risk.remarks as remarks',
-        'risk.transmuted_grade as transmuted_grade',
-        'risk.subject_title as subject_title',
-      ])
-      .innerJoin(
-        AtRiskStudentForFacultyNotification,
-        'risk',
-        'ES.id = risk.studentID',
-      )
-      .where('risk.studentID IN (:...studentIds)', { studentIds })
-      .andWhere('risk.school_yearID = :filter', { filter })
-      .andWhere('risk.transmuted_grade < 80')
-      .andWhere(
-        `
+    let atRiskStudents;
+    if (assignedModules == 2) {
+      atRiskStudents = await this.dataSource
+        .createQueryBuilder(EnrollStudent, 'ES')
+        .select([
+          "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
+          'ES.id as id',
+          'ES.lrnNo as lrn',
+          'risk.remarks as remarks',
+          'risk.transmuted_grade as transmuted_grade',
+          'risk.subject_title as subject_title',
+        ])
+        .innerJoin(
+          AtRiskStudentForFacultyNotification,
+          'risk',
+          'ES.id = risk.studentID',
+        )
+        .where('risk.studentID IN (:...studentIds)', { studentIds })
+        .andWhere('risk.school_yearID = :filter', { filter })
+        .andWhere('risk.transmuted_grade < 80')
+        .andWhere(
+          `
         risk.id = (
           SELECT MAX(r2.id)
           FROM at_risk_student_for_faculty_notification r2
@@ -1050,8 +1055,36 @@ export class EnrollStudentService {
             AND r2.transmuted_grade < 80
         )
       `,
-      )
-      .getRawMany();
+        )
+        .getRawMany();
+    } else if (assignedModules == 21) {
+      atRiskStudents = await this.dataSource
+        .createQueryBuilder(EnrollStudent, 'ES')
+        .select([
+          "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
+          'ES.id as id',
+          'ES.lrnNo as lrn',
+          'risk.remarks as remarks',
+          'risk.transmuted_grade as transmuted_grade',
+          'risk.subject_title as subject_title',
+        ])
+        .innerJoin(AtRiskStudentNotification, 'risk', 'ES.id = risk.studentID')
+        .where('risk.studentID IN (:...studentIds)', { studentIds })
+        .andWhere('risk.school_yearID = :filter', { filter })
+        .andWhere('risk.transmuted_grade < 80')
+        .andWhere(
+          `
+    risk.id = (
+      SELECT MAX(r2.id)
+      FROM at_risk_student_notification r2
+      WHERE r2.studentID = risk.studentID
+        AND r2.school_yearID = :filter
+        AND r2.transmuted_grade < 80
+    )
+  `,
+        )
+        .getRawMany();
+    }
 
     for (let i = 0; i < atRiskStudents.length; i++) {
       console.log(atRiskStudents[i].transmuted_grade);
@@ -1097,24 +1130,26 @@ export class EnrollStudentService {
     //   .andWhere('report.school_yearID = :filter', { filter })
     //   .groupBy('ES.id')
     //   .getRawMany();
-    const lardoStudents = await this.dataSource
-      .createQueryBuilder(EnrollStudent, 'ES')
-      .select([
-        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
-        'ES.id as id',
-        'ES.lrnNo as lrn',
-        'report.remarks as remarks',
-        'report.subject_title as subject_title',
-      ])
-      .innerJoin(
-        LardoStudentForFacultyNotification,
-        'report',
-        'ES.id = report.studentID',
-      )
-      .where('report.studentID IN (:...studentIds)', { studentIds })
-      .andWhere('report.school_yearID = :filter', { filter })
-      .andWhere(
-        `
+    let lardoStudents;
+    if (assignedModules == 2) {
+      lardoStudents = await this.dataSource
+        .createQueryBuilder(EnrollStudent, 'ES')
+        .select([
+          "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
+          'ES.id as id',
+          'ES.lrnNo as lrn',
+          'report.remarks as remarks',
+          'report.subject_title as subject_title',
+        ])
+        .innerJoin(
+          LardoStudentForFacultyNotification,
+          'report',
+          'ES.id = report.studentID',
+        )
+        .where('report.studentID IN (:...studentIds)', { studentIds })
+        .andWhere('report.school_yearID = :filter', { filter })
+        .andWhere(
+          `
           report.created_at = (
             SELECT MAX(r2.created_at)
             FROM lardo_student_for_faculty_notification r2
@@ -1122,9 +1157,39 @@ export class EnrollStudentService {
               AND r2.school_yearID = :filter
           )
         `,
-      )
-      .setParameter('filter', filter)
-      .getRawMany();
+        )
+        .setParameter('filter', filter)
+        .getRawMany();
+    } else if (assignedModules == 21) {
+      lardoStudents = await this.dataSource
+        .createQueryBuilder(EnrollStudent, 'ES')
+        .select([
+          "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname,' ',SUBSTRING(ES.mname,1,1),'. ',ES.lname), CONCAT(ES.fname,' ',ES.lname)) as name",
+          'ES.id as id',
+          'ES.lrnNo as lrn',
+          'report.remarks as remarks',
+          'report.subject_title as subject_title',
+        ])
+        .innerJoin(
+          LardoStudentNotification,
+          'report',
+          'ES.id = report.studentID',
+        )
+        .where('report.studentID IN (:...studentIds)', { studentIds })
+        .andWhere('report.school_yearID = :filter', { filter })
+        .andWhere(
+          `
+          report.created_at = (
+            SELECT MAX(r2.created_at)
+            FROM lardo_student_for_faculty_notification r2
+            WHERE r2.studentID = report.studentID
+              AND r2.school_yearID = :filter
+          )
+        `,
+        )
+        .setParameter('filter', filter)
+        .getRawMany();
+    }
 
     for (let i = 0; i < lardoStudents.length; i++) {
       console.log(lardoStudents[i].transmuted_grade);
@@ -1174,7 +1239,7 @@ export class EnrollStudentService {
     const lardoCount = lardoStudents.length;
 
     const alertStudents = [...lardoStudents, ...atRiskStudents];
-    console.log(students);
+    console.log(lardoStudents);
     return {
       data: rooms,
       studentCount,
@@ -1184,6 +1249,154 @@ export class EnrollStudentService {
       misbehaveList,
       lardoStudents,
       alertStudents,
+    };
+  }
+
+  async getPrefectDashboardData(
+    curr_user: any,
+    filter: number,
+    assignedModules: number,
+  ) {
+    const junior = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'];
+    const senior = ['Grade 11', 'Grade 12'];
+
+    const reportedData = await this.dataSource.manager
+      .createQueryBuilder(StudentReportDisciplinary, 'srd')
+      .select([
+        'srd.*',
+        "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as student",
+      ])
+      .leftJoin(EnrollStudent, 'es', 'es.id = srd.studentID')
+      .where('srd.grade_level IN (:...gradeLevel)', {
+        gradeLevel: assignedModules == 23 ? senior : junior,
+      })
+      .andWhere('srd.school_yearID = :filter', { filter })
+      .getRawMany();
+
+    const stats = [
+      {
+        title: 'Total Incidents',
+        value: reportedData.length,
+        icon: 'mdi-alert',
+        iconClass: 'blue-icon',
+      },
+      {
+        title: 'Pending Cases',
+        value: reportedData.filter((r) => r.status === 1).length,
+        icon: 'mdi-clock-outline',
+        iconClass: 'orange-icon',
+      },
+      {
+        title: 'Resolved Cases',
+        value: reportedData.filter((r) => r.status === 2 || r.status === 4)
+          .length,
+        icon: 'mdi-check-circle-outline',
+        iconClass: 'green-icon',
+      },
+      {
+        title: 'Suspensions',
+        value: reportedData.filter((r) => r.status === 3).length,
+        icon: 'mdi-account-off-outline',
+        iconClass: 'red-icon',
+      },
+    ];
+
+    const incidents = reportedData
+      .sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      )
+      .slice(0, 10)
+      .map((report) => ({
+        student: report.student,
+        studentID: report.studentID,
+        violation: report.report_description || 'No description',
+        date:
+          report.report_date ||
+          new Date(report.created_at).toISOString().split('T')[0],
+        status:
+          report.status === 1
+            ? 'Pending'
+            : report.status === 2
+              ? 'Resolved'
+              : report.status === 3
+                ? 'Suspended'
+                : report.status === 4
+                  ? 'Serious'
+                  : 'Unknown',
+      }));
+
+    const minor = reportedData.filter((r) => r.status === 1).length;
+
+    const major = reportedData.filter((r) => r.status === 2).length;
+
+    const severe = reportedData.filter((r) => r.status === 3).length;
+
+    const total = reportedData.length;
+
+    const behaviorSummary = [
+      {
+        label: 'Minor Offenses',
+        value: total ? Math.round((minor / total) * 100) : 0,
+        color: 'green',
+      },
+      {
+        label: 'Major Offenses',
+        value: total ? Math.round((major / total) * 100) : 0,
+        color: 'orange',
+      },
+      {
+        label: 'Severe Cases',
+        value: total ? Math.round((severe / total) * 100) : 0,
+        color: 'red',
+      },
+    ];
+
+    const offenderMap = new Map<
+      number,
+      {
+        name: string;
+        cases: number;
+        latestDate: Date;
+      }
+    >();
+
+    reportedData.forEach((report) => {
+      const studentID = Number(report.studentID);
+      const createdAt = new Date(report.created_at);
+
+      const existing = offenderMap.get(studentID);
+
+      if (existing) {
+        existing.cases++;
+
+        if (createdAt > existing.latestDate) {
+          existing.latestDate = createdAt;
+        }
+      } else {
+        offenderMap.set(studentID, {
+          name: report.student,
+          cases: 1,
+          latestDate: createdAt,
+        });
+      }
+    });
+
+    const latestOffenders = Array.from(offenderMap.values())
+      .sort((a, b) => b.latestDate.getTime() - a.latestDate.getTime())
+      .slice(0, 5)
+      .map((offender) => ({
+        name: offender.name,
+        cases: offender.cases,
+      }));
+
+    console.log('getPrefectDashboardData', reportedData);
+
+    return {
+      stats,
+      incidents,
+      topOffenders: latestOffenders,
+      behaviorSummary,
     };
   }
 
@@ -1218,14 +1431,27 @@ export class EnrollStudentService {
       .leftJoin(UserDetail, 'ud', 'ud.id = rs.teacherId')
       .leftJoin(EnrollStudent, 'es', 'es.id = risk.studentID')
       .where('risk.school_yearID = :filter', { filter })
+      .groupBy('risk.subject_title')
+      .addGroupBy('sl.studentID')
+      .orderBy('es.lname', 'ASC')
       .getRawMany();
-    console.log(atRisk);
+    // console.log('getAdminDashboardData', atRisk);
     return {
       juniorCount: juniorCount,
       seniorCount: seniorCount,
       atRisk: atRisk,
       riskCout: atRisk.length,
     };
+  }
+
+  async getAllSubjectThatAtRisk(filter: string, id: number) {
+    let studentData = await this.dataSource.manager
+      .createQueryBuilder(AtRiskStudentForFacultyNotification, 'ars')
+      .where('ars.studentID = :id', { id })
+      .andWhere('ars.school_yearID = :filter', { filter })
+      .getMany();
+    console.log(studentData);
+    return studentData;
   }
 
   async getSchoolYear() {

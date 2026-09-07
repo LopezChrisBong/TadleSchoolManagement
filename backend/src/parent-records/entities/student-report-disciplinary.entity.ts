@@ -50,6 +50,9 @@ export class StudentReportDisciplinary {
   @Column({ type: 'int', default: false })
   status: number;
 
+  @Column({ type: 'boolean', default: false })
+  read: boolean;
+
   @CreateDateColumn({
     nullable: false,
     type: 'datetime',

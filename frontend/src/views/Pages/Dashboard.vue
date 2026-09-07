@@ -2,7 +2,11 @@
   <v-container fluid class="dashboard pa-6">
     <v-row dense class="mb-6">
       <v-col cols="12" md="4">
-        <v-card class="stat-card green-card" elevation="0">
+        <v-card
+          class="stat-card green-card"
+          elevation="0"
+          @click="JuniorHighList()"
+        >
           <div class="stat-icon-wrap green-icon">
             <v-icon icon="mdi-school-outline" size="26" />
           </div>
@@ -14,7 +18,11 @@
       </v-col>
 
       <v-col cols="12" md="4">
-        <v-card class="stat-card blue-card" elevation="0">
+        <v-card
+          class="stat-card blue-card"
+          elevation="0"
+          @click="SeniorHighList()"
+        >
           <div class="stat-icon-wrap blue-icon">
             <v-icon icon="mdi-school" size="26" />
           </div>
@@ -26,7 +34,7 @@
       </v-col>
 
       <v-col cols="12" md="4">
-        <v-card class="stat-card red-card" elevation="0">
+        <v-card class="stat-card red-card" elevation="0" @click="AtRiskList()">
           <div class="stat-icon-wrap red-icon">
             <v-icon icon="mdi-alert-outline" size="26" />
           </div>
@@ -163,6 +171,41 @@ export default {
     editStudent(item) {
       this.$emit('edit-student', item);
     },
+    JuniorHighList() {
+      let filter = this.$store.getters.getFilterSelected;
+      window.open(
+        process.env.VUE_APP_SERVER +
+          '/pdf-generator/getAllStudenListByLevel/' +
+          filter +
+          '/' +
+          'Junior High' +
+          '',
+        '_blank',
+      );
+    },
+    SeniorHighList() {
+      let filter = this.$store.getters.getFilterSelected;
+      window.open(
+        process.env.VUE_APP_SERVER +
+          '/pdf-generator/getAllStudenListByLevel/' +
+          filter +
+          '/' +
+          'Senior High' +
+          '',
+        '_blank',
+      );
+    },
+    AtRiskList() {
+           let filter = this.$store.getters.getFilterSelected;
+      window.open(
+        process.env.VUE_APP_SERVER +
+          '/pdf-generator/getAllAtRiskStudents/' +
+          filter +
+          '',
+        '_blank',
+      );
+    },
+
     getFacultyDashboardData() {
       const filter = this.$store.getters.getFilterSelected;
       this.loading = true;

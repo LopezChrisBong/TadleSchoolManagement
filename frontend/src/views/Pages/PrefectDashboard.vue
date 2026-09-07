@@ -117,7 +117,7 @@
       <v-col cols="12" md="4">
         <v-card class="pa-4 border" elevation="0">
           <v-card-title class="font-weight-bold px-0"
-            >Top Offenders</v-card-title
+            >Latest Offenders</v-card-title
           >
           <v-list density="compact" lines="two">
             <v-list-item
@@ -177,9 +177,9 @@
   </v-container>
 </template>
 
-<script setup>
-import { ref, computed } from 'vue';
+<script>
 import { Bar, Doughnut } from 'vue-chartjs';
+
 import {
   Chart as ChartJS,
   Title,
@@ -201,163 +201,279 @@ ChartJS.register(
   ArcElement,
 );
 
-const stats = ref([
-  {
-    title: 'Total Incidents',
-    value: 124,
-    icon: 'mdi-alert',
-    iconClass: 'blue-icon',
+export default {
+  name: 'DisciplineDashboard',
+  components: {
+    Bar,
+    Doughnut,
   },
-  {
-    title: 'Pending Cases',
-    value: 32,
-    icon: 'mdi-clock-outline',
-    iconClass: 'orange-icon',
-  },
-  {
-    title: 'Resolved Cases',
-    value: 78,
-    icon: 'mdi-check-circle-outline',
-    iconClass: 'green-icon',
-  },
-  {
-    title: 'Suspensions',
-    value: 14,
-    icon: 'mdi-account-off-outline',
-    iconClass: 'red-icon',
-  },
-]);
 
-const headers = [
-  { title: 'Student', key: 'student' },
-  { title: 'Violation', key: 'violation' },
-  { title: 'Date', key: 'date' },
-  { title: 'Status', key: 'status' },
-];
+  data() {
+    return {
+      stats: [
+        {
+          title: 'Total Incidents',
+          value: 124,
+          icon: 'mdi-alert',
+          iconClass: 'blue-icon',
+        },
+        {
+          title: 'Pending Cases',
+          value: 32,
+          icon: 'mdi-clock-outline',
+          iconClass: 'orange-icon',
+        },
+        {
+          title: 'Resolved Cases',
+          value: 78,
+          icon: 'mdi-check-circle-outline',
+          iconClass: 'green-icon',
+        },
+        {
+          title: 'Suspensions',
+          value: 14,
+          icon: 'mdi-account-off-outline',
+          iconClass: 'red-icon',
+        },
+      ],
 
-const incidents = ref([
-  {
-    student: 'Juan Dela Cruz',
-    violation: 'Late Arrival',
-    date: '2026-03-10',
-    status: 'Pending',
-  },
-  {
-    student: 'Maria Santos',
-    violation: 'Uniform Violation',
-    date: '2026-03-09',
-    status: 'Resolved',
-  },
-  {
-    student: 'Pedro Reyes',
-    violation: 'Fighting',
-    date: '2026-03-08',
-    status: 'Serious',
-  },
-]);
+      headers: [
+        {
+          title: 'Student',
+          key: 'student',
+        },
+        {
+          title: 'Violation',
+          key: 'violation',
+        },
+        {
+          title: 'Date',
+          key: 'date',
+        },
+        {
+          title: 'Status',
+          key: 'status',
+        },
+      ],
 
-const topOffenders = ref([
-  { name: 'Pedro Reyes', cases: 5 },
-  { name: 'Juan Dela Cruz', cases: 4 },
-  { name: 'Ana Lopez', cases: 3 },
-]);
+      incidents: [
+        {
+          student: 'Juan Dela Cruz',
+          violation: 'Late Arrival',
+          date: '2026-03-10',
+          status: 'Pending',
+        },
+        {
+          student: 'Maria Santos',
+          violation: 'Uniform Violation',
+          date: '2026-03-09',
+          status: 'Resolved',
+        },
+        {
+          student: 'Pedro Reyes',
+          violation: 'Fighting',
+          date: '2026-03-08',
+          status: 'Serious',
+        },
+      ],
 
-const behaviorSummary = ref([
-  { label: 'Minor Offenses', value: 60, color: 'green' },
-  { label: 'Major Offenses', value: 30, color: 'orange' },
-  { label: 'Severe Cases', value: 10, color: 'red' },
-]);
+      topOffenders: [
+        {
+          name: 'Pedro Reyes',
+          cases: 5,
+        },
+        {
+          name: 'Juan Dela Cruz',
+          cases: 4,
+        },
+        {
+          name: 'Ana Lopez',
+          cases: 3,
+        },
+      ],
 
-const getStatusColor = (status) => {
-  switch (status) {
-    case 'Pending':
-      return 'orange';
-    case 'Resolved':
-      return 'green';
-    case 'Serious':
-      return 'red';
-    default:
-      return 'grey';
-  }
-};
+      behaviorSummary: [
+        {
+          label: 'Minor Offenses',
+          value: 60,
+          color: 'green',
+        },
+        {
+          label: 'Major Offenses',
+          value: 30,
+          color: 'orange',
+        },
+        {
+          label: 'Severe Cases',
+          value: 10,
+          color: 'red',
+        },
+      ],
 
-const rankClass = (index) => {
-  if (index === 0) return 'rank-gold';
-  if (index === 1) return 'rank-silver';
-  if (index === 2) return 'rank-bronze';
-  return 'rank-default';
-};
-
-// --- Chart config ---
-const barOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: { legend: { display: false } },
-  scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
-};
-const doughnutOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } },
-  },
-};
-
-const statusColorHex = {
-  Pending: '#fb8c00',
-  Resolved: '#43a047',
-  Serious: '#e53935',
-};
-
-// Counts incidents by status directly from the `incidents` table data,
-// so the chart always matches what's shown below it.
-const incidentStatusCounts = computed(() => {
-  const counts = {};
-  incidents.value.forEach((i) => {
-    counts[i.status] = (counts[i.status] || 0) + 1;
-  });
-  return counts;
-});
-const hasIncidentData = computed(() => incidents.value.length > 0);
-const incidentChartData = computed(() => {
-  const entries = Object.entries(incidentStatusCounts.value);
-  return {
-    labels: entries.map(([label]) => label),
-    datasets: [
-      {
-        label: 'Incidents',
-        data: entries.map(([, v]) => v),
-        backgroundColor: entries.map(
-          ([label]) => statusColorHex[label] || '#90a4ae',
-        ),
-        borderRadius: 6,
-        maxBarThickness: 60,
+      barOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false,
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              precision: 0,
+            },
+          },
+        },
       },
-    ],
-  };
-});
 
-const behaviorColorHex = {
-  green: '#43a047',
-  orange: '#fb8c00',
-  red: '#e53935',
-};
-const hasBehaviorData = computed(() =>
-  behaviorSummary.value.some((b) => b.value > 0),
-);
-const behaviorChartData = computed(() => ({
-  labels: behaviorSummary.value.map((b) => b.label),
-  datasets: [
-    {
-      data: behaviorSummary.value.map((b) => b.value),
-      backgroundColor: behaviorSummary.value.map(
-        (b) => behaviorColorHex[b.color] || '#90a4ae',
-      ),
+      doughnutOptions: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              boxWidth: 12,
+              padding: 12,
+            },
+          },
+        },
+      },
+
+      statusColorHex: {
+        Pending: '#fb8c00',
+        Resolved: '#43a047',
+        Serious: '#e53935',
+      },
+
+      behaviorColorHex: {
+        green: '#43a047',
+        orange: '#fb8c00',
+        red: '#e53935',
+      },
+    };
+  },
+
+  mounted() {
+    this.initialize();
+  },
+  computed: {
+    incidentStatusCounts() {
+      const counts = {};
+
+      this.incidents.forEach((i) => {
+        counts[i.status] = (counts[i.status] || 0) + 1;
+      });
+
+      return counts;
     },
-  ],
-}));
-</script>
 
+    hasIncidentData() {
+      return this.incidents.length > 0;
+    },
+
+    incidentChartData() {
+      const entries = Object.entries(this.incidentStatusCounts);
+
+      return {
+        labels: entries.map(([label]) => label),
+
+        datasets: [
+          {
+            label: 'Incidents',
+            data: entries.map(([, value]) => value),
+
+            backgroundColor: entries.map(
+              ([label]) => this.statusColorHex[label] || '#90a4ae',
+            ),
+
+            borderRadius: 6,
+            maxBarThickness: 60,
+          },
+        ],
+      };
+    },
+
+    hasBehaviorData() {
+      return this.behaviorSummary.some((b) => b.value > 0);
+    },
+
+    behaviorChartData() {
+      return {
+        labels: this.behaviorSummary.map((b) => b.label),
+
+        datasets: [
+          {
+            data: this.behaviorSummary.map((b) => b.value),
+
+            backgroundColor: this.behaviorSummary.map(
+              (b) => this.behaviorColorHex[b.color] || '#90a4ae',
+            ),
+          },
+        ],
+      };
+    },
+  },
+
+  methods: {
+    initialize() {
+      this.getPrefectDashboardData();
+    },
+    getPrefectDashboardData() {
+      const filter = this.$store.getters.getFilterSelected;
+      const assignedModuleID = localStorage.getItem('AssignedModID');
+
+      this.axiosCall(
+        '/enroll-student/getPrefectDashboardData/' +
+          filter +
+          '/' +
+          assignedModuleID,
+        'GET',
+      ).then((res) => {
+        if (res) {
+          this.stats = res.data.stats;
+          this.incidents = res.data.incidents;
+          this.topOffenders = res.data.topOffenders;
+          this.behaviorSummary = res.data.behaviorSummary;
+        }
+      });
+    },
+    getStatusColor(status) {
+      switch (status) {
+        case 'Pending':
+          return 'orange';
+
+        case 'Resolved':
+          return 'green';
+
+        case 'Serious':
+          return 'red';
+
+        default:
+          return 'grey';
+      }
+    },
+
+    rankClass(index) {
+      if (index === 0) {
+        return 'rank-gold';
+      }
+
+      if (index === 1) {
+        return 'rank-silver';
+      }
+
+      if (index === 2) {
+        return 'rank-bronze';
+      }
+
+      return 'rank-default';
+    },
+  },
+};
+</script>
 <style scoped>
 .discipline-bg {
   min-height: 100vh;
