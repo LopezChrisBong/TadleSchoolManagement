@@ -29,8 +29,20 @@
                   </div> -->
 
                   <v-data-table
-                    :headers="juniorHeaders"
-                    :items="juniorData"
+                    :headers="
+                      syType == 0 ||
+                      this.data.grade_level == 'Grade 11' ||
+                      this.data.grade_level == 'Grade 12'
+                        ? juniorHeaders
+                        : juniortermHeaders
+                    "
+                    :items="
+                      syType == 0 ||
+                      this.data.grade_level == 'Grade 11' ||
+                      this.data.grade_level == 'Grade 12'
+                        ? juniorData
+                        : juniorTermData
+                    "
                     item-key="subject"
                     class="elevation-1"
                   >
@@ -51,7 +63,13 @@
                           General Average:
                         </td>
                         <td class="text-center">
-                          <b>{{ calculateGeneralAverage(juniorData) }}</b>
+                          <b>{{
+                            syType == 0 ||
+                            this.data.grade_level == 'Grade 11' ||
+                            this.data.grade_level == 'Grade 12'
+                              ? calculateGeneralAverage(juniorData)
+                              : calculateGeneralAverage(juniorTermData)
+                          }}</b>
                         </td>
                         <td></td>
                       </tr>
@@ -152,6 +170,10 @@
           <v-divider></v-divider>
 
           <v-card-actions>
+            <v-btn color="blue" outlined @click="acknowledgeGrade()">
+              <v-icon>mdi-file-chart-check-outline</v-icon>
+              Acknowledge Grade
+            </v-btn>
             <v-spacer></v-spacer>
             <v-btn color="red" outlined @click="closeD()">
               <v-icon>mdi-close-circle-outline</v-icon>
@@ -160,6 +182,134 @@
           </v-card-actions>
         </v-card>
       </v-form>
+    </v-dialog>
+    <!-- Acknowledgment Dialog -->
+    <v-dialog v-model="ackDialog" max-width="520" persistent>
+      <v-card>
+        <v-card-title class="d-flex align-center dialog-header">
+          <v-icon class="mr-2">mdi-file-chart-check-outline</v-icon>
+          Grade Acknowledgment
+        </v-card-title>
+
+        <v-divider />
+
+        <v-card-text>
+          <v-select
+            v-model="selectedPeriod"
+            :items="periods"
+            label="Grading Period"
+            density="compact"
+            hide-details
+            class="mb-4"
+          />
+          <v-select
+            v-if="
+              data?.grade_level == 'Grade 11' || data?.grade_level == 'Grade 12'
+            "
+            v-model="semester"
+            :items="['First Sem', 'Second Sem']"
+            label="Semester"
+            density="compact"
+            hide-details
+            class="mb-4"
+          />
+
+          <v-table density="compact" class="mb-4">
+            <thead>
+              <tr>
+                <th>Subject</th>
+                <th class="text-right">Grade</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(row, i) in studentGrade.juniorHigh" :key="i">
+                <td>{{ row.subject }}</td>
+                <td class="text-right">{{ row[selectedPeriod] ?? '—' }}</td>
+              </tr>
+            </tbody>
+            <tbody
+              v-if="
+                data?.grade_level == 'Grade 11' ||
+                (data?.grade_level == 'Grade 12' && semester == 'First Sem')
+              "
+            >
+              <tr v-for="(row, i) in studentGrade.seniorHigh.firstSem" :key="i">
+                <td>{{ row.subject }}</td>
+                <td class="text-right">{{ row[selectedPeriod] ?? '—' }}</td>
+              </tr>
+            </tbody>
+            <tbody
+              v-if="
+                data?.grade_level == 'Grade 11' ||
+                (data?.grade_level == 'Grade 12' && semester == 'Second Sem')
+              "
+            >
+              <tr
+                v-for="(row, i) in studentGrade.seniorHigh.secondSem"
+                :key="i"
+              >
+                <td>{{ row.subject }}</td>
+                <td class="text-right">{{ row[selectedPeriod] ?? '—' }}</td>
+              </tr>
+            </tbody>
+          </v-table>
+
+          <div class="font-weight-bold mb-4">
+            {{ selectedPeriod }} Average:
+            {{
+              syType == 0 ||
+              this.data.grade_level == 'Grade 11' ||
+              this.data.grade_level == 'Grade 12'
+                ? periodAverageQuarter
+                : periodAverage
+            }}
+          </div>
+
+          <v-divider class="mb-4" />
+
+          <div class="font-weight-bold mb-2">Parent Acknowledgment</div>
+
+          <v-checkbox
+            v-model="ack1"
+            density="compact"
+            hide-details
+            class="mb-2"
+          >
+            <template #label>
+              <span>
+                I acknowledge that I have reviewed my child's grades for
+                <strong>{{ selectedPeriod }}</strong> and understand the
+                academic results displayed above.
+              </span>
+            </template>
+          </v-checkbox>
+
+          <v-checkbox v-model="ack2" density="compact" hide-details>
+            <template #label>
+              <span>
+                I confirm that the grades shown are the grades I received for
+                review and I am ready to provide my electronic signature for
+                this grading period.
+              </span>
+            </template>
+          </v-checkbox>
+        </v-card-text>
+
+        <v-divider />
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="closeAckDialog()">Cancel</v-btn>
+          <v-btn
+            color="blue"
+            :disabled="!(ack1 && ack2)"
+            :loading="submitting"
+            @click="submitAcknowledgment()"
+          >
+            Confirm & Sign
+          </v-btn>
+        </v-card-actions>
+      </v-card>
     </v-dialog>
 
     <fade-away-message-component
@@ -176,7 +326,7 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
 export default {
   components: {},
   props: {
@@ -184,33 +334,74 @@ export default {
     action: null,
     filter: null,
   },
+  emits: ['acknowledged'],
   data() {
     return {
+      semester: 'First Sem',
       updateID: null,
       dialog: false,
       items: [],
-      //   headers: [
-      //     { title: "Subject", value: "subject" },
-      //     { title: "1st Q", value: "1st Quarter" },
-      //     { title: "2nd Q", value: "2nd Quarter" },
-      //     { title: "3rd Q", value: "3rd Quarter" },
-      //     { title: "4th Q", value: "4th Quarter" },
-      //     { title: "Final Grade", value: "finalGrade" },
-      //     { title: "Remarks", value: "remarks" },
-      //   ],
+      syType: null,
+      ackDialog: false,
+      ack1: false,
+      ack2: false,
+      submitting: false,
+      quarterAverage: null,
+      selectedPeriod: null,
       currentDate: new Date(),
       studentGrade: [],
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
   },
 
   computed: {
+    periods() {
+      return this.syType === 0 ||
+        this.data.grade_level == 'Grade 11' ||
+        this.data.grade_level == 'Grade 12'
+        ? ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter']
+        : ['1st Term', '2nd Term', '3rd Term'];
+    },
+    periodAverage() {
+      const grades = this.studentGrade.juniorHigh
+        .map((row) => row[this.selectedPeriod])
+        .filter((g) => g !== null && g !== undefined && g !== '')
+        .map(Number);
+
+      if (!grades.length) return 'XX';
+
+      const avg = grades.reduce((sum, g) => sum + g, 0) / grades.length;
+      return avg.toFixed(2);
+    },
+    periodAverageQuarter() {
+      if (this.semester == 'First Sem') {
+        const grades = this.studentGrade.seniorHigh.firstSem
+          .map((row) => row[this.selectedPeriod])
+          .filter((g) => g !== null && g !== undefined && g !== '')
+          .map(Number);
+
+        if (!grades.length) return 'XX';
+
+        const avg = grades.reduce((sum, g) => sum + g, 0) / grades.length;
+        return avg.toFixed(2);
+      } else {
+        const grades = this.studentGrade.seniorHigh.secondSem
+          .map((row) => row[this.selectedPeriod])
+          .filter((g) => g !== null && g !== undefined && g !== '')
+          .map(Number);
+
+        if (!grades.length) return 'XX';
+
+        const avg = grades.reduce((sum, g) => sum + g, 0) / grades.length;
+        return avg.toFixed(2);
+      }
+    },
     isJunior() {
       return !!this.studentGrade.juniorHigh;
     },
@@ -218,12 +409,23 @@ export default {
       if (!this.studentGrade.juniorHigh) return [];
       return this.studentGrade.juniorHigh.map((row) => ({
         subject: row.subject,
-        "1st Quarter": row["1st Quarter"] ?? "-",
-        "2nd Quarter": row["2nd Quarter"] ?? "-",
-        "3rd Quarter": row["3rd Quarter"] ?? "-",
-        "4th Quarter": row["4th Quarter"] ?? "-",
-        finalGrade: row.finalGrade ?? "-",
-        remarks: row.remarks ?? "-",
+        '1st Quarter': row['1st Quarter'] ?? '-',
+        '2nd Quarter': row['2nd Quarter'] ?? '-',
+        '3rd Quarter': row['3rd Quarter'] ?? '-',
+        '4th Quarter': row['4th Quarter'] ?? '-',
+        finalGrade: row.finalGrade ?? '-',
+        remarks: row.remarks ?? '-',
+      }));
+    },
+    juniorTermData() {
+      if (!this.studentGrade.juniorHigh) return [];
+      return this.studentGrade.juniorHigh.map((row) => ({
+        subject: row.subject,
+        '1st Term': row['1st Term'] ?? '-',
+        '2nd Term': row['2nd Term'] ?? '-',
+        '3rd Term': row['3rd Term'] ?? '-',
+        finalGrade: row.finalGrade ?? '-',
+        remarks: row.remarks ?? '-',
       }));
     },
 
@@ -231,10 +433,10 @@ export default {
       return (
         this.studentGrade.seniorHigh?.firstSem?.map((row) => ({
           subject: row.subject,
-          "1st Quarter": row["1st Quarter"] ?? "-",
-          "2nd Quarter": row["2nd Quarter"] ?? "-",
-          finalGrade: row.finalGrade ?? "-",
-          remarks: row.remarks ?? "-",
+          '1st Quarter': row['1st Quarter'] ?? '-',
+          '2nd Quarter': row['2nd Quarter'] ?? '-',
+          finalGrade: row.finalGrade ?? '-',
+          remarks: row.remarks ?? '-',
         })) ?? []
       );
     },
@@ -243,31 +445,41 @@ export default {
       return (
         this.studentGrade.seniorHigh?.secondSem?.map((row) => ({
           subject: row.subject,
-          "1st Quarter": row["1st Quarter"] ?? "-",
-          "2nd Quarter": row["2nd Quarter"] ?? "-",
-          finalGrade: row.finalGrade ?? "-",
-          remarks: row.remarks ?? "-",
+          '1st Quarter': row['1st Quarter'] ?? '-',
+          '2nd Quarter': row['2nd Quarter'] ?? '-',
+          finalGrade: row.finalGrade ?? '-',
+          remarks: row.remarks ?? '-',
         })) ?? []
       );
     },
     juniorHeaders() {
       return [
-        { title: "Subject", value: "subject" },
-        { title: "1st Q", value: "1st Quarter" },
-        { title: "2nd Q", value: "2nd Quarter" },
-        { title: "3rd Q", value: "3rd Quarter" },
-        { title: "4th Q", value: "4th Quarter" },
-        { title: "Final Grade", value: "finalGrade" },
-        { title: "Remarks", value: "remarks" },
+        { title: 'Subject', value: 'subject' },
+        { title: '1st Q', value: '1st Quarter' },
+        { title: '2nd Q', value: '2nd Quarter' },
+        { title: '3rd Q', value: '3rd Quarter' },
+        { title: '4th Q', value: '4th Quarter' },
+        { title: 'Final Grade', value: 'finalGrade' },
+        { title: 'Remarks', value: 'remarks' },
+      ];
+    },
+    juniortermHeaders() {
+      return [
+        { title: 'Subject', value: 'subject' },
+        { title: '1st T', value: '1st Term' },
+        { title: '2nd T', value: '2nd Term' },
+        { title: '3rd T', value: '3rd Term' },
+        { title: 'Final Grade', value: 'finalGrade' },
+        { title: 'Remarks', value: 'remarks' },
       ];
     },
     semHeaders() {
       return [
-        { title: "Subject", value: "subject" },
-        { title: "1st", value: "1st Quarter" },
-        { title: "2nd", value: "2nd Quarter" },
-        { title: "Final Grade", value: "finalGrade" },
-        { title: "Remarks", value: "remarks" },
+        { title: 'Subject', value: 'subject' },
+        { title: '1st', value: '1st Quarter' },
+        { title: '2nd', value: '2nd Quarter' },
+        { title: 'Final Grade', value: 'finalGrade' },
+        { title: 'Remarks', value: 'remarks' },
       ];
     },
   },
@@ -275,7 +487,7 @@ export default {
     data: {
       handler(data) {
         this.dialog = true;
-        console.log("View Data", data);
+        console.log('View Data', data);
         if (data.id) {
           this.initialize();
           this.updateID = data.id;
@@ -289,19 +501,20 @@ export default {
 
   methods: {
     initialize() {
+      this.syType = this.$store.getters.getSyType;
       this.getAllStudentsGrade();
     },
     getAllStudentsGrade() {
       this.axiosCall(
-        "/parent-records/getMyChildrenGrades/" +
+        '/parent-records/getMyChildrenGrades/' +
           this.data.id +
-          "/" +
+          '/' +
           this.filter +
-          "/" +
+          '/' +
           this.data.grade_level,
-        "GET",
+        'GET',
       ).then((res) => {
-        console.log("Child Data", res.data);
+        console.log('Child Data', res.data);
         if (res.data) {
           this.studentGrade = res.data;
         }
@@ -311,12 +524,64 @@ export default {
       const grades = data
         .map((row) => Number(row.finalGrade))
         .filter((val) => !isNaN(val));
-      if (!grades.length) return "-";
+      console.log('calculateGeneralAverage', data);
+      if (!grades.length) return '-';
+      this.quarterAverage = (
+        grades.reduce((a, b) => a + b, 0) / grades.length
+      ).toFixed(2);
       return (grades.reduce((a, b) => a + b, 0) / grades.length).toFixed(2);
     },
-
+    acknowledgeGrade() {
+      this.selectedPeriod = this.periods[0];
+      this.ack1 = false;
+      this.ack2 = false;
+      this.ackDialog = true;
+    },
+    closeAckDialog() {
+      this.ackDialog = false;
+    },
+    async submitAcknowledgment() {
+      this.submitting = true;
+      try {
+        let filter = this.$store.getters.getFilterSelected;
+        let data = {
+          semester:
+            this.data?.grade_level == 'Grade 11' ||
+            this.data?.grade_level == 'Grade 12'
+              ? this.semester
+              : null,
+          period: this.selectedPeriod,
+          school_yearID: filter,
+          parentID: this.$store.state.user.id,
+          studentID: this.data.id,
+        };
+        this.axiosCall(
+          '/parent-records/parentAcknowledgement',
+          'POST',
+          data,
+        ).then((res) => {
+          console.log(res.data);
+          if (res.data.status == 201) {
+            this.ackDialog = false;
+            this.fadeAwayMessage.show = true;
+            this.fadeAwayMessage.type = 'success';
+            this.fadeAwayMessage.header = 'System Message';
+            this.fadeAwayMessage.message =
+              'Successfully Aknowledge ' + this.selectedPeriod;
+            this.initialize();
+          } else if (res.data.status == 400) {
+            this.fadeAwayMessage.show = true;
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
+            this.fadeAwayMessage.message = res.data.msg;
+          }
+        });
+      } finally {
+        this.submitting = false;
+      }
+    },
     closeD() {
-      eventBus.emit("closeMyChildrenGradeDialog", false);
+      eventBus.emit('closeMyChildrenGradeDialog', false);
       this.studentGrade = [];
       this.dialog = false;
       this.isJunior = false;

@@ -15,6 +15,7 @@ import {
   DepEdPersonnel,
   EnrollStudent,
   ESig,
+  ParentAcknowledgement,
   ParentRecord,
   RoomsSection,
   SchoolYear,
@@ -512,6 +513,7 @@ export class PdfGeneratorService {
     roomID: number,
     filter: number,
     gradeLevel: string,
+    num: number,
   ) {
     // console.log(studentID, roomID, filter,gradeLevel)
     let arr;
@@ -826,8 +828,15 @@ export class PdfGeneratorService {
       }
     }
 
-    console.log('BASE64:', parentEsigBase64.substring(0, 50));
-    console.log('parentEsig path:', parentEsig);
+    let aknowledgement = await this.dataSource.manager
+      .createQueryBuilder(ParentAcknowledgement, 'pa')
+      .where('pa.studentID = :id', { id: newData[0].id })
+      .andWhere('pa.school_yearID = :filter', { filter })
+      .andWhere('pa.period LIKE :term', {
+        term: `%${'Quarter'}%`,
+      })
+      .getMany();
+    console.log('1', aknowledgement);
     let studentData = {};
     let firstEsig = false;
     let secondEsig = false;
@@ -835,16 +844,24 @@ export class PdfGeneratorService {
     let fourthEsig = false;
     if (arrs['Junior High']) {
       if (juniorHigh?.[0]?.['1st Quarter'] != null) {
-        firstEsig = true;
+        if (aknowledgement?.some((a) => a.period === '1st Quarter')) {
+          firstEsig = true;
+        }
       }
       if (juniorHigh?.[0]?.['2nd Quarter'] != null) {
-        secondEsig = true;
+        if (aknowledgement?.some((a) => a.period === '2nd Quarter')) {
+          secondEsig = true;
+        }
       }
       if (juniorHigh?.[0]?.['3rd Quarter'] != null) {
-        thirdEsig = true;
+        if (aknowledgement?.some((a) => a.period === '3rd Quarter')) {
+          thirdEsig = true;
+        }
       }
       if (juniorHigh?.[0]?.['4th Quarter'] != null) {
-        fourthEsig = true;
+        if (aknowledgement?.some((a) => a.period === '4th Quarter')) {
+          fourthEsig = true;
+        }
       }
       junior = true;
       studentData = { juniorHigh: juniorHigh };
@@ -852,16 +869,32 @@ export class PdfGeneratorService {
       junior = false;
       console.log('First Sem:', firstSemSubjects);
       if (firstSemSubjects?.[0]?.['1st Quarter'] != null) {
-        firstEsig = true;
+        if (aknowledgement?.some((a) => a.semester === 'First Sem')) {
+          if (aknowledgement?.some((a) => a.period === '1st Quarter')) {
+            firstEsig = true;
+          }
+        }
       }
       if (firstSemSubjects?.[0]?.['2nd Quarter'] != null) {
-        secondEsig = true;
+        if (aknowledgement?.some((a) => a.semester === 'First Sem')) {
+          if (aknowledgement?.some((a) => a.period === '2nd Quarter')) {
+            secondEsig = true;
+          }
+        }
       }
       if (secondSemSubjects?.[0]?.['1st Quarter'] != null) {
-        thirdEsig = true;
+        if (aknowledgement?.some((a) => a.semester === 'Second Sem')) {
+          if (aknowledgement?.some((a) => a.period === '1st Quarter')) {
+            thirdEsig = true;
+          }
+        }
       }
       if (secondSemSubjects?.[0]?.['2nd Quarter'] != null) {
-        fourthEsig = true;
+        if (aknowledgement?.some((a) => a.semester === 'Second Sem')) {
+          if (aknowledgement?.some((a) => a.period === '2nd Quarter')) {
+            fourthEsig = true;
+          }
+        }
       }
       console.log('Second Sem:', secondSemSubjects);
       studentData = {
@@ -899,6 +932,7 @@ export class PdfGeneratorService {
         secondEsig: secondEsig,
         thirdEsig: thirdEsig,
         fourthEsig: fourthEsig,
+        num,
         // name:gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12'? arr[0].name: arr.name,
       },
     ];
@@ -944,6 +978,7 @@ export class PdfGeneratorService {
     roomID: number,
     filter: number,
     gradeLevel: string,
+    num: number,
   ) {
     // console.log(studentID, roomID, filter,gradeLevel)
     let arr;
@@ -1259,23 +1294,33 @@ export class PdfGeneratorService {
         parentEsigBase64 = fs.readFileSync(parentEsig).toString('base64');
       }
     }
-
-    console.log('BASE64:', parentEsigBase64.substring(0, 50));
-    console.log('parentEsig path:', parentEsig);
-
+    let aknowledgement = await this.dataSource.manager
+      .createQueryBuilder(ParentAcknowledgement, 'pa')
+      .where('pa.studentID = :id', { id: newData[0].id })
+      .andWhere('pa.school_yearID = :filter', { filter })
+      .andWhere('pa.period LIKE :term', {
+        term: `%${'Term'}%`,
+      })
+      .getMany();
     let studentData = {};
     let firstEsig = false;
     let secondEsig = false;
     let thirdEsig = false;
     if (arrs['Junior High']) {
       if (juniorHigh?.[0]?.['1st Term'] != null) {
-        firstEsig = true;
+        if (aknowledgement?.some((a) => a.period === '1st Term')) {
+          firstEsig = true;
+        }
       }
       if (juniorHigh?.[0]?.['2nd Term'] != null) {
-        secondEsig = true;
+        if (aknowledgement?.some((a) => a.period === '2nd Term')) {
+          secondEsig = true;
+        }
       }
       if (juniorHigh?.[0]?.['3rd Term'] != null) {
-        thirdEsig = true;
+        if (aknowledgement?.some((a) => a.period === '3rd Term')) {
+          thirdEsig = true;
+        }
       }
       junior = true;
       studentData = { juniorHigh: juniorHigh };
@@ -1314,6 +1359,7 @@ export class PdfGeneratorService {
         firstEsig: firstEsig,
         secondEsig: secondEsig,
         thirdEsig: thirdEsig,
+        num,
         // name:gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12'? arr[0].name: arr.name,
       },
     ];

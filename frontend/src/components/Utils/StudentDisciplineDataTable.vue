@@ -281,7 +281,7 @@
           </v-sheet>
 
           <!-- Parent Meeting: scheduling form (Un-Resolved tab) -->
-          <template v-if="tab == 1">
+          <template v-if="assignedModuleID != 21 && tab == 1">
             <v-divider class="my-4"></v-divider>
             <div
               class="text-subtitle-2 font-weight-bold mb-2 d-flex align-center"
@@ -395,7 +395,8 @@
             Resolve
           </v-btn>
           <v-btn
-            v-if="tab == 2 || tab == 4"
+            v-if="(assignedModuleID != 21 && tab == 2) || tab == 4"
+            v-show="assignedModuleID != 21 && tab != 2"
             :color="$vuetify.theme.themes.light.submitBtns"
             class="text-white"
             variant="flat"
@@ -403,10 +404,23 @@
             @click="submitReport(1)"
           >
             <v-icon start size="18">mdi-send-outline</v-icon>
-            {{ assignedModuleID == 22 ? 'Counseling' : 'Un-Resolved' }}
+            {{ assignedModuleID == 21 ? 'Counseling' : 'Un-Resolved' }}
           </v-btn>
+          <!-- <v-btn
+            v-if="assignedModuleID == 21 && tab == 1"
+            :color="$vuetify.theme.themes.light.submitBtns"
+            class="text-white"
+            variant="flat"
+            rounded="lg"
+            @click="submitReport(1)"
+          >
+            <v-icon start size="18">mdi-send-outline</v-icon>
+            {{ assignedModuleID == 21 ? 'Counseling' : 'Un-Resolved' }}
+          </v-btn> -->
           <v-btn
-            v-if="tab == 1"
+            v-if="
+              assignedModuleID == 23 || (assignedModuleID == 27 && tab == 1)
+            "
             color="pink-darken-1"
             class="text-white"
             variant="flat"

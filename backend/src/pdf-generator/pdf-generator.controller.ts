@@ -53,19 +53,21 @@ export class PdfGeneratorController {
     // console.log(n)
   }
 
-  @Get('/getStudentAchievements/:studentID/:roomID/:filter/:gradeLevel')
+  @Get('/getStudentAchievements/:studentID/:roomID/:filter/:gradeLevel/:num')
   async getStudentAchievements(
     @Res() res,
     @Param('studentID') studentID: number,
     @Param('roomID') roomID: number,
     @Param('filter') filter: number,
     @Param('gradeLevel') gradeLevel: string,
+    @Param('num') num: string,
   ): Promise<void> {
     const buffer = await this.pdfGeneratorService.getStudentAchievements(
       studentID,
       roomID,
       filter,
       gradeLevel,
+      +num,
     );
 
     res.set({
@@ -82,19 +84,21 @@ export class PdfGeneratorController {
     res.end(buffer);
   }
 
-  @Get('/getStudentAchievementsV2/:studentID/:roomID/:filter/:gradeLevel')
+  @Get('/getStudentAchievementsV2/:studentID/:roomID/:filter/:gradeLevel/:num')
   async getStudentAchievementsV2(
     @Res() res,
     @Param('studentID') studentID: number,
     @Param('roomID') roomID: number,
     @Param('filter') filter: number,
     @Param('gradeLevel') gradeLevel: string,
+    @Param('num') num: string,
   ): Promise<void> {
     const buffer = await this.pdfGeneratorService.getStudentAchievementsV2(
       studentID,
       roomID,
       filter,
       gradeLevel,
+      +num,
     );
 
     res.set({

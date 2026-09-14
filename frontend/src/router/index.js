@@ -46,6 +46,7 @@ import Announcement from '../views/Pages/Announcement.vue';
 import MyReports from '../views/Pages/MyReports.vue';
 import DepEdPersonnels from '@/views/Pages/DepEdPersonnels.vue';
 import ParentEsignature from '@/views/Pages/ParentEsignature.vue';
+import TeacherAppointment from '@/views/Pages/TeacherAppointment.vue';
 // Vue.use(VueRouter);
 
 const routes = [
@@ -466,7 +467,13 @@ const routes = [
         path: "Esignature",
         component: ParentEsignature,
         meta: { title: "E-signature", authRequired: true },
+      },
+      {
+        path: "teacher-appointment",
+        component: TeacherAppointment,
+        meta: { title: "Appointment List", authRequired: true },
       }
+      
       
       
     ],

@@ -300,7 +300,7 @@ export default {
     },
 
     hasIncidentData() {
-      return this.incidents.length > 0;
+      return this.incidents?.length > 0;
     },
 
     incidentChartData() {

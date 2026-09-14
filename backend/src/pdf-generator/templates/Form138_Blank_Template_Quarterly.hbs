@@ -191,45 +191,56 @@
     <h3 class="sub-title">Parent / Guardian's Signature</h3>
     <div class="parent-sig-row">
        {{#ifCond firstEsig true}}
-          <img style="display:flex; top:0 px; left:0px; position:absolute; margin-top: -50px; margin-left: 300px;"
+          {{#ifCond num 1}}
+          <img style="display:flex; top:0 px; left:0px; position:absolute; margin-top: -15px; margin-left: 300px;"
             src='data:image/png;base64, {{parentEsig}}'
             width='5%'
             alt=''
           />
+        {{else}}
+      {{/ifCond}}
        {{else}}
       {{/ifCond}}
       <label>1st Quarter</label><input type="text" class="fillline">
     </div>
     <div class="parent-sig-row">
          {{#ifCond secondEsig true}}
-           <img style="display:flex; top:0 px; left:0px; position:absolute; margin-top: -50px; margin-left: 300px;"
+          {{#ifCond num 1}}
+          <img style="display:flex; top:0 px; left:0px; position:absolute; margin-top: -15px; margin-left: 300px;"
             src='data:image/png;base64, {{parentEsig}}'
             width='5%'
             alt=''
           />
+        {{else}}
+      {{/ifCond}}
          {{else}}
          {{/ifCond}}
       <label>2nd Quarter</label><input type="text" class="fillline">
     </div>
     <div class="parent-sig-row">
           {{#ifCond thirdEsig true}}
-           
-          <img style="display:flex; top:0 px; left:0px; position:absolute; margin-top: -50px; margin-left: 300px;"
+          {{#ifCond num 1}}
+          <img style="display:flex; top:0 px; left:0px; position:absolute; margin-top: -15px; margin-left: 300px;"
             src='data:image/png;base64, {{parentEsig}}'
             width='5%'
             alt=''
           />
+        {{else}}
+      {{/ifCond}}
           {{else}}
           {{/ifCond}}
       <label>3rd Quarter</label><input type="text" class="fillline">
     </div>
     <div class="parent-sig-row">
          {{#ifCond fourthEsig true}}
-          <img style="display:flex; top:0 px; left:0px; position:absolute; margin-top: -50px; margin-left: 300px;"
+          {{#ifCond num 1}}
+          <img style="display:flex; top:0 px; left:0px; position:absolute; margin-top: -15px; margin-left: 300px;"
             src='data:image/png;base64, {{parentEsig}}'
             width='5%'
             alt=''
           />
+        {{else}}
+      {{/ifCond}}
           {{else}}
           {{/ifCond}}
       <label>4th Quarter</label><input type="text" class="fillline">

@@ -9,4 +9,19 @@ export class CreateParentRecordDto {
 
   @ApiProperty()
   school_yearID: number;
+
+  @ApiProperty()
+  teacherID: number;
+
+  @ApiProperty()
+  semester: string;
+
+  @ApiProperty()
+  period: string;
+
+  @ApiProperty()
+  schedule: string;
+
+  @ApiProperty()
+  purpose: string;
 }

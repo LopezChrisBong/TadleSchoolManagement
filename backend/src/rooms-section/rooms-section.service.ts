@@ -1467,11 +1467,20 @@ export class RoomsSectionService {
     id: number,
     updateStudentAttendanceDto: UpdateStudentAttendanceDto,
   ) {
-    let item = updateStudentAttendanceDto;
-    let parsedData =
-      typeof item.data === 'string' ? JSON.parse(item.data) : item.data;
-    console.log(parsedData.roomID);
     try {
+      const item = updateStudentAttendanceDto;
+
+      const parsedData =
+        typeof item.data === 'string' ? JSON.parse(item.data) : item.data;
+
+      console.log('========== UPDATE PARENT TO VIEW ==========');
+      console.log('id:', id);
+      console.log('roomID:', parsedData.roomID);
+      console.log('school_yearID:', parsedData.filter);
+      console.log('quarter:', parsedData.quarter);
+      console.log('semester:', parsedData.semester);
+      console.log('==========================================');
+
       const result = await this.dataSource.manager.update(
         StudentQuarterFinalGrade,
         {
@@ -1485,6 +1494,8 @@ export class RoomsSectionService {
         },
       );
 
+      console.log('UPDATE RESULT:', result);
+
       if (result.affected === 0) {
         return {
           msg: 'No records found to update!',
@@ -1497,6 +1508,10 @@ export class RoomsSectionService {
         status: HttpStatus.OK,
       };
     } catch (error) {
+      console.error('UPDATE ERROR:', error);
+      console.error('SQL ERROR:', error.sql);
+      console.error('DRIVER ERROR:', error.driverError);
+
       return {
         msg: 'Something went wrong! ' + error.message,
         status: HttpStatus.BAD_REQUEST,

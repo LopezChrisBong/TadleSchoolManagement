@@ -11,8 +11,8 @@
     <div v-else-if="assignedModuleID == 1">
       <Admin />
     </div>
-    <!-- Parent Dashboard -->
-    <div v-else-if="assignedModuleID == 2 || assignedModuleID == 21">
+    <!-- Teacher Dashboard -->
+    <div v-else>
       <TeacherDashboard />
     </div>
   </div>
