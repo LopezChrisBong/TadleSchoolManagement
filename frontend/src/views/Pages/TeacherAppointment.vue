@@ -3,7 +3,7 @@
     <v-card class="mt-2">
       <v-row>
         <v-col cols="12">
-          <MyReportsDataTable />
+          <TeacherAppointmentDataTable />
         </v-col>
       </v-row>
     </v-card>
@@ -11,10 +11,10 @@
 </template>
 
 <script>
-import MyReportsDataTable from '../../components/Utils/MyReportsDataTable.vue';
+import TeacherAppointmentDataTable from '../../components/Utils/TeacherAppointmentDataTable.vue';
 export default {
   components: {
-    MyReportsDataTable,
+    TeacherAppointmentDataTable,
   },
   created() {
     // console.log("created");

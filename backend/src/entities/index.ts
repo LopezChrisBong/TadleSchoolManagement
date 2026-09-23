@@ -12,6 +12,8 @@ import { AtRiskStudentForFacultyNotification } from 'src/notification/entities/a
 import { LardoStudentForFacultyNotification } from 'src/notification/entities/lardo_student_for_faculty_notification.entity';
 import { LardoStudentNotification } from 'src/notification/entities/lardo_student_notification.entity';
 import { Notification } from 'src/notification/entities/notification.entity';
+import { ParentAcknowledgement } from 'src/parent-records/entities/parent-acknowledgement.entity';
+import { ParentAppointment } from 'src/parent-records/entities/parent-appointment.entity';
 import { ParentRecord } from 'src/parent-records/entities/parent-record.entity';
 import { StudentReportDisciplinary } from 'src/parent-records/entities/student-report-disciplinary.entity';
 import { AddStrand } from 'src/rooms-section/entities/add-strand.entity';
@@ -68,6 +70,8 @@ const entities = [
   Comments,
   DepEdPersonnel,
   ESig,
+  ParentAcknowledgement,
+  ParentAppointment,
 ];
 
 export {
@@ -105,6 +109,8 @@ export {
   Comments,
   DepEdPersonnel,
   ESig,
+  ParentAcknowledgement,
+  ParentAppointment,
 };
 
 export default entities;

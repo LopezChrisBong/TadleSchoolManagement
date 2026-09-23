@@ -39,4 +39,13 @@ export class CreateStudentReportDisciplinaryDto {
 
   @ApiProperty()
   comments: string;
+
+  @ApiProperty()
+  meeting_date: string;
+
+  @ApiProperty()
+  meeting_time: string;
+
+  @ApiProperty()
+  meeting_notes: string;
 }

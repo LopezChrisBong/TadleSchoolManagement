@@ -52,7 +52,7 @@
       <v-data-table
         :items="data"
         :class="isMobile"
-        :headers="headers"
+        :headers="tableHeaders"
         :search="search"
         :items-per-page="10"
         :loading="loading"
@@ -105,6 +105,18 @@
 
         <template v-slot:[`item.created_at`]="{ item }">
           <span class="text-body-2">{{ formatDate(item.created_at) }}</span>
+        </template>
+
+        <template v-slot:[`item.meeting_date`]="{ item }">
+          <span class="text-body-2">
+            {{ item.meeting_date ? formatDate(item.meeting_date) : '—' }}
+          </span>
+        </template>
+
+        <template v-slot:[`item.meeting_time`]="{ item }">
+          <span class="text-body-2">
+            {{ item.meeting_time ? formatTime(item.meeting_time) : '—' }}
+          </span>
         </template>
 
         <template v-slot:[`item.actions`]="{ item }">
@@ -267,6 +279,97 @@
               No tagged students.
             </span>
           </v-sheet>
+
+          <!-- Parent Meeting: scheduling form (Un-Resolved tab) -->
+          <template v-if="assignedModuleID != 21 && tab == 1">
+            <v-divider class="my-4"></v-divider>
+            <div
+              class="text-subtitle-2 font-weight-bold mb-2 d-flex align-center"
+            >
+              <v-icon start size="18" color="pink-darken-1"
+                >mdi-account-group-outline</v-icon
+              >
+              Schedule Parent Meeting
+            </div>
+            <v-row dense>
+              <v-col cols="6">
+                <v-text-field
+                  v-model="meetingDate"
+                  type="date"
+                  label="Meeting Date"
+                  variant="outlined"
+                  density="comfortable"
+                  color="primary"
+                  hide-details
+                ></v-text-field>
+              </v-col>
+              <v-col cols="6">
+                <v-text-field
+                  v-model="meetingTime"
+                  type="time"
+                  label="Meeting Time"
+                  variant="outlined"
+                  density="comfortable"
+                  color="primary"
+                  hide-details
+                ></v-text-field>
+              </v-col>
+            </v-row>
+            <v-textarea
+              v-model="meetingNotes"
+              label="Meeting Notes / Agenda"
+              rows="2"
+              color="primary"
+              variant="outlined"
+              auto-grow
+              class="mt-2"
+            ></v-textarea>
+          </template>
+
+          <!-- Parent Meeting: read-only view (Parent Meeting tab) -->
+          <template v-if="tab == 4">
+            <v-divider class="my-4"></v-divider>
+            <div
+              class="text-subtitle-2 font-weight-bold mb-2 d-flex align-center"
+            >
+              <v-icon start size="18" color="pink-darken-1"
+                >mdi-account-group-outline</v-icon
+              >
+              Parent Meeting
+            </div>
+            <v-row dense>
+              <v-col cols="6">
+                <div class="text-caption text-medium-emphasis">
+                  Meeting Date
+                </div>
+                <div class="text-body-2 font-weight-medium">
+                  {{
+                    studentReportData.meeting_date
+                      ? formatDate(studentReportData.meeting_date)
+                      : '—'
+                  }}
+                </div>
+              </v-col>
+              <v-col cols="6">
+                <div class="text-caption text-medium-emphasis">
+                  Meeting Time
+                </div>
+                <div class="text-body-2 font-weight-medium">
+                  {{
+                    studentReportData.meeting_time
+                      ? formatTime(studentReportData.meeting_time)
+                      : '—'
+                  }}
+                </div>
+              </v-col>
+              <v-col cols="12" v-if="studentReportData.meeting_notes">
+                <div class="text-caption text-medium-emphasis">Notes</div>
+                <div class="text-body-2">
+                  {{ studentReportData.meeting_notes }}
+                </div>
+              </v-col>
+            </v-row>
+          </template>
         </v-card-text>
 
         <v-divider></v-divider>
@@ -281,7 +384,7 @@
           </v-btn>
           <v-spacer></v-spacer>
           <v-btn
-            v-if="tab == 1"
+            v-if="tab == 1 || tab == 4"
             color="green"
             class="text-white mr-2"
             variant="flat"
@@ -292,7 +395,8 @@
             Resolve
           </v-btn>
           <v-btn
-            v-if="tab == 1"
+            v-if="(assignedModuleID != 21 && tab == 2) || tab == 4"
+            v-show="assignedModuleID != 21 && tab != 2"
             :color="$vuetify.theme.themes.light.submitBtns"
             class="text-white"
             variant="flat"
@@ -300,7 +404,32 @@
             @click="submitReport(1)"
           >
             <v-icon start size="18">mdi-send-outline</v-icon>
-            {{ assignedModuleID == 22 ? 'Counseling' : 'UnResolved' }}
+            {{ assignedModuleID == 21 ? 'Counseling' : 'Un-Resolved' }}
+          </v-btn>
+          <!-- <v-btn
+            v-if="assignedModuleID == 21 && tab == 1"
+            :color="$vuetify.theme.themes.light.submitBtns"
+            class="text-white"
+            variant="flat"
+            rounded="lg"
+            @click="submitReport(1)"
+          >
+            <v-icon start size="18">mdi-send-outline</v-icon>
+            {{ assignedModuleID == 21 ? 'Counseling' : 'Un-Resolved' }}
+          </v-btn> -->
+          <v-btn
+            v-if="
+              assignedModuleID == 23 || (assignedModuleID == 27 && tab == 1)
+            "
+            color="pink-darken-1"
+            class="text-white"
+            variant="flat"
+            rounded="lg"
+            :loading="savingMeeting"
+            @click="scheduleParentMeeting()"
+          >
+            <v-icon start size="18">mdi-account-group-outline</v-icon>
+            Schedule Meeting
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -325,7 +454,7 @@ export default {
     dialog: false,
     assignedModuleID: null,
     userRoleID: null,
-    headers: [
+    baseHeaders: [
       { title: 'Name', value: 'name', align: 'start' },
       { title: 'Reported BY:', value: 'teacher_name', align: 'center' },
       { title: 'Subject', value: 'subject_title', align: 'center' },
@@ -352,6 +481,11 @@ export default {
     options: {},
     action: null,
     filter: null,
+    // Parent Meeting scheduling
+    meetingDate: null,
+    meetingTime: null,
+    meetingNotes: '',
+    savingMeeting: false,
     fadeAwayMessage: {
       show: false,
       type: 'success',
@@ -371,6 +505,23 @@ export default {
     },
     isMobile() {
       return this.$vuetify.display.mobile;
+    },
+    tableHeaders() {
+      // Insert Meeting Date/Time columns before Actions when on the Parent Meeting tab
+      if (this.tab == 4) {
+        const actionsIndex = this.baseHeaders.findIndex(
+          (h) => h.value === 'actions',
+        );
+        const headers = [...this.baseHeaders];
+        headers.splice(
+          actionsIndex,
+          0,
+          { title: 'Meeting Date', value: 'meeting_date', align: 'center' },
+          { title: 'Meeting Time', value: 'meeting_time', align: 'center' },
+        );
+        return headers;
+      }
+      return this.baseHeaders;
     },
   },
 
@@ -421,8 +572,9 @@ export default {
       } else {
         this.tabList = [
           { id: 1, name: 'Adviser', active: true },
-          { id: 2, name: 'Suspended', active: false },
           { id: 3, name: 'Resolved', active: false },
+          { id: 4, name: 'Parent Meeting', active: false },
+          { id: 2, name: 'Un-Resolved', active: false },
         ];
       }
 
@@ -483,6 +635,12 @@ export default {
     add() {},
     viewItem(item) {
       this.studentReportData = item;
+      // Pre-fill meeting fields if scheduling/viewing on relevant tabs
+      this.meetingDate = item.meeting_date
+        ? item.meeting_date.substring(0, 10)
+        : null;
+      this.meetingTime = item.meeting_time || null;
+      this.meetingNotes = item.meeting_notes || '';
       this.reportDialog = true;
     },
     initials(name) {
@@ -549,6 +707,51 @@ export default {
           this.fadeAwayMessage.header = res.data.msg;
         }
       });
+    },
+
+    scheduleParentMeeting() {
+      if (!this.meetingDate || !this.meetingTime) {
+        this.fadeAwayMessage.show = true;
+        this.fadeAwayMessage.type = 'error';
+        this.fadeAwayMessage.header =
+          'Please select both a meeting date and time.';
+        return;
+      }
+
+      this.savingMeeting = true;
+
+      const data = {
+        status: 5,
+        meeting_date: this.meetingDate,
+        meeting_time: this.meetingTime,
+        meeting_notes: this.meetingNotes,
+      };
+
+      this.axiosCall(
+        '/parent-records/scheduleParentMeeting/' +
+          this.studentReportData.reportID,
+        'PATCH',
+        data,
+      )
+        .then((res) => {
+          if (res.data.status == 201) {
+            this.fadeAwayMessage.show = true;
+            this.fadeAwayMessage.type = 'success';
+            this.fadeAwayMessage.header = 'Parent Meeting Scheduled';
+            this.reportDialog = false;
+            this.meetingDate = null;
+            this.meetingTime = null;
+            this.meetingNotes = '';
+            this.initialize();
+          } else if (res.data.status == 400) {
+            this.fadeAwayMessage.show = true;
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = res.data.msg;
+          }
+        })
+        .finally(() => {
+          this.savingMeeting = false;
+        });
     },
 
     changeTab(tab) {

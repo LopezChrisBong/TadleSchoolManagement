@@ -63,7 +63,7 @@
             <v-icon start size="18">mdi-eye</v-icon>
             Report Card
           </v-btn>
-          <v-btn
+          <!-- <v-btn
             size="small"
             color="pink"
             class="my-1"
@@ -73,12 +73,23 @@
               syType == 0 ||
               item.grade_level == 'Grade 11' ||
               item.grade_level == 'Grade 12'
-                ? viewStudentAchievements(item)
-                : viewStudentAchievementsV2(item)
+                ? viewStudentAchievements(item, 1)
+                : viewStudentAchievementsV2(item, 1)
             "
           >
             <v-icon start size="18">mdi-file-document</v-icon>
-            Form 138
+            Print Form 138
+          </v-btn> -->
+          <v-btn
+            size="small"
+            color="green"
+            class="my-1"
+            variant="outlined"
+            block
+            @click="appointment(item)"
+          >
+            <v-icon start size="18">mdi-eye</v-icon>
+            Appointment
           </v-btn>
         </template>
 
@@ -194,6 +205,12 @@
       </v-card>
     </v-dialog>
 
+    <ViewMyAppointmentDialog
+      :data="studentAppointmentData"
+      :action="action"
+      :filter="filter"
+    />
+
     <ViewMyChildrenAttendanceDialog
       :data="studentAttendanceData"
       :action="action"
@@ -219,10 +236,12 @@
 
 <script>
 import eventBus from '@/eventBus';
+import ViewMyAppointmentDialog from '../../components/Dialogs/Views/ViewMyAppointmentDialog.vue';
 import ViewMyChildrenAttendanceDialog from '../../components/Dialogs/Views/ViewMyChildrenAttendanceDialog.vue';
 import ViewMyChildrenClassrecodDialog from '../../components/Dialogs/Views/ViewMyChildrenClassrecodDialog.vue';
 export default {
   components: {
+    ViewMyAppointmentDialog,
     ViewMyChildrenAttendanceDialog,
     ViewMyChildrenClassrecodDialog,
   },
@@ -232,6 +251,7 @@ export default {
     selectedStudentID: null,
     addData: null,
     studentAttendanceData: null,
+    studentAppointmentData: null,
     isLoading: false,
     studentGradeData: null,
     action: null,
@@ -268,10 +288,14 @@ export default {
     eventBus.on('closeMyChildrenGradeDialog', () => {
       this.initialize();
     });
+    eventBus.on('closeMyAppointment', () => {
+      this.initialize();
+    });
   },
   beforeUnmount() {
     eventBus.off('closeMyChildrenAttendanceDialog');
     eventBus.off('closeMyChildrenGradeDialog');
+    eventBus.off('closeMyAppointment');
   },
   watch: {
     filterYear: {
@@ -372,6 +396,10 @@ export default {
       this.studentID = null;
       this.selectedStudentID = null;
     },
+    appointment(item) {
+      this.studentAppointmentData = item;
+      this.action = 'View';
+    },
     studentAttendance(item) {
       console.log('attendance', item);
       this.studentAttendanceData = item;
@@ -420,7 +448,7 @@ export default {
       }
     },
 
-    viewStudentAchievements(item) {
+    viewStudentAchievements(item, num) {
       window.open(
         process.env.VUE_APP_SERVER +
           '/pdf-generator/getStudentAchievements/' +
@@ -431,11 +459,13 @@ export default {
           this.filter +
           '/' +
           item.grade_level +
+          '/' +
+          num +
           '',
         '_blank',
       );
     },
-    viewStudentAchievementsV2(item) {
+    viewStudentAchievementsV2(item, num) {
       window.open(
         process.env.VUE_APP_SERVER +
           '/pdf-generator/getStudentAchievementsV2/' +
@@ -446,6 +476,8 @@ export default {
           this.filter +
           '/' +
           item.grade_level +
+          '/' +
+          num +
           '',
         '_blank',
       );

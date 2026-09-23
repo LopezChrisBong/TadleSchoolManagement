@@ -25,7 +25,7 @@
                   :items="
                     data.grade_level == 'Grade 11' ||
                     data.grade_level == 'Grade 12'
-                      ? ['1st Quarter', '2nd Quarter', 'All']
+                      ? ['1st Quarter', '2nd Quarter']
                       : syType == 0
                       ? [
                           '1st Quarter',

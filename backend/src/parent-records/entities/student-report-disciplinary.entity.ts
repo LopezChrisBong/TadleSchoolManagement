@@ -47,6 +47,15 @@ export class StudentReportDisciplinary {
   @Column({ type: 'longtext', nullable: true })
   comments: string;
 
+  @Column({ type: 'longtext', nullable: true })
+  meeting_date: string;
+
+  @Column({ type: 'longtext', nullable: true })
+  meeting_time: string;
+
+  @Column({ type: 'longtext', nullable: true })
+  meeting_notes: string;
+
   @Column({ type: 'int', default: false })
   status: number;
 

@@ -116,7 +116,11 @@
 
         <template v-slot:[`item.actions`]="{ item }">
           <div class="d-flex justify-center ga-1">
-            <v-tooltip v-if="item.graded == 1" text="Form 138" location="top">
+            <v-tooltip
+              v-if="item.graded == 1"
+              text="Print Form 138 with signature"
+              location="top"
+            >
               <template v-slot:activator="{ props }">
                 <v-btn
                   v-bind="props"
@@ -126,8 +130,29 @@
                   color="blue-grey"
                   @click="
                     syType == 0 || grade == 'Grade 11' || grade == 'Grade 12'
-                      ? viewStudentAchievements(item)
-                      : viewStudentAchievementsV2(item)
+                      ? viewStudentAchievements(item, 1)
+                      : viewStudentAchievementsV2(item, 1)
+                  "
+                />
+              </template>
+            </v-tooltip>
+
+            <v-tooltip
+              v-if="item.graded == 1"
+              text="Print Form 138 without signature"
+              location="top"
+            >
+              <template v-slot:activator="{ props }">
+                <v-btn
+                  v-bind="props"
+                  icon="mdi-printer-off-outline"
+                  size="small"
+                  variant="text"
+                  color="blue-grey"
+                  @click="
+                    syType == 0 || grade == 'Grade 11' || grade == 'Grade 12'
+                      ? viewStudentAchievements(item, 0)
+                      : viewStudentAchievementsV2(item, 0)
                   "
                 />
               </template>
@@ -517,7 +542,7 @@ export default {
       };
       this.action = 'View';
     },
-    viewStudentAchievements(item) {
+    viewStudentAchievements(item, num) {
       window.open(
         process.env.VUE_APP_SERVER +
           '/pdf-generator/getStudentAchievements/' +
@@ -528,11 +553,13 @@ export default {
           this.filterYear +
           '/' +
           item.grade_level +
+          '/' +
+          num +
           '',
         '_blank',
       );
     },
-    viewStudentAchievementsV2(item) {
+    viewStudentAchievementsV2(item, num) {
       window.open(
         process.env.VUE_APP_SERVER +
           '/pdf-generator/getStudentAchievementsV2/' +
@@ -543,6 +570,8 @@ export default {
           this.filterYear +
           '/' +
           item.grade_level +
+          '/' +
+          num +
           '',
         '_blank',
       );

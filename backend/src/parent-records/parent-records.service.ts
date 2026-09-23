@@ -20,6 +20,10 @@ import {
   Comments,
   TeacherGradeLevel,
   LardoStudentNotification,
+  ParentAcknowledgement,
+  ParentAppointment,
+  Users,
+  Availability,
 } from 'src/entities';
 import { Brackets, DataSource, Repository } from 'typeorm';
 import { CreateStudentReportDisciplinaryDto } from './dto/create-student-report-disciplinary.dto';
@@ -52,6 +56,69 @@ export class ParentRecordsService {
           status: HttpStatus.BAD_REQUEST,
         };
       }
+    } catch (error) {
+      return {
+        msg: 'Something went wrong!' + error,
+        status: HttpStatus.BAD_REQUEST,
+      };
+    }
+  }
+
+  async parentAcknowledgement(createParentRecordDto: CreateParentRecordDto) {
+    try {
+      let exist = await this.dataSource.manager.findOneBy(
+        ParentAcknowledgement,
+        {
+          studentID: createParentRecordDto.studentID,
+          school_yearID: createParentRecordDto.school_yearID,
+          period: createParentRecordDto.period,
+          semester: createParentRecordDto.semester,
+        },
+      );
+      if (!exist) {
+        // console.log('wala')
+        let data = this.dataSource.manager.create(ParentAcknowledgement, {
+          studentID: createParentRecordDto.studentID,
+          parentID: createParentRecordDto.parentID,
+          school_yearID: createParentRecordDto.school_yearID,
+          semester: createParentRecordDto.semester,
+          period: createParentRecordDto.period,
+        });
+        await this.dataSource.manager.save(data);
+        return {
+          msg: 'Save successfully!',
+          status: HttpStatus.CREATED,
+        };
+      } else {
+        //  console.log(exist)
+        return {
+          msg: createParentRecordDto.period + ' already aknowledge!',
+          status: HttpStatus.BAD_REQUEST,
+        };
+      }
+    } catch (error) {
+      return {
+        msg: 'Something went wrong!' + error,
+        status: HttpStatus.BAD_REQUEST,
+      };
+    }
+  }
+
+  async createAppointment(createParentRecordDto: CreateParentRecordDto) {
+    try {
+      let data = this.dataSource.manager.create(ParentAppointment, {
+        studentID: createParentRecordDto.studentID,
+        parentID: createParentRecordDto.parentID,
+        school_yearID: createParentRecordDto.school_yearID,
+        purpose: createParentRecordDto.purpose,
+        schedule: createParentRecordDto.schedule,
+        teacherID: createParentRecordDto.teacherID,
+      });
+      await this.dataSource.manager.save(data);
+      return {
+        msg: 'Save successfully!',
+        status: HttpStatus.CREATED,
+      };
     } catch (error) {
       return {
         msg: 'Something went wrong!' + error,
@@ -132,6 +199,48 @@ export class ParentRecordsService {
 
     const newData = await query.getRawMany();
     return newData;
+  }
+
+  async getMyChildTeachers(id: number) {
+    let listed = await this.dataSource.manager
+      .createQueryBuilder(StudentList, 'sl')
+      .where('sl.studentId = :id', { id })
+      .getOne();
+
+    let teachers = await this.dataSource.manager
+      .createQueryBuilder(Availability, 'a')
+      .where('a.roomId = :id', { id: listed.roomId })
+      .getMany();
+    console.log('getMyChildTeachers', teachers);
+
+    let teachersID = [];
+
+    for (let index = 0; index < teachers.length; index++) {
+      teachersID.push(teachers[index].teacherID);
+    }
+
+    let data = await this.dataSource.manager
+      .createQueryBuilder(UserDetail, 'UD')
+      .select([
+        'UD.id as id',
+        "IF (!ISNULL(UD.mname)  AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ',SUBSTRING(UD.mname, 1, 1) ,'. ',UD.lname) ,concat(UD.fname, ' ', UD.lname)) as teacher_name",
+      ])
+      .leftJoin(Users, 'U', 'U.id = UD.userID')
+      .where('UD.id IN (:...teachersID)', { teachersID })
+      .andWhere('U.user_roleID = 2')
+      .andWhere('U.isAdminApproved = 1')
+      .getRawMany();
+    return data;
+  }
+
+  async getMyAppointment(studentID: number, parentID: number, filter: number) {
+    let data = await this.dataSource.manager
+      .createQueryBuilder(ParentAppointment, 'pa')
+      .where('pa.studentID = :studentID', { studentID })
+      .andWhere('pa.parentID = :parentID', { parentID })
+      .andWhere('pa.school_yearID = :filter', { filter })
+      .getMany();
+    return data;
   }
 
   async findAll() {
@@ -613,6 +722,123 @@ export class ParentRecordsService {
     return finalResults;
   }
 
+  // async getPrefectReport(filter: number, tab: number, curr_user: any) {
+  //   let getGrades = await this.dataSource
+  //     .createQueryBuilder(TeacherGradeLevel, 'tg')
+  //     .where('tg.teachersId = :teacherID', {
+  //       teacherID: curr_user.userdetail.id,
+  //     })
+  //     .getMany();
+  //   let gradeArr = [];
+
+  //   for (let i = 0; i < getGrades.length; i++) {
+  //     gradeArr.push({
+  //       grade_level: `Grade ${getGrades[i].grade_level}`,
+  //     });
+  //   }
+  //   let gradeArrs = gradeArr.map((g) => g.grade_level);
+
+  //   const data = this.dataSource.manager
+  //     .createQueryBuilder(EnrollStudent, 'ES')
+  //     .select([
+  //       "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
+  //       "IF (!ISNULL(UD.mname)  AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ',SUBSTRING(UD.mname, 1, 1) ,'. ',UD.lname) ,concat(UD.fname, ' ', UD.lname)) as teacher_name",
+  //       'ES.id as id',
+  //       'SRD.id as reportID',
+  //       'ES.fname as fname',
+  //       'ES.mname as mname',
+  //       'ES.lname as lname',
+  //       'ES.suffix as suffix',
+  //       'ES.bdate as bdate',
+  //       'ES.sex as sex',
+  //       'ES.civil_status as civil_status',
+  //       'ES.school_yearId as school_yearId',
+  //       'ES.grade_level as grade_level',
+  //       'ES.statusEnrolled as statusEnrolled',
+  //       'SRD.report_type as report_type',
+  //       'SRD.report_description as report_description',
+  //       'S.subject_title as subject_title',
+  //       'RS.room_section as room_section',
+  //       'SRD.tag_students as tag_students',
+  //       'SRD.created_at as created_at',
+  //       'SRD.report_date as report_date',
+  //       'SRD.report_time as report_time',
+  //       'SRD.comments as comments',
+  //     ])
+  //     .leftJoin(StudentReportDisciplinary, 'SRD', 'SRD.studentID = ES.id')
+  //     .leftJoin(RoomsSection, 'RS', 'RS.id = SRD.roomID')
+  //     .leftJoin(UserDetail, 'UD', 'UD.id = SRD.teacherID')
+  //     .leftJoin(Subject, 'S', 'S.id = SRD.subjectID')
+  //     // .where('ES.statusEnrolled != 0')
+  //     .where('SRD.school_yearID = :filter', { filter })
+  //     .andWhere('SRD.grade_level IN (:...gradeArrs)', {
+  //       gradeArrs,
+  //     });
+  //   // if (roleID == 6) {
+  //   //   data.andWhere('SRD.grade_level IN (:...grades)', {
+  //   //     grades: ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'],
+  //   //   });
+  //   // } else if (roleID == 7) {
+  //   //   data.andWhere('SRD.grade_level IN (:...grades)', {
+  //   //     grades: ['Grade 11', 'Grade 12'],
+  //   //   });
+  //   // }
+  //   if (tab == 1) {
+  //     data.andWhere('SRD.status = 1');
+  //     data.orderBy('SRD.created_at', 'DESC');
+  //   } else if (tab == 2) {
+  //     data.andWhere('SRD.status = 2');
+  //     data.orderBy('SRD.created_at', 'DESC');
+  //   } else if (tab == 3) {
+  //     data.andWhere('SRD.status = 4');
+  //     data.orderBy('SRD.created_at', 'DESC');
+  //   }
+  //   // .getRawMany();
+  //   const results = await data.getRawMany();
+
+  //   if (!results.length) return results;
+
+  //   let allTaggedIds: number[] = [];
+
+  //   results.forEach((r) => {
+  //     if (r.tag_students) {
+  //       const parsed = JSON.parse(r.tag_students);
+  //       allTaggedIds.push(...parsed.map((id) => Number(id)));
+  //     }
+  //   });
+
+  //   allTaggedIds = [...new Set(allTaggedIds)];
+
+  //   let taggedStudentsMap = {};
+
+  //   if (allTaggedIds.length > 0) {
+  //     const taggedStudents = await this.dataSource
+  //       .createQueryBuilder(EnrollStudent, 'ES')
+  //       .select(['ES.id as id', "CONCAT(ES.fname, ' ', ES.lname) as name"])
+  //       .where('ES.id IN (:...ids)', { ids: allTaggedIds })
+  //       .getRawMany();
+
+  //     taggedStudents.forEach((s) => {
+  //       taggedStudentsMap[s.id] = s;
+  //     });
+  //   }
+
+  //   const finalResults = results.map((r) => {
+  //     let tagged = [];
+
+  //     if (r.tag_students) {
+  //       const parsed = JSON.parse(r.tag_students);
+  //       tagged = parsed.map((id) => taggedStudentsMap[id]).filter(Boolean);
+  //     }
+
+  //     return {
+  //       ...r,
+  //       tagged,
+  //     };
+  //   });
+  //   // console.log(finalResults[0].tagged);
+  //   return finalResults;
+  // }
   async getPrefectReport(filter: number, tab: number, curr_user: any) {
     let getGrades = await this.dataSource
       .createQueryBuilder(TeacherGradeLevel, 'tg')
@@ -655,6 +881,9 @@ export class ParentRecordsService {
         'SRD.report_date as report_date',
         'SRD.report_time as report_time',
         'SRD.comments as comments',
+        'SRD.meeting_date as meeting_date',
+        'SRD.meeting_time as meeting_time',
+        'SRD.meeting_notes as meeting_notes',
       ])
       .leftJoin(StudentReportDisciplinary, 'SRD', 'SRD.studentID = ES.id')
       .leftJoin(RoomsSection, 'RS', 'RS.id = SRD.roomID')
@@ -681,8 +910,13 @@ export class ParentRecordsService {
       data.andWhere('SRD.status = 2');
       data.orderBy('SRD.created_at', 'DESC');
     } else if (tab == 3) {
-      data.andWhere('SRD.status = 4');
+      data.andWhere('SRD.status IN (:...statuses)', {
+        statuses: [3, 4],
+      });
       data.orderBy('SRD.created_at', 'DESC');
+    } else if (tab == 4) {
+      data.andWhere('SRD.status = 5');
+      data.orderBy('SRD.meeting_date', 'ASC');
     }
     // .getRawMany();
     const results = await data.getRawMany();
@@ -780,6 +1014,11 @@ export class ParentRecordsService {
     filter: number,
     gradeLevel: string,
   ) {
+    let schoolData = await this.dataSource.manager
+      .createQueryBuilder(SchoolYear, 'sy')
+      .where('sy.id = :filter', { filter })
+      .getOne();
+
     let query = this.dataSource.manager
       .createQueryBuilder(EnrollStudent, 'ES')
       .select([
@@ -803,11 +1042,31 @@ export class ParentRecordsService {
     let newData = await query.getRawMany();
 
     if (newData.length > 0) {
-      let childGrade = await this.transformChildrenGrade(newData, gradeLevel);
+      let childGrade = await this.transformChildrenGrade(
+        newData,
+        gradeLevel,
+        schoolData.syType,
+      );
       // console.log(JSON.stringify(childGrade))
       return childGrade;
     }
     return;
+  }
+  async getTeacherAppointment(teacherID: number, filter: number) {
+    let data = await this.dataSource.manager
+      .createQueryBuilder(ParentAppointment, 'pa')
+      .select([
+        'pa.*',
+        "IF (!ISNULL(UD.mname)  AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ',SUBSTRING(UD.mname, 1, 1) ,'. ',UD.lname) ,concat(UD.fname, ' ', UD.lname)) as name",
+        "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as student_name",
+      ])
+      .leftJoin(EnrollStudent, 'ES', 'ES.id = pa.studentID')
+      .leftJoin(UserDetail, 'UD', 'UD.id = pa.parentID')
+      .where('pa.teacherID = :teacherID', { teacherID })
+      .andWhere('pa.school_yearID = :filter', { filter })
+      .getRawMany();
+    console.log(data);
+    return data;
   }
 
   //  async transformChildrenGrade(data:any,gradeLevel:string){
@@ -1033,7 +1292,7 @@ export class ParentRecordsService {
   //           }
 
   //  }
-  async transformChildrenGrade(data: any, gradeLevel: string) {
+  async transformChildrenGrade(data: any, gradeLevel: string, type: number) {
     if (gradeLevel === 'Grade 11' || gradeLevel === 'Grade 12') {
       // ----- Senior High -----
       const pivoted = Object.values(
@@ -1109,12 +1368,48 @@ export class ParentRecordsService {
           if (sub_subject) {
             const subSubjects = JSON.parse(sub_subject);
             const subGrades: number[] = [];
+            if (type == 0) {
+              Object.keys(subSubjects).forEach((sub) => {
+                let subItem = sem.subjects.find((s) => s.subject === sub);
+                if (!subItem) {
+                  subItem = {
+                    subject: sub,
+                    '1st Quarter': null,
+                    '2nd Quarter': null,
+                    '3rd Quarter': null,
+                    '4th Quarter': null,
+                    finalGrade: null,
+                    remarks: null,
+                  };
+                  sem.subjects.push(subItem);
+                }
+                subItem[quarter] = subSubjects[sub].transmuted_grade;
+                subGrades.push(subSubjects[sub].transmuted_grade);
+              });
+            } else {
+              Object.keys(subSubjects).forEach((sub) => {
+                let subItem = sem.subjects.find((s) => s.subject === sub);
+                if (!subItem) {
+                  subItem = {
+                    subject: sub,
+                    '1st Term': null,
+                    '2nd Term': null,
+                    '3rd Term': null,
+                    finalGrade: null,
+                    remarks: null,
+                  };
+                  sem.subjects.push(subItem);
+                }
+                subItem[quarter] = subSubjects[sub].transmuted_grade;
+                subGrades.push(subSubjects[sub].transmuted_grade);
+              });
+            }
 
-            Object.keys(subSubjects).forEach((sub) => {
-              let subItem = sem.subjects.find((s) => s.subject === sub);
-              if (!subItem) {
-                subItem = {
-                  subject: sub,
+            let mapeh = sem.subjects.find((s) => s.subject === 'MAPEH');
+            if (!mapeh) {
+              if (type == 0) {
+                mapeh = {
+                  subject: 'MAPEH',
                   '1st Quarter': null,
                   '2nd Quarter': null,
                   '3rd Quarter': null,
@@ -1122,24 +1417,18 @@ export class ParentRecordsService {
                   finalGrade: null,
                   remarks: null,
                 };
-                sem.subjects.push(subItem);
+                sem.subjects.push(mapeh);
+              } else {
+                mapeh = {
+                  subject: 'MAPEH',
+                  '1st Term': null,
+                  '2nd Term': null,
+                  '3rd Term': null,
+                  finalGrade: null,
+                  remarks: null,
+                };
+                sem.subjects.push(mapeh);
               }
-              subItem[quarter] = subSubjects[sub].transmuted_grade;
-              subGrades.push(subSubjects[sub].transmuted_grade);
-            });
-
-            let mapeh = sem.subjects.find((s) => s.subject === 'MAPEH');
-            if (!mapeh) {
-              mapeh = {
-                subject: 'MAPEH',
-                '1st Quarter': null,
-                '2nd Quarter': null,
-                '3rd Quarter': null,
-                '4th Quarter': null,
-                finalGrade: null,
-                remarks: null,
-              };
-              sem.subjects.push(mapeh);
             }
 
             if (subGrades.length > 0) {
@@ -1148,13 +1437,22 @@ export class ParentRecordsService {
               );
               mapeh[quarter] = quarterAvg;
             }
+            let mapehGrades;
+            if (type == 0) {
+              mapehGrades = [
+                mapeh['1st Quarter'],
+                mapeh['2nd Quarter'],
+                mapeh['3rd Quarter'],
+                mapeh['4th Quarter'],
+              ].filter((g) => g !== null);
+            } else {
+              mapehGrades = [
+                mapeh['1st Term'],
+                mapeh['2nd Term'],
+                mapeh['3rd Term'],
+              ].filter((g) => g !== null);
+            }
 
-            const mapehGrades = [
-              mapeh['1st Quarter'],
-              mapeh['2nd Quarter'],
-              mapeh['3rd Quarter'],
-              mapeh['4th Quarter'],
-            ].filter((g) => g !== null);
             if (mapehGrades.length) {
               const avg = Math.round(
                 mapehGrades.reduce((a, b) => a + b, 0) / mapehGrades.length,
@@ -1165,26 +1463,48 @@ export class ParentRecordsService {
           } else {
             let subject = sem.subjects.find((s) => s.subject === subject_title);
             if (!subject) {
-              subject = {
-                subject: subject_title,
-                '1st Quarter': null,
-                '2nd Quarter': null,
-                '3rd Quarter': null,
-                '4th Quarter': null,
-                finalGrade: null,
-                remarks: null,
-              };
-              sem.subjects.push(subject);
+              if (type == 0) {
+                subject = {
+                  subject: subject_title,
+                  '1st Quarter': null,
+                  '2nd Quarter': null,
+                  '3rd Quarter': null,
+                  '4th Quarter': null,
+                  finalGrade: null,
+                  remarks: null,
+                };
+                sem.subjects.push(subject);
+              } else {
+                subject = {
+                  subject: subject_title,
+                  '1st Term': null,
+                  '2nd Term': null,
+                  '3rd Term': null,
+                  finalGrade: null,
+                  remarks: null,
+                };
+                sem.subjects.push(subject);
+              }
             }
 
             subject[quarter] = final_grade;
 
-            const grades = [
-              subject['1st Quarter'],
-              subject['2nd Quarter'],
-              subject['3rd Quarter'],
-              subject['4th Quarter'],
-            ].filter((g) => g !== null);
+            let grades;
+            if (type == 0) {
+              grades = [
+                subject['1st Quarter'],
+                subject['2nd Quarter'],
+                subject['3rd Quarter'],
+                subject['4th Quarter'],
+              ].filter((g) => g !== null);
+            } else {
+              grades = [
+                subject['1st Term'],
+                subject['2nd Term'],
+                subject['3rd Term'],
+              ].filter((g) => g !== null);
+            }
+
             if (grades.length) {
               const avg = Math.round(
                 grades.reduce((a, b) => a + b, 0) / grades.length,
@@ -1229,6 +1549,43 @@ export class ParentRecordsService {
     } catch (error) {
       return {
         msg: 'Something went wrong!' + error,
+        status: HttpStatus.BAD_REQUEST,
+      };
+    }
+  }
+
+  scheduleParentMeeting(
+    id: number,
+    updateStudentReportDiscipilinarydDto: UpdateStudentReportDiscipilinarydDto,
+  ) {
+    try {
+      this.dataSource.manager.update(StudentReportDisciplinary, id, {
+        status: updateStudentReportDiscipilinarydDto.status,
+        meeting_date: updateStudentReportDiscipilinarydDto.meeting_date,
+        meeting_notes: updateStudentReportDiscipilinarydDto.meeting_notes,
+        meeting_time: updateStudentReportDiscipilinarydDto.meeting_time,
+      });
+      return {
+        msg: 'Updated successfully!',
+        status: HttpStatus.CREATED,
+      };
+    } catch (error) {
+      return {
+        msg: 'Something went wrong!' + error,
+        status: HttpStatus.BAD_REQUEST,
+      };
+    }
+  }
+  async cancelAppointment(id: number) {
+    try {
+      await this.dataSource.manager.delete(ParentAppointment, id);
+      return {
+        msg: 'Appointment deleted.',
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      return {
+        msg: 'Appointment cannot be deleted.',
         status: HttpStatus.BAD_REQUEST,
       };
     }

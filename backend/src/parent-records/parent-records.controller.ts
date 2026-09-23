@@ -23,6 +23,17 @@ export class ParentRecordsController {
     return this.parentRecordsService.create(createParentRecordDto);
   }
 
+  @Post('parentAcknowledgement')
+  parentAcknowledgement(@Body() createParentRecordDto: CreateParentRecordDto) {
+    return this.parentRecordsService.parentAcknowledgement(
+      createParentRecordDto,
+    );
+  }
+  @Post('createAppointment')
+  createAppointment(@Body() createParentRecordDto: CreateParentRecordDto) {
+    return this.parentRecordsService.createAppointment(createParentRecordDto);
+  }
+
   @Post('studentReport')
   studentReport(
     @Body()
@@ -30,6 +41,24 @@ export class ParentRecordsController {
   ) {
     return this.parentRecordsService.studentReport(
       createStudentReportDisciplinaryDto,
+    );
+  }
+
+  @Get('getMyChildTeachers/:id')
+  getMyChildTeachers(@Param('id') id: string) {
+    return this.parentRecordsService.getMyChildTeachers(+id);
+  }
+
+  @Get('getMyAppointment/:studentID/:parentID/:filter')
+  getMyAppointment(
+    @Param('studentID') studentID: string,
+    @Param('parentID') parentID: string,
+    @Param('filter') filter: string,
+  ) {
+    return this.parentRecordsService.getMyAppointment(
+      +studentID,
+      +parentID,
+      +filter,
     );
   }
 
@@ -114,6 +143,14 @@ export class ParentRecordsController {
     return this.parentRecordsService.getPrefectReport(+filter, +tab, curr_user);
   }
 
+  @Get('getTeacherAppointment/:filter/:teacherID')
+  getTeacherAppointment(
+    @Param('filter') filter: string,
+    @Param('teacherID') teacherID: string,
+  ) {
+    return this.parentRecordsService.getTeacherAppointment(+teacherID, +filter);
+  }
+
   @Get('getStudentAchievements/:filter/:studentID')
   getStudentAchievements(
     @Param('filter') filter: string,
@@ -159,6 +196,23 @@ export class ParentRecordsController {
       +id,
       updateStudentReportDiscipilinarydDto,
     );
+  }
+
+  @Patch('scheduleParentMeeting/:id')
+  scheduleParentMeeting(
+    @Param('id') id: string,
+    @Body()
+    updateStudentReportDiscipilinarydDto: UpdateStudentReportDiscipilinarydDto,
+  ) {
+    return this.parentRecordsService.scheduleParentMeeting(
+      +id,
+      updateStudentReportDiscipilinarydDto,
+    );
+  }
+
+  @Delete('cancelAppointment/:id')
+  cancelAppointment(@Param('id') id: string) {
+    return this.parentRecordsService.cancelAppointment(+id);
   }
 
   @Delete(':id')
