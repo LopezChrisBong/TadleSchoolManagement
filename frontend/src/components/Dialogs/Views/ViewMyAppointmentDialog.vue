@@ -227,13 +227,14 @@ export default {
       });
     },
     getAllTeachers() {
-      this.axiosCall('/parent-records/getMyChildTeachers', 'GET').then(
-        (res) => {
-          if (res.data) {
-            this.teacherList = res.data;
-          }
-        },
-      );
+      this.axiosCall(
+        '/parent-records/getMyChildTeachers/' + this.data?.id,
+        'GET',
+      ).then((res) => {
+        if (res.data) {
+          this.teacherList = res.data;
+        }
+      });
     },
 
     submitAppointment() {

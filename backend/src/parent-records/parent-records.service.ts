@@ -23,6 +23,7 @@ import {
   ParentAcknowledgement,
   ParentAppointment,
   Users,
+  Availability,
 } from 'src/entities';
 import { Brackets, DataSource, Repository } from 'typeorm';
 import { CreateStudentReportDisciplinaryDto } from './dto/create-student-report-disciplinary.dto';
@@ -200,7 +201,24 @@ export class ParentRecordsService {
     return newData;
   }
 
-  async getMyChildTeachers() {
+  async getMyChildTeachers(id: number) {
+    let listed = await this.dataSource.manager
+      .createQueryBuilder(StudentList, 'sl')
+      .where('sl.studentId = :id', { id })
+      .getOne();
+
+    let teachers = await this.dataSource.manager
+      .createQueryBuilder(Availability, 'a')
+      .where('a.roomId = :id', { id: listed.roomId })
+      .getMany();
+    console.log('getMyChildTeachers', teachers);
+
+    let teachersID = [];
+
+    for (let index = 0; index < teachers.length; index++) {
+      teachersID.push(teachers[index].teacherID);
+    }
+
     let data = await this.dataSource.manager
       .createQueryBuilder(UserDetail, 'UD')
       .select([
@@ -208,7 +226,8 @@ export class ParentRecordsService {
         "IF (!ISNULL(UD.mname)  AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ',SUBSTRING(UD.mname, 1, 1) ,'. ',UD.lname) ,concat(UD.fname, ' ', UD.lname)) as teacher_name",
       ])
       .leftJoin(Users, 'U', 'U.id = UD.userID')
-      .where('U.user_roleID = 2')
+      .where('UD.id IN (:...teachersID)', { teachersID })
+      .andWhere('U.user_roleID = 2')
       .andWhere('U.isAdminApproved = 1')
       .getRawMany();
     return data;

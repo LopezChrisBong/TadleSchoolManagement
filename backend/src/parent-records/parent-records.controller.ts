@@ -44,9 +44,9 @@ export class ParentRecordsController {
     );
   }
 
-  @Get('getMyChildTeachers')
-  getMyChildTeachers() {
-    return this.parentRecordsService.getMyChildTeachers();
+  @Get('getMyChildTeachers/:id')
+  getMyChildTeachers(@Param('id') id: string) {
+    return this.parentRecordsService.getMyChildTeachers(+id);
   }
 
   @Get('getMyAppointment/:studentID/:parentID/:filter')

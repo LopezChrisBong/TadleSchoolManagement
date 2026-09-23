@@ -1051,3 +1051,1832 @@ BEGIN
 
 END$$
 DELIMITER ;
+
+part 5:
+DROP PROCEDURE IF EXISTS `sp_check_early_warning`;
+
+DELIMITER $$
+
+CREATE PROCEDURE `sp_check_early_warning`(
+    IN p_studentID INT,
+    IN p_subjectID INT,
+    IN p_school_yearID INT,
+    IN p_roomID INT,
+    IN p_quarter VARCHAR(50),
+    IN p_userdetailID INT
+)
+BEGIN
+
+    DECLARE v_student_name VARCHAR(255);
+    DECLARE v_subject_title VARCHAR(255);
+
+    /* ============================================
+       COMPONENT PERCENTAGE SCORES
+       ============================================ */
+    DECLARE v_written_percentage DECIMAL(10,2) DEFAULT NULL;
+    DECLARE v_performance_percentage DECIMAL(10,2) DEFAULT NULL;
+    DECLARE v_assessment_percentage DECIMAL(10,2) DEFAULT NULL;
+
+    /* ============================================
+       COMPONENT WEIGHTS
+       ============================================ */
+    DECLARE v_written_weight DECIMAL(10,2) DEFAULT 20;
+    DECLARE v_performance_weight DECIMAL(10,2) DEFAULT 50;
+    DECLARE v_assessment_weight DECIMAL(10,2) DEFAULT 30;
+
+    /* ============================================
+       ACTIVE COMPONENT CALCULATION
+       ============================================ */
+    DECLARE v_active_weight DECIMAL(10,2) DEFAULT 0;
+    DECLARE v_weighted_score DECIMAL(10,2) DEFAULT 0;
+    DECLARE v_current_percentage DECIMAL(10,2) DEFAULT NULL;
+
+    /* ============================================
+       TRANSMUTED GRADE
+       ============================================ */
+    DECLARE v_transmuted_grade DECIMAL(10,2) DEFAULT NULL;
+
+    DECLARE v_teacherID INT;
+    DECLARE v_grade_level VARCHAR(100);
+    DECLARE v_room_name VARCHAR(255);
+
+    DECLARE v_failed_subjects INT DEFAULT 0;
+    DECLARE v_remarks VARCHAR(255);
+
+
+    /* =========================================================
+       1. GET WRITTEN WORKS AND PERFORMANCE TASKS PERCENTAGE
+       ========================================================= */
+
+    SELECT
+        written_percentage,
+        performance_percentage
+    INTO
+        v_written_percentage,
+        v_performance_percentage
+    FROM student_subject_summary
+    WHERE studentID = p_studentID
+      AND subjectID = p_subjectID
+      AND school_yearID = p_school_yearID
+      AND TRIM(quarter) = TRIM(p_quarter)
+    LIMIT 1;
+
+
+    /* =========================================================
+       2. RESET CALCULATION
+       ========================================================= */
+
+    SET v_active_weight = 0;
+    SET v_weighted_score = 0;
+
+
+    /* =========================================================
+       3. WRITTEN WORKS
+       
+       Only include the component if there is an actual
+       percentage score.
+       ========================================================= */
+
+    IF v_written_percentage IS NOT NULL THEN
+
+        SET v_weighted_score =
+            v_weighted_score +
+            (v_written_percentage * v_written_weight);
+
+        SET v_active_weight =
+            v_active_weight + v_written_weight;
+
+    END IF;
+
+
+    /* =========================================================
+       4. PERFORMANCE TASKS
+       ========================================================= */
+
+    IF v_performance_percentage IS NOT NULL THEN
+
+        SET v_weighted_score =
+            v_weighted_score +
+            (v_performance_percentage * v_performance_weight);
+
+        SET v_active_weight =
+            v_active_weight + v_performance_weight;
+
+    END IF;
+
+
+    /* =========================================================
+       5. ASSESSMENT
+       
+       NOTE:
+       This section intentionally does NOT assume how your
+       assessment score is stored.
+
+       Once Assessment has a percentage score, it should be:
+
+           v_assessment_percentage
+
+       and then:
+
+           v_weighted_score =
+               v_weighted_score +
+               (v_assessment_percentage * 30);
+
+           v_active_weight =
+               v_active_weight + 30;
+
+       See explanation below.
+       ========================================================= */
+
+
+    /* =========================================================
+       6. CALCULATE CURRENT PERCENTAGE
+       
+       Example:
+       
+       Written      = 32.73 × 20
+       Performance  = 66.67 × 50
+       
+       active weight = 70
+       
+       result =
+       
+       (32.73 × 20 + 66.67 × 50) / 70
+       
+       = 56.97
+       ========================================================= */
+
+    IF v_active_weight > 0 THEN
+
+        SET v_current_percentage =
+            v_weighted_score / v_active_weight;
+
+    ELSE
+
+        SET v_current_percentage = NULL;
+
+    END IF;
+
+
+    /* =========================================================
+       7. CHECK IF STUDENT IS AT-RISK
+       ========================================================= */
+
+    IF v_current_percentage IS NOT NULL
+       AND v_current_percentage < 80 THEN
+
+
+        /* =====================================================
+           8. TRANSMUTE CURRENT PERCENTAGE
+           
+           IMPORTANT:
+           Replace this query with your exact transmutation
+           table/columns if the names differ.
+           ===================================================== */
+
+        SELECT tg.transmuted_grade
+        INTO v_transmuted_grade
+        FROM transmuted_grade tg
+        WHERE v_current_percentage BETWEEN tg.initial_grade
+                                       AND tg.final_grade
+        LIMIT 1;
+
+
+        /* =====================================================
+           9. COUNT FAILED SUBJECTS
+           ===================================================== */
+
+        SELECT COUNT(*)
+        INTO v_failed_subjects
+        FROM student_subject_summary sss
+        WHERE sss.studentID = p_studentID
+          AND sss.school_yearID = p_school_yearID
+          AND TRIM(sss.quarter) = TRIM(p_quarter)
+
+          /* Written Works + Performance Tasks */
+
+          AND sss.written_percentage IS NOT NULL
+          AND sss.performance_percentage IS NOT NULL
+
+          AND (
+                (
+                    sss.written_percentage * v_written_weight
+                )
+                +
+                (
+                    sss.performance_percentage * v_performance_weight
+                )
+              )
+              /
+              (
+                  v_written_weight +
+                  v_performance_weight
+              ) < 75;
+
+
+        /* =====================================================
+           10. DETERMINE INTERVENTION
+           ===================================================== */
+
+        IF v_current_percentage >= 75
+           AND v_current_percentage < 80 THEN
+
+            SET v_remarks =
+                'Peer Tutoring & Remedial Support';
+
+        ELSEIF v_current_percentage < 75 THEN
+
+            IF v_failed_subjects >= 3 THEN
+
+                SET v_remarks =
+                    'Parent-Teacher Conference + Intensive Intervention';
+
+            ELSE
+
+                SET v_remarks =
+                    'Mandatory Remediation';
+
+            END IF;
+
+        END IF;
+
+
+        /* =====================================================
+           11. GET STUDENT NAME
+           ===================================================== */
+
+        SELECT CONCAT(
+            fname,
+            ' ',
+            IFNULL(
+                CONCAT(LEFT(mname, 1), '. '),
+                ''
+            ),
+            lname
+        )
+        INTO v_student_name
+        FROM enroll_student
+        WHERE id = p_studentID
+        LIMIT 1;
+
+
+        /* =====================================================
+           12. GET SUBJECT
+           ===================================================== */
+
+        SELECT subject_title
+        INTO v_subject_title
+        FROM subject
+        WHERE id = p_subjectID
+        LIMIT 1;
+
+
+        /* =====================================================
+           13. GET TEACHER / ROOM
+           ===================================================== */
+
+        SELECT
+            teacherId,
+            grade_level,
+            room_section
+        INTO
+            v_teacherID,
+            v_grade_level,
+            v_room_name
+        FROM rooms_section
+        WHERE id = p_roomID
+        LIMIT 1;
+
+
+        /* =====================================================
+           14. PARENT NOTIFICATION
+           ===================================================== */
+
+        IF EXISTS (
+            SELECT 1
+            FROM notification n
+            WHERE n.studentID = p_studentID
+              AND n.subjectID = p_subjectID
+              AND n.school_yearID = p_school_yearID
+              AND TRIM(n.quarter) = TRIM(p_quarter)
+        ) THEN
+
+            UPDATE notification
+            SET transmuted_grade = v_transmuted_grade,
+                remarks = v_remarks,
+                student_name = v_student_name,
+                subject_title = v_subject_title
+            WHERE studentID = p_studentID
+              AND subjectID = p_subjectID
+              AND school_yearID = p_school_yearID
+              AND TRIM(quarter) = TRIM(p_quarter);
+
+        ELSE
+
+            INSERT INTO notification (
+                studentID,
+                student_name,
+                parentID,
+                subjectID,
+                quarter,
+                transmuted_grade,
+                school_yearID,
+                route,
+                `read`,
+                remarks,
+                subject_title
+            )
+            SELECT
+                p_studentID,
+                v_student_name,
+                pr.parentID,
+                p_subjectID,
+                p_quarter,
+                v_transmuted_grade,
+                p_school_yearID,
+                '/parent-children',
+                FALSE,
+                v_remarks,
+                v_subject_title
+            FROM parent_record pr
+            WHERE pr.studentID = p_studentID;
+
+        END IF;
+
+
+        /* =====================================================
+           15. TEACHER NOTIFICATION
+           ===================================================== */
+
+        IF v_teacherID IS NOT NULL THEN
+
+            IF EXISTS (
+                SELECT 1
+                FROM at_risk_student_notification f
+                WHERE f.studentID = p_studentID
+                  AND f.teacherID = v_teacherID
+                  AND f.school_yearID = p_school_yearID
+                  AND TRIM(f.subject_title) =
+                      TRIM(v_subject_title)
+            ) THEN
+
+                UPDATE at_risk_student_notification
+                SET transmuted_grade = v_transmuted_grade,
+                    remarks = v_remarks,
+                    student_name = v_student_name,
+                    grade_level = v_grade_level,
+                    room_name = v_room_name,
+                    updated_at = NOW()
+                WHERE studentID = p_studentID
+                  AND teacherID = v_teacherID
+                  AND school_yearID = p_school_yearID
+                  AND TRIM(subject_title) =
+                      TRIM(v_subject_title);
+
+            ELSE
+
+                INSERT INTO at_risk_student_notification (
+                    studentID,
+                    student_name,
+                    teacherID,
+                    transmuted_grade,
+                    school_yearID,
+                    route,
+                    `read`,
+                    remarks,
+                    grade_level,
+                    room_name,
+                    subject_title,
+                    created_at,
+                    updated_at
+                )
+                VALUES (
+                    p_studentID,
+                    v_student_name,
+                    v_teacherID,
+                    v_transmuted_grade,
+                    p_school_yearID,
+                    '/advisory-rooms',
+                    FALSE,
+                    v_remarks,
+                    v_grade_level,
+                    v_room_name,
+                    v_subject_title,
+                    NOW(),
+                    NOW()
+                );
+
+            END IF;
+
+
+            /* =================================================
+               16. FACULTY NOTIFICATION
+               ================================================= */
+
+            IF EXISTS (
+                SELECT 1
+                FROM at_risk_student_for_faculty_notification f
+                WHERE f.studentID = p_studentID
+                  AND f.teacherID = p_userdetailID
+                  AND f.school_yearID = p_school_yearID
+                  AND TRIM(f.subject_title) =
+                      TRIM(v_subject_title)
+            ) THEN
+
+                UPDATE at_risk_student_for_faculty_notification
+                SET transmuted_grade = v_transmuted_grade,
+                    remarks = v_remarks,
+                    student_name = v_student_name,
+                    grade_level = v_grade_level,
+                    room_name = v_room_name,
+                    updated_at = NOW()
+                WHERE studentID = p_studentID
+                  AND teacherID = p_userdetailID
+                  AND school_yearID = p_school_yearID
+                  AND TRIM(subject_title) =
+                      TRIM(v_subject_title);
+
+            ELSE
+
+                INSERT INTO at_risk_student_for_faculty_notification (
+                    studentID,
+                    student_name,
+                    teacherID,
+                    transmuted_grade,
+                    school_yearID,
+                    route,
+                    `read`,
+                    remarks,
+                    grade_level,
+                    room_name,
+                    subject_title,
+                    created_at,
+                    updated_at
+                )
+                VALUES (
+                    p_studentID,
+                    v_student_name,
+                    p_userdetailID,
+                    v_transmuted_grade,
+                    p_school_yearID,
+                    '/students-records',
+                    FALSE,
+                    v_remarks,
+                    v_grade_level,
+                    v_room_name,
+                    v_subject_title,
+                    NOW(),
+                    NOW()
+                );
+
+            END IF;
+
+        END IF;
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+part 6:
+DROP PROCEDURE IF EXISTS `sp_check_early_warning`;
+
+DELIMITER $$
+
+CREATE PROCEDURE `sp_check_early_warning`(
+    IN p_studentID INT,
+    IN p_subjectID INT,
+    IN p_school_yearID INT,
+    IN p_roomID INT,
+    IN p_quarter VARCHAR(50),
+    IN p_userdetailID INT
+)
+BEGIN
+
+    /* =========================================================
+       VARIABLES
+       ========================================================= */
+
+    DECLARE v_student_name VARCHAR(255);
+    DECLARE v_subject_title VARCHAR(255);
+
+    DECLARE v_teacherID INT;
+    DECLARE v_grade_level VARCHAR(100);
+    DECLARE v_room_name VARCHAR(255);
+
+    /* Subject component weights */
+    DECLARE v_written_weight DECIMAL(10,2) DEFAULT 0;
+    DECLARE v_performance_weight DECIMAL(10,2) DEFAULT 0;
+    DECLARE v_assessment_weight DECIMAL(10,2) DEFAULT 0;
+
+    /* Percentage Scores */
+    DECLARE v_written_percentage DECIMAL(10,2) DEFAULT NULL;
+    DECLARE v_performance_percentage DECIMAL(10,2) DEFAULT NULL;
+    DECLARE v_assessment_percentage DECIMAL(10,2) DEFAULT NULL;
+
+    /* Active component calculation */
+    DECLARE v_active_weight DECIMAL(10,2) DEFAULT 0;
+    DECLARE v_weighted_score DECIMAL(10,2) DEFAULT 0;
+    DECLARE v_current_percentage DECIMAL(10,2) DEFAULT NULL;
+
+    /* Final transmuted grade */
+    DECLARE v_transmuted_grade INT DEFAULT NULL;
+
+    DECLARE v_failed_subjects INT DEFAULT 0;
+    DECLARE v_remarks VARCHAR(255);
+
+
+    /* =========================================================
+       1. GET SUBJECT INFORMATION
+       ========================================================= */
+
+    SELECT
+        subject_title,
+        COALESCE(writen_works, 0),
+        COALESCE(performance_task, 0),
+        COALESCE(quarter_assessment, 0)
+    INTO
+        v_subject_title,
+        v_written_weight,
+        v_performance_weight,
+        v_assessment_weight
+    FROM subject
+    WHERE id = p_subjectID
+    LIMIT 1;
+
+
+    /* =========================================================
+       2. CALCULATE WRITTEN WORKS PERCENTAGE SCORE
+       
+       PS = SUM(student scores) / SUM(highest possible scores)
+            * 100
+
+       type = 1 → Written Works
+       ========================================================= */
+
+    SELECT
+        CASE
+            WHEN SUM(highest_posible_score) > 0
+            THEN
+                (SUM(quarterScore) / SUM(highest_posible_score)) * 100
+            ELSE NULL
+        END
+    INTO v_written_percentage
+    FROM student_grade
+    WHERE roomID = p_roomID
+      AND school_yearID = p_school_yearID
+      AND studentID = p_studentID
+      AND subjectID = p_subjectID
+      AND TRIM(quarter) = TRIM(p_quarter)
+      AND type = 1;
+
+
+    /* =========================================================
+       3. CALCULATE PERFORMANCE TASK PERCENTAGE SCORE
+       
+       type = 2 → Performance Tasks
+       ========================================================= */
+
+    SELECT
+        CASE
+            WHEN SUM(highest_posible_score) > 0
+            THEN
+                (SUM(quarterScore) / SUM(highest_posible_score)) * 100
+            ELSE NULL
+        END
+    INTO v_performance_percentage
+    FROM student_grade
+    WHERE roomID = p_roomID
+      AND school_yearID = p_school_yearID
+      AND studentID = p_studentID
+      AND subjectID = p_subjectID
+      AND TRIM(quarter) = TRIM(p_quarter)
+      AND type = 2;
+
+
+    /* =========================================================
+       4. CALCULATE QUARTER ASSESSMENT PERCENTAGE SCORE
+       
+       type = 3 → Quarter Assessment
+       
+       If there are no type = 3 records, this remains NULL.
+       Therefore the Assessment weight will NOT be included.
+       ========================================================= */
+
+    SELECT
+        CASE
+            WHEN SUM(highest_posible_score) > 0
+            THEN
+                (SUM(quarterScore) / SUM(highest_posible_score)) * 100
+            ELSE NULL
+        END
+    INTO v_assessment_percentage
+    FROM student_grade
+    WHERE roomID = p_roomID
+      AND school_yearID = p_school_yearID
+      AND studentID = p_studentID
+      AND subjectID = p_subjectID
+      AND TRIM(quarter) = TRIM(p_quarter)
+      AND type = 3;
+
+
+    /* =========================================================
+       5. START ACTIVE COMPONENT CALCULATION
+       ========================================================= */
+
+    SET v_active_weight = 0;
+    SET v_weighted_score = 0;
+
+
+    /* =========================================================
+       6. WRITTEN WORKS
+       ========================================================= */
+
+    IF v_written_percentage IS NOT NULL
+       AND v_written_weight > 0 THEN
+
+        SET v_weighted_score =
+            v_weighted_score
+            + (
+                v_written_percentage
+                * v_written_weight
+              );
+
+        SET v_active_weight =
+            v_active_weight
+            + v_written_weight;
+
+    END IF;
+
+
+    /* =========================================================
+       7. PERFORMANCE TASKS
+       ========================================================= */
+
+    IF v_performance_percentage IS NOT NULL
+       AND v_performance_weight > 0 THEN
+
+        SET v_weighted_score =
+            v_weighted_score
+            + (
+                v_performance_percentage
+                * v_performance_weight
+              );
+
+        SET v_active_weight =
+            v_active_weight
+            + v_performance_weight;
+
+    END IF;
+
+
+    /* =========================================================
+       8. QUARTER ASSESSMENT
+       
+       Only included if an actual assessment score exists.
+       ========================================================= */
+
+    IF v_assessment_percentage IS NOT NULL
+       AND v_assessment_weight > 0 THEN
+
+        SET v_weighted_score =
+            v_weighted_score
+            + (
+                v_assessment_percentage
+                * v_assessment_weight
+              );
+
+        SET v_active_weight =
+            v_active_weight
+            + v_assessment_weight;
+
+    END IF;
+
+
+    /* =========================================================
+       9. CALCULATE CURRENT PERCENTAGE SCORE
+       
+       Example:
+       
+       WW = 32.73
+       PT = 66.67
+       Assessment = NULL
+       
+       WW weight = 20
+       PT weight = 50
+       Assessment weight = 30
+       
+       Active weight = 20 + 50 = 70
+       
+       Current PS =
+       
+       ((32.73 * 20) + (66.67 * 50)) / 70
+       
+       = 56.97
+       ========================================================= */
+
+    IF v_active_weight > 0 THEN
+
+        SET v_current_percentage =
+            v_weighted_score / v_active_weight;
+
+    ELSE
+
+        SET v_current_percentage = NULL;
+
+    END IF;
+
+
+    /* =========================================================
+       10. ONLY CONTINUE IF THERE IS AN ACTIVE COMPONENT
+       ========================================================= */
+
+    IF v_current_percentage IS NOT NULL
+       AND v_current_percentage < 80 THEN
+
+
+        /* =====================================================
+           11. TRANSMUTE PERCENTAGE SCORE
+           
+           Uses the existing transmuted_grade table.
+           ===================================================== */
+
+        SELECT tg.transmuted_grade
+        INTO v_transmuted_grade
+        FROM transmuted_grade tg
+        WHERE v_current_percentage >= CAST(tg.start_range AS DECIMAL(10,2))
+          AND v_current_percentage <= CAST(tg.end_range AS DECIMAL(10,2))
+        ORDER BY CAST(tg.start_range AS DECIMAL(10,2)) DESC
+        LIMIT 1;
+
+
+        /* =====================================================
+           12. COUNT FAILED SUBJECTS
+           
+           Uses the same active-component calculation.
+           ===================================================== */
+
+        SELECT COUNT(*)
+        INTO v_failed_subjects
+        FROM (
+            SELECT
+                sg.subjectID,
+
+                (
+                    SUM(
+                        CASE
+                            WHEN sg.type = 1
+                            THEN sg.quarterScore
+                            ELSE 0
+                        END
+                    )
+                    /
+                    NULLIF(
+                        SUM(
+                            CASE
+                                WHEN sg.type = 1
+                                THEN sg.highest_posible_score
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    )
+                    * 100
+                ) AS written_ps,
+
+                (
+                    SUM(
+                        CASE
+                            WHEN sg.type = 2
+                            THEN sg.quarterScore
+                            ELSE 0
+                        END
+                    )
+                    /
+                    NULLIF(
+                        SUM(
+                            CASE
+                                WHEN sg.type = 2
+                                THEN sg.highest_posible_score
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    )
+                    * 100
+                ) AS performance_ps,
+
+                (
+                    SUM(
+                        CASE
+                            WHEN sg.type = 3
+                            THEN sg.quarterScore
+                            ELSE 0
+                        END
+                    )
+                    /
+                    NULLIF(
+                        SUM(
+                            CASE
+                                WHEN sg.type = 3
+                                THEN sg.highest_posible_score
+                                ELSE 0
+                            END
+                        ),
+                        0
+                    )
+                    * 100
+                ) AS assessment_ps
+
+            FROM student_grade sg
+
+            WHERE sg.roomID = p_roomID
+              AND sg.school_yearID = p_school_yearID
+              AND sg.studentID = p_studentID
+              AND TRIM(sg.quarter) = TRIM(p_quarter)
+
+            GROUP BY sg.subjectID
+
+        ) AS subject_scores
+
+        WHERE
+        (
+            (
+                CASE
+                    WHEN written_ps IS NOT NULL
+                    THEN written_ps * v_written_weight
+                    ELSE 0
+                END
+            )
+            +
+            (
+                CASE
+                    WHEN performance_ps IS NOT NULL
+                    THEN performance_ps * v_performance_weight
+                    ELSE 0
+                END
+            )
+            +
+            (
+                CASE
+                    WHEN assessment_ps IS NOT NULL
+                    THEN assessment_ps * v_assessment_weight
+                    ELSE 0
+                END
+            )
+        )
+        /
+        NULLIF(
+            (
+                CASE
+                    WHEN written_ps IS NOT NULL
+                    THEN v_written_weight
+                    ELSE 0
+                END
+            )
+            +
+            (
+                CASE
+                    WHEN performance_ps IS NOT NULL
+                    THEN v_performance_weight
+                    ELSE 0
+                END
+            )
+            +
+            (
+                CASE
+                    WHEN assessment_ps IS NOT NULL
+                    THEN v_assessment_weight
+                    ELSE 0
+                END
+            ),
+            0
+        ) < 75;
+
+
+        /* =====================================================
+           13. DETERMINE INTERVENTION
+           ===================================================== */
+
+        IF v_transmuted_grade >= 75
+           AND v_transmuted_grade < 80 THEN
+
+            SET v_remarks =
+                'Peer Tutoring & Remedial Support';
+
+        ELSEIF v_transmuted_grade < 75 THEN
+
+            IF v_failed_subjects >= 3 THEN
+
+                SET v_remarks =
+                    'Parent-Teacher Conference + Intensive Intervention';
+
+            ELSE
+
+                SET v_remarks =
+                    'Mandatory Remediation';
+
+            END IF;
+
+        END IF;
+
+
+        /* =====================================================
+           14. GET STUDENT NAME
+           ===================================================== */
+
+        SELECT CONCAT(
+            fname,
+            ' ',
+            IF(
+                mname IS NOT NULL
+                AND TRIM(mname) != ''
+                AND LOWER(TRIM(mname)) != 'n/a',
+                CONCAT(LEFT(mname, 1), '. '),
+                ''
+            ),
+            lname
+        )
+        INTO v_student_name
+        FROM enroll_student
+        WHERE id = p_studentID
+        LIMIT 1;
+
+
+        /* =====================================================
+           15. GET TEACHER / ROOM
+           ===================================================== */
+
+        SELECT
+            teacherId,
+            grade_level,
+            room_section
+        INTO
+            v_teacherID,
+            v_grade_level,
+            v_room_name
+        FROM rooms_section
+        WHERE id = p_roomID
+        LIMIT 1;
+
+
+        /* =====================================================
+           16. PARENT NOTIFICATION
+           ===================================================== */
+
+        IF EXISTS (
+            SELECT 1
+            FROM notification n
+            WHERE n.studentID = p_studentID
+              AND n.subjectID = p_subjectID
+              AND n.school_yearID = p_school_yearID
+              AND TRIM(n.quarter) = TRIM(p_quarter)
+        ) THEN
+
+            UPDATE notification
+            SET transmuted_grade = v_transmuted_grade,
+                remarks = v_remarks,
+                student_name = v_student_name,
+                subject_title = v_subject_title
+            WHERE studentID = p_studentID
+              AND subjectID = p_subjectID
+              AND school_yearID = p_school_yearID
+              AND TRIM(quarter) = TRIM(p_quarter);
+
+        ELSE
+
+            INSERT INTO notification (
+                studentID,
+                student_name,
+                parentID,
+                subjectID,
+                quarter,
+                transmuted_grade,
+                school_yearID,
+                route,
+                `read`,
+                remarks,
+                subject_title
+            )
+            SELECT
+                p_studentID,
+                v_student_name,
+                pr.parentID,
+                p_subjectID,
+                p_quarter,
+                v_transmuted_grade,
+                p_school_yearID,
+                '/parent-children',
+                FALSE,
+                v_remarks,
+                v_subject_title
+            FROM parent_record pr
+            WHERE pr.studentID = p_studentID;
+
+        END IF;
+
+
+        /* =====================================================
+           17. TEACHER NOTIFICATION
+           ===================================================== */
+
+        IF v_teacherID IS NOT NULL THEN
+
+            IF EXISTS (
+                SELECT 1
+                FROM at_risk_student_notification f
+                WHERE f.studentID = p_studentID
+                  AND f.teacherID = v_teacherID
+                  AND f.school_yearID = p_school_yearID
+                  AND TRIM(f.subject_title) =
+                      TRIM(v_subject_title)
+            ) THEN
+
+                UPDATE at_risk_student_notification
+                SET transmuted_grade = v_transmuted_grade,
+                    remarks = v_remarks,
+                    student_name = v_student_name,
+                    grade_level = v_grade_level,
+                    room_name = v_room_name,
+                    updated_at = NOW()
+                WHERE studentID = p_studentID
+                  AND teacherID = v_teacherID
+                  AND school_yearID = p_school_yearID
+                  AND TRIM(subject_title) =
+                      TRIM(v_subject_title);
+
+            ELSE
+
+                INSERT INTO at_risk_student_notification (
+                    studentID,
+                    student_name,
+                    teacherID,
+                    transmuted_grade,
+                    school_yearID,
+                    route,
+                    `read`,
+                    remarks,
+                    grade_level,
+                    room_name,
+                    subject_title,
+                    created_at,
+                    updated_at
+                )
+                VALUES (
+                    p_studentID,
+                    v_student_name,
+                    v_teacherID,
+                    v_transmuted_grade,
+                    p_school_yearID,
+                    '/advisory-rooms',
+                    FALSE,
+                    v_remarks,
+                    v_grade_level,
+                    v_room_name,
+                    v_subject_title,
+                    NOW(),
+                    NOW()
+                );
+
+            END IF;
+
+
+            /* =================================================
+               18. FACULTY NOTIFICATION
+               ================================================= */
+
+            IF EXISTS (
+                SELECT 1
+                FROM at_risk_student_for_faculty_notification f
+                WHERE f.studentID = p_studentID
+                  AND f.teacherID = p_userdetailID
+                  AND f.school_yearID = p_school_yearID
+                  AND TRIM(f.subject_title) =
+                      TRIM(v_subject_title)
+            ) THEN
+
+                UPDATE at_risk_student_for_faculty_notification
+                SET transmuted_grade = v_transmuted_grade,
+                    remarks = v_remarks,
+                    student_name = v_student_name,
+                    grade_level = v_grade_level,
+                    room_name = v_room_name,
+                    updated_at = NOW()
+                WHERE studentID = p_studentID
+                  AND teacherID = p_userdetailID
+                  AND school_yearID = p_school_yearID
+                  AND TRIM(subject_title) =
+                      TRIM(v_subject_title);
+
+            ELSE
+
+                INSERT INTO at_risk_student_for_faculty_notification (
+                    studentID,
+                    student_name,
+                    teacherID,
+                    transmuted_grade,
+                    school_yearID,
+                    route,
+                    `read`,
+                    remarks,
+                    grade_level,
+                    room_name,
+                    subject_title,
+                    created_at,
+                    updated_at
+                )
+                VALUES (
+                    p_studentID,
+                    v_student_name,
+                    p_userdetailID,
+                    v_transmuted_grade,
+                    p_school_yearID,
+                    '/students-records',
+                    FALSE,
+                    v_remarks,
+                    v_grade_level,
+                    v_room_name,
+                    v_subject_title,
+                    NOW(),
+                    NOW()
+                );
+
+            END IF;
+
+        END IF;
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+
+part 7 :
+DROP PROCEDURE IF EXISTS `sp_check_early_warning`;
+
+DELIMITER $$
+
+CREATE PROCEDURE `sp_check_early_warning`(
+    IN p_studentID INT,
+    IN p_subjectID INT,
+    IN p_school_yearID INT,
+    IN p_roomID INT,
+    IN p_quarter VARCHAR(50),
+    IN p_userdetailID INT
+)
+BEGIN
+
+    /* ============================================================
+       VARIABLES
+       ============================================================ */
+
+    DECLARE v_student_name VARCHAR(255);
+    DECLARE v_subject_title VARCHAR(255);
+
+    DECLARE v_written_percentage DECIMAL(10,2) DEFAULT NULL;
+    DECLARE v_performance_percentage DECIMAL(10,2) DEFAULT NULL;
+    DECLARE v_assessment_percentage DECIMAL(10,2) DEFAULT NULL;
+
+    DECLARE v_written_weight DECIMAL(10,2) DEFAULT 0;
+    DECLARE v_performance_weight DECIMAL(10,2) DEFAULT 0;
+    DECLARE v_assessment_weight DECIMAL(10,2) DEFAULT 0;
+
+    DECLARE v_active_weight DECIMAL(10,2) DEFAULT 0;
+    DECLARE v_current_percentage DECIMAL(10,2) DEFAULT NULL;
+    DECLARE v_transmuted_grade DECIMAL(10,2) DEFAULT NULL;
+
+    DECLARE v_teacherID INT;
+    DECLARE v_grade_level VARCHAR(100);
+    DECLARE v_room_name VARCHAR(255);
+
+    DECLARE v_failed_subjects INT DEFAULT 0;
+    DECLARE v_remarks VARCHAR(255);
+
+
+    /* ============================================================
+       GET SUBJECT INFORMATION + WEIGHTS
+       ============================================================ */
+
+    SELECT
+        subject_title,
+        writen_works,
+        performance_task,
+        quarter_assessment
+    INTO
+        v_subject_title,
+        v_written_weight,
+        v_performance_weight,
+        v_assessment_weight
+    FROM subject
+    WHERE id = p_subjectID
+    LIMIT 1;
+
+
+    /* ============================================================
+       GET WRITTEN WORKS PERCENTAGE SCORE
+       
+       type = 1
+       ============================================================ */
+
+    SELECT
+        CASE
+            WHEN COUNT(*) > 0
+                 AND SUM(highest_posible_score) > 0
+            THEN
+                (SUM(quarterScore) / SUM(highest_posible_score)) * 100
+            ELSE NULL
+        END
+    INTO v_written_percentage
+    FROM student_grade
+    WHERE roomID = p_roomID
+      AND school_yearID = p_school_yearID
+      AND studentID = p_studentID
+      AND subjectID = p_subjectID
+      AND TRIM(quarter) = TRIM(p_quarter)
+      AND type = 1;
+
+
+    /* ============================================================
+       GET PERFORMANCE TASK PERCENTAGE SCORE
+       
+       type = 2
+       ============================================================ */
+
+    SELECT
+        CASE
+            WHEN COUNT(*) > 0
+                 AND SUM(highest_posible_score) > 0
+            THEN
+                (SUM(quarterScore) / SUM(highest_posible_score)) * 100
+            ELSE NULL
+        END
+    INTO v_performance_percentage
+    FROM student_grade
+    WHERE roomID = p_roomID
+      AND school_yearID = p_school_yearID
+      AND studentID = p_studentID
+      AND subjectID = p_subjectID
+      AND TRIM(quarter) = TRIM(p_quarter)
+      AND type = 2;
+
+
+    /* ============================================================
+       GET QUARTER ASSESSMENT PERCENTAGE SCORE
+       
+       type = 3
+       
+       If no assessment exists yet, this will be NULL.
+       ============================================================ */
+
+    SELECT
+        CASE
+            WHEN COUNT(*) > 0
+                 AND SUM(highest_posible_score) > 0
+            THEN
+                (SUM(quarterScore) / SUM(highest_posible_score)) * 100
+            ELSE NULL
+        END
+    INTO v_assessment_percentage
+    FROM student_grade
+    WHERE roomID = p_roomID
+      AND school_yearID = p_school_yearID
+      AND studentID = p_studentID
+      AND subjectID = p_subjectID
+      AND TRIM(quarter) = TRIM(p_quarter)
+      AND type = 3;
+
+
+    /* ============================================================
+       CALCULATE ACTIVE WEIGHT
+       
+       Only components that already have grades are included.
+       
+       Example:
+       
+       WW = 30%
+       PT = 50%
+       Assessment = 20%
+       
+       If Assessment doesn't exist:
+       
+       active weight = 30 + 50 = 80
+       
+       NOT 100.
+       ============================================================ */
+
+    SET v_active_weight = 0;
+
+    IF v_written_percentage IS NOT NULL THEN
+        SET v_active_weight =
+            v_active_weight + v_written_weight;
+    END IF;
+
+    IF v_performance_percentage IS NOT NULL THEN
+        SET v_active_weight =
+            v_active_weight + v_performance_weight;
+    END IF;
+
+    IF v_assessment_percentage IS NOT NULL THEN
+        SET v_active_weight =
+            v_active_weight + v_assessment_weight;
+    END IF;
+
+
+    /* ============================================================
+       CALCULATE CURRENT WEIGHTED PERCENTAGE
+       
+       Formula:
+       
+       (PS × Weight + PS × Weight + ...)
+       ---------------------------------
+              Active Weight
+       
+       Missing components are NOT treated as zero.
+       ============================================================ */
+
+    IF v_active_weight > 0 THEN
+
+        SET v_current_percentage =
+        (
+            IFNULL(
+                v_written_percentage * v_written_weight,
+                0
+            )
+            +
+            IFNULL(
+                v_performance_percentage * v_performance_weight,
+                0
+            )
+            +
+            IFNULL(
+                v_assessment_percentage * v_assessment_weight,
+                0
+            )
+        ) / v_active_weight;
+
+    ELSE
+
+        SET v_current_percentage = NULL;
+
+    END IF;
+
+
+    /* ============================================================
+       TRANSMUTE CURRENT PERCENTAGE
+       
+       Example:
+       
+       56.97
+       ↓
+       transmuted_grade table
+       ↓
+       56.00 - 59.99
+       ↓
+       74
+       ============================================================ */
+
+    SET v_transmuted_grade = NULL;
+
+    IF v_current_percentage IS NOT NULL THEN
+
+        SELECT tg.transmuted_grade
+        INTO v_transmuted_grade
+        FROM transmuted_grade tg
+        WHERE v_current_percentage >=
+              CAST(tg.start_range AS DECIMAL(10,2))
+          AND v_current_percentage <=
+              CAST(tg.end_range AS DECIMAL(10,2))
+        ORDER BY CAST(tg.start_range AS DECIMAL(10,2)) DESC
+        LIMIT 1;
+
+    END IF;
+
+
+    /* ============================================================
+       ONLY CONTINUE IF CURRENT TRANSMUTED GRADE IS AT-RISK
+       
+       At-Risk = below 80
+       ============================================================ */
+
+    IF v_transmuted_grade IS NOT NULL
+       AND v_transmuted_grade < 80 THEN
+
+
+        /* ========================================================
+           COUNT FAILED SUBJECTS
+           
+           IMPORTANT:
+           Each subject uses ITS OWN weights from subject table.
+           
+           Missing assessment is excluded from the denominator.
+           ======================================================== */
+
+        SELECT COUNT(*)
+        INTO v_failed_subjects
+        FROM
+        (
+            SELECT
+                sg.subjectID,
+
+                s.writen_works,
+                s.performance_task,
+                s.quarter_assessment,
+
+                CASE
+                    WHEN SUM(
+                        CASE
+                            WHEN sg.type = 1
+                            THEN sg.highest_posible_score
+                            ELSE 0
+                        END
+                    ) > 0
+                    THEN
+                        (
+                            SUM(
+                                CASE
+                                    WHEN sg.type = 1
+                                    THEN sg.quarterScore
+                                    ELSE 0
+                                END
+                            )
+                            /
+                            SUM(
+                                CASE
+                                    WHEN sg.type = 1
+                                    THEN sg.highest_posible_score
+                                    ELSE 0
+                                END
+                            )
+                        ) * 100
+                    ELSE NULL
+                END AS written_ps,
+
+                CASE
+                    WHEN SUM(
+                        CASE
+                            WHEN sg.type = 2
+                            THEN sg.highest_posible_score
+                            ELSE 0
+                        END
+                    ) > 0
+                    THEN
+                        (
+                            SUM(
+                                CASE
+                                    WHEN sg.type = 2
+                                    THEN sg.quarterScore
+                                    ELSE 0
+                                END
+                            )
+                            /
+                            SUM(
+                                CASE
+                                    WHEN sg.type = 2
+                                    THEN sg.highest_posible_score
+                                    ELSE 0
+                                END
+                            )
+                        ) * 100
+                    ELSE NULL
+                END AS performance_ps,
+
+                CASE
+                    WHEN SUM(
+                        CASE
+                            WHEN sg.type = 3
+                            THEN sg.highest_posible_score
+                            ELSE 0
+                        END
+                    ) > 0
+                    THEN
+                        (
+                            SUM(
+                                CASE
+                                    WHEN sg.type = 3
+                                    THEN sg.quarterScore
+                                    ELSE 0
+                                END
+                            )
+                            /
+                            SUM(
+                                CASE
+                                    WHEN sg.type = 3
+                                    THEN sg.highest_posible_score
+                                    ELSE 0
+                                END
+                            )
+                        ) * 100
+                    ELSE NULL
+                END AS assessment_ps
+
+            FROM student_grade sg
+
+            INNER JOIN subject s
+                ON s.id = sg.subjectID
+
+            WHERE sg.roomID = p_roomID
+              AND sg.school_yearID = p_school_yearID
+              AND sg.studentID = p_studentID
+              AND TRIM(sg.quarter) = TRIM(p_quarter)
+
+            GROUP BY
+                sg.subjectID,
+                s.writen_works,
+                s.performance_task,
+                s.quarter_assessment
+
+        ) AS subject_scores
+
+        WHERE
+        (
+            IFNULL(
+                written_ps * writen_works,
+                0
+            )
+            +
+            IFNULL(
+                performance_ps * performance_task,
+                0
+            )
+            +
+            IFNULL(
+                assessment_ps * quarter_assessment,
+                0
+            )
+        )
+        /
+        NULLIF(
+            IF(written_ps IS NOT NULL, writen_works, 0)
+            +
+            IF(performance_ps IS NOT NULL, performance_task, 0)
+            +
+            IF(assessment_ps IS NOT NULL, quarter_assessment, 0),
+            0
+        ) < 75;
+
+
+        /* ========================================================
+           DETERMINE RECOMMENDATION
+           ======================================================== */
+
+        IF v_transmuted_grade BETWEEN 75 AND 79 THEN
+
+            SET v_remarks =
+                'Peer Tutoring & Remedial Support';
+
+        ELSEIF v_transmuted_grade < 75 THEN
+
+            IF v_failed_subjects >= 3 THEN
+
+                SET v_remarks =
+                    'Parent-Teacher Conference + Intensive Intervention';
+
+            ELSE
+
+                SET v_remarks =
+                    'Mandatory Remediation';
+
+            END IF;
+
+        END IF;
+
+
+        /* ========================================================
+           GET STUDENT NAME
+           ======================================================== */
+
+        SELECT CONCAT(
+            fname,
+            ' ',
+            IF(
+                mname IS NOT NULL
+                AND TRIM(mname) != ''
+                AND LOWER(TRIM(mname)) != 'n/a',
+                CONCAT(LEFT(TRIM(mname), 1), '. '),
+                ''
+            ),
+            lname
+        )
+        INTO v_student_name
+        FROM enroll_student
+        WHERE id = p_studentID
+        LIMIT 1;
+
+
+        /* ========================================================
+           GET TEACHER / ROOM INFORMATION
+           ======================================================== */
+
+        SELECT
+            teacherId,
+            grade_level,
+            room_section
+        INTO
+            v_teacherID,
+            v_grade_level,
+            v_room_name
+        FROM rooms_section
+        WHERE id = p_roomID
+        LIMIT 1;
+
+
+        /* ========================================================
+           PARENT NOTIFICATION
+           ======================================================== */
+
+        IF EXISTS (
+            SELECT 1
+            FROM notification n
+            WHERE n.studentID = p_studentID
+              AND n.subjectID = p_subjectID
+              AND n.school_yearID = p_school_yearID
+              AND TRIM(n.quarter) = TRIM(p_quarter)
+        ) THEN
+
+            UPDATE notification
+            SET
+                transmuted_grade = v_transmuted_grade,
+                remarks = v_remarks,
+                student_name = v_student_name,
+                subject_title = v_subject_title
+            WHERE studentID = p_studentID
+              AND subjectID = p_subjectID
+              AND school_yearID = p_school_yearID
+              AND TRIM(quarter) = TRIM(p_quarter);
+
+        ELSE
+
+            INSERT INTO notification (
+                studentID,
+                student_name,
+                parentID,
+                subjectID,
+                quarter,
+                transmuted_grade,
+                school_yearID,
+                route,
+                `read`,
+                remarks,
+                subject_title
+            )
+            SELECT
+                p_studentID,
+                v_student_name,
+                pr.parentID,
+                p_subjectID,
+                p_quarter,
+                v_transmuted_grade,
+                p_school_yearID,
+                '/parent-children',
+                FALSE,
+                v_remarks,
+                v_subject_title
+            FROM parent_record pr
+            WHERE pr.studentID = p_studentID;
+
+        END IF;
+
+
+        /* ========================================================
+           FACULTY / TEACHER NOTIFICATIONS
+           ======================================================== */
+
+        IF v_teacherID IS NOT NULL THEN
+
+
+            /* ====================================================
+               ADVISORY ROOM NOTIFICATION
+               ==================================================== */
+
+            IF EXISTS (
+                SELECT 1
+                FROM at_risk_student_notification f
+                WHERE f.studentID = p_studentID
+                  AND f.teacherID = v_teacherID
+                  AND f.school_yearID = p_school_yearID
+                  AND TRIM(f.subject_title) =
+                      TRIM(v_subject_title)
+            ) THEN
+
+                UPDATE at_risk_student_notification
+                SET
+                    transmuted_grade = v_transmuted_grade,
+                    remarks = v_remarks,
+                    student_name = v_student_name,
+                    grade_level = v_grade_level,
+                    room_name = v_room_name,
+                    updated_at = NOW()
+                WHERE studentID = p_studentID
+                  AND teacherID = v_teacherID
+                  AND school_yearID = p_school_yearID
+                  AND TRIM(subject_title) =
+                      TRIM(v_subject_title);
+
+            ELSE
+
+                INSERT INTO at_risk_student_notification (
+                    studentID,
+                    student_name,
+                    teacherID,
+                    transmuted_grade,
+                    school_yearID,
+                    route,
+                    `read`,
+                    remarks,
+                    grade_level,
+                    room_name,
+                    subject_title,
+                    created_at,
+                    updated_at
+                )
+                VALUES (
+                    p_studentID,
+                    v_student_name,
+                    v_teacherID,
+                    v_transmuted_grade,
+                    p_school_yearID,
+                    '/advisory-rooms',
+                    FALSE,
+                    v_remarks,
+                    v_grade_level,
+                    v_room_name,
+                    v_subject_title,
+                    NOW(),
+                    NOW()
+                );
+
+            END IF;
+
+
+            /* ====================================================
+               FACULTY NOTIFICATION
+               ==================================================== */
+
+            IF EXISTS (
+                SELECT 1
+                FROM at_risk_student_for_faculty_notification f
+                WHERE f.studentID = p_studentID
+                  AND f.teacherID = p_userdetailID
+                  AND f.school_yearID = p_school_yearID
+                  AND TRIM(f.subject_title) =
+                      TRIM(v_subject_title)
+            ) THEN
+
+                UPDATE at_risk_student_for_faculty_notification
+                SET
+                    transmuted_grade = v_transmuted_grade,
+                    remarks = v_remarks,
+                    student_name = v_student_name,
+                    grade_level = v_grade_level,
+                    room_name = v_room_name,
+                    updated_at = NOW()
+                WHERE studentID = p_studentID
+                  AND teacherID = p_userdetailID
+                  AND school_yearID = p_school_yearID
+                  AND TRIM(subject_title) =
+                      TRIM(v_subject_title);
+
+            ELSE
+
+                INSERT INTO at_risk_student_for_faculty_notification (
+                    studentID,
+                    student_name,
+                    teacherID,
+                    transmuted_grade,
+                    school_yearID,
+                    route,
+                    `read`,
+                    remarks,
+                    grade_level,
+                    room_name,
+                    subject_title,
+                    created_at,
+                    updated_at
+                )
+                VALUES (
+                    p_studentID,
+                    v_student_name,
+                    p_userdetailID,
+                    v_transmuted_grade,
+                    p_school_yearID,
+                    '/students-records',
+                    FALSE,
+                    v_remarks,
+                    v_grade_level,
+                    v_room_name,
+                    v_subject_title,
+                    NOW(),
+                    NOW()
+                );
+
+            END IF;
+
+        END IF;
+
+    END IF;
+
+END$$
+
+DELIMITER ;
