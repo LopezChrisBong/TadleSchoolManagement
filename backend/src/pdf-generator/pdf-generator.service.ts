@@ -354,19 +354,20 @@ export class PdfGeneratorService {
   ) {}
 
   async compile(templatename, data) {
-    // //development
-    //   process.cwd(),
-    //   'src/pdf-generator/templates',
-    //   `${templatename}.hbs`,
-    // );
+    //development
+    const filepath = path.join(
+      process.cwd(),
+      'src/pdf-generator/templates',
+      `${templatename}.hbs`,
+    );
 
     //hosted filepath for pdf
 
-    const filepath = path.join(
-      __dirname,
-      '../pdf-generator/templates',
-      `${templatename}.hbs`,
-    );
+    // const filepath = path.join(
+    //   __dirname,
+    //   '../pdf-generator/templates',
+    //   `${templatename}.hbs`,
+    // );
 
     const html = await fs.readFile(filepath, 'utf-8');
     return hbs.compile(html)(data);
@@ -451,6 +452,14 @@ export class PdfGeneratorService {
       process.cwd(),
       process.env.FILE_PATH + 'static/img/footer.png',
     );
+    let deped_logo = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/edukasyon.png',
+    );
+    let sd_logo = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/southern logo.jpg',
+    );
     // let headerImg = join(process.cwd(), '/../static/img/header.png');
     // let footerImg = join(process.cwd(), '/../static/img/footer.png');
 
@@ -458,6 +467,8 @@ export class PdfGeneratorService {
       {
         header_img: this.base64_encode(headerImg, 'headerfooter'),
         footer_img: this.base64_encode(footerImg, 'headerfooter'),
+        deped_logo: this.base64_encode(deped_logo, 'headerfooter'),
+        sd_logo: this.base64_encode(sd_logo, 'headerfooter'),
         mySched: mySched ? mySched : [],
         year: filter,
         teacherName: teacherName,
@@ -483,18 +494,19 @@ export class PdfGeneratorService {
       });
       const page = await browser.newPage();
       // compile(template_name, data)
-      const content = await this.compile('my-sched', data);
+      // const content = await this.compile('my-sched', data);
+      const content = await this.compile('my-sched1', data);
       await page.setContent(content);
 
       const buffer = await page.pdf({
-        format: 'legal',
+        format: 'A4',
         margin: {
           top: '0.20in',
-          left: '0.50in',
+          left: '0.20in',
           bottom: '0.20in',
-          right: '0.50in',
+          right: '0.20in',
         },
-        landscape: false,
+        landscape: true,
         printBackground: true,
         // displayHeaderFooter: true,
         // footerTemplate:
@@ -1340,12 +1352,22 @@ export class PdfGeneratorService {
       process.cwd(),
       process.env.FILE_PATH + 'static/img/footer.png',
     );
+    let deped_logo = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/edukasyon.png',
+    );
+    let sd_logo = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/southern logo.jpg',
+    );
     // let headerImg = join(process.cwd(), '/../static/img/header.png');
     // let footerImg = join(process.cwd(), '/../static/img/footer.png');
     const data = [
       {
         header_img: this.base64_encode(headerImg, 'headerfooter'),
         footer_img: this.base64_encode(footerImg, 'headerfooter'),
+        deped_logo: this.base64_encode(deped_logo, 'headerfooter'),
+        sd_logo: this.base64_encode(sd_logo, 'headerfooter'),
         student: arr[0],
         gradeLevel: gradeLevel,
         studentData: studentData ? studentData : [],
@@ -1371,16 +1393,18 @@ export class PdfGeneratorService {
       const page = await browser.newPage();
       // compile(template_name, data)
       // const content = await this.compile('students-achievementV2', data);
-      const content = await this.compile('Form138_Blank_Template_Term', data);
+      // const content = await this.compile('Form138_Blank_Template_Term', data);
+      const content = await this.compile('Form138_Blank_Template_Term1', data);
       await page.setContent(content);
 
       const buffer = await page.pdf({
-        format: 'legal',
+        // format: 'legal', //old size
+        format: 'A4',
         margin: {
-          top: '0.20in',
-          left: '0.50in',
-          bottom: '0.20in',
-          right: '0.50in',
+          top: '0.05in',
+          left: '0.05in',
+          bottom: '0.05in',
+          right: '05in',
         },
         landscape: true,
         printBackground: true,
@@ -2742,44 +2766,100 @@ export class PdfGeneratorService {
       { quarterlyAssessment: quarterlyAssessment },
       { generateGrade: generateGrade },
     );
-    const writtenHeaders = [
-      ...new Set(
-        combineData.writenWorks.map((w) =>
-          w.SG_title && w.SG_title.trim() !== ''
-            ? w.SG_title + ' (' + w.SG_highest_posible_score + ')'
-            : w.quiz_label + ' (' + w.SG_highest_posible_score + ')',
-        ),
-      ),
+    const seen = new Map();
+    const seen1 = new Map();
+    const seen2 = new Map();
+    combineData.writenWorks.forEach((w) => {
+      const desc =
+        w.SG_title && w.SG_title.trim() !== '' ? w.SG_title : w.quiz_label;
+      const high_score = w.SG_highest_posible_score;
+      const key = `${desc}|${high_score}`; // uniqueness key
 
-      'Total',
-      'PS',
-      `WS (${subject.writen_works}%)`,
+      if (!seen.has(key)) {
+        seen.set(key, { desc, high_score });
+      }
+    });
+
+    const writtenHeaders = [
+      ...seen.values(),
+      { desc: 'Total', high_score: '' },
+      { desc: 'PS', high_score: '' },
+      { desc: `WS (${subject.writen_works}%)`, high_score: '' },
     ];
+    // const writtenHeaders = [
+    //   ...new Set(
+    //     combineData.writenWorks.map((w) =>
+    //       w.SG_title && w.SG_title.trim() !== ''
+    //         ? w.SG_title + ' (' + w.SG_highest_posible_score + ')'
+    //         : w.quiz_label + ' (' + w.SG_highest_posible_score + ')',
+    //     ),
+    //   ),
+
+    //   'Total',
+    //   'PS',
+    //   `WS (${subject.writen_works}%)`,
+    // ];
+
+    // const performanceHeaders = [
+    //   ...new Set(
+    //     combineData.performanceTask.map((p) =>
+    //       p.SG_title && p.SG_title.trim() !== ''
+    //         ? p.SG_title + ' (' + p.SG_highest_posible_score + ')'
+    //         : p.quiz_label + ' (' + p.SG_highest_posible_score + ')',
+    //     ),
+    //   ),
+    //   'Total',
+    //   'PS',
+    //   `WS (${subject.performance_task}%)`,
+    // ];
+
+    combineData.performanceTask.forEach((p) => {
+      const desc =
+        p.SG_title && p.SG_title.trim() !== '' ? p.SG_title : p.quiz_label;
+      const high_score = p.SG_highest_posible_score;
+      const key = `${desc}|${high_score}`; // uniqueness key
+
+      if (!seen1.has(key)) {
+        seen1.set(key, { desc, high_score });
+      }
+    });
 
     const performanceHeaders = [
-      ...new Set(
-        combineData.performanceTask.map((p) =>
-          p.SG_title && p.SG_title.trim() !== ''
-            ? p.SG_title + ' (' + p.SG_highest_posible_score + ')'
-            : p.quiz_label + ' (' + p.SG_highest_posible_score + ')',
-        ),
-      ),
-      'Total',
-      'PS',
-      `WS (${subject.performance_task}%)`,
+      ...seen1.values(),
+      { desc: 'Total', high_score: '' },
+      { desc: 'PS', high_score: '' },
+      { desc: `WS (${subject.writen_works}%)`, high_score: '' },
     ];
 
+    // const quarterlyHeaders = [
+    //   ...new Set(
+    //     combineData.quarterlyAssessment.map((q) =>
+    //       q.SG_title && q.SG_title.trim() !== ''
+    //         ? q.SG_title + ' (' + q.SG_highest_posible_score + ')'
+    //         : q.quiz_label + ' (' + q.SG_highest_posible_score + ')',
+    //     ),
+    //   ),
+    //   'Total',
+    //   'PS',
+    //   `WS (${subject.quarter_assessment}%)`,
+    // ];
+
+    combineData.quarterlyAssessment.forEach((q) => {
+      const desc =
+        q.SG_title && q.SG_title.trim() !== '' ? q.SG_title : q.quiz_label;
+      const high_score = q.SG_highest_posible_score;
+      const key = `${desc}|${high_score}`; // uniqueness key
+
+      if (!seen2.has(key)) {
+        seen2.set(key, { desc, high_score });
+      }
+    });
+
     const quarterlyHeaders = [
-      ...new Set(
-        combineData.quarterlyAssessment.map((q) =>
-          q.SG_title && q.SG_title.trim() !== ''
-            ? q.SG_title + ' (' + q.SG_highest_posible_score + ')'
-            : q.quiz_label + ' (' + q.SG_highest_posible_score + ')',
-        ),
-      ),
-      'Total',
-      'PS',
-      `WS (${subject.quarter_assessment}%)`,
+      ...seen2.values(),
+      { desc: 'Total', high_score: '' },
+      { desc: 'PS', high_score: '' },
+      { desc: `WS (${subject.writen_works}%)`, high_score: '' },
     ];
 
     const studentsMap = new Map<number, any>();
@@ -3028,8 +3108,16 @@ export class PdfGeneratorService {
         semester,
         track,
         curDate: this.formatDate(curDate),
+        t_cols:
+          3 +
+          writtenHeaders.length +
+          performanceHeaders.length +
+          performanceHeaders.length,
+        sheet_span: 3,
       },
     ];
+
+    // console.log(data);
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
@@ -3037,17 +3125,20 @@ export class PdfGeneratorService {
       });
       const page = await browser.newPage();
       // compile(template_name, data)
-      const content = await this.compile('student-quizes', data);
+      const content = await this.compile('student-quizes1', data);
+      // const content = await this.compile('student-quizes', data);
       await page.setContent(content);
 
       const buffer = await page.pdf({
         format: 'legal',
         margin: {
-          top: '0.20in',
+          top: '0.0in',
           left: '0.10in',
           bottom: '0.20in',
           right: '0.10in',
         },
+        preferCSSPageSize: true,
+        displayHeaderFooter: false,
         landscape: true,
         printBackground: true,
       });
@@ -3127,44 +3218,100 @@ export class PdfGeneratorService {
       { quarterlyAssessment: quarterlyAssessment },
       { generateGrade: generateGrade },
     );
+    const seen = new Map();
+    const seen1 = new Map();
+    const seen2 = new Map();
+    combineData.writenWorks.forEach((w) => {
+      const desc =
+        w.SG_title && w.SG_title.trim() !== '' ? w.SG_title : w.quiz_label;
+      const high_score = w.SG_highest_posible_score;
+      const key = `${desc}|${high_score}`; // uniqueness key
+
+      if (!seen.has(key)) {
+        seen.set(key, { desc, high_score });
+      }
+    });
+
     const writtenHeaders = [
-      ...new Set(
-        combineData.writenWorks.map((w) =>
-          w.SG_title && w.SG_title.trim() !== ''
-            ? w.SG_title + ' (' + w.SG_highest_posible_score + ')'
-            : w.quiz_label + ' (' + w.SG_highest_posible_score + ')',
-        ),
-      ),
-      'Total',
-      'PS',
-      `WS (${subject.writen_works}%)`,
+      ...seen.values(),
+      { desc: 'Total', high_score: '' },
+      { desc: 'PS', high_score: '' },
+      { desc: `WS (${subject.writen_works}%)`, high_score: '' },
     ];
+    // const writtenHeaders = [
+    //   ...new Set(
+    //     combineData.writenWorks.map((w) =>
+    //       w.SG_title && w.SG_title.trim() !== ''
+    //         ? w.SG_title + ' (' + w.SG_highest_posible_score + ')'
+    //         : w.quiz_label + ' (' + w.SG_highest_posible_score + ')',
+    //     ),
+    //   ),
+    //   'Total',
+    //   'PS',
+    //   `WS (${subject.writen_works}%)`,
+    // ];
+
+    combineData.performanceTask.forEach((p) => {
+      const desc =
+        p.SG_title && p.SG_title.trim() !== '' ? p.SG_title : p.quiz_label;
+      const high_score = p.SG_highest_posible_score;
+      const key = `${desc}|${high_score}`; // uniqueness key
+
+      if (!seen1.has(key)) {
+        seen1.set(key, { desc, high_score });
+      }
+    });
 
     const performanceHeaders = [
-      ...new Set(
-        combineData.performanceTask.map((p) =>
-          p.SG_title && p.SG_title.trim() !== ''
-            ? p.SG_title + ' (' + p.SG_highest_posible_score + ')'
-            : p.quiz_label + ' (' + p.SG_highest_posible_score + ')',
-        ),
-      ),
-      'Total',
-      'PS',
-      `WS (${subject.performance_task}%)`,
+      ...seen.values(),
+      { desc: 'Total', high_score: '' },
+      { desc: 'PS', high_score: '' },
+      { desc: `WS (${subject.writen_works}%)`, high_score: '' },
     ];
 
+    // const performanceHeaders = [
+    //   ...new Set(
+    //     combineData.performanceTask.map((p) =>
+    //       p.SG_title && p.SG_title.trim() !== ''
+    //         ? p.SG_title + ' (' + p.SG_highest_posible_score + ')'
+    //         : p.quiz_label + ' (' + p.SG_highest_posible_score + ')',
+    //     ),
+    //   ),
+    //   'Total',
+    //   'PS',
+    //   `WS (${subject.performance_task}%)`,
+    // ];
+
+    combineData.quarterlyAssessment.forEach((p) => {
+      const desc =
+        p.SG_title && p.SG_title.trim() !== '' ? p.SG_title : p.quiz_label;
+      const high_score = p.SG_highest_posible_score;
+      const key = `${desc}|${high_score}`; // uniqueness key
+
+      if (!seen2.has(key)) {
+        seen2.set(key, { desc, high_score });
+      }
+    });
+
     const quarterlyHeaders = [
-      ...new Set(
-        combineData.quarterlyAssessment.map((q) =>
-          q.SG_title && q.SG_title.trim() !== ''
-            ? q.SG_title + ' (' + q.SG_highest_posible_score + ')'
-            : q.quiz_label + ' (' + q.SG_highest_posible_score + ')',
-        ),
-      ),
-      'Total',
-      'PS',
-      `WS (${subject.quarter_assessment}%)`,
+      ...seen.values(),
+      { desc: 'Total', high_score: '' },
+      { desc: 'PS', high_score: '' },
+      { desc: `WS (${subject.writen_works}%)`, high_score: '' },
     ];
+
+    // const quarterlyHeaders = [
+    //   ...new Set(
+    //     combineData.quarterlyAssessment.map((q) =>
+    //       q.SG_title && q.SG_title.trim() !== ''
+    //         ? q.SG_title + ' (' + q.SG_highest_posible_score + ')'
+    //         : q.quiz_label + ' (' + q.SG_highest_posible_score + ')',
+    //     ),
+    //   ),
+    //   'Total',
+    //   'PS',
+    //   `WS (${subject.quarter_assessment}%)`,
+    // ];
 
     const studentsMap = new Map<number, any>();
 
@@ -3395,6 +3542,12 @@ export class PdfGeneratorService {
                   ? 'Health'
                   : '',
         curDate: this.formatDate(curDate),
+        t_cols:
+          3 +
+          writtenHeaders.length +
+          performanceHeaders.length +
+          performanceHeaders.length,
+        sheet_span: 3,
       },
     ];
     try {
@@ -3404,7 +3557,8 @@ export class PdfGeneratorService {
       });
       const page = await browser.newPage();
       // compile(template_name, data)
-      const content = await this.compile('student-quizes', data);
+      const content = await this.compile('student-quizes1', data);
+      // const content = await this.compile('student-quizes', data);
       await page.setContent(content);
 
       const buffer = await page.pdf({
