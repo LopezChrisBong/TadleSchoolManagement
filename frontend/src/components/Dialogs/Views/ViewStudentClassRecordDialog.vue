@@ -81,7 +81,9 @@
                       :items="
                         syType == 0
                           ? ['1st Semester', '2nd Semester']
-                          : ['Senior High']
+                          : syType == 1
+                          ? ['Senior High']
+                          : ['Junior High']
                       "
                       chips
                       variant="outlined"
@@ -858,7 +860,8 @@ export default {
           data.grade_level == 'Grade 11' ||
           (data.grade_level == 'Grade 12' && this.syType == 0)
             ? (this.semester = '1st Semester')
-            : this.syType == 1
+            : data.grade_level == 'Grade 11' ||
+              (data.grade_level == 'Grade 12' && this.syType == 1)
             ? (this.semester = 'Senior High')
             : (this.semester = 'Junior High');
           this.subSubjectList =
