@@ -36,4 +36,7 @@ export class CreateStudentValuesDto {
 
   @ApiProperty()
   mb2_values: string;
+
+  @ApiProperty()
+  data: string;
 }

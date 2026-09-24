@@ -393,6 +393,17 @@ export class EnrollStudentController {
     );
   }
 
+  @Patch('updateActionTaken/:id')
+  updateActionTaken(
+    @Param('id') id: string,
+    @Body() updateStudentValuesDto: UpdateStudentValuesDto,
+  ) {
+    return this.enrollStudentService.updateActionTaken(
+      +id,
+      updateStudentValuesDto,
+    );
+  }
+
   @Patch('updateSchoolYear/:id')
   updateSchoolYear(
     @Param('id') id: string,

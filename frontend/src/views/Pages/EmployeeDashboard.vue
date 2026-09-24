@@ -12,7 +12,7 @@
       <Admin />
     </div>
     <!-- Teacher Dashboard -->
-    <div v-else>
+    <div v-else-if="assignedModuleID == 21 || assignedModuleID == 2">
       <TeacherDashboard />
     </div>
   </div>

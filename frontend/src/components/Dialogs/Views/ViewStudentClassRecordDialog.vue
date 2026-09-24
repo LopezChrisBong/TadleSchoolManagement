@@ -44,7 +44,7 @@
                       v-model="quarter"
                       :items="
                         data.grade_level == 'Grade 11' ||
-                        data.grade_level == 'Grade 12'
+                        (data.grade_level == 'Grade 12' && syType == 0)
                           ? ['1st Quarter', '2nd Quarter']
                           : syType == 0
                           ? [
@@ -70,13 +70,19 @@
                         data &&
                         !['Grade 11', 'Grade 12'].includes(data.grade_level)
                           ? 'Grade Level'
+                          : syType == 1
+                          ? 'Grade Level'
                           : 'Semester'
                       "
                       :disabled="
                         data &&
                         !['Grade 11', 'Grade 12'].includes(data.grade_level)
                       "
-                      :items="['1st Semester', '2nd Semester']"
+                      :items="
+                        syType == 0
+                          ? ['1st Semester', '2nd Semester']
+                          : ['Senior High']
+                      "
                       chips
                       variant="outlined"
                       density="compact"
@@ -849,8 +855,11 @@ export default {
         this.dialog = true;
         this.initialize();
         if (data.id) {
-          data.grade_level == 'Grade 11' || data.grade_level == 'Grade 12'
+          data.grade_level == 'Grade 11' ||
+          (data.grade_level == 'Grade 12' && this.syType == 0)
             ? (this.semester = '1st Semester')
+            : this.syType == 1
+            ? (this.semester = 'Senior High')
             : (this.semester = 'Junior High');
           this.subSubjectList =
             data.sub_subject != null ? JSON.parse(data.sub_subject) : [];
@@ -869,9 +878,8 @@ export default {
       this.filter = this.$store.getters.getFilterSelected;
       this.syType = this.$store.getters.getSyType;
       this.quarter =
-        this.syType == 0 ||
         this.data.grade_level == 'Grade 11' ||
-        this.data.grade_level == 'Grade 12'
+        (this.data.grade_level == 'Grade 12' && this.syType == 0)
           ? '1st Quarter'
           : '1st Term';
       this.userRoleID = this.$store.state.user.id;

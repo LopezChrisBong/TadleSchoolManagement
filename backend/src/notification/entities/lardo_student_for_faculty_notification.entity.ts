@@ -41,6 +41,8 @@ export class LardoStudentForFacultyNotification {
   @Column({ type: 'varchar', nullable: false })
   subject_title: string;
 
+  @Column({ type: 'text', nullable: true })
+  action_taken: string;
   @CreateDateColumn({
     nullable: false,
     type: 'datetime',

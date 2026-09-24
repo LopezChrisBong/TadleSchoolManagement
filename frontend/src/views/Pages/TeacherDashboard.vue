@@ -172,6 +172,35 @@
                 </span>
               </v-btn>
             </template>
+
+            <template v-slot:[`item.action_taken`]="{ item }">
+              <div class="action-taken-cell">
+                <button
+                  v-if="item.action_taken"
+                  type="button"
+                  class="action-pill action-pill--done"
+                  @click="openActionDialog(item, 'at_risk')"
+                >
+                  <v-icon icon="mdi-check-circle" size="16" class="me-1" />
+                  <span class="action-pill-text">{{ item.action_taken }}</span>
+                  <v-icon
+                    icon="mdi-pencil-outline"
+                    size="14"
+                    class="ms-1 action-pill-edit"
+                  />
+                </button>
+                <button
+                  v-else
+                  type="button"
+                  class="action-pill action-pill--empty"
+                  @click="openActionDialog(item, 'at_risk')"
+                >
+                  <v-icon icon="mdi-plus" size="16" class="me-1" />
+                  Log action taken
+                </button>
+              </div>
+            </template>
+
             <template v-slot:[`item.actions`]="{ item }">
               <div class="d-flex justify-end">
                 <v-btn
@@ -240,6 +269,34 @@
                 <span class="text-black" style="font-size: 10px">
                   {{ item.remarks }}
                 </span>
+              </div>
+            </template>
+
+            <template v-slot:[`item.action_taken`]="{ item }">
+              <div class="action-taken-cell">
+                <button
+                  v-if="item.action_taken"
+                  type="button"
+                  class="action-pill action-pill--done"
+                  @click="openActionDialog(item, 'lardo')"
+                >
+                  <v-icon icon="mdi-check-circle" size="16" class="me-1" />
+                  <span class="action-pill-text">{{ item.action_taken }}</span>
+                  <v-icon
+                    icon="mdi-pencil-outline"
+                    size="14"
+                    class="ms-1 action-pill-edit"
+                  />
+                </button>
+                <button
+                  v-else
+                  type="button"
+                  class="action-pill action-pill--empty"
+                  @click="openActionDialog(item, 'lardo')"
+                >
+                  <v-icon icon="mdi-plus" size="16" class="me-1" />
+                  Log action taken
+                </button>
               </div>
             </template>
 
@@ -407,6 +464,7 @@
         </v-card>
       </v-col>
     </v-row>
+
     <!-- Dialog: Parent-Teacher Conference + Intensive Intervention -->
     <v-dialog v-model="conferenceDialog" max-width="500">
       <v-card>
@@ -532,6 +590,125 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Dialog: Record / edit Action Taken (shared by both tables) -->
+    <v-dialog v-model="actionDialog" max-width="460" persistent>
+      <v-card rounded="lg" v-if="actionDialogItem">
+        <v-card-title class="d-flex align-center px-5 pt-5 pb-2">
+          <v-icon
+            icon="mdi-clipboard-check-outline"
+            size="20"
+            class="me-2 text-primary"
+          />
+          <span class="font-weight-bold">
+            {{ actionDialogItem.action_taken ? 'Edit' : 'Log' }} Action Taken
+          </span>
+          <v-spacer />
+          <v-btn
+            icon="mdi-close"
+            variant="text"
+            size="small"
+            :disabled="savingAction"
+            @click="closeActionDialog"
+          />
+        </v-card-title>
+
+        <v-divider />
+
+        <v-card-text class="px-5 py-4">
+          <div class="mb-3">
+            <div class="text-caption text-medium-emphasis">Student</div>
+            <div class="text-body-1 font-weight-medium">
+              {{ actionDialogItem.name }}
+            </div>
+          </div>
+
+          <div
+            class="mb-4"
+            v-if="
+              actionDialogType === 'at_risk'
+                ? actionDialogItem.remarks
+                : actionDialogItem.recommendation
+            "
+          >
+            <div class="text-caption text-medium-emphasis">
+              Recommended intervention
+            </div>
+            <v-chip color="primary" variant="tonal" size="small" class="mt-1">
+              {{
+                actionDialogType === 'at_risk'
+                  ? actionDialogItem.remarks
+                  : actionDialogItem.recommendation
+              }}
+            </v-chip>
+          </div>
+
+          <v-textarea
+            v-model="actionInput"
+            label="What action was taken?"
+            placeholder="e.g. Met with student and parent to discuss remedial schedule"
+            variant="outlined"
+            auto-grow
+            rows="3"
+            counter="300"
+            maxlength="300"
+            :error-messages="actionError"
+            :disabled="savingAction"
+            autofocus
+            @update:model-value="actionError = ''"
+            @keydown.enter.ctrl="confirmSaveAction"
+          />
+        </v-card-text>
+
+        <v-divider />
+
+        <v-card-actions class="px-5 py-3">
+          <v-btn
+            v-if="actionDialogItem.action_taken"
+            variant="text"
+            color="error"
+            :disabled="savingAction"
+            @click="clearAction"
+          >
+            Remove
+          </v-btn>
+          <v-spacer />
+          <v-btn
+            variant="text"
+            :disabled="savingAction"
+            @click="closeActionDialog"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+            variant="flat"
+            color="primary"
+            :loading="savingAction"
+            @click="confirmSaveAction"
+          >
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <!-- Feedback for saving/clearing an action -->
+    <v-snackbar
+      v-model="snackbar.show"
+      :color="snackbar.color"
+      timeout="2500"
+      location="bottom right"
+    >
+      <v-icon
+        :icon="
+          snackbar.color === 'error'
+            ? 'mdi-alert-circle-outline'
+            : 'mdi-check-circle-outline'
+        "
+        class="me-2"
+      />
+      {{ snackbar.text }}
+    </v-snackbar>
   </v-container>
 </template>
 <script>
@@ -561,6 +738,7 @@ export default {
   components: { Bar, Doughnut },
   data() {
     return {
+      savingAction: false,
       conferenceDialog: false,
       interventionDialog: false,
       selectedItem: null,
@@ -580,6 +758,15 @@ export default {
       lardoStudents: [],
       lardoDialog: false,
       selectedLardoStudent: null,
+
+      // Action Taken dialog state (shared by the at-risk and LARDO tables)
+      actionDialog: false,
+      actionDialogItem: null,
+      actionDialogType: null, // 'at_risk' | 'lardo'
+      actionInput: '',
+      actionError: '',
+      snackbar: { show: false, text: '', color: 'success' },
+
       headers: [
         { title: 'LRN', key: 'lrn', align: 'start', width: '200' },
         { title: 'Student Name', key: 'name', width: '200' },
@@ -590,7 +777,12 @@ export default {
           align: 'center',
           width: '200',
         },
-
+        {
+          title: 'Action Taken',
+          key: 'action_taken',
+          align: 'start',
+          width: '240',
+        },
         {
           title: 'Action',
           key: 'actions',
@@ -608,6 +800,12 @@ export default {
           key: 'recommendation',
           align: 'end',
           width: '200',
+        },
+        {
+          title: 'Action Taken',
+          key: 'action_taken',
+          align: 'start',
+          width: '240',
         },
         // { title: 'Grade', key: 'grade' },
         { title: 'Action', key: 'actions', align: 'end' },
@@ -824,6 +1022,89 @@ export default {
       return map[status] || { label: 'Resolved', color: 'green' };
     },
 
+    // Opens the shared "Action Taken" dialog for a row from either table.
+    // `type` is 'at_risk' or 'lardo' so we know which recommendation field
+    // to show and which payload shape to send when saving.
+    openActionDialog(item, type) {
+      this.actionDialogItem = item;
+      this.actionDialogType = type;
+      this.actionInput = item.action_taken || '';
+      this.actionError = '';
+      this.actionDialog = true;
+    },
+    closeActionDialog() {
+      if (this.savingAction) return;
+      this.actionDialog = false;
+      this.actionDialogItem = null;
+      this.actionDialogType = null;
+      this.actionInput = '';
+      this.actionError = '';
+    },
+    confirmSaveAction() {
+      if (!this.actionInput || !this.actionInput.trim()) {
+        this.actionError = 'Please describe the action taken before saving';
+        return;
+      }
+
+      this.persistAction(this.actionInput.trim());
+    },
+    clearAction() {
+      this.persistAction('');
+    },
+
+    // Saves the teacher's "Action Taken" entry for a row in either table.
+    // `type` is 'at_risk' or 'lardo' so the backend can tell which record to update.
+    // NOTE: adjust the endpoint/payload shape to match your actual API.
+    persistAction(value) {
+      const item = this.actionDialogItem;
+      const type = this.actionDialogType;
+      if (!item) return;
+
+      const previous = item.action_taken;
+      item.action_taken = value;
+
+      let oldData = {
+        id: item.id,
+        type,
+        action_taken: item.action_taken,
+        recommendation: type === 'lardo' ? item.recommendation : item.remarks,
+      };
+      let data = {
+        data: JSON.stringify(oldData),
+      };
+      this.savingAction = true;
+      this.axiosCall(
+        '/enroll-student/updateActionTaken/' + item.atriskID,
+        'PATCH',
+        data,
+      )
+        .then((res) => {
+          if (res) {
+            item.action_taken_saved = true;
+            this.snackbar = {
+              show: true,
+              text: value ? 'Action taken saved' : 'Action taken removed',
+              color: 'success',
+            };
+            this.actionDialog = false;
+            this.actionDialogItem = null;
+            this.actionDialogType = null;
+            this.actionInput = '';
+          }
+        })
+        .catch(() => {
+          item.action_taken = previous;
+          this.snackbar = {
+            show: true,
+            text: 'Could not save — please try again',
+            color: 'error',
+          };
+        })
+        .finally(() => {
+          this.savingAction = false;
+        });
+    },
+
     getFacultyDashboardData() {
       let filter = this.$store.getters.getFilterSelected;
       let assignedModuleID = localStorage.getItem('AssignedModID');
@@ -922,6 +1203,63 @@ export default {
 
 .risk-table :deep(tbody tr:hover) {
   background: #f8fafc;
+}
+
+.action-taken-cell {
+  min-width: 200px;
+  padding: 6px 0;
+}
+
+/* "Action Taken" pill — a single click target that both displays the saved
+   note and opens the edit dialog, instead of an always-open text field. */
+.action-pill {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  line-height: 1.3;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+  text-align: left;
+}
+
+.action-pill--empty {
+  color: #64748b;
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  font-weight: 500;
+}
+.action-pill--empty:hover {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.action-pill--done {
+  color: #166534;
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.action-pill--done:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+.action-pill-text {
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-pill-edit {
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+.action-pill--done:hover .action-pill-edit {
+  opacity: 1;
 }
 
 .chart-wrap {
