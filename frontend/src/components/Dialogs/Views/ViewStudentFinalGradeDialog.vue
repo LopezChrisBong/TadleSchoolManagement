@@ -226,7 +226,8 @@ export default {
           data.grade_level == 'Grade 11' ||
           (data.grade_level == 'Grade 12' && this.syType == 0)
             ? (this.semester = '1st Semester')
-            : this.syType == 1
+            : data.grade_level == 'Grade 11' ||
+              (data.grade_level == 'Grade 12' && this.syType == 1)
             ? (this.semester = 'Senior High')
             : (this.semester = 'Junior High');
           this.initialize();
@@ -235,7 +236,8 @@ export default {
           data.grade_level == 'Grade 11' ||
           (data.grade_level == 'Grade 12' && this.syType == 0)
             ? (this.semester = '1st Semester')
-            : this.syType == 1
+            : data.grade_level == 'Grade 11' ||
+              (data.grade_level == 'Grade 12' && this.syType == 1)
             ? (this.semester = 'Senior High')
             : (this.semester = 'Junior High');
           this.initialize();
