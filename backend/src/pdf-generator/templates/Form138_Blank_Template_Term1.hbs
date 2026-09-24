@@ -1,0 +1,702 @@
+<html lang='en'>
+  <head>
+    <meta charset='UTF-8' />
+    <title>DepEd Form 138</title>
+    <style>
+      @page {
+        size: a4 landscape;
+        margin: 0.1in;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: 'Bookman Old Style';
+        font-size: 10.5px;
+        color: #000;
+        margin: 0;
+        background: #e9e9e9;
+      }
+      .page {
+        background: #fff;
+        display: flex;
+        height: 8.07in;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+      }
+      .col {
+        flex: 1;
+        min-width: 0;
+      }
+      h1.form-title {
+        font-size: 15px;
+        margin: 0 0 2px 0;
+      }
+      h2.section-title {
+        text-align: center;
+        font-size: 13px;
+        margin: 6px 0 8px 0;
+        text-transform: uppercase;
+      }
+      h3.sub-title {
+        text-align: center;
+        font-size: 13px;
+        margin: 4px 0 6px 0;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      th,
+      td {
+        border: 1px solid #000;
+        padding: 2px 4px;
+        text-align: center;
+        vertical-align: middle;
+      }
+      th {
+        font-weight: bold;
+      }
+      td.label,
+      th.label {
+        text-align: left;
+        font-weight: bold;
+        background: #fff;
+      }
+      td input,
+      td textarea {
+        border: none;
+        width: 100%;
+        text-align: center;
+        font-family: inherit;
+        font-size: 11px;
+        background: transparent;
+      }
+      td textarea {
+        resize: none;
+        height: 28px;
+        text-align: left;
+      }
+      .fillline {
+        border: none;
+        border-bottom: 1px solid #000;
+        font-family: inherit;
+        font-size: 12px;
+        background: transparent;
+        padding: 1px 2px;
+        text-align: center;
+      }
+      .field-row {
+        margin: 4px 0;
+        display: flex;
+        gap: 6px;
+        align-items: baseline;
+        flex-wrap: wrap;
+      }
+      .field-row label {
+        font-weight: bold;
+        white-space: nowrap;
+      }
+      .field-row .fillline.wide {
+        flex: 1;
+        min-width: 120px;
+      }
+      .field-row .fillline.medium {
+        width: 140px;
+      }
+      .header-block {
+        text-align: center;
+        margin-bottom: 8px;
+      }
+      .header-block .republic {
+        font-size: 12px;
+      }
+      .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .school-id {
+        font-size: 11px;
+        text-align: right;
+      }
+      .school-id input {
+        border: none;
+        border-bottom: 1px solid #000;
+        width: 90px;
+        font-family: inherit;
+      }
+      .division-line input {
+        border: none;
+        border-bottom: 1px solid #000;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: bold;
+        font-style: italic;
+        text-align: center;
+        width: 260px;
+      }
+      .region-line input {
+        border: none;
+        border-bottom: 1px solid #000;
+        font-family: inherit;
+        font-size: 12px;
+        text-align: center;
+        width: 160px;
+      }
+      .brgy-line input {
+        border: none;
+        border-bottom: 1px solid #000;
+        font-family: inherit;
+        font-size: 10px;
+        text-align: center;
+      }
+      p.body-text {
+        margin: 4px 0;
+        font-size: 10.5px;
+        line-height: 1.3;
+      }
+      .sig-block {
+        margin: 8px 0 2px 0;
+        text-align: left;
+      }
+      .sig-block.right {
+        text-align: right;
+      }
+      .sig-block .sig-line {
+        border: none;
+        border-bottom: 1px solid #000;
+        width: 200px;
+        background: transparent;
+        font-family: inherit;
+        text-align: center;
+      }
+      .sig-block .sig-caption {
+        font-size: 9px;
+        display: block;
+        margin-top: 1px;
+      }
+      h4.mini-title {
+        text-align: center;
+        font-size: 11px;
+        margin: 8px 0 5px 0;
+      }
+      .parent-sig-row {
+        display: flex;
+        align-items: baseline;
+        gap: 30px;
+        margin: 50px 0;
+      }
+      .parent-sig-row label {
+        font-weight: normal;
+        width: 90px;
+      }
+      .parent-sig-row .fillline {
+        flex: 1;
+      }
+      .legend-table {
+        width: auto;
+      }
+      .legend-table td {
+        text-align: left;
+      }
+      .name-line {
+        font-size: 11px;
+        margin-bottom: 4px;
+      }
+      .name-line input {
+        border: none;
+        border-bottom: 1px solid #000;
+        width: 260px;
+        font-family: inherit;
+      }
+      @media print {
+        body {
+          background: #fff;
+        }
+        .page {
+          box-shadow: none;
+          margin: 0;
+          page-break-after: always;
+        }
+        .no-print {
+          display: none;
+        }
+      }
+      .toolbar {
+        max-width: 13in;
+        margin: 10px auto;
+        text-align: center;
+      }
+      .toolbar button {
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+        padding: 8px 16px;
+        cursor: pointer;
+        border: 1px solid #333;
+        background: #f4f4f4;
+        border-radius: 4px;
+      }
+      .portion {
+        width: 100%;
+        border: 1px solid black;
+        padding: 10px;
+        height: 100%;
+      }
+
+      img {
+        object-fit: cover;
+        width: 50%;
+        height: 50%;
+      }
+      .deped_parent_div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 200px; /* Or any width */
+        height: 90px;
+      }
+
+      .parent_div_img {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100px; /* Or any width */
+        height: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    {{#each this}}
+
+      <div class='container'>
+
+        <!-- ============ PAGE 1 ============ -->
+        <div class='page' style='display: flex; gap:30px'>
+          <div class='portion' style='position: relative;'>
+            <div
+              style='display: flex;justify-content:space-around; align-items:center; '
+            >
+              <div>
+                <div class='parent_div_img'>
+                  <img src='data:image/png;base64, {{deped_logo}}' alt='' />
+                </div>
+              </div>
+              <div>
+                <div style='padding:10px'>
+                  <div style='text-align: center; font-size: 12px;'>
+                    <div>Republic of the Philippines
+                      <br />
+                      Department of Education</div>
+                  </div>
+                  <div style='text-align: center; font-size: 12px'>
+                    <div>Region XI
+                      <br />
+                      <span
+                        style='font-weight: bold;text-transform:uppercase;'
+                      >Schools Division of Panabo City</span><br />
+                      <span style='font-size: 10px;'>Panabo City, Davao del
+                        Norte</span>
+                    </div>
+                  </div>
+
+                  <div
+                    style='text-align: center; font-size: 12px; font-weight:bold;margin-top:15px'
+                  >
+                    <div>SOUTHERN DAVAO NATIONAL HIGH SCHOOL
+                    </div>
+                  </div>
+
+                  <div
+                    style='text-align: center; font-size: 12px; ;margin-top:15px'
+                  >
+                    <div style='font-weight:bold'>LEARNER'S PERFORMANCE REPORT</div>
+                    <div style='font-family: 10px;'>School Year 2026-2027</div>
+                  </div>
+
+                </div>
+
+              </div>
+              <div>
+                <div class='parent_div_img'>
+                  <img src='data:image/png;base64, {{sd_logo}}' alt='' />
+                </div>
+              </div>
+            </div>
+
+            <div style=''>
+              <div style='display: flex; gap:2px'>
+                <div style='line-height:15px;width:100%'>
+                  <div style='display:flex; gap:2px'>
+                    <div>Name:</div>
+                    <div
+                      style='border-bottom: 1px solid black;width:100%'
+                    >{{studentInfo.name}}</div>
+                  </div>
+                  <div style='display:flex; gap:2px'>
+                    <div>LRN:</div>
+                    <div
+                      style='border-bottom: 1px solid black;width:100%'
+                    >{{studentInfo.LRN}}</div>
+                  </div>
+                  <div style='display:flex; gap:2px;width:100%'>
+                    <div>Track (SHS only):</div>
+                    <div style='border-bottom: 1px solid black;width:64%'></div>
+                  </div>
+                </div>
+
+                <div style='line-height:15px;width:100%'>
+                  <div style='display:flex; gap:2px;width:100%'>
+                    <div style='display:flex; gap:2px;width:100%'>
+                      <div>Age:</div>
+                      <div
+                        style='border-bottom: 1px solid black;width:100%'
+                      >{{calcAge2 studentInfo.bdate}}</div>
+                    </div>
+                    <div style='display:flex; gap:2px;width:100%'>
+                      <div>Sex:</div>
+                      <div
+                        style='border-bottom: 1px solid black;width:100%'
+                      >{{studentInfo.sex}}</div>
+                    </div>
+                  </div>
+                  <div style='display:flex; gap:2px;width:100%'>
+                    <div style='display:flex; gap:2px;width:100%'>
+                      <div>Grade:</div>
+                      <div
+                        style='border-bottom: 1px solid black;width:100%'
+                      >{{studentInfo.grade_level}}</div>
+                    </div>
+                    <div style='display:flex; gap:2px;width:100%'>
+                      <div>Section:</div>
+                      <div
+                        style='border-bottom: 1px solid black;width:100%'
+                      >{{studentInfo.section}}</div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+            <div style='margin-top: 15px;'>
+              <div>Dear Parents,</div>
+              <div
+              >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This
+                Performance Report presents your child's progress and
+                achievement in the different learning areas.</div>
+              <div
+              >&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;This
+                The school welcomes you to reach out should you wish to know
+                more about your child's learning and performance.</div>
+            </div>
+
+            <div style='margin-top: 20px;'>
+              <div style='display: flex; gap:20px'>
+                <div style='width: 100%;'>
+                  <div
+                    style='border-bottom: 1px solid black; text-align:center'
+                  >{{principal.name}}</div>
+                  <div style='text-align: center;'>School Head</div>
+                </div>
+                <div style='width: 100%;'>
+                  <div
+                    style='border-bottom: 1px solid black; text-align:center'
+                  >{{studentInfo.teacherName}}</div>
+                  <div style='text-align: center;'>Adviser</div>
+                </div>
+              </div>
+            </div>
+
+            <div style='margin-top: 5px;'>
+              <div
+                style='text-align: center;font-size:12px; font-weight:bold'
+              >LEARNING PROGRESS ACHIEVEMENT</div>
+              <table style='font-size: 12px;'>
+                <thead>
+                  <tr>
+                    <th rowspan='2'>Learning Areas</th>
+                    <th colspan='3'>Term</th>
+                    <th rowspan='2'>Units</th>
+                    <th rowspan='2'>Final Grade</th>
+                    <th rowspan='2'>Remarks</th>
+                  </tr>
+                  <tr>
+                    <th>T1</th>
+                    <th>T2</th>
+                    <th>T3</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {{#for 0 10 1}}
+                    <tr>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td>3</td>
+                      <td></td>
+                      <td></td>
+                    </tr>
+                  {{/for}}
+                  <tr>
+                    <td colspan='4' style='font-weight: bold;'>General Average</td>
+                    <td>3</td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div
+                style='margin-top: 10px; font-size:10px; position:absolute; bottom:0; left:0; right:0;padding:10px'
+              >
+                <div style='font-size: 10px font-weight:bold;'>PERFORMANCE
+                  DESCRIPTORS</div>
+                <div style='display: flex;justify-content:space-around'>
+                  <div style='text-align: center;'>
+                    <div style='font-weight:bold'>Grading Scale</div>
+                    <div>90-100</div>
+                    <div>80-89</div>
+                    <div>75-79</div>
+                    <div>65-74</div>
+                    <div>0-64</div>
+                  </div>
+                  <div style='text-align: center;'>
+                    <div style='font-weight:bold'>Descriptors</div>
+                    <div>Advancing</div>
+                    <div>Benchmarking</div>
+                    <div>Connecting</div>
+                    <div>Developing</div>
+                    <div>Emerging</div>
+                  </div>
+                  <div style='text-align: center;'>
+                    <div style='font-weight:bold'>Remarks</div>
+                    <div>Passed</div>
+                    <div>Passed</div>
+                    <div>Passed</div>
+                    <div>Failed</div>
+                    <div>Failed</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class='portion' style='position: relative;'>
+            <table style='font-size: 12px;'>
+              <tr>
+                <th></th>
+                <th>JULY</th><th>AUG</th><th>SEPT</th><th>OCT</th><th>NOV</th>
+                <th>DEC</th><th>JAN</th><th>FEB</th><th>MAR</th><th>APR</th><th
+                >TOTAL</th>
+              </tr>
+              <tr>
+                <td class='label'>No. of Class Days</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td class='label'>No. of Days Present</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td class='label'>No. of Days Absent</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              </tr>
+            </table>
+
+            <div
+              style='text-align:center;font-size: 12px; font-weight:bold;margin-top:5px'
+            >TEACHER'S COMMENT / REMARKS</div>
+            <table style='font-size: 12px;'>
+
+              <tr>
+                <td>
+                  <div style='display: flex;gap:5px'>
+                    <div
+                      style='text-align:start;font-size: 10px;height:20px;font-weight:bold;width:10%'
+                    >
+                      Term 1
+                    </div>
+                    <div style='width:100%; text-align:start'>
+                      asdasdadasda
+                    </div>
+                  </div>
+                </td>
+
+              </tr>
+              <tr>
+                <td>
+                  <div style='display: flex;gap:5px'>
+                    <div
+                      style='text-align:start;font-size: 10px;height:20px;font-weight:bold;width:10%'
+                    >
+                      Term 2
+                    </div>
+                    <div style='width:100%; text-align:start'>
+                      asdasdadasda
+                    </div>
+                  </div>
+                </td>
+
+              </tr>
+              <tr>
+                <td>
+                  <div style='display: flex;gap:5px'>
+                    <div
+                      style='text-align:start;font-size: 10px;height:20px;font-weight:bold;width:10%'
+                    >
+                      Term 3
+                    </div>
+                    <div style='width:100%; text-align:start'>
+                      asdasdadasda
+                    </div>
+                  </div>
+                </td>
+
+              </tr>
+            </table>
+
+            <div
+              style='text-align:center;font-size: 12px; font-weight:bold;margin-top:5px'
+            >PARENT/GUARDIAN SIGNATURE</div>
+            <div style='text-align:center'>
+              <div style='font-size: 12px;width:100%;margin-top: 10px;'>Term 1
+                {{#ifCond firstEsig true}}
+                  {{#ifCond num 1}}
+                    <img
+                      style='display:flex; top:0 px; left:0px; position:absolute; margin-top: -15px; margin-left: 300px;'
+                      src='data:image/png;base64, {{parentEsig}}'
+                      width='5%'
+                      alt=''
+                    />
+                  {{else}}
+                  {{/ifCond}}
+                {{else}}
+                  __________________________________________
+                {{/ifCond}}
+
+              </div>
+              <div style='font-size: 12px;width:100%;margin-top: 10px;'>Term 2
+                {{#ifCond secondEsig true}}
+                  {{#ifCond num 1}}
+                    <img
+                      style='display:flex; top:0 px; left:0px; position:absolute; margin-top: -15px; margin-left: 300px;'
+                      src='data:image/png;base64, {{parentEsig}}'
+                      width='5%'
+                      alt=''
+                    />
+                  {{else}}
+                  {{/ifCond}}
+                {{else}}
+                  __________________________________________
+                {{/ifCond}}
+              </div>
+              <div style='font-size: 12px;width:100%;margin-top: 10px;'>Term 3
+                {{#ifCond thirdEsig true}}
+                  {{#ifCond num 1}}
+                    <img
+                      style='display:flex; top:0 px; left:0px; position:absolute; margin-top: -15px; margin-left: 300px;'
+                      src='data:image/png;base64, {{parentEsig}}'
+                      width='5%'
+                      alt=''
+                    />
+                  {{else}}
+                  {{/ifCond}}
+                {{else}}
+                  __________________________________________
+                {{/ifCond}}
+              </div>
+            </div>
+
+            <div
+              style='text-align:center;font-size: 12px; font-weight:bold;margin-top:20px'
+            >CERTIFICATE OF TRANSFER</div>
+            <div style='font-size: 12px;line-height:20px'>This is to certify
+              that the above-named learner has satisfactorily completed the
+              requirements for the grade level indicated.</div>
+
+            <div style='margin-top: 10px;line-height:20px'>
+              <div>Admitted to Grade: ___________________</div>
+              <div>Eligible for Admission to Grade: ___________________</div>
+              <div style='display: flex;justify-content:end'>
+                <div style='text-align: center;width:40%;margin-top:20px'>
+                  <div style='border-bottom: 1px solid black;'></div>
+                  <div>Adviser</div>
+                </div>
+              </div>
+
+              <div style='display: flex;justify-content:start'>
+                <div style='width:40%;'>
+                  <div style='margin-bottom:20px'>Approved:</div>
+                  <div style='text-align: center;'>
+                    <div style='border-bottom: 1px solid black;'></div>
+                    <div>Adviser</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div
+              style='position: absolute;bottom:0;right:0;left:0;padding:10px'
+            >
+              <div
+                style='text-align:center;font-size: 12px; font-weight:bold;margin-top:20px'
+              >CANCELATION OF ELIGIBILTY TO TRANSFER</div>
+
+              <div style='margin-top: 10px;line-height:20px'>
+                <div style='display: flex;justify-content:space-between'>
+                  <div>Admitted in: ___________________</div>
+                  <div>Date: ___________________</div>
+                </div>
+                <div
+                  style='display: flex;justify-content:start; margin-top:30px'
+                >
+                  <div style='width:40%;'>
+                    <div style='text-align: center;'>
+                      <div style='border-bottom: 1px solid black;'></div>
+                      <div>School Head</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    {{/each}}
+  </body>
+</html>
