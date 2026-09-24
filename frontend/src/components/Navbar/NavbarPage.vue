@@ -399,7 +399,10 @@
                       {{ notif.student_name }}
                     </div>
 
-                    <div class="text-caption text-medium-emphasis">
+                    <div
+                      v-if="notif.transmuted_grade != 0.0"
+                      class="text-caption text-medium-emphasis"
+                    >
                       Grade: {{ notif.transmuted_grade }}
                     </div>
 
@@ -1063,7 +1066,10 @@
                     {{ notif.student_name }}
                   </div>
 
-                  <div class="text-caption text-medium-emphasis">
+                  <div
+                    v-if="notif.transmuted_grade != 0.0"
+                    class="text-caption text-medium-emphasis"
+                  >
                     Final Grade: {{ notif.transmuted_grade }}
                   </div>
 

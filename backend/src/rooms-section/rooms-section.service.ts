@@ -15,6 +15,8 @@ import {
   StudentQuarterFinalGrade,
   Availability,
   Subject,
+  Notification,
+  ParentRecord,
 } from 'src/entities';
 import { DataSource, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -86,10 +88,12 @@ export class RoomsSectionService {
   async studentAttendance(
     createStudentAttendanceDto: CreateStudentAttendanceDto,
   ) {
-    let data = JSON.parse(createStudentAttendanceDto.data);
+    const data = JSON.parse(createStudentAttendanceDto.data);
+
     try {
       for (let i = 0; i < data.length; i++) {
-        let saveData = this.dataSource.manager.create(StudentAttendance, {
+        // 1. Save attendance
+        const saveData = this.dataSource.manager.create(StudentAttendance, {
           roomID: data[i].roomId,
           attendance: data[i].attendance,
           school_yearID: data[i].school_yearId,
@@ -98,15 +102,96 @@ export class RoomsSectionService {
           attendanceDate: createStudentAttendanceDto.attendanceDate,
           teacherID: createStudentAttendanceDto.teacherID,
         });
+
         await this.dataSource.manager.save(saveData);
+
+        // 2. Only process notification if student is absent
+        if (data[i].attendance == 0) {
+          const parentData = await this.dataSource.manager
+            .createQueryBuilder(EnrollStudent, 'es')
+            .select([
+              'es.*',
+              'pr.parentID as parentID',
+              `
+              IF(
+                !ISNULL(es.mname) AND LOWER(es.mname) != 'n/a',
+                CONCAT(
+                  es.fname,
+                  ' ',
+                  SUBSTRING(es.mname, 1, 1),
+                  '. ',
+                  es.lname
+                ),
+                CONCAT(es.fname, ' ', es.lname)
+              ) as name
+            `,
+            ])
+            .leftJoin(ParentRecord, 'pr', 'es.id = pr.studentID')
+            .where('es.id = :id', {
+              id: data[i].studentId,
+            })
+            .getRawOne();
+
+          console.log('Student ID:', data[i].studentId);
+          console.log('parentData:', parentData);
+
+          // 3. Get subject
+          const subject = await this.dataSource.manager
+            .createQueryBuilder(Subject, 's')
+            .where('s.id = :id', {
+              id: createStudentAttendanceDto.subjectID,
+            })
+            .getOne();
+
+          // 4. If there is NO parent record, don't create notification
+          if (!parentData || !parentData.parentID) {
+            console.log(
+              `No parent record found for student ID: ${data[i].studentId}. Attendance saved, notification skipped.`,
+            );
+
+            continue;
+          }
+
+          // 5. Make sure subject exists
+          if (!subject) {
+            console.log(
+              `Subject not found for subject ID: ${createStudentAttendanceDto.subjectID}`,
+            );
+
+            continue;
+          }
+
+          // 6. Create notification
+          const studentAttendance = this.dataSource.manager.create(
+            Notification,
+            {
+              school_yearID: data[i].school_yearId,
+              studentID: data[i].studentId,
+              parentID: parentData.parentID,
+              student_name: parentData.name,
+              route: '/parent-children',
+              remarks:
+                'Student is absent on ' +
+                createStudentAttendanceDto.attendanceDate,
+              subject_title: subject.subject_title,
+              quarter: '1st Term',
+              transmuted_grade: 0,
+            },
+          );
+
+          await this.dataSource.manager.save(studentAttendance);
+        }
       }
+
       return {
         msg: 'Save successfully!',
         status: HttpStatus.CREATED,
       };
     } catch (error) {
+      console.error('studentAttendance error:', error);
+
       return {
-        msg: 'Something went wrong!' + error,
+        msg: 'Something went wrong! ' + error,
         status: HttpStatus.BAD_REQUEST,
       };
     }
@@ -836,6 +921,7 @@ export class RoomsSectionService {
           'SL.id as id',
           'RS.room_section as room_name',
           'RS.id as roomID',
+          'RS.grade_level as grade_level',
           "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.lname, ' ',ES.fname,' ', SUBSTRING(ES.mname, 1, 1) ,'. ') ,concat(ES.lname, ' ', ES.fname)) as name",
         ])
         .leftJoin(RoomsSection, 'RS', 'RS.id = SL.roomId')

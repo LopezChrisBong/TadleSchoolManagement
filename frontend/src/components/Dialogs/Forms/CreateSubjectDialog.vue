@@ -62,7 +62,7 @@
               <v-col cols="12" md="6" v-if="grade_level == 'Senior High'">
                 <v-autocomplete
                   v-model="indicator"
-                  :items="indicatorList"
+                  :items="syType == 0 ? indicatorList : indicatorList2"
                   label="Indicator"
                   variant="outlined"
                   density="compact"
@@ -254,6 +254,7 @@ export default {
   },
   data() {
     return {
+      syType: null,
       isSpecialized: false,
       writenWorks: null,
       semester: null,
@@ -273,6 +274,7 @@ export default {
       seniorJuniorList: ['Junior High', 'Senior High'],
       unit_departmentlist: [],
       indicatorList: ['CORE', 'APPLIED', 'SPECIALIZED'],
+      indicatorList2: ['CORE', 'ELECTIVE'],
       indicator: null,
       strandID: null,
       updateID: null,
@@ -331,6 +333,7 @@ export default {
 
   methods: {
     initialize() {
+      this.syType = this.$store.getters.getSyType;
       this.loadYearSelection();
       this.getAllStrand();
     },

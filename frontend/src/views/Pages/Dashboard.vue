@@ -58,16 +58,43 @@
             class="d-flex justify-space-between align-center flex-wrap ga-3 px-0"
           >
             <div class="section-title">Student Management</div>
-            <v-text-field
-              v-model="search"
-              density="compact"
-              variant="outlined"
-              prepend-inner-icon="mdi-magnify"
-              placeholder="Search student, LRN, adviser..."
-              hide-details
-              single-line
-              class="search-field"
-            />
+
+            <div class="d-flex flex-wrap ga-3 align-center">
+              <v-select
+                v-model="selectedLevel"
+                :items="levelOptions"
+                label="Level"
+                density="compact"
+                variant="outlined"
+                clearable
+                hide-details
+                class="filter-field"
+                @update:model-value="onLevelChange"
+              />
+
+              <v-select
+                v-model="selectedGrade"
+                :items="gradeOptions"
+                label="Grade"
+                density="compact"
+                variant="outlined"
+                clearable
+                hide-details
+                :disabled="!selectedLevel"
+                class="filter-field"
+              />
+
+              <!-- <v-text-field
+                v-model="search"
+                density="compact"
+                variant="outlined"
+                prepend-inner-icon="mdi-magnify"
+                placeholder="Search student, LRN, adviser..."
+                hide-details
+                single-line
+                class="search-field"
+              /> -->
+            </div>
           </v-card-title>
 
           <div class="legend px-0 pb-3 d-flex ga-4">
@@ -78,7 +105,7 @@
 
           <v-data-table
             :headers="headers"
-            :items="atRisk"
+            :items="filteredAtRisk"
             :search="search"
             :loading="loading"
             density="comfortable"
@@ -126,6 +153,9 @@
 </template>
 
 <script>
+const JHS_GRADES = [7, 8, 9, 10];
+const SHS_GRADES = [11, 12];
+
 export default {
   data() {
     return {
@@ -145,7 +175,45 @@ export default {
       atRisk: [],
       search: '',
       loading: false,
+
+      // Filtering
+      levelOptions: ['Junior High', 'Senior High'],
+      selectedLevel: null,
+      selectedGrade: null,
     };
+  },
+  computed: {
+    gradeOptions() {
+      if (this.selectedLevel === 'Junior High') {
+        return JHS_GRADES.map((g) => ({ title: `Grade ${g}`, value: g }));
+      }
+      if (this.selectedLevel === 'Senior High') {
+        return SHS_GRADES.map((g) => ({ title: `Grade ${g}`, value: g }));
+      }
+      return [];
+    },
+    filteredAtRisk() {
+      return this.atRisk.filter((item) => {
+        const grade = this.extractGradeNumber(item.grade_level);
+
+        if (
+          this.selectedLevel === 'Junior High' &&
+          !JHS_GRADES.includes(grade)
+        ) {
+          return false;
+        }
+        if (
+          this.selectedLevel === 'Senior High' &&
+          !SHS_GRADES.includes(grade)
+        ) {
+          return false;
+        }
+        if (this.selectedGrade && grade !== this.selectedGrade) {
+          return false;
+        }
+        return true;
+      });
+    },
   },
   mounted() {
     this.initialize();
@@ -164,6 +232,17 @@ export default {
       if (risk <= 75) return 'red';
       if (risk <= 80) return 'orange';
       return 'green';
+    },
+    // Pulls the numeric grade out of values like "Grade 7", "7", 7, "G11", etc.
+    extractGradeNumber(gradeLevel) {
+      if (gradeLevel == null) return null;
+      const match = String(gradeLevel).match(/\d+/);
+      return match ? parseInt(match[0], 10) : null;
+    },
+    onLevelChange() {
+      // Reset grade selection whenever the level changes so stale
+      // grade values (e.g. Grade 11 while on Junior High) can't linger.
+      this.selectedGrade = null;
     },
     viewStudent(item) {
       this.$emit('view-student', item);
@@ -196,7 +275,7 @@ export default {
       );
     },
     AtRiskList() {
-           let filter = this.$store.getters.getFilterSelected;
+      let filter = this.$store.getters.getFilterSelected;
       window.open(
         process.env.VUE_APP_SERVER +
           '/pdf-generator/getAllAtRiskStudents/' +
@@ -304,6 +383,11 @@ export default {
 
 .search-field {
   max-width: 280px;
+}
+
+.filter-field {
+  min-width: 160px;
+  max-width: 180px;
 }
 
 .risk-table :deep(thead th) {

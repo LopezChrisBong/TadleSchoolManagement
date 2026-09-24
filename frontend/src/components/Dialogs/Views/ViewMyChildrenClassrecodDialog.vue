@@ -365,8 +365,8 @@ export default {
       return this.syType === 0 ||
         this.data.grade_level == 'Grade 11' ||
         this.data.grade_level == 'Grade 12'
-        ? ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter']
-        : ['1st Term', '2nd Term', '3rd Term'];
+        ? this.quarterArray()
+        : this.termArray();
     },
     periodAverage() {
       const grades = this.studentGrade.juniorHigh
@@ -417,6 +417,7 @@ export default {
         remarks: row.remarks ?? '-',
       }));
     },
+
     juniorTermData() {
       if (!this.studentGrade.juniorHigh) return [];
       return this.studentGrade.juniorHigh.map((row) => ({
@@ -503,6 +504,37 @@ export default {
     initialize() {
       this.syType = this.$store.getters.getSyType;
       this.getAllStudentsGrade();
+    },
+    quarterArray() {
+      if (!this.studentGrade.juniorHigh) return [];
+
+      const quarters = [
+        '1st Quarter',
+        '2nd Quarter',
+        '3rd Quarter',
+        '4th Quarter',
+      ];
+
+      return quarters.filter((quarter) =>
+        this.studentGrade.juniorHigh.some(
+          (row) =>
+            row[quarter] !== null &&
+            row[quarter] !== undefined &&
+            row[quarter] !== '-',
+        ),
+      );
+    },
+    termArray() {
+      if (!this.studentGrade.juniorHigh) return [];
+
+      const terms = ['1st Term', '2nd Term', '3rd Term'];
+
+      return terms.filter((term) =>
+        this.studentGrade.juniorHigh.some(
+          (row) =>
+            row[term] !== null && row[term] !== undefined && row[term] !== '-',
+        ),
+      );
     },
     getAllStudentsGrade() {
       this.axiosCall(

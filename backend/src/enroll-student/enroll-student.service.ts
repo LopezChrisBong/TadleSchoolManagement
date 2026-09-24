@@ -1036,6 +1036,8 @@ export class EnrollStudentService {
           'risk.remarks as remarks',
           'risk.transmuted_grade as transmuted_grade',
           'risk.subject_title as subject_title',
+          'risk.id as atriskID',
+          'risk.action_taken as action_taken',
         ])
         .innerJoin(
           AtRiskStudentForFacultyNotification,
@@ -1067,6 +1069,8 @@ export class EnrollStudentService {
           'risk.remarks as remarks',
           'risk.transmuted_grade as transmuted_grade',
           'risk.subject_title as subject_title',
+          'risk.id as atriskID',
+          'risk.action_taken as action_taken',
         ])
         .innerJoin(AtRiskStudentNotification, 'risk', 'ES.id = risk.studentID')
         .where('risk.studentID IN (:...studentIds)', { studentIds })
@@ -1140,6 +1144,8 @@ export class EnrollStudentService {
           'ES.lrnNo as lrn',
           'report.remarks as remarks',
           'report.subject_title as subject_title',
+          'report.id as atriskID',
+          'report.action_taken as action_taken',
         ])
         .innerJoin(
           LardoStudentForFacultyNotification,
@@ -1169,6 +1175,8 @@ export class EnrollStudentService {
           'ES.lrnNo as lrn',
           'report.remarks as remarks',
           'report.subject_title as subject_title',
+          'report.id as atriskID',
+          'report.action_taken as action_taken',
         ])
         .innerJoin(
           LardoStudentNotification,
@@ -1224,6 +1232,7 @@ export class EnrollStudentService {
         'ES.id as id',
         'ES.lrnNo as lrn',
         'report.status as status',
+        'report.id as atriskID',
       ])
       .innerJoin(
         StudentReportDisciplinary,
@@ -1958,6 +1967,70 @@ export class EnrollStudentService {
     } catch (error) {
       return {
         msg: 'Something went wrong!' + error,
+        status: HttpStatus.BAD_REQUEST,
+      };
+    }
+  }
+
+  async updateActionTaken(
+    id: number,
+    updateStudentValuesDto: UpdateStudentValuesDto,
+  ) {
+    try {
+      const data = JSON.parse(updateStudentValuesDto.data);
+
+      console.log('ID:', id);
+      console.log('DATA:', data);
+
+      let result1;
+      let result2;
+
+      if (data.type === 'at_risk') {
+        result1 = await this.dataSource.manager.update(
+          AtRiskStudentForFacultyNotification,
+          id,
+          {
+            action_taken: data.action_taken,
+          },
+        );
+
+        result2 = await this.dataSource.manager.update(
+          AtRiskStudentNotification,
+          id,
+          {
+            action_taken: data.action_taken,
+          },
+        );
+      } else {
+        result1 = await this.dataSource.manager.update(
+          LardoStudentForFacultyNotification,
+          id,
+          {
+            action_taken: data.action_taken,
+          },
+        );
+
+        result2 = await this.dataSource.manager.update(
+          LardoStudentNotification,
+          id,
+          {
+            action_taken: data.action_taken,
+          },
+        );
+      }
+
+      console.log('Update 1:', result1);
+      console.log('Update 2:', result2);
+
+      return {
+        msg: 'Updated successfully!',
+        status: HttpStatus.OK,
+      };
+    } catch (error) {
+      console.error(error);
+
+      return {
+        msg: 'Something went wrong! ' + error,
         status: HttpStatus.BAD_REQUEST,
       };
     }
