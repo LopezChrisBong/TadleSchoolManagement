@@ -1,0 +1,248 @@
+<html lang='en'>
+
+  <head>
+    <meta charset='UTF-8' />
+    <meta http-equiv='X-UA-Compatible' content='IE=edge' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>My Schedule</title>
+    <style>
+      /**body { font-family: 'Liberation Sans'; }*/ .container{ width: 100%;
+      margin: 0 auto; } .header { position: fixed; top: 0px; left: 0px; right:
+      0px; height: 100px; } .footer { position: fixed; bottom: 0px; left: 0px;
+      right: 0px; height: 120px; } body { font-family: 'Arial' } table{ width:
+      100%; } table,th, td { page-break-inside: auto; } .strong { font-weight:
+      bold; } .bordered { border: 1px solid black; } .font-10 { font-size: 10px;
+      } .font-12 { font-size: 12px; } .font-14 {font-size: 14px; } .font-16 {
+      font-size: 16px; } .font-18 { font-size:18px; }.font-24 { font-size:24px;
+      } .extra-spacing-tr { height: 20px; } .header { height: 60px; } tr
+      {page-break-inside: avoid; page-break-after: auto; } thead {
+      display:table-header-group; } tfoot { display: table-footer-group; }
+      .to_title{ margin-top: 0px;}.to_title_div{ text-align: center; }
+      .to_content{page-break-inside: auto; margin-top: 120px; margin-left: 40px;
+      margin-right: 40px; } .to_number{margin-right: 100px;} .employee_table{
+      }.recommending_approval{ display: flex; justify-content: space-between; }
+      .underline{ border-bottom:1px solid black } #eval_table tr td, #eval_table
+      tr th{ padding: 8px; } #eval_table{ page-break-after: always; } #f_table
+      th,#f_table td,#eval_table th,#eval_table td{ border: 1px solid black; }
+      #f_table,#eval_table, #mySched{ border-collapse: collapse; } 
+      #eval_table{ border: 1px solid black; } #mySched  td{ border:
+      1px solid black; padding: 2px;width:  11.11%;} 
+         img {
+        object-fit: cover;
+        width: 50%;
+        height: 50%;
+      }
+      .deped_parent_div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 200px; /* Or any width */
+        height: 90px;
+      }
+
+      .parent_div_img {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100px; /* Or any width */
+        height: 100px;
+      }
+       .page { box-shadow: none; margin: 0; page-break-after: always; }
+    </style>
+  </head>
+
+  <body>
+    {{#each this}}
+    <div class="page">
+
+      <div class='container'>
+        <div class='header'>
+          {{!-- <img
+            src='data:image/png;base64, {{header_img}}'
+            width='100%'
+            alt=''
+          /> --}}
+
+          <div
+              style='display: flex;justify-content:space-around; align-items:center; '
+            >
+              <div>
+                <div class='parent_div_img'>
+                  <img src='data:image/png;base64, {{deped_logo}}' alt='' />
+                </div>
+              </div>
+              <div>
+                <div style='padding:10px'>
+                  <div style='text-align: center; font-size: 12px;'>
+                    <div>Republic of the Philippines
+                      <br />
+                      Department of Education</div>
+                  </div>
+                  <div style='text-align: center; font-size: 12px'>
+                    <div>Region XI
+                      <br />
+                      <span
+                        style='font-weight: bold;text-transform:uppercase;'
+                      >Schools Division of Panabo City</span><br />
+                      <span style='font-size: 10px;'>Panabo City, Davao del
+                        Norte</span>
+                    </div>
+                  </div>
+
+                  <div
+                    style='text-align: center; font-size: 12px; font-weight:bold;margin-top:15px'
+                  >
+                    <div>SOUTHERN DAVAO NATIONAL HIGH SCHOOL
+                    </div>
+                  </div>
+
+                  <div
+                    style='text-align: center; font-size: 12px; ;margin-top:15px'
+                  >
+                    <div style='font-weight:bold'>FORM 29: Teacher's Individual Class Program</div>
+                    <div style='font-family: 10px;'>School Year 2026-2027</div>
+                  </div>
+
+                </div>
+
+              </div>
+              <div>
+                <div class='parent_div_img'>
+                  <img src='data:image/png;base64, {{sd_logo}}' alt='' />
+                </div>
+              </div>
+            </div>
+
+        </div>
+        <div class='footer'>
+
+          {{!-- <img
+            style='position:fixed; bottom:0; left:0;right:0;'
+            src='data:image/png;base64, {{footer_img}}'
+            width='100%'
+            alt=''
+          /> --}}
+        </div>
+
+        
+          <div style='width: 100%;'>
+            <table
+              style='margin:0 auto; width: 100%; page-break-inside:auto; table-layout:fixed'
+            >
+              {{! // Add this css to make main table fixed, child tables will still scroll }}
+              <thead>
+                <tr>
+                  <td colspan='2'>
+                    <div style='height: 160px;'></div>
+                  </td>
+                </tr>
+              </thead>
+              <tfoot>
+                <tr>
+                  <td colspan='2'>
+                    <div style='height: 80px;'></div>
+
+                  </td>
+                </tr>
+              </tfoot>
+        
+              <tbody class=""> 
+                <tr>
+                    <td colspan="5">
+                        <div style="font-size: 12px;line-height:20px">
+                          <div style="display: flex; justify-content:space-between">
+                            <div style="display: flex; gap :2px">
+                              <div>Name of Teacher:</div>
+                              <div style="font-weight: bold;">{{teacherName}}</div>
+                            </div>
+                             <div style="display: flex; gap :2px">
+                              <div>Subject/Department: 		</div>
+                              <div style="font-weight: bold;">SENIOR HS -ENGLISH	</div>
+                            </div>
+                            </div>
+                             <div style="display: flex; gap :2px">
+                              <div>Birthdate:</div>
+                              <div>August 1, 1996</div>
+                            </div>
+                             <div style="display: flex; gap :2px">
+                              <div>No. of Actual Teaching Loads and Total No. of Minutes per Week:</div>
+                              <div>XXXX Minutes</div>
+                            </div>
+                            <div style="display: flex; gap :2px">
+                              <div>Other Special Assignments/Ancillary Services:</div>
+                              <div>  SHS Guidance Advocate, Aral Reading Program Tutor</div>
+                            </div>
+                        </div>
+
+                    </td>
+                </tr>
+               
+                <tr>
+                  <td colspan="5" style="background-color: #B8CCE4;">
+                    <div style="font-weight: bold;padding:5px; font-size:12px;text-align:center">Term #</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td colspan='5'>
+                    <table id="mySched" style="width:100%">
+                  <tr>
+                    <tr>
+                    <td    align='center' class="font-12">Time</td>
+                    <td    align='center' class="font-12">Monday</td>           
+                    <td    align='center' class="font-12">Tuesday</td>
+                    <td    align='center' class="font-12">Wednesday</td>
+                    <td    align='center' class="font-12">Thursday</td>
+                    <td    align='center' class="font-12">Friday</td>
+                     <td    align='center' class="font-12">No. of Minutes per Week</td>
+                    
+                </tr>
+                    {{#mySched}}
+                <tr>
+               {{!-- <td   align='center'  class="font-12" >{{toTitleCase fullname}}</td> --}}
+                   <td   align='center' class="font-12">{{time}}</td>
+                  <td   align='center' class="font-12">{{Monday}}</td>
+                  <td   align='center' class="font-12">{{Tuesday}}</td>
+                  <td   align='center' class="font-12">{{Wednesday}}</td>
+                    <td   align='center' class="font-12">{{Thursday}}</td>
+                  <td   align='center' class="font-12">{{Friday}}</td>
+                   <td   align='center' class="font-12"></td>
+                </tr>
+                  {{/mySched}}
+                    </table>
+                </tr>
+                <tr class="font-12"> 
+                    <td colspan="5">
+                      <div style="display: flex; justify-content:space-around; margin-top:10px">
+                          <div>
+                              <div style="margin-bottom: 10px;">Checked by:</div>
+                              <div>ROCHIL T BANSAG</div>
+                              <div>SHS Academic Head</div>
+                          </div>
+                            <div>
+                              <div style="margin-bottom: 10px;">Recommending Approval:</div>
+                              <div>GABRIEL S. ALFONSO</div>
+                              <div>Principal II / Asst. to the Office of Principal</div>
+                          </div>
+                            <div>
+                              <div style="margin-bottom: 10px;">Approved by:</div>
+                              <div>MARIVENE P. ESPINOSA</div>
+                              <div>Principal IV</div>
+                          </div>
+                      </div>
+{{!--                       
+                      <div style="margin-top: 35px;">
+                        Prepared by:____________________
+                      </div> --}}
+                    </td>
+                </tr>
+             
+              </tbody>
+            </table>
+          </div>
+      </div>
+    </div>  
+    {{/each}}
+
+  </body>
+
+</html>

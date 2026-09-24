@@ -1,0 +1,383 @@
+<html>
+  <head>
+    <meta charset='UTF-8' />
+    <title>Class Record</title>
+    <style>
+      /* 1. Global Print configurations */
+      @page {
+        size: legal landscape;
+        margin: 0.25in;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        font-size: 10px;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* 2. CRITICAL: Separate the Form Layout block from the table engine */
+      .page-branding-container {
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 0;
+        width: 100%;
+        height: 100px;
+        margin-bottom: 10px;
+        /* Using standard block rendering so Chromium calculates height statically */
+        display: block;
+      }
+
+      img {
+        object-fit: cover;
+        width: 50%;
+        height: 50%;
+      }
+      .deped_parent_div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 200px; /* Or any width */
+        height: 90px;
+      }
+
+      .parent_div_img {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100px; /* Or any width */
+        height: 100px;
+      }
+
+      /* 3. Pure native table configurations */
+      .main-table {
+        width: 100%;
+        border-collapse: collapse;
+        display: table !important;
+      }
+
+      /* Force clean column headers to repeat on page breaks natively */
+      thead {
+        display: table-header-group !important;
+        font-size: 12px;
+      }
+
+      tbody {
+        display: table-row-group !important;
+        font-size: 12px;
+      }
+
+      tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      .main-table th,
+      .main-table td {
+        border: 1px solid #000;
+        padding: 2px;
+        text-align: center;
+        vertical-align: middle;
+      }
+
+      .header-field-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 5px;
+      }
+
+      .header-field-table td {
+        border: none !important;
+        padding: 2px;
+        font-size: 11px;
+      }
+
+      .input-box {
+        border: 1px solid black;
+        height: 14px;
+        width: 100%;
+        background-color: #fff;
+      }
+
+      .form-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin: 0 0 5px 0;
+        text-align: center;
+      }
+
+      /* 4. Custom script rule to cleanly cut sheets if you process multiple sections */
+      .page-break {
+        page-break-after: always;
+        break-after: page;
+      }
+
+      .left {
+        text-align: left;
+      }
+    </style>
+  </head>
+  <body>
+    {{#each this}}
+      <!-- THE SECRET: Keep the branding banner as a flat DOM block outside the <table> -->
+      <div class='page-branding-container'>
+        <div
+          style='display: flex;justify-content:space-around; align-items:center; '
+        >
+          <div>
+            <div class='parent_div_img'>
+              <img src='data:image/png;base64, {{edukasyon}}' alt='' />
+            </div>
+          </div>
+          <div>
+            <div style='width:900px;padding:10px'>
+              <div
+                style='text-align: center; font-size: 14px; font-weight:bold'
+              >Class Record</div>
+              <div style='display: flex; gap:5px; '>
+                <div style='width:70%;'>
+                  <div style='display: flex; gap:2px; font-size:10px;'>
+
+                    <div
+                      style='display: flex;align-items:center;justify-content:center; gap:2px; font-size:10px;width:100%; '
+                    >
+                      <div>REGION</div>
+                      <div
+                        style='padding:2px; border:2px solid black; width:50%;height:10px'
+                      ></div>
+                    </div>
+                    <div
+                      style='display: flex;align-items:center;justify-content:center; gap:2px; font-size:10px;width:100%; '
+                    >
+                      <div>DIVISION</div>
+                      <div
+                        style='padding:2px; border:2px solid black; width:80%;height:10px'
+                      ></div>
+                    </div>
+                  </div>
+                  <div style='display: flex; gap:2px; font-size:10px;'>
+
+                    <div
+                      style='display: flex;align-items:center; gap:0px; font-size:10px;width:100%;margin-top:5px '
+                    >
+                      <div style='width: 19%;'>SCHOOL NAME</div>
+                      <div
+                        style='padding:2px; border:2px solid black; width:100%;height:10px'
+                      ></div>
+                    </div>
+
+                  </div>
+                </div>
+                <div style='width: 30%;'>
+                  <div
+                    style='display: flex;align-items:center;justify-content:center; gap:2px; font-size:10px;width:100%; '
+                  >
+                    <div style='margin-left: 20px;'>SCHOOL ID</div>
+                    <div
+                      style='padding:2px; border:2px solid black; width:50%;height:10px'
+                    ></div>
+                  </div>
+                  <div
+                    style='display: flex;align-items:center;justify-content:center; gap:2px; font-size:10px;width:100%; margin-top:5px'
+                  >
+                    <div>SCHOOL YEAR</div>
+                    <div
+                      style='padding:2px; border:2px solid black; width:50%;height:10px'
+                    ></div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+          <div>
+            <div class='deped_parent_div'>
+              <img src='data:image/png;base64, {{deped}}' alt='' />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Start the dataset table directly below the info container -->
+      <table class='main-table'>
+        <thead>
+          <tr>
+            <th style='border:none' height='82' colspan='{{t_cols}}'></th>
+          </tr>
+          <tr>
+            <th
+              height='5'
+              colspan='{{t_cols}}'
+              style='background-color: #002060;'
+            ></th>
+          </tr>
+          <tr class='group-header' style='font-size: 10px;'>
+            <th rowspan='3'>TERM #</th>
+            <th colspan='{{t_cols}}' style='padding: 0; '>
+              <div style='display:flex;'>
+                <div style='width:20%;border:1px solid black'>
+                  <div style='display:flex;'>
+                    <div
+                      style='border:1px solid black;width:100%;text-align:start;padding:2px'
+                    >GRADE LEVEL</div>
+                    <div style='border:1px solid black;width:100%'></div>
+                  </div>
+                  <div style='display:flex;'>
+                    <div
+                      style='border:1px solid black;width:100%;text-align:start;padding:2px'
+                    >SECTION</div>
+                    <div style='border:1px solid black;width:100%'></div>
+                  </div>
+                </div>
+                <div style='width:40%;border:1px solid black'>
+                  <div style='display:flex;height:100%;'>
+                    <div
+                      style='border:1px solid black;width:50%; display:flex;align-items:center;padding:2px'
+                    >&nbsp;TEACHER</div>
+                    <div
+                      style='border:1px solid black;width:100%;display:flex;align-items:center'
+                    ></div>
+                  </div>
+                </div>
+                <div style='width:40%;border:1px solid black'>
+                  <div style='display:flex;height:100%;'>
+                    <div
+                      style='border:1px solid black;width:50%; display:flex;align-items:center;padding:2px'
+                    >&nbsp;SUBJECT</div>
+                    <div
+                      style='border:1px solid black;width:100%;display:flex;align-items:center'
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </th>
+          </tr>
+          <tr>
+            <th
+              style='font-size: 10px;'
+              colspan='{{writtenHeaders.length}}'
+            >WRITTEN WORKS ({{subject.writen_works}}%)</th>
+            <th
+              style='font-size: 10px;'
+              colspan='{{performanceHeaders.length}}'
+            >PERFORMANCE TASKS ({{subject.performance_task}}%)</th>
+            <th
+              style='font-size: 10px;'
+              colspan='{{quarterlyHeaders.length}}'
+            >EXAMINATION EX's</th>
+            <th style='font-size: 10px;' rowspan='3'>Initial Grade</th>
+            <th style='font-size: 10px;' rowspan='3'>Term Grade</th>
+            <th style='font-size: 10px;' rowspan='3'>Descriptor</th>
+          </tr>
+
+          <tr>
+
+            {{#each writtenHeaders}}
+              <th>{{desc}}</th>
+            {{/each}}
+
+            {{#each performanceHeaders}}
+              <th>{{desc}}</th>
+            {{/each}}
+
+            {{#each quarterlyHeaders}}
+              <th>{{desc}}</th>
+            {{/each}}
+          </tr>
+          <tr>
+            <td
+              style='font-family: 10px; font-style:italic;text-align:right'
+            >HIGHEST POSSIBLE SCORE</td>
+            {{#each writtenHeaders}}
+              <th>{{high_score}}</th>
+            {{/each}}
+
+            {{#each performanceHeaders}}
+              <th>{{high_score}}</th>
+            {{/each}}
+
+            {{#each quarterlyHeaders}}
+              <th>{{high_score}}</th>
+            {{/each}}
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr>
+            <td
+              colspan='{{t_cols}}'
+              style='background-color:#002060;color:white'
+            >LEARNER'S NAME</td>
+          </tr>
+          <tr>
+            <td colspan='{{t_cols}}' style='text-align: start; '><strong
+              >Male</strong></td>
+          </tr>
+          {{#if studentMale}}
+            {{#each studentMale}}
+              <tr>
+                <td style='text-align: left !important; '>{{name}}</td>
+
+                {{#each writtenWorks}}
+                  <td>{{this}}</td>
+                {{/each}}
+
+                {{#each performanceTasks}}
+                  <td>{{this}}</td>
+                {{/each}}
+
+                {{#each quarterlyAssessment}}
+                  <td>{{this}}</td>
+                {{/each}}
+
+                <td>{{initialGrade}}</td>
+                <td>{{quarterlyGrade}}</td>
+                <td></td>
+              </tr>
+            {{/each}}
+
+          {{else}}
+            <td colspan='{{t_cols}}' style='text-align: center;'><strong>No
+                Data!</strong></td>
+          {{/if}}
+
+          <tr>
+            <td colspan='{{t_cols}}' style='text-align: start; '>
+              <strong>Female</strong></td>
+          </tr>
+
+          {{#if studentFemale}}
+            {{#each studentFemale}}
+              <tr>
+                <td class='left'>{{name}}</td>
+
+                {{#each writtenWorks}}
+                  <td>{{this}}</td>
+                {{/each}}
+
+                {{#each performanceTasks}}
+                  <td>{{this}}</td>
+                {{/each}}
+
+                {{#each quarterlyAssessment}}
+                  <td>{{this}}</td>
+                {{/each}}
+
+                <td>{{initialGrade}}</td>
+                <td>{{quarterlyGrade}}</td>
+                <td></td>
+              </tr>
+            {{/each}}
+          {{else}}
+            <td colspan='100%' style='text-align: center;'><strong>No Data!</strong></td>
+          {{/if}}
+        </tbody>
+      </table>
+
+      <!-- Adds a clean system break only if iterating over multiple records -->
+      <div class='page-break'></div>
+    {{/each}}
+  </body>
+</html>
