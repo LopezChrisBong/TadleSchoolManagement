@@ -1,0 +1,282 @@
+<html lang='en'>
+
+  <head>
+    <meta charset='UTF-8' />
+    <meta http-equiv='X-UA-Compatible' content='IE=edge' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Document</title>
+    <style>
+      /**body { font-family: 'Liberation Sans'; }*/ .container{ width: 100%;
+      margin: 0 auto; } .header { position: fixed; top: 0px; left: 0px; right:
+      0px; height: 100px; } .footer { position: fixed; bottom: 0px; left: 0px;
+      right: 0px; height: 120px; } body { font-family: 'Arial' } table{ width:
+      100%; } table,th, td { page-break-inside: auto; } .strong { font-weight:
+      bold; } .bordered { border: 1px solid black; } .font-10 { font-size: 10px;
+      } .font-12 { font-size: 12px; } .font-14 {font-size: 14px; } .font-16 {
+      font-size: 16px; } .font-18 { font-size:18px; }.font-24 { font-size:24px;
+      } .extra-spacing-tr { height: 20px; } .header { height: 60px; }
+
+      tr { page-break-after: auto; }
+      .table-wrapper-row { page-break-inside: auto; }
+      .mystudentGrade tbody tr { page-break-inside: avoid; }
+
+      /* new: keep each quarter's table together where possible, and give
+         each quarter block a little breathing room from the previous one */
+      .quarter-block { page-break-inside: avoid; margin-top: 25px; }
+      .quarter-title { text-transform: uppercase; font-weight: bold; font-size: 13px; margin-bottom: 4px; }
+
+      thead {
+      display:table-header-group; } tfoot { display: table-footer-group; }
+      .to_title{ margin-top: 0px;}.to_title_div{ text-align: center; }
+      .to_content{page-break-inside: auto; margin-top: 120px; margin-left: 40px;
+      margin-right: 40px; } .to_number{margin-right: 100px;} .employee_table{
+      }.recommending_approval{ display: flex; justify-content: space-between; }
+      .underline{ border-bottom:1px solid black }
+      #eval_table tr td, #eval_table tr th{ padding: 8px; }
+      #eval_table{ page-break-after: always; }
+
+      #f_table th,#f_table td,#eval_table th,#eval_table td{ border: 1px solid black; }
+      #f_table,#eval_table, .mystudentGrade{ border-collapse: collapse; }
+      #eval_table{ border: 1px solid black; }
+      .mystudentGrade td{ border: 1px solid black; padding: 2px;width: 11.11%; align-content: center;}
+
+         img {
+        object-fit: cover;
+        width: 50%;
+        height: 50%;
+      }
+      .deped_parent_div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 200px;
+        height: 90px;
+      }
+
+      .parent_div_img {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+  </head>
+
+  <body>
+    {{#each this}}
+
+      <div class='container'>
+        <div class='header'>
+          <div
+              style='display: flex;justify-content:space-around; align-items:center; '
+            >
+              <div>
+                <div class='parent_div_img'>
+                  <img src='data:image/png;base64, {{deped_logo}}' alt='' />
+                </div>
+              </div>
+              <div>
+                <div style='padding:10px'>
+                  <div style='text-align: center; font-size: 12px;'>
+                    <div>Republic of the Philippines
+                      <br />
+                      Department of Education</div>
+                  </div>
+                  <div style='text-align: center; font-size: 12px'>
+                    <div>Region XI
+                      <br />
+                      <span
+                        style='font-weight: bold;text-transform:uppercase;'
+                      >Schools Division of Panabo City</span><br />
+                      <span style='font-size: 10px;'>Panabo City, Davao del
+                        Norte</span>
+                    </div>
+                  </div>
+
+                  <div
+                    style='text-align: center; font-size: 12px; font-weight:bold;margin-top:5px'
+                  >
+                    <div>SOUTHERN DAVAO NATIONAL HIGH SCHOOL
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+              <div>
+                <div class='parent_div_img'>
+                  <img src='data:image/png;base64, {{sd_logo}}' alt='' />
+                </div>
+              </div>
+          </div>
+        </div>
+        <div class='footer'>
+        </div>
+
+          <div style='width: 100%;'>
+            <table
+              style='margin:0 auto; width: 100%; page-break-inside:auto; table-layout:fixed; font-size:10px'
+            >
+              <thead>
+                <tr>
+                  <td colspan='2'>
+                    <div style='height: 110px;'></div>
+                  </td>
+                </tr>
+              </thead>
+              <tfoot>
+                <tr>
+                  <td colspan='2'>
+                    <div style='height: 80px;'></div>
+                  </td>
+                </tr>
+              </tfoot>
+
+              <tbody class="">
+                <tr>
+                    <td colspan='' >
+                        <tr class="strong" >
+                        <td class="font-14" style="padding-top:20px">School Year:&nbsp;<u>{{schoolYear}}</u></td>
+                        <td class="font-14" style="padding-top:20px"  align="center">Grade Level:&nbsp;<u>{{gradeLevel}}</u></td>
+                        {{#ifCond semester 'Junior High'}}
+                            {{else}}
+                        <td class="font-14" style="padding-top:20px" align="center">Semester:&nbsp;<u>{{semester}}</u></td>
+                        {{/ifCond}}
+                        </tr>
+
+                        <tr class="strong" >
+                        <td class="font-14" style="padding-top:20px;">Teacher:&nbsp;<u style="text-transform: uppercase;">{{roomData.name}}</u></td>
+                        <td class="font-14" style="padding-top:20px;" align="center">Section:&nbsp;<u style="text-transform: uppercase;">{{roomData.section_name}}</u></td>
+                        </tr>
+                    </td>
+                </tr>
+
+                {{! ============================================================
+                     NEW: loop over data1 (the groupByQuarter result). Each key
+                     is a quarter ("q1","q2","q3","q4","final") and its value is
+                     { male: [...], female: [...] }. One full table is rendered
+                     per quarter, reusing the same subject columns from
+                     data.subjects for each one.
+                     ============================================================ }}
+                {{#each data1}}
+                <tr class="table-wrapper-row quarter-block">
+                  <td colspan='4'>
+                    <div style="text-align: center;" class="quarter-title">
+                      {{#ifCond hasQ4 true}}
+                         {{@key}} SUMMARY OF GRADES</div>
+                      {{else}}
+                          {{#ifCond @key 'q1'}}
+                           TERM 1 SUMMARY OF GRADES
+                          {{/ifCond}}
+                           {{#ifCond @key 'q2'}}
+                           TERM 2 SUMMARY OF GRADES
+                          {{/ifCond}}
+                           {{#ifCond @key 'q3'}}
+                           TERM 3 SUMMARY OF GRADES
+                          {{/ifCond}}
+                         </div>
+                      {{/ifCond}}  
+                      
+                     
+                    <table class="mystudentGrade" border="1" style="table-layout: fixed; width: 100%; border-collapse: collapse; margin-top:5px; font-size:12px;">
+                      <thead>
+                        <tr>
+                          <th rowspan="2" >Name</th>
+
+                          {{#each ../data.subjects}}
+                          <th>{{this}}</th>
+                          {{/each}}
+
+                          <th rowspan="2">Final Average</th>
+                          <th rowspan="2">Action</th>
+                          <th rowspan="2" >Remarks</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td colspan="{{../t_cols}}" style="background-color: #00b0f0;color:white">Male</td>
+                        </tr>
+                        {{#if male.length}}
+                          {{#each male}}
+                            <tr>
+                              <td>{{name}}</td>
+
+                              {{#each ../../data.subjects}}
+                                <td align="center">{{lookup ../this this}}</td>
+                              {{/each}}
+
+                              <td align="center">{{final_avg}}</td>
+                              <td align="center">{{rounded_avg}}</td>
+                              <td align="center">
+                                 {{#ifCond final_avg null}}
+                                {{else}}
+                                  {{#ifCond status "Passed"}}
+                                  <span style="color: green;">Passed</span>
+                                  {{else}}
+                                  <span style="color: red;">Failed</span>
+                                  {{/ifCond}}
+                                {{/ifCond}}
+                              </td>
+                            </tr>
+                          {{/each}}
+                        {{else}}
+                          <tr>
+                            <td colspan="{{../t_cols}}">No data</td>
+                          </tr>
+                        {{/if}}
+
+                        <tr>
+                          <td colspan="{{../t_cols}}" style="background-color: #00b0f0;color:white">Female</td>
+                        </tr>
+                        {{#if female.length}}
+                          {{#each female}}
+                            <tr>
+                              <td>{{name}}</td>
+
+                              {{#each ../../data.subjects}}
+                                <td align="center">{{lookup ../this this}}</td>
+                              {{/each}}
+
+                              <td align="center">{{final_avg}}</td>
+                              <td align="center">{{rounded_avg}}</td>
+                              <td align="center">
+                                {{#ifCond final_avg null}}
+                                {{else}}
+                                  {{#ifCond status "Passed"}}
+                                  <span style="color: green;">Passed</span>
+                                  {{else}}
+                                  <span style="color: red;">Failed</span>
+                                  {{/ifCond}}
+                                {{/ifCond}}
+                                  
+                              </td>
+                            </tr>
+                          {{/each}}
+                        {{else}}
+                          <tr>
+                            <td colspan="{{../t_cols}}">No data</td>
+                          </tr>
+                        {{/if}}
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+                {{/each}}
+
+                <tr class="font-20">
+                    <td>
+                      <div style="margin-top: 35px;">
+                        Prepared by: <u>{{roomData.name}}</u>
+                      </div>
+                    </td>
+                </tr>
+
+              </tbody>
+            </table>
+          </div>
+      </div>
+    {{/each}}
+  </body>
+
+</html>
