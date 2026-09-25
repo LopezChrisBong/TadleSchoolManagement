@@ -32,6 +32,7 @@ import {
 import { join } from 'path';
 import { log } from 'console';
 import { RoomsSectionService } from 'src/rooms-section/rooms-section.service';
+import { groupByQuarter } from './global-function';
 // import { scale } from 'pdfkit';
 // import {
 //   computeTotal,
@@ -1462,6 +1463,7 @@ export class PdfGeneratorService {
         'SQF.quarter as quarter',
         'SQF.semester as semester',
         'S.subject_title as subject_title',
+        'ES.sex as sex',
       ])
       .leftJoin(StudentList, 'SL', 'ES.id = SL.studentId')
       .leftJoin(StudentQuarterFinalGrade, 'SQF', 'SQF.studentID = ES.id')
@@ -1484,7 +1486,40 @@ export class PdfGeneratorService {
       newrawData = await this.transformDataV2(rawData);
     }
 
-    console.log(newrawData.students);
+    let tmp_students = newrawData.students;
+    let subjects = newrawData.subjects;
+
+    let newD = groupByQuarter(tmp_students);
+    // console.log('new D', newD.q2);
+
+    // for (let i = 0; i < tmp_students.length; i++) {
+    //   let t_grade = 0;
+    //   for (let j = 0; j < subjects.length; j++) {
+    //     let subject_grade = tmp_students[i][subjects[j]];
+
+    //     t_grade += subject_grade?.final ? subject_grade.final : 0;
+    //   }
+    //   let avg = t_grade / subjects.length;
+    //   let rounded = Math.round(parseFloat(avg.toFixed(3)));
+    //   if (parseFloat(rounded.toFixed(3)) >= 75.0) {
+    //     newrawData.students[i].status = 'Passed';
+    //   } else {
+    //     newrawData.students[i].status = 'Failed';
+    //   }
+    //   Object.assign(newrawData.students[i], {
+    //     final_avg: avg.toFixed(3),
+    //     rounded: rounded.toFixed(3),
+    //   });
+    // }
+
+    // let male_group = newrawData.students.filter(
+    //   (data) => data.sex.toLowerCase() == 'male',
+    // );
+    // let female_group = newrawData.students.filter(
+    //   (data) => data.sex.toLowerCase() == 'female',
+    // );
+    // console.log('MALE', male_group);
+    // console.log('FEMALE', female_group);
 
     let roomQuery = this.dataSource.manager
       .createQueryBuilder(RoomsSection, 'RS')
@@ -1518,19 +1553,40 @@ export class PdfGeneratorService {
       process.env.FILE_PATH + 'static/img/footer.png',
     );
 
+    let deped_logo = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/edukasyon.png',
+    );
+    let sd_logo = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/southern logo.jpg',
+    );
+
     const data = [
       {
         header_img: this.base64_encode(headerImg, 'headerfooter'),
         footer_img: this.base64_encode(footerImg, 'headerfooter'),
+        deped_logo: this.base64_encode(deped_logo, 'headerfooter'),
+        sd_logo: this.base64_encode(sd_logo, 'headerfooter'),
         data: newrawData,
+        // male_group,
+        // female_group,
         roomData: roomData[0],
         gradeLevel: gradeLevel,
         semester: semester,
         colapse: colapse,
         schoolYear: schoolYear.school_year,
+        t_cols: subjects.length + 4,
+        data1: newD,
+        hasQ4: Object.keys(newD).includes('q4'),
+        // hasFemale: female_group.length > 0,
+        // hasMale: male_group.length > 0,
+
         // name:gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12'? arr[0].name: arr.name,
       },
     ];
+
+    // console.log(newrawData);
     try {
       const browser = await puppeteer.launch({
         headless: 'new',
@@ -1544,9 +1600,11 @@ export class PdfGeneratorService {
         gradeLevel == 'Grade 11' ||
         gradeLevel == 'Grade 12'
       ) {
+        console.log('here');
         content = await this.compile('student-all-grade', data);
       } else {
-        content = await this.compile('student-all-gradev2', data);
+        console.log('here1');
+        content = await this.compile('student-all-gradev2_1', data);
       }
 
       await page.setContent(content);
@@ -1578,7 +1636,7 @@ export class PdfGeneratorService {
     const subjectsSet = new Set<string>();
 
     rawData.forEach((row) => {
-      const { id, name, subject_title, final_grade, quarter } = row;
+      const { id, name, subject_title, final_grade, quarter, sex } = row;
 
       if (!students[id]) {
         students[id] = {
@@ -1586,6 +1644,7 @@ export class PdfGeneratorService {
           name,
           finalAverage: 0,
           status: '',
+          sex,
         };
       }
 
@@ -1650,7 +1709,7 @@ export class PdfGeneratorService {
     const subjectsSet = new Set<string>();
 
     rawData.forEach((row) => {
-      const { id, name, subject_title, final_grade, quarter } = row;
+      const { id, name, subject_title, final_grade, quarter, sex } = row;
 
       if (!students[id]) {
         students[id] = {
@@ -1658,6 +1717,7 @@ export class PdfGeneratorService {
           name,
           finalAverage: 0,
           status: '',
+          sex,
         };
       }
 
