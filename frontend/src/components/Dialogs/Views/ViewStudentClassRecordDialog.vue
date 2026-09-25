@@ -865,7 +865,9 @@ export default {
             ? (this.semester = 'Senior High')
             : (this.semester = 'Junior High');
           this.subSubjectList =
-            data.sub_subject != null ? JSON.parse(data.sub_subject) : [];
+            data.sub_subject != null && this.syType == 0
+              ? JSON.parse(data.sub_subject)
+              : JSON.parse(data.sub_subject_term);
 
           this.sub_subject =
             data.sub_subject != null ? this.subSubjectList[0].id : null;
@@ -1212,6 +1214,7 @@ export default {
     },
 
     getTransformData(data) {
+      console.log('TransForm', data);
       const transformed = Object.values(
         data.reduce((acc, curr) => {
           const {
@@ -1249,8 +1252,14 @@ export default {
               initial_grade,
               transmuted_grade,
             };
+          } else if (
+            ['Music & Arts', 'P.E. & Health'].includes(subject_title)
+          ) {
+            acc[studentID].MAPEH.sub_subjects[subject_title] = {
+              initial_grade,
+              transmuted_grade,
+            };
           }
-
           return acc;
         }, {}),
       );
@@ -1258,6 +1267,7 @@ export default {
       return transformed;
     },
     confirmSubmitGradeToParents() {
+      console.log(this.sub_subject);
       let userId = this.$store.state.user.id;
       let data = {
         data:
@@ -1270,6 +1280,7 @@ export default {
         roomID: this.data.roomId,
         school_yearID: this.filter,
         teacherID: userId,
+        sub_subject: this.sub_subject,
       };
       this.axiosCall('/rooms-section/quarterFinalGrade', 'POST', data).then(
         (res) => {

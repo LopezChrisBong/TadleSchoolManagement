@@ -200,11 +200,16 @@ export class RoomsSectionService {
   async quarterFinalGrade(
     createStudentQuarterFinalGradeDto: CreateStudentQuarterFinalGradeDto,
   ) {
-    let data = JSON.parse(createStudentQuarterFinalGradeDto.data);
-    //     console.log(data[0].studentLRN,data[0].studentID)
-    //  let newData = data[0].MAPEH ? 'Naay Data':'Walay Data'
-    //  console.log( data[0].MAPEH.initial_grade,data[0].MAPEH.transmuted_grade)
     try {
+      let data = JSON.parse(createStudentQuarterFinalGradeDto.data);
+      // console.log(data[0].studentLRN, data[0].studentID);
+      // let newData = data[0].MAPEH ? 'Naay Data' : 'Walay Data';
+      // console.log(
+      //   data[0].MAPEH.initial_grade,
+      //   data[0].MAPEH.transmuted_grade,
+      //   newData,
+      //   data[0].MAPEH,
+      // );
       for (let i = 0; i < data.length; i++) {
         let saveData = this.dataSource.manager.create(
           StudentQuarterFinalGrade,
@@ -1041,7 +1046,7 @@ export class RoomsSectionService {
     subjectID: number,
     sub_subject: string,
   ) {
-    console.log(sub_subject);
+    console.log('sub_subject,subjectID', sub_subject, subjectID);
     if (sub_subject != 'noData') {
       const result = await this.dataSource.query(
         `CALL getquarterlygrades_mapeh(?, ?, ?, ?, ?)`,
@@ -1051,25 +1056,25 @@ export class RoomsSectionService {
 
       for (let i = 0; i < grades.length; i++) {
         // 1. Check if there is already a submitted grade
-        const submitted = await this.dataSource.query(
-          `SELECT transmuted_grade, initial_grade
-       FROM student_quarter_final_grade 
-       WHERE roomID = ? 
-         AND school_yearID = ? 
-         AND studentID = ? 
-         AND subjectID = ? 
-         AND quarter = ? 
-         AND semester = ? 
-       LIMIT 1`,
-          [
-            roomID,
-            schoolyearID,
-            grades[i].studentID,
-            subjectID,
-            quarter,
-            semester,
-          ],
-        );
+        //   const submitted = await this.dataSource.query(
+        //     `SELECT transmuted_grade, initial_grade
+        //  FROM student_quarter_final_grade
+        //  WHERE roomID = ?
+        //    AND school_yearID = ?
+        //    AND studentID = ?
+        //    AND subjectID = ?
+        //    AND quarter = ?
+        //    AND semester = ?
+        //  LIMIT 1`,
+        //     [
+        //       roomID,
+        //       schoolyearID,
+        //       grades[i].studentID,
+        //       subjectID,
+        //       quarter,
+        //       semester,
+        //     ],
+        //   );
         // if (submitted.length > 0) {
         //   const init = submitted[0].initial_grade;
         //   const trans = submitted[0].transmuted_grade;
@@ -1091,7 +1096,7 @@ export class RoomsSectionService {
         }
         // }
       }
-      // console.log(grades);
+      console.log(grades);
       return grades;
     } else {
       const result = await this.dataSource.query(

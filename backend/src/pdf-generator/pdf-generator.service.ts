@@ -2171,14 +2171,14 @@ export class PdfGeneratorService {
       gradeLevel == 'Grade 11' ||
       gradeLevel == 'Grade 12'
     ) {
-      newData = await this.transformGrades(rawData, level);
+      newData = await this.transformGrades(rawData, level, schoolYear.syType);
     } else {
-      newData = await this.transformGradesV2(rawData, level);
+      newData = await this.transformGradesV2(rawData, level, schoolYear.syType);
     }
     let depedOfficials = await this.dataSource.manager
       .createQueryBuilder(DepEdPersonnel, 'dp')
       .getMany();
-    // console.log(newData[0])
+    console.log('schoolForm10', newData[0]);
     let curDate = new Date();
 
     let headerImg = join(
@@ -2238,7 +2238,7 @@ export class PdfGeneratorService {
     }
   }
 
-  async transformGrades(data, level: 'Senior High' | 'Junior High') {
+  async transformGrades(data, level: 'Senior High' | 'Junior High', syType) {
     const students: Record<string, any> = {};
 
     const average = (values: (number | null)[]): number | null => {
@@ -2472,7 +2472,7 @@ export class PdfGeneratorService {
     return Object.values(students);
   }
 
-  async transformGradesV2(data, level: 'Senior High' | 'Junior High') {
+  async transformGradesV2(data, level: 'Senior High' | 'Junior High', syType) {
     const students: Record<string, any> = {};
 
     const average = (values: (number | null)[]): number | null => {
@@ -2590,8 +2590,8 @@ export class PdfGeneratorService {
             };
             students[d.id].juniorHigh.push(mapeh);
           }
-
-          // ✅ Parse JSON from DB
+          console.log(students);
+          // Parse JSON from DB
           let subs: any = {};
           try {
             subs = JSON.parse(d.sub_subject);
@@ -2654,7 +2654,7 @@ export class PdfGeneratorService {
           }
         }
 
-        // 🔹 Normal subjects
+        // Normal subjects
         else {
           let subj = students[d.id].juniorHigh.find(
             (s) => s.subject === d.subject_title,
@@ -2769,6 +2769,7 @@ export class PdfGeneratorService {
     const seen = new Map();
     const seen1 = new Map();
     const seen2 = new Map();
+
     combineData.writenWorks.forEach((w) => {
       const desc =
         w.SG_title && w.SG_title.trim() !== '' ? w.SG_title : w.quiz_label;
@@ -2813,6 +2814,19 @@ export class PdfGeneratorService {
     //   `WS (${subject.performance_task}%)`,
     // ];
 
+    // const quarterlyHeaders = [
+    //   ...new Set(
+    //     combineData.quarterlyAssessment.map((q) =>
+    //       q.SG_title && q.SG_title.trim() !== ''
+    //         ? q.SG_title + ' (' + q.SG_highest_posible_score + ')'
+    //         : q.quiz_label + ' (' + q.SG_highest_posible_score + ')',
+    //     ),
+    //   ),
+    //   'Total',
+    //   'PS',
+    //   `WS (${subject.quarter_assessment}%)`,
+    // ];
+
     combineData.performanceTask.forEach((p) => {
       const desc =
         p.SG_title && p.SG_title.trim() !== '' ? p.SG_title : p.quiz_label;
@@ -2828,21 +2842,8 @@ export class PdfGeneratorService {
       ...seen1.values(),
       { desc: 'Total', high_score: '' },
       { desc: 'PS', high_score: '' },
-      { desc: `WS (${subject.writen_works}%)`, high_score: '' },
+      { desc: `WS (${subject.performance_task}%)`, high_score: '' },
     ];
-
-    // const quarterlyHeaders = [
-    //   ...new Set(
-    //     combineData.quarterlyAssessment.map((q) =>
-    //       q.SG_title && q.SG_title.trim() !== ''
-    //         ? q.SG_title + ' (' + q.SG_highest_posible_score + ')'
-    //         : q.quiz_label + ' (' + q.SG_highest_posible_score + ')',
-    //     ),
-    //   ),
-    //   'Total',
-    //   'PS',
-    //   `WS (${subject.quarter_assessment}%)`,
-    // ];
 
     combineData.quarterlyAssessment.forEach((q) => {
       const desc =
@@ -2859,10 +2860,12 @@ export class PdfGeneratorService {
       ...seen2.values(),
       { desc: 'Total', high_score: '' },
       { desc: 'PS', high_score: '' },
-      { desc: `WS (${subject.writen_works}%)`, high_score: '' },
+      { desc: `WS (${subject.quarter_assessment}%)`, high_score: '' },
     ];
 
     const studentsMap = new Map<number, any>();
+
+    console.log(writtenHeaders, performanceHeaders, quarterlyHeaders);
 
     function initStudent(id: number, name: string, sex: string) {
       studentsMap.set(id, {
@@ -2875,58 +2878,115 @@ export class PdfGeneratorService {
       });
     }
 
+    // for (const ww of combineData.writenWorks) {
+    //   if (!studentsMap.has(ww.SG_studentID)) {
+    //     initStudent(ww.SG_studentID, ww.name, ww.SG_sex);
+    //   }
+
+    //   const label =
+    //     (ww.SG_title && ww.SG_title.trim() !== ''
+    //       ? ww.SG_title
+    //       : ww.quiz_label) +
+    //     ' (' +
+    //     ww.SG_highest_posible_score +
+    //     ')';
+    //   const index = writtenHeaders.indexOf(label);
+    //   studentsMap.get(ww.SG_studentID).writtenWorks[index] = ww.SG_quarterScore;
+    // }
     for (const ww of combineData.writenWorks) {
       if (!studentsMap.has(ww.SG_studentID)) {
         initStudent(ww.SG_studentID, ww.name, ww.SG_sex);
       }
 
-      // const label =
-      //   ww.SG_title && ww.SG_title.trim() !== '' ? ww.SG_title : ww.quiz_label;
-      const label =
-        (ww.SG_title && ww.SG_title.trim() !== ''
-          ? ww.SG_title
-          : ww.quiz_label) +
-        ' (' +
-        ww.SG_highest_posible_score +
-        ')';
-      const index = writtenHeaders.indexOf(label);
-      studentsMap.get(ww.SG_studentID).writtenWorks[index] = ww.SG_quarterScore;
+      const index = writtenHeaders.findIndex(
+        (header) =>
+          header.desc ===
+            (ww.SG_title && ww.SG_title.trim() !== ''
+              ? ww.SG_title
+              : ww.quiz_label) &&
+          Number(header.high_score) === Number(ww.SG_highest_posible_score),
+      );
+
+      if (index !== -1) {
+        studentsMap.get(ww.SG_studentID).writtenWorks[index] =
+          ww.SG_quarterScore;
+      }
     }
+
+    // for (const pt of combineData.performanceTask) {
+    //   if (!studentsMap.has(pt.SG_studentID)) {
+    //     initStudent(pt.SG_studentID, pt.name, pt.SG_sex);
+    //   }
+    //   // const label =
+    //   //   pt.SG_title && pt.SG_title.trim() !== '' ? pt.SG_title : pt.quiz_label;
+    //   const label =
+    //     (pt.SG_title && pt.SG_title.trim() !== ''
+    //       ? pt.SG_title
+    //       : pt.quiz_label) +
+    //     ' (' +
+    //     pt.SG_highest_posible_score +
+    //     ')';
+    //   const index = performanceHeaders.indexOf(label);
+    //   studentsMap.get(pt.SG_studentID).performanceTasks[index] =
+    //     pt.SG_quarterScore;
+    // }
 
     for (const pt of combineData.performanceTask) {
       if (!studentsMap.has(pt.SG_studentID)) {
         initStudent(pt.SG_studentID, pt.name, pt.SG_sex);
       }
-      // const label =
-      //   pt.SG_title && pt.SG_title.trim() !== '' ? pt.SG_title : pt.quiz_label;
-      const label =
-        (pt.SG_title && pt.SG_title.trim() !== ''
-          ? pt.SG_title
-          : pt.quiz_label) +
-        ' (' +
-        pt.SG_highest_posible_score +
-        ')';
-      const index = performanceHeaders.indexOf(label);
-      studentsMap.get(pt.SG_studentID).performanceTasks[index] =
-        pt.SG_quarterScore;
+
+      const index = performanceHeaders.findIndex(
+        (header) =>
+          header.desc ===
+            (pt.SG_title && pt.SG_title.trim() !== ''
+              ? pt.SG_title
+              : pt.quiz_label) &&
+          Number(header.high_score) === Number(pt.SG_highest_posible_score),
+      );
+
+      if (index !== -1) {
+        studentsMap.get(pt.SG_studentID).performanceTasks[index] =
+          pt.SG_quarterScore;
+      }
     }
+
+    // for (const qa of combineData.quarterlyAssessment) {
+    //   if (!studentsMap.has(qa.SG_studentID)) {
+    //     initStudent(qa.SG_studentID, qa.name, qa.SG_sex);
+    //   }
+    //   // const label =
+    //   //   qa.SG_title && qa.SG_title.trim() !== '' ? qa.SG_title : qa.quiz_label;
+    //   const label =
+    //     (qa.SG_title && qa.SG_title.trim() !== ''
+    //       ? qa.SG_title
+    //       : qa.quiz_label) +
+    //     ' (' +
+    //     qa.SG_highest_posible_score +
+    //     ')';
+    //   const index = quarterlyHeaders.indexOf(label);
+    //   studentsMap.get(qa.SG_studentID).quarterlyAssessment[index] =
+    //     qa.SG_quarterScore;
+    // }
 
     for (const qa of combineData.quarterlyAssessment) {
       if (!studentsMap.has(qa.SG_studentID)) {
         initStudent(qa.SG_studentID, qa.name, qa.SG_sex);
       }
-      // const label =
-      //   qa.SG_title && qa.SG_title.trim() !== '' ? qa.SG_title : qa.quiz_label;
-      const label =
-        (qa.SG_title && qa.SG_title.trim() !== ''
-          ? qa.SG_title
-          : qa.quiz_label) +
-        ' (' +
-        qa.SG_highest_posible_score +
-        ')';
-      const index = quarterlyHeaders.indexOf(label);
-      studentsMap.get(qa.SG_studentID).quarterlyAssessment[index] =
-        qa.SG_quarterScore;
+
+      const index = quarterlyHeaders.findIndex(
+        (header) =>
+          header.desc ===
+            (qa.SG_title && qa.SG_title.trim() !== ''
+              ? qa.SG_title
+              : qa.quiz_label) &&
+          Number(header.high_score) === Number(qa.SG_highest_posible_score),
+      );
+
+      if (index !== -1) {
+        studentsMap.get(qa.SG_studentID).quarterlyAssessment[index] =
+          qa.SG_quarterScore;
+      }
     }
 
     // Grades
@@ -2946,7 +3006,13 @@ export class PdfGeneratorService {
       }
     }
 
-    console.log('combineData.writenWorks', combineData.writenWorks, students);
+    // console.log('combineData.writenWorks', combineData.writenWorks);
+    // console.log('combineData.performanceTask', combineData.performanceTask);
+    // console.log(
+    //   'combineData.quarterlyAssessment',
+    //   combineData.quarterlyAssessment,
+    // );
+    console.log(students);
 
     for (const student of students) {
       // ---------- WRITTEN WORKS ----------
@@ -3035,7 +3101,17 @@ export class PdfGeneratorService {
             : 0;
       }
     }
-
+    let studentMale = [];
+    let studentFemale = [];
+    for (let i = 0; i < students.length; i++) {
+      if (students[i].sex == 'Male') {
+        studentMale.push(students[i]);
+      } else {
+        studentFemale.push(students[i]);
+      }
+    }
+    // console.log('studentMale', studentMale);
+    // console.log('studentFemale', studentFemale);
     let schoolYear = await this.dataSource.manager
       .createQueryBuilder(SchoolYear, 'SY')
       .select([
@@ -3067,16 +3143,6 @@ export class PdfGeneratorService {
         .leftJoin(AddTracks, 'track', 'track.id = strand.trackId')
         .where('strand.id = :roomStrand', { roomStrand: roomData.strandId })
         .getRawOne();
-    }
-
-    let studentMale = [];
-    let studentFemale = [];
-    for (let i = 0; i < students.length; i++) {
-      if (students[i].sex == 'Male') {
-        studentMale.push(students[i]);
-      } else {
-        studentFemale.push(students[i]);
-      }
     }
 
     let curDate = new Date();
@@ -3263,10 +3329,10 @@ export class PdfGeneratorService {
     });
 
     const performanceHeaders = [
-      ...seen.values(),
+      ...seen1.values(),
       { desc: 'Total', high_score: '' },
       { desc: 'PS', high_score: '' },
-      { desc: `WS (${subject.writen_works}%)`, high_score: '' },
+      { desc: `WS (${subject.performance_task}%)`, high_score: '' },
     ];
 
     // const performanceHeaders = [
@@ -3294,12 +3360,13 @@ export class PdfGeneratorService {
     });
 
     const quarterlyHeaders = [
-      ...seen.values(),
+      ...seen2.values(),
       { desc: 'Total', high_score: '' },
       { desc: 'PS', high_score: '' },
-      { desc: `WS (${subject.writen_works}%)`, high_score: '' },
+      { desc: `WS (${subject.quarter_assessment}%)`, high_score: '' },
     ];
 
+    console.log(writtenHeaders, performanceHeaders, quarterlyHeaders);
     // const quarterlyHeaders = [
     //   ...new Set(
     //     combineData.quarterlyAssessment.map((q) =>
@@ -3326,60 +3393,117 @@ export class PdfGeneratorService {
       });
     }
 
+    // for (const ww of combineData.writenWorks) {
+    //   if (!studentsMap.has(ww.SG_studentID)) {
+    //     initStudent(ww.SG_studentID, ww.name, ww.SG_sex);
+    //   }
+
+    //   // const label =
+    //   //   ww.SG_title && ww.SG_title.trim() !== '' ? ww.SG_title : ww.quiz_label;
+    //   const label =
+    //     (ww.SG_title && ww.SG_title.trim() !== ''
+    //       ? ww.SG_title
+    //       : ww.quiz_label) +
+    //     ' (' +
+    //     ww.SG_highest_posible_score +
+    //     ')';
+    //   const index = writtenHeaders.indexOf(label);
+    //   studentsMap.get(ww.SG_studentID).writtenWorks[index] = ww.SG_quarterScore;
+    // }
     for (const ww of combineData.writenWorks) {
       if (!studentsMap.has(ww.SG_studentID)) {
         initStudent(ww.SG_studentID, ww.name, ww.SG_sex);
       }
 
-      // const label =
-      //   ww.SG_title && ww.SG_title.trim() !== '' ? ww.SG_title : ww.quiz_label;
-      const label =
-        (ww.SG_title && ww.SG_title.trim() !== ''
-          ? ww.SG_title
-          : ww.quiz_label) +
-        ' (' +
-        ww.SG_highest_posible_score +
-        ')';
-      const index = writtenHeaders.indexOf(label);
-      studentsMap.get(ww.SG_studentID).writtenWorks[index] = ww.SG_quarterScore;
+      const index = writtenHeaders.findIndex(
+        (header) =>
+          header.desc ===
+            (ww.SG_title && ww.SG_title.trim() !== ''
+              ? ww.SG_title
+              : ww.quiz_label) &&
+          Number(header.high_score) === Number(ww.SG_highest_posible_score),
+      );
+
+      if (index !== -1) {
+        studentsMap.get(ww.SG_studentID).writtenWorks[index] =
+          ww.SG_quarterScore;
+      }
     }
 
+    // for (const pt of combineData.performanceTask) {
+    //   if (!studentsMap.has(pt.SG_studentID)) {
+    //     initStudent(pt.SG_studentID, pt.name, pt.SG_sex);
+    //   }
+    //   // const label =
+    //   //   pt.SG_title && pt.SG_title.trim() !== '' ? pt.SG_title : pt.quiz_label;
+    //   const label =
+    //     (pt.SG_title && pt.SG_title.trim() !== ''
+    //       ? pt.SG_title
+    //       : pt.quiz_label) +
+    //     ' (' +
+    //     pt.SG_highest_posible_score +
+    //     ')';
+    //   const index = performanceHeaders.indexOf(label);
+    //   studentsMap.get(pt.SG_studentID).performanceTasks[index] =
+    //     pt.SG_quarterScore;
+    // }
     for (const pt of combineData.performanceTask) {
       if (!studentsMap.has(pt.SG_studentID)) {
         initStudent(pt.SG_studentID, pt.name, pt.SG_sex);
       }
-      // const label =
-      //   pt.SG_title && pt.SG_title.trim() !== '' ? pt.SG_title : pt.quiz_label;
-      const label =
-        (pt.SG_title && pt.SG_title.trim() !== ''
-          ? pt.SG_title
-          : pt.quiz_label) +
-        ' (' +
-        pt.SG_highest_posible_score +
-        ')';
-      const index = performanceHeaders.indexOf(label);
-      studentsMap.get(pt.SG_studentID).performanceTasks[index] =
-        pt.SG_quarterScore;
+
+      const index = performanceHeaders.findIndex(
+        (header) =>
+          header.desc ===
+            (pt.SG_title && pt.SG_title.trim() !== ''
+              ? pt.SG_title
+              : pt.quiz_label) &&
+          Number(header.high_score) === Number(pt.SG_highest_posible_score),
+      );
+
+      if (index !== -1) {
+        studentsMap.get(pt.SG_studentID).performanceTasks[index] =
+          pt.SG_quarterScore;
+      }
     }
 
+    // for (const qa of combineData.quarterlyAssessment) {
+    //   if (!studentsMap.has(qa.SG_studentID)) {
+    //     initStudent(qa.SG_studentID, qa.name, qa.SG_sex);
+    //   }
+    //   // const label =
+    //   //   qa.SG_title && qa.SG_title.trim() !== '' ? qa.SG_title : qa.quiz_label;
+    //   const label =
+    //     (qa.SG_title && qa.SG_title.trim() !== ''
+    //       ? qa.SG_title
+    //       : qa.quiz_label) +
+    //     ' (' +
+    //     qa.SG_highest_posible_score +
+    //     ')';
+    //   const index = quarterlyHeaders.indexOf(label);
+    //   studentsMap.get(qa.SG_studentID).quarterlyAssessment[index] =
+    //     qa.SG_quarterScore;
+    // }
     for (const qa of combineData.quarterlyAssessment) {
       if (!studentsMap.has(qa.SG_studentID)) {
         initStudent(qa.SG_studentID, qa.name, qa.SG_sex);
       }
-      // const label =
-      //   qa.SG_title && qa.SG_title.trim() !== '' ? qa.SG_title : qa.quiz_label;
-      const label =
-        (qa.SG_title && qa.SG_title.trim() !== ''
-          ? qa.SG_title
-          : qa.quiz_label) +
-        ' (' +
-        qa.SG_highest_posible_score +
-        ')';
-      const index = quarterlyHeaders.indexOf(label);
-      studentsMap.get(qa.SG_studentID).quarterlyAssessment[index] =
-        qa.SG_quarterScore;
-    }
 
+      const index = quarterlyHeaders.findIndex(
+        (header) =>
+          header.desc ===
+            (qa.SG_title && qa.SG_title.trim() !== ''
+              ? qa.SG_title
+              : qa.quiz_label) &&
+          Number(header.high_score) === Number(qa.SG_highest_posible_score),
+      );
+
+      if (index !== -1) {
+        studentsMap.get(qa.SG_studentID).quarterlyAssessment[index] =
+          qa.SG_quarterScore;
+      }
+    }
+    console.log(combineData.generateGrade);
     // Grades
     for (const g of combineData.generateGrade) {
       const student = studentsMap.get(Number(g.studentID));
@@ -3477,6 +3601,17 @@ export class PdfGeneratorService {
       }
     }
 
+    let studentMale = [];
+    let studentFemale = [];
+    for (let i = 0; i < students.length; i++) {
+      if (students[i].sex == 'Male') {
+        studentMale.push(students[i]);
+      } else {
+        studentFemale.push(students[i]);
+      }
+    }
+    console.log(studentMale);
+
     let schoolYear = await this.dataSource.manager
       .createQueryBuilder(SchoolYear, 'SY')
       .select([
@@ -3496,15 +3631,6 @@ export class PdfGeneratorService {
       .where('rs.id = :roomID', { roomID })
       .getOne();
 
-    let studentMale = [];
-    let studentFemale = [];
-    for (let i = 0; i < students.length; i++) {
-      if (students[i].sex == 'Male') {
-        studentMale.push(students[i]);
-      } else {
-        studentFemale.push(students[i]);
-      }
-    }
     let curDate = new Date();
     let edukasyon = join(
       process.cwd(),
@@ -3533,9 +3659,13 @@ export class PdfGeneratorService {
         roomData,
         sub_subject:
           sub_subject == 1
-            ? 'Music'
+            ? schoolYear.syType == 0
+              ? 'Music'
+              : 'Music & Arts'
             : sub_subject == 2
-              ? 'Art'
+              ? schoolYear.syType == 0
+                ? 'Art'
+                : 'P.E. & Health'
               : sub_subject == 3
                 ? 'Physical Education'
                 : sub_subject == 4
@@ -3543,7 +3673,7 @@ export class PdfGeneratorService {
                   : '',
         curDate: this.formatDate(curDate),
         t_cols:
-          3 +
+          4 +
           writtenHeaders.length +
           performanceHeaders.length +
           performanceHeaders.length,
