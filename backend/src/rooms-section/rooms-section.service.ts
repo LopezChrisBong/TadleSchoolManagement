@@ -745,10 +745,10 @@ export class RoomsSectionService {
       `
     SELECT DISTINCT attendanceDate
     FROM student_attendance
-    WHERE roomID = ? AND subjectID = ?
+    WHERE roomID = ? AND subjectID = ? AND school_yearID = ?
     ORDER BY attendanceDate
     `,
-      [roomID, subjectID],
+      [roomID, subjectID, filter],
     );
 
     if (!dates.length) {

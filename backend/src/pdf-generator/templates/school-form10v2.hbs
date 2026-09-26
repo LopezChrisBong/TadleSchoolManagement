@@ -140,47 +140,60 @@
                 </tr>
                 
                 {{#ifCond ../level 'Senior High'}}
-                <tr style="background-color: rgb(150, 149, 149);">
-                    <td colspan="6" align="center" class="font-10 strong">SCHOLASTIC RECORD</td>
-                </tr>
+                                </tr>
                 <tr>
-                    <td colspan="2"  class="font-10 strong">SCHOOL: <u>SOUTHERN DAVAO NATIONAL HIGH SCHOOL</u></td>
-                    <td align="center" class="font-10 strong">SCHOOL ID: <u>316401</u></td>
-                    <td align="center" class="font-10 strong">GRADE LEVEL: <u>{{../roomData.grade_level}}</u> </td>
-                    <td align="center" class="font-10 strong">SY: <u>{{../schoolYear.school_year}}</u></td>
-                    <td align="center" class="font-10 strong">SEM: <u>1ST</u></td>
+                    <td colspan="3"  class="font-10 strong">SCHOOL:SOUTHERN DAVAO NATIONAL HIGH SCHOOL</td>
+                    <td align="center" class="font-10 strong">SCHOOL ID:316401</td>
+                    <td align="center" class="font-10 strong">GRADE LEVEL:{{../roomData.grade_level}}</td>
+                    <td align="center" class="font-10 strong">SY:{{../schoolYear.school_year}}</td>
+                    {{!-- <td align="center" class="font-10 strong">SEM:</td> --}}
                 </tr>
-                <tr>
-                    <td colspan="3" class="font-10 strong">TRACK/STRAND: <u>{{../roomData.tracks_name}}/{{../roomData.strand_name}}</u></td>
-                    <td colspan="3" class="font-10 strong">SECTION: <u>{{../roomData.room_section}}</u></td>
-                </tr>
+              
                 <tr>
                   <td colspan='6'>
                    <table id="mySched" style="width:100%">
                         <thead>
-                       <tr>
-                       <th rowspan="2" class="font-10" style="width: 20%;">Indicate if Subjects is CORE, APPLIED, or SPECIALIZED</th>
-                        <th rowspan="2" class="font-10" style="width: 50%;text-transform:uppercase">Subject</th>
-                        <th colspan="2" class="font-10"style="width: 10%;text-transform:uppercase">Term</th>
+                        <tr>
+                       {{!-- <th rowspan="2" class="font-10" style="width: 20%;text-transform:uppercase">Indicate if Subjects is CORE, APPLIED, or SPECIALIZED</th> --}}
+                        <th rowspan="2" class="font-10" style="width: 40%;text-transform:uppercase">LEARNING AREAS</th>
+                        <th colspan="4" class="font-10"style="width: 20%;text-transform:uppercase">Term</th>
                         <th rowspan="2" class="font-10" style="width: 10%;text-transform:uppercase">Sem Final Grade</th>
                         <th rowspan="2" class="font-10" style="width: 10%;text-transform:uppercase">Action Taken</th>
                        </tr>
                        <tr>
                         <th class="font-10" style="width: 5%;">1st</th>
                         <th class="font-10" style="width: 5%;">2nd</th>
+                        <th class="font-10" style="width: 5%;">3rd</th>
+                        <th class="font-10" style="width: 5%;"></th>
                        </tr>
                         </thead>
                         <tbody>
-                        {{#each firstSemester}}
+                            {{#each seniorHigh}}
                             <tr>
-                                <td>{{indicator}}</td>
+                                {{!-- <td>{{indicator}}</td> --}}
                                 <td style="text-align: left;">{{subject}}</td>
-                                <td>{{lookup this "1st Quarter"}}</td>
-                                <td>{{lookup this "2nd Quarter"}}</td>
+                                <td>{{lookup this "1st Term"}}</td>
+                                <td>{{lookup this "2nd Term"}}</td>
+                                <td>{{lookup this "3rd Term"}}</td>
+                                <td>{{lookup this "4th Term"}}</td>
                                 <td>{{finalGrade}}</td>
                                 <td>{{remarks}}</td>
-                            </tr>
-                        {{/each}}
+                                </tr>
+                                  {{#if sub_subject}}
+                                    {{#each sub_subject}}
+                                    <tr>
+                                        <td align="left" style="padding-left: 4px;">{{@key}}</td>
+                                        <td>{{lookup this.quarters "1st Term"}}</td>
+                                        <td>{{lookup this.quarters "2nd Term"}}</td>
+                                        <td>{{lookup this.quarters "3rd Term"}}</td>
+                                        <td>{{lookup this.quarters "4th Term"}}</td>
+                                        <td></td>
+                                        <td>{{remarks}}</td>
+                                    </tr>
+                                    {{/each}}
+                                {{/if}}
+                            {{/each}}
+                                
                                 <tr>
                                 <td style="padding: 10px;"></td>
                                 <td style="padding: 10px;"></td>
@@ -188,6 +201,7 @@
                                 <td style="padding: 10px;"></td>
                                 <td style="padding: 10px;"></td>
                                 <td style="padding: 10px;"></td>
+                                <td style="padding: 10px;"></td>
                             </tr>
                                 <tr>
                                 <td style="padding: 10px;"></td>
@@ -196,17 +210,17 @@
                                 <td style="padding: 10px;"></td>
                                 <td style="padding: 10px;"></td>
                                 <td style="padding: 10px;"></td>
+                                <td style="padding: 10px;"></td>
                             </tr>
-                            <tr>
-                                <td colspan="4" class="font-10 strong" style="text-align: right; background-color:rgb(150, 149, 149);">General Ave. for Semester:</td>
-                                <td class="font-10">{{firstSemesterAverage}}</td>
-                                <td class="font-10">{{firstSemesterRemarks}}</td>
+                             <tr>
+                                <td colspan="5" class="font-10 strong" style="text-align: right; background-color:rgb(150, 149, 149);">General Average:</td>
+                                <td class="font-10">{{seniorHighAverage}}</td>
+                                <td class="font-10">{{seniorHighRemarks}}</td>
                             </tr>
                         </tbody>
                     </table>
                   </td>
                 </tr>
-               
                 <!--Remedial-->
                 <tr>
                     <td class="font-10">REMARKS:PROMOTED</td>
@@ -217,7 +231,7 @@
                     <td colspan="2" class="font-10">Date Checked (MM/DD/YYYY):</td>
                 </tr>
                 <tr>
-                    <td colspan="2" class="font-10" align="center" style="text-transform: uppercase; padding:10px">
+                    <td colspan="2" class="font-10" align="center" style="text-transform: uppercase;  padding:10px">
                         <div>
                             <div class="strong"><u>{{../teacherData.name}}</u></div>
                             <div>Adviser</div>
@@ -225,157 +239,7 @@
                     </td>
                     <td colspan="2" class="font-10" align="center" style="text-transform: uppercase;">
                         <div>
-                            <div class="strong"><u>{{principal.name}}</u></div>
-                            <div>Principal</div>
-                        </div>
-                    </td>
-                    <td colspan="2" class="font-10" align="center" style="text-transform: uppercase;">
-                        <div>
-                            <div class="strong"><u>{{../curDate}}</u></div>
-                            {{!-- <div>Adviser</div> --}}
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td colspan="6">
-                        <table id="mySched" style="width: 100%;">
-                           <thead>
-                       <tr>
-                        <th rowspan="2" class="font-10" style="width:20%;">Indicate if Subjects is CORE, APPLIED, or SPECIALIZED</th>
-                        <th rowspan="2" class="font-10" style="width:40%;text-transform:uppercase">Subjects</th>
-                        <th rowspan="2" class="font-10" style="width:10%;text-transform:uppercase">Final Grade</th>
-                        <th rowspan="2" class="font-10" style="width:10%;text-transform:uppercase">Remedial Class Mark</th>
-                        <th rowspan="2" class="font-10" style="width:10%;text-transform:uppercase">Recomputed Final Grade</th>
-                        <th rowspan="2" class="font-10" style="width:10%;text-transform:uppercase">Action Taken</th>
-                       </tr>
-                  
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                            </tr>
-                             <tr>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                            </tr>
-                             <tr>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                            </tr>
-                             <tr>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                            </tr>
-                        </tbody>
-                        </table>
-
-                    </td>
-                </tr>
-                <tr>
-                    <td class="font-10" colspan="3" style="padding-top:10px;padding-bottom:10px">Name of Teacher/Adviser:____________________</td>
-                    <td class="font-10" colspan="3" align="center" style="padding-top:10px;padding-bottom:10px">Signature:__________________</td>
-                </tr>
-            
-                <tr>
-                    <td colspan="2"  class="font-10 strong">SCHOOL: <u>SOUTHERN DAVAO NATIONAL HIGH SCHOOL</u></td>
-                    <td align="center" class="font-10 strong">SCHOOL ID: <u>316401</u></td>
-                    <td align="center" class="font-10 strong">GRADE LEVEL: <u>{{../roomData.grade_level}}</u></td>
-                    <td align="center" class="font-10 strong">SY: <u>{{../schoolYear.school_year}}</u></td>
-                    <td align="center" class="font-10 strong">SEM: <u>2ND</u></td>
-                </tr>
-                <tr>
-                    <td colspan="3" class="font-10 strong">TRACK/STRAND: <u>{{../roomData.tracks_name}}/{{../roomData.strand_name}}</u></td>
-                    <td colspan="3" class="font-10 strong">SECTION: <u>{{../roomData.room_section}}</u></td>
-                </tr>
-                <tr>
-                  <td colspan='6'>
-                   <table id="mySched" style="width:100%">
-                      <thead>
-                       <tr>
-                       <th rowspan="2" class="font-10" style="width: 20%;">Indicate if Subjects is CORE, APPLIED, or SPECIALIZED</th>
-                        <th rowspan="2" class="font-10" style="width: 50%;text-transform:uppercase">Subject</th>
-                        <th colspan="2" class="font-10"style="width: 10%;text-transform:uppercase">Quarter</th>
-                        <th rowspan="2" class="font-10" style="width: 10%;text-transform:uppercase">Sem Final Grade</th>
-                        <th rowspan="2" class="font-10" style="width: 10%;text-transform:uppercase">Action Taken</th>
-                       </tr>
-                       <tr>
-                        <th class="font-10" style="width: 5%;">1st</th>
-                        <th class="font-10" style="width: 5%;">2nd</th>
-                       </tr>
-                    </thead>
-                        <tbody>
-                           {{#each secondSemester}}
-                            <tr>
-                                <td>{{indicator}}</td>
-                                <td style="text-align: left;">{{subject}}</td>
-                                <td>{{lookup this "1st Quarter"}}</td>
-                                <td>{{lookup this "2nd Quarter"}}</td>
-                                <td>{{finalGrade}}</td>
-                                <td>{{remarks}}</td>
-                            </tr>
-                            {{/each}}
-                                <tr>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                            </tr>
-                                <tr>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                            </tr>
-                            <tr>
-                                <td colspan="4" class="font-10 strong" style="text-align: right; background-color:rgb(150, 149, 149);">General Ave. for Semester:</td>
-                                <td class="font-10">{{secondSemesterAverage}}</td>
-                                <td class="font-10">{{secondSemesterRemarks}}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                  </td>
-                </tr>
-
-                    <!--Remedial-->
-                <tr>
-                    <td class="font-10">REMARKS:PROMOTED</td>
-                </tr>
-                <tr>
-                    <td colspan="2" class="font-10">Prepared by:</td>
-                    <td colspan="2" class="font-10">Certified True and Correct:</td>
-                    <td colspan="2" class="font-10">Date Checked (MM/DD/YYYY):</td>
-                </tr>
-                <tr>
-                    <td colspan="2" class="font-10" align="center" style="text-transform: uppercase; padding:10px">
-                        <div>
-                            <div class="strong"><u>{{../teacherData.name}}</u></div>
-                            <div>Adviser</div>
-                        </div>
-                    </td>
-                    <td colspan="2" class="font-10" align="center" style="text-transform: uppercase;">
-                        <div>
-                            <div class="strong"><u>{{principal.name}}</u></div>
+                            <div class="strong"><u>{{../principal.name}}</u></div>
                             <div>Principal </div>
                         </div>
                     </td>
@@ -388,18 +252,18 @@
                 </tr>
                 <tr>
                     <td colspan="6">
-                        <table id="mySched" style="width: 100%;">
-                           <thead>
-                       <tr>
-                        <th rowspan="2" class="font-10" style="width:20%;">Indicate if Subjects is CORE, APPLIED, or SPECIALIZED</th>
-                        <th rowspan="2" class="font-10" style="width:40%;text-transform:uppercase">Subjects</th>
+                        <table id="mySched">
+                    <thead>
+                      <tr>
+                        {{!-- <th rowspan="2" class="font-10" style="width:20%;">Indicate if Subjects is CORE, APPLIED, or SPECIALIZED</th> --}}
+                        <th rowspan="2" class="font-10" style="width:40%;text-transform:uppercase">LEARNING AREA</th>
                         <th rowspan="2" class="font-10" style="width:10%;text-transform:uppercase">Final Grade</th>
                         <th rowspan="2" class="font-10" style="width:10%;text-transform:uppercase">Remedial Class Mark</th>
                         <th rowspan="2" class="font-10" style="width:10%;text-transform:uppercase">Recomputed Final Grade</th>
                         <th rowspan="2" class="font-10" style="width:10%;text-transform:uppercase">Action Taken</th>
                        </tr>
                   
-                        </thead>
+                    </thead>
                         <tbody>
                             <tr>
                                 <td style="padding: 10px;"></td>
@@ -407,6 +271,12 @@
                                 <td style="padding: 10px;"></td>
                                 <td style="padding: 10px;"></td>
                                 <td style="padding: 10px;"></td>
+                            </tr>
+                             <tr>
+                                <td style="padding: 10px;"></td>
+                                <td style="padding: 10px;"></td>
+                                <td style="padding: 10px;"></td>
+                                <td style="padding: 10px;"></td>
                                 <td style="padding: 10px;"></td>
                             </tr>
                              <tr>
@@ -415,18 +285,8 @@
                                 <td style="padding: 10px;"></td>
                                 <td style="padding: 10px;"></td>
                                 <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
                             </tr>
                              <tr>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                                <td style="padding: 10px;"></td>
-                            </tr>
-                             <tr>
-                                <td style="padding: 10px;"></td>
                                 <td style="padding: 10px;"></td>
                                 <td style="padding: 10px;"></td>
                                 <td style="padding: 10px;"></td>
@@ -439,7 +299,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="font-10" colspan="3" style="padding-top:10px;padding-bottom:10px">Name of Teacher/Adviser:____________________</td>
+                    <td class="font-10" colspan="3" style="padding-top:10px;padding-bottom:10px">Name of Teacher/Adviser: <u>{{../teacherData.name}}</u></td>
                     <td class="font-10" colspan="3" align="center" style="padding-top:10px;padding-bottom:10px">Signature:__________________</td>
                 </tr>
                 {{else}}
@@ -542,7 +402,7 @@
                     </td>
                     <td colspan="2" class="font-10" align="center" style="text-transform: uppercase;">
                         <div>
-                            <div class="strong"><u>{{principal.name}}</u></div>
+                            <div class="strong"><u>{{../principal.name}}</u></div>
                             <div>Principal </div>
                         </div>
                     </td>
@@ -602,7 +462,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td class="font-10" colspan="3" style="padding-top:10px;padding-bottom:10px">Name of Teacher/Adviser:____________________</td>
+                    <td class="font-10" colspan="3" style="padding-top:10px;padding-bottom:10px">Name of Teacher/Adviser: <u>{{../teacherData.name}}</u></td>
                     <td class="font-10" colspan="3" align="center" style="padding-top:10px;padding-bottom:10px">Signature:__________________</td>
                 </tr>
                 {{/ifCond}}

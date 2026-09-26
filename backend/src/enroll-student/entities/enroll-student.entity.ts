@@ -429,6 +429,12 @@ export class EnrollStudent {
   schoolCard: string;
 
   @Column({
+    type: 'longtext',
+    nullable: true,
+  })
+  remarks: string;
+
+  @Column({
     type: 'varchar',
     nullable: true,
   })

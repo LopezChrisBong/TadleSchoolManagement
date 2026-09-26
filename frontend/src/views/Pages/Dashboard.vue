@@ -164,6 +164,8 @@ export default {
         { title: 'Student Name', key: 'student_name' },
         { title: 'At-Risk Grade', key: 'transmuted_grade' },
         { title: 'Adviser', key: 'adviser' },
+        { title: 'Subject Teacher', key: 'teacher' },
+        { title: 'Subject', key: 'subject_title' },
         { title: 'Grade', key: 'grade_level' },
         { title: 'Section', key: 'room_name' },
         // { title: 'Actions', key: 'actions', sortable: false, align: 'end' },

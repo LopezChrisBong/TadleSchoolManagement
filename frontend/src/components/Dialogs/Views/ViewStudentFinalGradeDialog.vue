@@ -414,18 +414,20 @@ export default {
     },
     printData() {
       window.open(
-        process.env.VUE_APP_SERVER +
-          '/pdf-generator/getAllStudentsFinalGrade/' +
-          this.data.school_yearID +
-          '/' +
-          this.data.roomID +
-          '/' +
-          this.quarter +
-          '/' +
-          this.semester +
-          '/' +
-          this.data.grade_level +
-          '',
+        this.syType == 0
+          ? process.env.VUE_APP_SERVER +
+              '/pdf-generator/getAllStudentsFinalGrade/'
+          : process.env.VUE_APP_SERVER +
+              '/pdf-generator/getAllStudentsFinalGradeV2/' +
+              this.data.school_yearID +
+              '/' +
+              this.data.roomID +
+              '/' +
+              this.quarter +
+              '/' +
+              this.semester +
+              '/' +
+              this.data.grade_level,
         '_blank',
       );
     },
