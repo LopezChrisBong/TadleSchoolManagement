@@ -129,7 +129,7 @@
                   variant="text"
                   color="blue-grey"
                   @click="
-                    syType == 0 || grade == 'Grade 11' || grade == 'Grade 12'
+                    syType == 0
                       ? viewStudentAchievements(item, 1)
                       : viewStudentAchievementsV2(item, 1)
                   "
@@ -150,7 +150,7 @@
                   variant="text"
                   color="blue-grey"
                   @click="
-                    syType == 0 || grade == 'Grade 11' || grade == 'Grade 12'
+                    syType == 0
                       ? viewStudentAchievements(item, 0)
                       : viewStudentAchievementsV2(item, 0)
                   "
@@ -258,7 +258,18 @@
           <v-icon icon="mdi-alert-circle-outline" color="warning" />
           Confirm Drop
         </v-card-title>
-        <v-card-text> Are you sure you want to drop this student? </v-card-text>
+        <v-card-text>
+          Are you sure you want to drop this student?
+          <v-textarea
+            v-model="dropReason"
+            label="Reason for dropping"
+            placeholder="State remarks and reason for dropping out"
+            rows="3"
+            variant="outlined"
+            class="mt-4"
+            auto-grow
+          />
+        </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" rounded="lg" @click="dialogConfirmDrop = false"
@@ -268,6 +279,7 @@
             color="warning"
             variant="flat"
             rounded="lg"
+            :disabled="!dropReason || !dropReason.trim()"
             @click="confirmDrop()"
             >Confirm</v-btn
           >
@@ -329,6 +341,7 @@ export default {
     ViewStudentFinalGradeDialog,
   },
   data: () => ({
+    dropReason: '',
     search: '',
     dialog: false,
     userRoleID: null,
@@ -600,6 +613,7 @@ export default {
     async confirmDrop() {
       let data = {
         statusEnrolled: 2,
+        remarks: this.dropReason,
       };
       this.axiosCall(
         '/enroll-student/updateDropStudent/' + this.dropData.studentId,
@@ -613,6 +627,7 @@ export default {
           this.fadeAwayMessage.message = res.data.msg;
           this.initialize();
           this.dialogConfirmDrop = false;
+          this.dropReason = '';
           location.reload();
         } else {
           this.fadeAwayMessage.show = true;

@@ -122,6 +122,8 @@
                         <th rowspan="2" class="font-12" align="center" style="width:7%">{{this.label}}</th>
                         {{else ifCond this.label "Tardy"}}
                         <th rowspan="2" class="font-12" align="center" style="width:7%">{{this.label}}</th>
+                        {{else ifCond this.label "Remarks"}}
+                        <th rowspan="2" class="font-12" align="center" style="width:7%">{{this.label}}</th>
                         {{else}}
                         <th rowspan="2" class="font-12" align="center">{{this.label}}</th>
                         {{/ifCond}}
@@ -134,7 +136,7 @@
                     {{/ifCond}}
                     {{/each}}
                     
-                    <td rowspan="2" style="width: 12%;">Remarks</td>
+                    {{!-- <td rowspan="2" style="width: 12%;">Remarks</td> --}}
                 </tr>
                 {{else}}
                 <tr>
@@ -158,7 +160,7 @@
                         {{#each this}}
                         <td class="font-12">{{this}}</td>
                         {{/each}}
-                        <td></td>
+                        {{!-- <td></td> --}}
                     </tr>
                     {{/each}}
                     {{else}}

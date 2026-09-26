@@ -194,4 +194,7 @@ export class CreateEnrollStudentDto {
 
   @ApiProperty()
   lrnNo: string;
+
+  @ApiProperty()
+  remarks: string;
 }

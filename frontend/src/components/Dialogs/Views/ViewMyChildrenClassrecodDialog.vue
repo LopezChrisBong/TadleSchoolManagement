@@ -564,10 +564,18 @@ export default {
       return (grades.reduce((a, b) => a + b, 0) / grades.length).toFixed(2);
     },
     acknowledgeGrade() {
-      this.selectedPeriod = this.periods[0];
-      this.ack1 = false;
-      this.ack2 = false;
-      this.ackDialog = true;
+      if (this.periods[0]) {
+        this.selectedPeriod = this.periods[0];
+        this.ack1 = false;
+        this.ack2 = false;
+        this.ackDialog = true;
+      } else {
+        this.fadeAwayMessage.show = true;
+        this.fadeAwayMessage.type = 'error';
+        this.fadeAwayMessage.header = 'System Message';
+        this.fadeAwayMessage.message =
+          'No grades have been submitted for this school year yet.';
+      }
     },
     closeAckDialog() {
       this.ackDialog = false;

@@ -356,19 +356,18 @@ export class PdfGeneratorService {
 
   async compile(templatename, data) {
     //development
-    const filepath = path.join(
-      process.cwd(),
-      'src/pdf-generator/templates',
-      `${templatename}.hbs`,
-    );
-
-    //hosted filepath for pdf
-
     // const filepath = path.join(
-    //   __dirname,
-    //   '../pdf-generator/templates',
+    //   process.cwd(),
+    //   'src/pdf-generator/templates',
     //   `${templatename}.hbs`,
     // );
+
+    //hosted filepath for pdf
+    const filepath = path.join(
+      __dirname,
+      '../pdf-generator/templates',
+      `${templatename}.hbs`,
+    );
 
     const html = await fs.readFile(filepath, 'utf-8');
     return hbs.compile(html)(data);
@@ -566,8 +565,7 @@ export class PdfGeneratorService {
       .where('SQF.school_yearID = :filter', { filter })
       .andWhere('SQF.roomID = :roomID', { roomID })
       .andWhere('SQF.studentID = :studentID', { studentID })
-      .andWhere('ES.grade_level = :gradeLevel', { gradeLevel })
-      .andWhere('SL.school_yearId = :filter', { filter })
+      .andWhere('SL.grade_level = :gradeLevel', { gradeLevel })
       .andWhere('ES.statusEnrolled = 1');
     let newData = await query.getRawMany();
     let attendanceData = await this.getAttendance(newData, filter);
@@ -998,6 +996,7 @@ export class PdfGeneratorService {
     let firstSemSubjects;
     let secondSemSubjects;
     let juniorHigh;
+    let seniorHigh;
     let arrs;
     let junior;
     let query = this.dataSource.manager
@@ -1031,11 +1030,15 @@ export class PdfGeneratorService {
       .where('SQF.school_yearID = :filter', { filter })
       .andWhere('SQF.roomID = :roomID', { roomID })
       .andWhere('SQF.studentID = :studentID', { studentID })
-      .andWhere('ES.grade_level = :gradeLevel', { gradeLevel })
-      .andWhere('SL.school_yearId = :filter', { filter })
+      .andWhere('SL.grade_level = :gradeLevel', { gradeLevel })
       .andWhere('ES.statusEnrolled = 1');
     let newData = await query.getRawMany();
-    console.log('newData', newData);
+
+    if (!newData.length) {
+      throw new Error(
+        `NO DATA: studentID=${studentID}, roomID=${roomID}, filter=${filter}, gradeLevel=${gradeLevel}`,
+      );
+    }
     let attendanceData = await this.getAttendance(newData, filter);
     let depedOfficials = await this.dataSource.manager
       .createQueryBuilder(DepEdPersonnel, 'dp')
@@ -1065,45 +1068,49 @@ export class PdfGeneratorService {
             };
           }
 
-          // ensure semester bucket exists
+          // Ensure semester bucket exists
           if (!acc[id].semesters[semester]) {
-            acc[id].semesters[semester] = { subjects: [] };
+            acc[id].semesters[semester] = {
+              subjects: [],
+            };
           }
 
-          // find or create subject inside this semester
-          let subject = acc[id].semesters[semester].subjects.find(
-            (s) => s.subject === subject_title,
-          );
+          const sem = acc[id].semesters[semester];
 
-          console.log('subject', subject);
+          // Find or create subject
+          let subject = sem.subjects.find((s) => s.subject === subject_title);
+
           if (!subject) {
             subject = {
               subject: subject_title,
-              '1st Quarter': null,
-              '2nd Quarter': null,
-              '3rd Quarter': null,
-              '4th Quarter': null,
+              '1st Term': null,
+              '2nd Term': null,
+              '3rd Term': null,
+              // '4th Term': null,
               finalGrade: null,
+              conspan: 1,
               remarks: null,
             };
-            acc[id].semesters[semester].subjects.push(subject);
+
+            sem.subjects.push(subject);
           }
 
-          // assign the grade under the correct quarter
+          // Assign grade to the correct quarter
           subject[quarter] = final_grade;
 
-          // recalc final grade
+          // Calculate subject final grade
           const grades = [
-            subject['1st Quarter'],
-            subject['2nd Quarter'],
-            subject['3rd Quarter'],
-            subject['4th Quarter'],
-          ].filter((g) => g !== null);
+            subject['1st Term'],
+            subject['2nd Term'],
+            subject['3rd Term'],
+            // subject['4th Term'],
+          ].filter((g) => g !== null && g !== undefined);
 
           if (grades.length > 0) {
             const avg = Math.round(
-              grades.reduce((a, b) => a + b, 0) / grades.length,
+              grades.reduce((a, b) => a + Number(b), 0) / grades.length,
             );
+
             subject.finalGrade = avg;
             subject.remarks = avg >= 75 ? 'Passed' : 'Failed';
           }
@@ -1113,10 +1120,111 @@ export class PdfGeneratorService {
       );
 
       arr = JSON.parse(JSON.stringify(pivoted));
-      arrs = arr[0].semesters;
-      firstSemSubjects = arrs['1st Semester']?.subjects || [];
-      secondSemSubjects = arrs['2nd Semester']?.subjects || [];
-      // console.log('Second',secondSemSubjects)
+
+      arrs = arr[0]?.semesters || {};
+
+      // Process every semester
+      Object.keys(arrs).forEach((semKey) => {
+        const semSubjects = arrs[semKey].subjects || [];
+
+        // Senior High does not have MAPEH
+        const generalGrades = semSubjects
+          .map((s) => s.finalGrade)
+          .filter((g) => g !== null && g !== undefined);
+
+        let generalAverage = null;
+
+        if (generalGrades.length > 0) {
+          generalAverage = Math.round(
+            generalGrades.reduce((a, b) => a + Number(b), 0) /
+              generalGrades.length,
+          );
+        }
+
+        // Add General Average
+        arrs[semKey].subjects = [
+          ...semSubjects,
+          {
+            subject: 'General Average',
+            conspan: 4,
+            finalGrade: generalAverage,
+            remarks:
+              generalAverage !== null
+                ? generalAverage >= 75
+                  ? 'Passed'
+                  : 'Failed'
+                : null,
+          },
+        ];
+      });
+
+      // Senior High
+      seniorHigh = arrs['Senior High']?.subjects || [];
+      // const pivoted = Object.values(
+      //   newData.reduce((acc, row) => {
+      //     const { id, name, semester, subject_title, quarter, final_grade } =
+      //       row;
+
+      //     if (!acc[id]) {
+      //       acc[id] = {
+      //         id,
+      //         name,
+      //         semesters: {},
+      //       };
+      //     }
+
+      //     // ensure semester bucket exists
+      //     if (!acc[id].semesters[semester]) {
+      //       acc[id].semesters[semester] = { subjects: [] };
+      //     }
+
+      //     // find or create subject inside this semester
+      //     let subject = acc[id].semesters[semester].subjects.find(
+      //       (s) => s.subject === subject_title,
+      //     );
+
+      //     console.log('subject', subject);
+      //     if (!subject) {
+      //       subject = {
+      //         subject: subject_title,
+      //         '1st Quarter': null,
+      //         '2nd Quarter': null,
+      //         '3rd Quarter': null,
+      //         '4th Quarter': null,
+      //         finalGrade: null,
+      //         remarks: null,
+      //       };
+      //       acc[id].semesters[semester].subjects.push(subject);
+      //     }
+
+      //     // assign the grade under the correct quarter
+      //     subject[quarter] = final_grade;
+
+      //     // recalc final grade
+      //     const grades = [
+      //       subject['1st Quarter'],
+      //       subject['2nd Quarter'],
+      //       subject['3rd Quarter'],
+      //       subject['4th Quarter'],
+      //     ].filter((g) => g !== null);
+
+      //     if (grades.length > 0) {
+      //       const avg = Math.round(
+      //         grades.reduce((a, b) => a + b, 0) / grades.length,
+      //       );
+      //       subject.finalGrade = avg;
+      //       subject.remarks = avg >= 75 ? 'Passed' : 'Failed';
+      //     }
+
+      //     return acc;
+      //   }, {}),
+      // );
+
+      // arr = JSON.parse(JSON.stringify(pivoted));
+      // arrs = arr[0].semesters;
+      // firstSemSubjects = arrs['1st Semester']?.subjects || [];
+      // secondSemSubjects = arrs['2nd Semester']?.subjects || [];
+      // // console.log('Second',secondSemSubjects)
     } else {
       const pivoted = Object.values(
         newData.reduce((acc, row) => {
@@ -1246,13 +1354,11 @@ export class PdfGeneratorService {
         const normalSubjects = semSubjects.filter(
           (s) =>
             s.subject !== 'MAPEH' &&
-            !['Music', 'Arts', 'Physical Education', 'Health'].includes(
-              s.subject,
-            ),
+            !['Music & Arts', 'P.E. & Health'].includes(s.subject),
         );
         const mapeh = semSubjects.find((s) => s.subject === 'MAPEH');
         const subs = semSubjects.filter((s) =>
-          ['Music', 'Arts', 'Physical Education', 'Health'].includes(s.subject),
+          ['Music & Arts', 'P.E. & Health'].includes(s.subject),
         );
 
         const generalGrades = [...normalSubjects, mapeh]
@@ -1340,8 +1446,7 @@ export class PdfGeneratorService {
     } else {
       junior = false;
       studentData = {
-        firstSem: firstSemSubjects,
-        secondSem: secondSemSubjects,
+        seniorHigh: seniorHigh,
       };
     }
 
@@ -1361,6 +1466,7 @@ export class PdfGeneratorService {
       process.cwd(),
       process.env.FILE_PATH + 'static/img/southern logo.jpg',
     );
+    console.log('studentData', studentData);
     // let headerImg = join(process.cwd(), '/../static/img/header.png');
     // let footerImg = join(process.cwd(), '/../static/img/footer.png');
     const data = [
@@ -1422,19 +1528,159 @@ export class PdfGeneratorService {
   }
 
   async getAttendance(data, filter) {
-    // console.log('getAttendance', data[0]);
-    let student = data[0];
-    let attendanceQuery = await this.dataSource.manager
-      .createQueryBuilder(StudentAttendance, 'sa')
-      .where('sa.school_yearID = :filter', { filter })
-      .andWhere('sa.roomID = :roomID', { roomID: student.RoomID })
-      .groupBy('sa.attendanceDate')
-      .orderBy('sa.attendanceDate', 'ASC')
-      .getMany();
-    console.log('attendanceQuery', attendanceQuery);
+    console.log('getAttendance', data[0]);
+    // let student = data[0];
+    // let attendanceQuery = await this.dataSource.manager
+    //   .createQueryBuilder(StudentAttendance, 'sa')
+    //   .where('sa.school_yearID = :filter', { filter })
+    //   .andWhere('sa.roomID = :roomID', { roomID: student.RoomID })
+    //   .groupBy('sa.attendanceDate')
+    //   .orderBy('sa.attendanceDate', 'ASC')
+    //   .getMany();
+    // console.log('attendanceQuery', attendanceQuery);
   }
 
   async getAllStudentsFinalGrade(
+    filter: number,
+    roomID: number,
+    quarter: string,
+    semester: string,
+    gradeLevel: string,
+  ) {
+    // console.log(filter, roomID, quarter, semester, gradeLevel);
+    let schoolYear = await this.dataSource.manager
+      .createQueryBuilder(SchoolYear, 'A')
+      .select([
+        // "*",
+        "CONCAT(school_year_from, ' - ', school_year_to) AS school_year",
+        // "CONCAT(school_year_from, '-06-01') as startDate,CONCAT(school_year_to, '-05-31') as endDate"
+        'syType as syType',
+      ])
+      .where('A.id = :filter', { filter })
+      .getRawOne();
+
+    let query = this.dataSource.manager
+      .createQueryBuilder(EnrollStudent, 'ES')
+      .select([
+        'ES.id as id',
+        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ', SUBSTRING(ES.mname, 1, 1), '. ', ES.lname), concat(ES.fname, ' ', ES.lname)) as name",
+        'SQF.transmuted_grade as final_grade',
+        'SQF.initial_grade as initial_grade',
+        'SQF.quarter as quarter',
+        'SQF.semester as semester',
+        'S.subject_title as subject_title',
+      ])
+      .leftJoin(StudentList, 'SL', 'ES.id = SL.studentId')
+      .leftJoin(StudentQuarterFinalGrade, 'SQF', 'SQF.studentID = ES.id')
+      .leftJoin(Subject, 'S', 'S.id = SQF.subjectID')
+      .where('SQF.school_yearID = :filter', { filter })
+      .andWhere('SQF.roomID = :roomID', { roomID })
+      .andWhere('SQF.semester = :semester', { semester })
+      .andWhere('SQF.quarter = :quarter', { quarter })
+      .andWhere('ES.statusEnrolled = 1');
+
+    let rawData = await query.getRawMany();
+    let newrawData;
+    if (schoolYear.syType == 0) {
+      newrawData = await this.transformData(rawData);
+    } else {
+      newrawData = await this.transformDataV2(rawData);
+    }
+
+    console.log(newrawData.students);
+
+    let roomQuery = this.dataSource.manager
+      .createQueryBuilder(RoomsSection, 'RS')
+      .select([
+        'UD.id as id',
+        "IF (!ISNULL(UD.mname) AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ', SUBSTRING(UD.mname, 1, 1), '. ', UD.lname), concat(UD.fname, ' ', UD.lname)) as name",
+        'RS.room_section as section_name',
+      ])
+      .leftJoin(UserDetail, 'UD', 'UD.id = RS.teacherId')
+      .where('RS.id = :roomID', { roomID })
+      .andWhere('RS.grade_level = :gradeLevel', { gradeLevel });
+
+    let roomData = await roomQuery.getRawMany();
+    // console.log(roomData);
+
+    let colapse;
+    if (semester == 'Junior High') {
+      colapse = false;
+    } else {
+      colapse = true;
+    }
+
+    // console.log(schoolYear.school_year)
+
+    let headerImg = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/header.png',
+    );
+    let footerImg = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/footer.png',
+    );
+
+    const data = [
+      {
+        header_img: this.base64_encode(headerImg, 'headerfooter'),
+        footer_img: this.base64_encode(footerImg, 'headerfooter'),
+        data: newrawData,
+        roomData: roomData[0],
+        gradeLevel: gradeLevel,
+        semester: semester,
+        colapse: colapse,
+        schoolYear: schoolYear.school_year,
+        // name:gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12'? arr[0].name: arr.name,
+      },
+    ];
+    try {
+      const browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        // headless: 'new',
+        // executablePath: '/usr/bin/chromium-browser',
+        // args: [
+        //   '--no-sandbox',
+        //   '--disable-setuid-sandbox',
+        //   '--disable-dev-shm-usage',
+        //   '--disable-gpu',
+        // ],
+      });
+      const page = await browser.newPage();
+      // compile(template_name, data)
+      let content;
+      if (schoolYear.syType == 0) {
+        content = await this.compile('student-all-grade', data);
+      } else {
+        content = await this.compile('student-all-gradev2', data);
+      }
+
+      await page.setContent(content);
+
+      const buffer = await page.pdf({
+        format: 'legal',
+        margin: {
+          top: '0.20in',
+          left: '0.50in',
+          bottom: '0.20in',
+          right: '0.50in',
+        },
+        landscape: true,
+        printBackground: true,
+        // displayHeaderFooter: true,
+        // footerTemplate:
+        //   '<div style="border: 1px solid black; width:100%;z-index:1">  <div style=""><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAApgAAAKYB3X3/OAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAANCSURBVEiJtZZPbBtFFMZ/M7ubXdtdb1xSFyeilBapySVU8h8OoFaooFSqiihIVIpQBKci6KEg9Q6H9kovIHoCIVQJJCKE1ENFjnAgcaSGC6rEnxBwA04Tx43t2FnvDAfjkNibxgHxnWb2e/u992bee7tCa00YFsffekFY+nUzFtjW0LrvjRXrCDIAaPLlW0nHL0SsZtVoaF98mLrx3pdhOqLtYPHChahZcYYO7KvPFxvRl5XPp1sN3adWiD1ZAqD6XYK1b/dvE5IWryTt2udLFedwc1+9kLp+vbbpoDh+6TklxBeAi9TL0taeWpdmZzQDry0AcO+jQ12RyohqqoYoo8RDwJrU+qXkjWtfi8Xxt58BdQuwQs9qC/afLwCw8tnQbqYAPsgxE1S6F3EAIXux2oQFKm0ihMsOF71dHYx+f3NND68ghCu1YIoePPQN1pGRABkJ6Bus96CutRZMydTl+TvuiRW1m3n0eDl0vRPcEysqdXn+jsQPsrHMquGeXEaY4Yk4wxWcY5V/9scqOMOVUFthatyTy8QyqwZ+kDURKoMWxNKr2EeqVKcTNOajqKoBgOE28U4tdQl5p5bwCw7BWquaZSzAPlwjlithJtp3pTImSqQRrb2Z8PHGigD4RZuNX6JYj6wj7O4TFLbCO/Mn/m8R+h6rYSUb3ekokRY6f/YukArN979jcW+V/S8g0eT/N3VN3kTqWbQ428m9/8k0P/1aIhF36PccEl6EhOcAUCrXKZXXWS3XKd2vc/TRBG9O5ELC17MmWubD2nKhUKZa26Ba2+D3P+4/MNCFwg59oWVeYhkzgN/JDR8deKBoD7Y+ljEjGZ0sosXVTvbc6RHirr2reNy1OXd6pJsQ+gqjk8VWFYmHrwBzW/n+uMPFiRwHB2I7ih8ciHFxIkd/3Omk5tCDV1t+2nNu5sxxpDFNx+huNhVT3/zMDz8usXC3ddaHBj1GHj/As08fwTS7Kt1HBTmyN29vdwAw+/wbwLVOJ3uAD1wi/dUH7Qei66PfyuRj4Ik9is+hglfbkbfR3cnZm7chlUWLdwmprtCohX4HUtlOcQjLYCu+fzGJH2QRKvP3UNz8bWk1qMxjGTOMThZ3kvgLI5AzFfo379UAAAAASUVORK5CYII=" style="width:30px;height:30px;"/></div><span style="margin-right: 1cm"><span class="pageNumber"></span> of <span class="totalPages"></span></span></div>',
+      });
+      // console.log('Applicant generated');
+      await browser.close();
+      return buffer;
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async getAllStudentsFinalGradeV2(
     filter: number,
     roomID: number,
     quarter: string,
@@ -1476,11 +1722,7 @@ export class PdfGeneratorService {
 
     let rawData = await query.getRawMany();
     let newrawData;
-    if (
-      schoolYear.syType == 0 ||
-      gradeLevel == 'Grade 11' ||
-      gradeLevel == 'Grade 12'
-    ) {
+    if (schoolYear.syType == 0) {
       newrawData = await this.transformData(rawData);
     } else {
       newrawData = await this.transformDataV2(rawData);
@@ -1595,15 +1837,9 @@ export class PdfGeneratorService {
       const page = await browser.newPage();
       // compile(template_name, data)
       let content;
-      if (
-        schoolYear.syType == 0 ||
-        gradeLevel == 'Grade 11' ||
-        gradeLevel == 'Grade 12'
-      ) {
-        console.log('here');
+      if (schoolYear.syType == 0) {
         content = await this.compile('student-all-grade', data);
       } else {
-        console.log('here1');
         content = await this.compile('student-all-gradev2_1', data);
       }
 
@@ -1876,7 +2112,6 @@ export class PdfGeneratorService {
     attendanceDate: string,
     teacherID: number,
   ) {
-    console.log(school_yearID, roomID, subjectID, attendanceDate, teacherID);
     let attendance;
     let rawData;
     let month;
@@ -1922,23 +2157,29 @@ export class PdfGeneratorService {
     let schoolYear = await this.dataSource.manager
       .createQueryBuilder(SchoolYear, 'SY')
       .select([
-        // "*",
-        "CONCAT(school_year_from, ' - ', school_year_to) AS school_year",
-        "CONCAT(school_year_from, '-06-01') as startDate,CONCAT(school_year_to, '-05-31') as endDate",
+        'SY.school_year_from AS school_year_from',
+        'SY.school_year_to AS school_year_to',
+        "CONCAT(SY.school_year_from, ' - ', SY.school_year_to) AS school_year",
+        "CONCAT(SY.school_year_from, '-06-01') AS startDate",
+        "CONCAT(SY.school_year_to, '-05-31') AS endDate",
       ])
       .where('SY.id = :school_yearID', { school_yearID })
       .getRawOne();
 
-    // console.log(schoolYear)
     const dates = await this.dataSource.query(
       `
-        SELECT DISTINCT attendanceDate
-        FROM student_attendance
-        WHERE roomID = ? AND subjectID = ? AND school_yearID = ?
-        ORDER BY attendanceDate
-        `,
-      [roomID, subjectID, school_yearID],
+      SELECT DISTINCT attendanceDate
+      FROM student_attendance
+      WHERE roomID = ?
+        AND subjectID = ?
+        AND school_yearID = ?
+        AND MONTH(attendanceDate) = ?
+      ORDER BY attendanceDate
+      `,
+      [roomID, subjectID, school_yearID, attendanceDate],
     );
+    console.log(dates);
+    console.log(school_yearID, roomID, subjectID, attendanceDate, teacherID);
 
     if (!dates.length) {
       attendance = false;
@@ -1953,10 +2194,11 @@ export class PdfGeneratorService {
       const sql = `
           SELECT 
             CONCAT(s.lname, ' ', s.fname) AS student_name,
+            s.remarks AS remarks,
             ${dateColumns}
           FROM student_attendance a
           JOIN enroll_student s ON a.studentID = s.id
-          WHERE a.roomID = ? AND a.subjectID = ? AND a.school_yearID = ? AND MONTH(a.attendanceDate) = ?  AND s.statusEnrolled = 1
+          WHERE a.roomID = ? AND a.subjectID = ? AND a.school_yearID = ? AND MONTH(a.attendanceDate) = ?  AND s.statusEnrolled != 0
           GROUP BY s.id, s.fname, s.lname
           ORDER BY student_name
         `;
@@ -1967,20 +2209,41 @@ export class PdfGeneratorService {
         attendanceDate,
       ]);
     }
-    //  console.log(attendance)
+    console.log(rawData);
 
     let newData;
     let updatedRow;
     if (attendance === true) {
-      newData = await this.transformSchoolForm2(rawData, month);
+      const schoolYearFrom = Number(schoolYear.school_year_from);
+      const schoolYearTo = Number(schoolYear.school_year_to);
+
+      newData = await this.transformSchoolForm2(
+        rawData,
+        month,
+        schoolYearFrom,
+        schoolYearTo,
+      );
       updatedRow = newData.rows.map((row) => {
         return row.map((val, idx) => {
-          // First column is student_name, last two are absent/tardy counters → keep them as-is
-          if (idx === 0 || idx >= row.length - 2) return val;
-          if (val === '0') return '✖';
-          if (val === '3') return '▨';
-          if (val === '2') return '◻';
-          if (val) return '✔';
+          // Student name
+          if (idx === 0) {
+            return val;
+          }
+
+          // Last 3 columns:
+          // Absent, Tardy, Remarks
+          if (idx >= row.length - 3) {
+            return val;
+          }
+
+          if (String(val) === '0') return '✖';
+          if (String(val) === '3') return '▨';
+          if (String(val) === '2') return '◻';
+
+          if (val !== '' && val !== null && val !== undefined) {
+            return '✔';
+          }
+
           return '';
         });
       });
@@ -2060,72 +2323,107 @@ export class PdfGeneratorService {
 
   //   return { headers, rows };
   // }
-  async transformSchoolForm2(data: any[], selectedMonth: string) {
-    // Step 1: Collect all unique dates
-    const allDates = [
-      ...new Set(
-        data.flatMap((d) => Object.keys(d).filter((k) => k !== 'student_name')),
-      ),
-    ].sort();
+  async transformSchoolForm2(
+    data: any[],
+    selectedMonth: string,
+    schoolYearFrom: number,
+    schoolYearTo: number,
+  ) {
+    // Map month name to month number
+    const monthMap: Record<string, number> = {
+      January: 1,
+      February: 2,
+      March: 3,
+      April: 4,
+      May: 5,
+      June: 6,
+      July: 7,
+      August: 8,
+      September: 9,
+      October: 10,
+      November: 11,
+      December: 12,
+    };
 
-    // Step 2: Group dates by month (include *all days* of the selected month only)
-    const months: Record<string, number[]> = {};
-    allDates.forEach((dateStr) => {
-      const date = new Date(dateStr);
-      const monthName = date.toLocaleString('default', { month: 'long' });
-      const year = date.getFullYear();
-      const month = date.getMonth();
+    const monthIndex = monthMap[selectedMonth];
 
-      if (monthName === selectedMonth) {
-        // compute total days of this month
-        const totalDays = new Date(year, month + 1, 0).getDate();
+    if (!monthIndex) {
+      throw new Error(`Invalid month: ${selectedMonth}`);
+    }
 
-        if (!months[monthName]) {
-          months[monthName] = Array.from(
-            { length: totalDays },
-            (_, i) => i + 1,
-          );
-        }
-      }
-    });
+    /*
+     * School year:
+     * June - December = schoolYearFrom
+     * January - May   = schoolYearTo
+     */
+    const year =
+      monthIndex >= 6 ? Number(schoolYearFrom) : Number(schoolYearTo);
 
-    // Step 3: Build headers
+    // Number of days in selected month
+    const totalDays = new Date(year, monthIndex, 0).getDate();
+
+    const days = Array.from({ length: totalDays }, (_, i) => i + 1);
+
+    // Build headers
     const headers = [
-      { type: 'fixed', label: "Learner's Name" },
-      ...Object.entries(months).map(([month, days]) => ({
+      {
+        type: 'fixed',
+        label: "Learner's Name",
+      },
+      {
         type: 'month',
-        month: '1st row for date of ' + month,
+        month: selectedMonth,
         days,
-      })),
-      { type: 'fixed', label: 'Absent' },
-      { type: 'fixed', label: 'Tardy' },
+      },
+      {
+        type: 'fixed',
+        label: 'Absent',
+      },
+      {
+        type: 'fixed',
+        label: 'Tardy',
+      },
+      {
+        type: 'fixed',
+        label: 'Remarks',
+      },
     ];
 
-    // Step 4: Build rows
+    // Build rows
     const rows = data.map((d) => {
       const row: (string | number)[] = [d.student_name];
-      let absent = 0,
-        tardy = 0;
 
-      Object.entries(months).forEach(([month, days]) => {
-        days.forEach((day) => {
-          const year = new Date(allDates[0]).getFullYear(); // take year from dataset
-          const monthIndex = new Date(`${month} 1, ${year}`).getMonth();
-          const dateStr = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      let absent = 0;
+      let tardy = 0;
 
-          const val = d[dateStr] ?? '';
-          row.push(val);
+      const remarks = d.remarks ? `(Drop) ${d.remarks}` : '';
 
-          if (val === '0') absent++;
-          if (val === '2') tardy++;
-        });
+      days.forEach((day) => {
+        const dateStr = `${year}-${String(monthIndex).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+        const val = d[dateStr] ?? '';
+
+        row.push(val);
+
+        // Convert to string because DB values may be strings
+        if (String(val) === '0') {
+          absent++;
+        }
+
+        if (String(val) === '2') {
+          tardy++;
+        }
       });
 
-      row.push(absent, tardy);
+      row.push(absent, tardy, remarks);
+
       return row;
     });
 
-    return { headers, rows };
+    return {
+      headers,
+      rows,
+    };
   }
 
   async getSchoolForm10(
@@ -2177,11 +2475,7 @@ export class PdfGeneratorService {
 
     let quarter = [];
     let headerTitle;
-    if (
-      schoolYear.syType == 0 ||
-      gradeLevel == 'Grade 11' ||
-      gradeLevel == 'Grade 12'
-    ) {
+    if (schoolYear.syType == 0) {
       quarter = ['1st Quarter', '2nd Quarter', '3rd Quarter', '4th Quarter'];
       headerTitle = 'QUARTER';
     } else {
@@ -2218,7 +2512,7 @@ export class PdfGeneratorService {
       .andWhere('ES.statusEnrolled = 1');
 
     let rawData = await query.getRawMany();
-    console.log(schoolYear);
+    console.log(rawData);
     let level;
     if (gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12') {
       level = 'Senior High';
@@ -2226,19 +2520,15 @@ export class PdfGeneratorService {
       level = 'Junior High';
     }
     let newData;
-    if (
-      schoolYear.syType == 0 ||
-      gradeLevel == 'Grade 11' ||
-      gradeLevel == 'Grade 12'
-    ) {
-      newData = await this.transformGrades(rawData, level);
+    if (schoolYear.syType == 0) {
+      newData = await this.transformGrades(rawData, level, schoolYear.syType);
     } else {
-      newData = await this.transformGradesV2(rawData, level);
+      newData = await this.transformGradesV2(rawData, level, schoolYear.syType);
     }
     let depedOfficials = await this.dataSource.manager
       .createQueryBuilder(DepEdPersonnel, 'dp')
       .getMany();
-    // console.log(newData[0])
+    console.log('schoolForm10', newData[0]);
     let curDate = new Date();
 
     let headerImg = join(
@@ -2270,9 +2560,8 @@ export class PdfGeneratorService {
       // compile(template_name, data)
       let content;
       if (
-        schoolYear.syType == 0 ||
-        gradeLevel == 'Grade 11' ||
-        gradeLevel == 'Grade 12'
+        schoolYear.syType == 0 &&
+        (gradeLevel == 'Grade 11' || gradeLevel == 'Grade 12')
       ) {
         content = await this.compile('school-form10', data);
       } else {
@@ -2298,7 +2587,8 @@ export class PdfGeneratorService {
     }
   }
 
-  async transformGrades(data, level: 'Senior High' | 'Junior High') {
+  async transformGrades(data, level: 'Senior High' | 'Junior High', syType) {
+    console.log('transformGrades', data);
     const students: Record<string, any> = {};
 
     const average = (values: (number | null)[]): number | null => {
@@ -2331,7 +2621,7 @@ export class PdfGeneratorService {
       // ==========================================================
       //  SENIOR HIGH
       // ==========================================================
-      if (level === 'Senior High') {
+      if (level === 'Senior High' && syType == 0) {
         const semesterArray =
           d.semester === '1st Semester'
             ? students[d.id].firstSemester
@@ -2417,7 +2707,7 @@ export class PdfGeneratorService {
             students[d.id].juniorHigh.push(mapeh);
           }
 
-          // ✅ Parse JSON from DB
+          // Parse JSON from DB
           let subs: any = {};
           try {
             subs = JSON.parse(d.sub_subject);
@@ -2480,7 +2770,7 @@ export class PdfGeneratorService {
           }
         }
 
-        // 🔹 Normal subjects
+        //Normal subjects
         else {
           let subj = students[d.id].juniorHigh.find(
             (s) => s.subject === d.subject_title,
@@ -2514,7 +2804,7 @@ export class PdfGeneratorService {
               : null;
         }
 
-        // 🔹 Junior High general average
+        //Junior High general average
         Object.values(students).forEach((student) => {
           const subjects = student.juniorHigh;
           const grades = subjects
@@ -2532,7 +2822,7 @@ export class PdfGeneratorService {
     return Object.values(students);
   }
 
-  async transformGradesV2(data, level: 'Senior High' | 'Junior High') {
+  async transformGradesV2(data, level: 'Senior High' | 'Junior High', syType) {
     const students: Record<string, any> = {};
 
     const average = (values: (number | null)[]): number | null => {
@@ -2555,8 +2845,9 @@ export class PdfGeneratorService {
         };
 
         if (level === 'Senior High') {
-          students[d.id].firstSemester = [];
-          students[d.id].secondSemester = [];
+          // students[d.id].firstSemester = [];
+          // students[d.id].secondSemester = [];
+          students[d.id].seniorHigh = [];
         } else {
           students[d.id].juniorHigh = [];
         }
@@ -2565,71 +2856,118 @@ export class PdfGeneratorService {
       // ==========================================================
       //  SENIOR HIGH
       // ==========================================================
-      if (level === 'Senior High') {
-        const semesterArray =
-          d.semester === '1st Semester'
-            ? students[d.id].firstSemester
-            : students[d.id].secondSemester;
+      if (level === 'Senior High' && syType == 1) {
+        let subj = students[d.id].seniorHigh.find(
+          (s) => s.subject === d.subject_title,
+        );
 
-        let subj = semesterArray.find((s) => s.subject === d.subject_title);
         if (!subj) {
           subj = {
-            indicator: d.indicator,
             subject: d.subject_title,
-            '1st Quarter': null,
-            '2nd Quarter': null,
+            indicator: d.indicator,
+            '1st Term': null,
+            '2nd Term': null,
+            '3rd Term': null,
+            '4th Term': null,
             finalGrade: null,
             remarks: null,
           };
-          semesterArray.push(subj);
+
+          students[d.id].seniorHigh.push(subj);
         }
 
         subj[d.quarter] = d.final_grade;
 
-        // compute final grade for SHS per semester
-        const q1 = subj['1st Quarter'];
-        const q2 = subj['2nd Quarter'];
-        const quarters = [q1, q2].filter((q) => q !== null);
-        if (quarters.length > 0) {
-          subj.finalGrade =
-            quarters.reduce((a, b) => a + b, 0) / quarters.length;
-          subj.remarks = subj.finalGrade >= 75 ? 'Passed' : 'Failed';
-        }
+        subj.finalGrade = average([
+          subj['1st Term'],
+          subj['2nd Term'],
+          subj['3rd Term'],
+          subj['4th Term'],
+        ]);
 
-        // Compute semester general averages
-        if (level === 'Senior High') {
-          const first = students[d.id].firstSemester;
-          const second = students[d.id].secondSemester;
+        subj.remarks =
+          subj.finalGrade !== null
+            ? subj.finalGrade >= 75
+              ? 'Passed'
+              : 'Failed'
+            : null;
 
-          if (first.length > 0) {
-            const grades = first
-              .map((s) => s.finalGrade)
-              .filter((g) => g !== null);
-            if (grades.length > 0) {
-              const avg = grades.reduce((a, b) => a + b, 0) / grades.length;
-              students[d.id].firstSemesterAverage = avg;
-              students[d.id].firstSemesterRemarks =
-                avg >= 75 ? 'Passed' : 'Failed';
-            }
+        Object.values(students).forEach((student) => {
+          const subjects = student.seniorHigh;
+          const grades = subjects
+            .map((s: any) => s.finalGrade)
+            .filter((g: any) => g !== null);
+          if (grades.length > 0) {
+            const avg = average(grades);
+            student.seniorHighAverage = avg;
+            student.seniorHighRemarks = avg >= 75 ? 'Passed' : 'Failed';
           }
+        });
 
-          if (second.length > 0) {
-            const grades = second
-              .map((s) => s.finalGrade)
-              .filter((g) => g !== null);
-            if (grades.length > 0) {
-              const avg = grades.reduce((a, b) => a + b, 0) / grades.length;
-              students[d.id].secondSemesterAverage = avg.toFixed();
-              students[d.id].secondSemesterRemarks =
-                avg >= 75 ? 'Passed' : 'Failed';
-            }
-          }
-        }
+        //   const semesterArray =
+        //     d.semester === '1st Semester'
+        //       ? students[d.id].firstSemester
+        //       : students[d.id].secondSemester;
+
+        //   let subj = semesterArray.find((s) => s.subject === d.subject_title);
+        //   if (!subj) {
+        //     subj = {
+        //       indicator: d.indicator,
+        //       subject: d.subject_title,
+        //       '1st Quarter': null,
+        //       '2nd Quarter': null,
+        //       finalGrade: null,
+        //       remarks: null,
+        //     };
+        //     semesterArray.push(subj);
+        //   }
+
+        //   subj[d.quarter] = d.final_grade;
+
+        //   // compute final grade for SHS per semester
+        //   const q1 = subj['1st Quarter'];
+        //   const q2 = subj['2nd Quarter'];
+        //   const quarters = [q1, q2].filter((q) => q !== null);
+        //   if (quarters.length > 0) {
+        //     subj.finalGrade =
+        //       quarters.reduce((a, b) => a + b, 0) / quarters.length;
+        //     subj.remarks = subj.finalGrade >= 75 ? 'Passed' : 'Failed';
+        //   }
+
+        //   // Compute semester general averages
+        //   if (level === 'Senior High') {
+        //     const first = students[d.id].firstSemester;
+        //     const second = students[d.id].secondSemester;
+
+        //     if (first.length > 0) {
+        //       const grades = first
+        //         .map((s) => s.finalGrade)
+        //         .filter((g) => g !== null);
+        //       if (grades.length > 0) {
+        //         const avg = grades.reduce((a, b) => a + b, 0) / grades.length;
+        //         students[d.id].firstSemesterAverage = avg;
+        //         students[d.id].firstSemesterRemarks =
+        //           avg >= 75 ? 'Passed' : 'Failed';
+        //       }
+        //     }
+
+        //     if (second.length > 0) {
+        //       const grades = second
+        //         .map((s) => s.finalGrade)
+        //         .filter((g) => g !== null);
+        //       if (grades.length > 0) {
+        //         const avg = grades.reduce((a, b) => a + b, 0) / grades.length;
+        //         students[d.id].secondSemesterAverage = avg.toFixed();
+        //         students[d.id].secondSemesterRemarks =
+        //           avg >= 75 ? 'Passed' : 'Failed';
+        //       }
+        //     }
+        //   }
       }
 
-      // ==========================================================
-      //  JUNIOR HIGH
-      // ==========================================================
+      // // ==========================================================
+      // //  JUNIOR HIGH
+      // // ==========================================================
       else {
         // check if subject is MAPEH (with sub-subject JSON)
         if (d.subject_title === 'MAPEH' && d.sub_subject) {
@@ -2650,8 +2988,8 @@ export class PdfGeneratorService {
             };
             students[d.id].juniorHigh.push(mapeh);
           }
-
-          // ✅ Parse JSON from DB
+          console.log(students);
+          // Parse JSON from DB
           let subs: any = {};
           try {
             subs = JSON.parse(d.sub_subject);
@@ -2714,7 +3052,7 @@ export class PdfGeneratorService {
           }
         }
 
-        // 🔹 Normal subjects
+        // Normal subjects
         else {
           let subj = students[d.id].juniorHigh.find(
             (s) => s.subject === d.subject_title,
@@ -2748,7 +3086,7 @@ export class PdfGeneratorService {
               : null;
         }
 
-        // 🔹 Junior High general average
+        // Junior High general average
         Object.values(students).forEach((student) => {
           const subjects = student.juniorHigh;
           const grades = subjects
@@ -2829,6 +3167,7 @@ export class PdfGeneratorService {
     const seen = new Map();
     const seen1 = new Map();
     const seen2 = new Map();
+
     combineData.writenWorks.forEach((w) => {
       const desc =
         w.SG_title && w.SG_title.trim() !== '' ? w.SG_title : w.quiz_label;
@@ -2873,6 +3212,19 @@ export class PdfGeneratorService {
     //   `WS (${subject.performance_task}%)`,
     // ];
 
+    // const quarterlyHeaders = [
+    //   ...new Set(
+    //     combineData.quarterlyAssessment.map((q) =>
+    //       q.SG_title && q.SG_title.trim() !== ''
+    //         ? q.SG_title + ' (' + q.SG_highest_posible_score + ')'
+    //         : q.quiz_label + ' (' + q.SG_highest_posible_score + ')',
+    //     ),
+    //   ),
+    //   'Total',
+    //   'PS',
+    //   `WS (${subject.quarter_assessment}%)`,
+    // ];
+
     combineData.performanceTask.forEach((p) => {
       const desc =
         p.SG_title && p.SG_title.trim() !== '' ? p.SG_title : p.quiz_label;
@@ -2888,21 +3240,8 @@ export class PdfGeneratorService {
       ...seen1.values(),
       { desc: 'Total', high_score: '' },
       { desc: 'PS', high_score: '' },
-      { desc: `WS (${subject.writen_works}%)`, high_score: '' },
+      { desc: `WS (${subject.performance_task}%)`, high_score: '' },
     ];
-
-    // const quarterlyHeaders = [
-    //   ...new Set(
-    //     combineData.quarterlyAssessment.map((q) =>
-    //       q.SG_title && q.SG_title.trim() !== ''
-    //         ? q.SG_title + ' (' + q.SG_highest_posible_score + ')'
-    //         : q.quiz_label + ' (' + q.SG_highest_posible_score + ')',
-    //     ),
-    //   ),
-    //   'Total',
-    //   'PS',
-    //   `WS (${subject.quarter_assessment}%)`,
-    // ];
 
     combineData.quarterlyAssessment.forEach((q) => {
       const desc =
@@ -2919,10 +3258,12 @@ export class PdfGeneratorService {
       ...seen2.values(),
       { desc: 'Total', high_score: '' },
       { desc: 'PS', high_score: '' },
-      { desc: `WS (${subject.writen_works}%)`, high_score: '' },
+      { desc: `WS (${subject.quarter_assessment}%)`, high_score: '' },
     ];
 
     const studentsMap = new Map<number, any>();
+
+    console.log(writtenHeaders, performanceHeaders, quarterlyHeaders);
 
     function initStudent(id: number, name: string, sex: string) {
       studentsMap.set(id, {
@@ -2935,58 +3276,115 @@ export class PdfGeneratorService {
       });
     }
 
+    // for (const ww of combineData.writenWorks) {
+    //   if (!studentsMap.has(ww.SG_studentID)) {
+    //     initStudent(ww.SG_studentID, ww.name, ww.SG_sex);
+    //   }
+
+    //   const label =
+    //     (ww.SG_title && ww.SG_title.trim() !== ''
+    //       ? ww.SG_title
+    //       : ww.quiz_label) +
+    //     ' (' +
+    //     ww.SG_highest_posible_score +
+    //     ')';
+    //   const index = writtenHeaders.indexOf(label);
+    //   studentsMap.get(ww.SG_studentID).writtenWorks[index] = ww.SG_quarterScore;
+    // }
     for (const ww of combineData.writenWorks) {
       if (!studentsMap.has(ww.SG_studentID)) {
         initStudent(ww.SG_studentID, ww.name, ww.SG_sex);
       }
 
-      // const label =
-      //   ww.SG_title && ww.SG_title.trim() !== '' ? ww.SG_title : ww.quiz_label;
-      const label =
-        (ww.SG_title && ww.SG_title.trim() !== ''
-          ? ww.SG_title
-          : ww.quiz_label) +
-        ' (' +
-        ww.SG_highest_posible_score +
-        ')';
-      const index = writtenHeaders.indexOf(label);
-      studentsMap.get(ww.SG_studentID).writtenWorks[index] = ww.SG_quarterScore;
+      const index = writtenHeaders.findIndex(
+        (header) =>
+          header.desc ===
+            (ww.SG_title && ww.SG_title.trim() !== ''
+              ? ww.SG_title
+              : ww.quiz_label) &&
+          Number(header.high_score) === Number(ww.SG_highest_posible_score),
+      );
+
+      if (index !== -1) {
+        studentsMap.get(ww.SG_studentID).writtenWorks[index] =
+          ww.SG_quarterScore;
+      }
     }
+
+    // for (const pt of combineData.performanceTask) {
+    //   if (!studentsMap.has(pt.SG_studentID)) {
+    //     initStudent(pt.SG_studentID, pt.name, pt.SG_sex);
+    //   }
+    //   // const label =
+    //   //   pt.SG_title && pt.SG_title.trim() !== '' ? pt.SG_title : pt.quiz_label;
+    //   const label =
+    //     (pt.SG_title && pt.SG_title.trim() !== ''
+    //       ? pt.SG_title
+    //       : pt.quiz_label) +
+    //     ' (' +
+    //     pt.SG_highest_posible_score +
+    //     ')';
+    //   const index = performanceHeaders.indexOf(label);
+    //   studentsMap.get(pt.SG_studentID).performanceTasks[index] =
+    //     pt.SG_quarterScore;
+    // }
 
     for (const pt of combineData.performanceTask) {
       if (!studentsMap.has(pt.SG_studentID)) {
         initStudent(pt.SG_studentID, pt.name, pt.SG_sex);
       }
-      // const label =
-      //   pt.SG_title && pt.SG_title.trim() !== '' ? pt.SG_title : pt.quiz_label;
-      const label =
-        (pt.SG_title && pt.SG_title.trim() !== ''
-          ? pt.SG_title
-          : pt.quiz_label) +
-        ' (' +
-        pt.SG_highest_posible_score +
-        ')';
-      const index = performanceHeaders.indexOf(label);
-      studentsMap.get(pt.SG_studentID).performanceTasks[index] =
-        pt.SG_quarterScore;
+
+      const index = performanceHeaders.findIndex(
+        (header) =>
+          header.desc ===
+            (pt.SG_title && pt.SG_title.trim() !== ''
+              ? pt.SG_title
+              : pt.quiz_label) &&
+          Number(header.high_score) === Number(pt.SG_highest_posible_score),
+      );
+
+      if (index !== -1) {
+        studentsMap.get(pt.SG_studentID).performanceTasks[index] =
+          pt.SG_quarterScore;
+      }
     }
+
+    // for (const qa of combineData.quarterlyAssessment) {
+    //   if (!studentsMap.has(qa.SG_studentID)) {
+    //     initStudent(qa.SG_studentID, qa.name, qa.SG_sex);
+    //   }
+    //   // const label =
+    //   //   qa.SG_title && qa.SG_title.trim() !== '' ? qa.SG_title : qa.quiz_label;
+    //   const label =
+    //     (qa.SG_title && qa.SG_title.trim() !== ''
+    //       ? qa.SG_title
+    //       : qa.quiz_label) +
+    //     ' (' +
+    //     qa.SG_highest_posible_score +
+    //     ')';
+    //   const index = quarterlyHeaders.indexOf(label);
+    //   studentsMap.get(qa.SG_studentID).quarterlyAssessment[index] =
+    //     qa.SG_quarterScore;
+    // }
 
     for (const qa of combineData.quarterlyAssessment) {
       if (!studentsMap.has(qa.SG_studentID)) {
         initStudent(qa.SG_studentID, qa.name, qa.SG_sex);
       }
-      // const label =
-      //   qa.SG_title && qa.SG_title.trim() !== '' ? qa.SG_title : qa.quiz_label;
-      const label =
-        (qa.SG_title && qa.SG_title.trim() !== ''
-          ? qa.SG_title
-          : qa.quiz_label) +
-        ' (' +
-        qa.SG_highest_posible_score +
-        ')';
-      const index = quarterlyHeaders.indexOf(label);
-      studentsMap.get(qa.SG_studentID).quarterlyAssessment[index] =
-        qa.SG_quarterScore;
+
+      const index = quarterlyHeaders.findIndex(
+        (header) =>
+          header.desc ===
+            (qa.SG_title && qa.SG_title.trim() !== ''
+              ? qa.SG_title
+              : qa.quiz_label) &&
+          Number(header.high_score) === Number(qa.SG_highest_posible_score),
+      );
+
+      if (index !== -1) {
+        studentsMap.get(qa.SG_studentID).quarterlyAssessment[index] =
+          qa.SG_quarterScore;
+      }
     }
 
     // Grades
@@ -3006,7 +3404,13 @@ export class PdfGeneratorService {
       }
     }
 
-    console.log('combineData.writenWorks', combineData.writenWorks, students);
+    // console.log('combineData.writenWorks', combineData.writenWorks);
+    // console.log('combineData.performanceTask', combineData.performanceTask);
+    // console.log(
+    //   'combineData.quarterlyAssessment',
+    //   combineData.quarterlyAssessment,
+    // );
+    console.log(students);
 
     for (const student of students) {
       // ---------- WRITTEN WORKS ----------
@@ -3095,7 +3499,17 @@ export class PdfGeneratorService {
             : 0;
       }
     }
-
+    let studentMale = [];
+    let studentFemale = [];
+    for (let i = 0; i < students.length; i++) {
+      if (students[i].sex == 'Male') {
+        studentMale.push(students[i]);
+      } else {
+        studentFemale.push(students[i]);
+      }
+    }
+    // console.log('studentMale', studentMale);
+    // console.log('studentFemale', studentFemale);
     let schoolYear = await this.dataSource.manager
       .createQueryBuilder(SchoolYear, 'SY')
       .select([
@@ -3127,16 +3541,6 @@ export class PdfGeneratorService {
         .leftJoin(AddTracks, 'track', 'track.id = strand.trackId')
         .where('strand.id = :roomStrand', { roomStrand: roomData.strandId })
         .getRawOne();
-    }
-
-    let studentMale = [];
-    let studentFemale = [];
-    for (let i = 0; i < students.length; i++) {
-      if (students[i].sex == 'Male') {
-        studentMale.push(students[i]);
-      } else {
-        studentFemale.push(students[i]);
-      }
     }
 
     let curDate = new Date();
@@ -3323,10 +3727,10 @@ export class PdfGeneratorService {
     });
 
     const performanceHeaders = [
-      ...seen.values(),
+      ...seen1.values(),
       { desc: 'Total', high_score: '' },
       { desc: 'PS', high_score: '' },
-      { desc: `WS (${subject.writen_works}%)`, high_score: '' },
+      { desc: `WS (${subject.performance_task}%)`, high_score: '' },
     ];
 
     // const performanceHeaders = [
@@ -3354,12 +3758,13 @@ export class PdfGeneratorService {
     });
 
     const quarterlyHeaders = [
-      ...seen.values(),
+      ...seen2.values(),
       { desc: 'Total', high_score: '' },
       { desc: 'PS', high_score: '' },
-      { desc: `WS (${subject.writen_works}%)`, high_score: '' },
+      { desc: `WS (${subject.quarter_assessment}%)`, high_score: '' },
     ];
 
+    console.log(writtenHeaders, performanceHeaders, quarterlyHeaders);
     // const quarterlyHeaders = [
     //   ...new Set(
     //     combineData.quarterlyAssessment.map((q) =>
@@ -3386,60 +3791,117 @@ export class PdfGeneratorService {
       });
     }
 
+    // for (const ww of combineData.writenWorks) {
+    //   if (!studentsMap.has(ww.SG_studentID)) {
+    //     initStudent(ww.SG_studentID, ww.name, ww.SG_sex);
+    //   }
+
+    //   // const label =
+    //   //   ww.SG_title && ww.SG_title.trim() !== '' ? ww.SG_title : ww.quiz_label;
+    //   const label =
+    //     (ww.SG_title && ww.SG_title.trim() !== ''
+    //       ? ww.SG_title
+    //       : ww.quiz_label) +
+    //     ' (' +
+    //     ww.SG_highest_posible_score +
+    //     ')';
+    //   const index = writtenHeaders.indexOf(label);
+    //   studentsMap.get(ww.SG_studentID).writtenWorks[index] = ww.SG_quarterScore;
+    // }
     for (const ww of combineData.writenWorks) {
       if (!studentsMap.has(ww.SG_studentID)) {
         initStudent(ww.SG_studentID, ww.name, ww.SG_sex);
       }
 
-      // const label =
-      //   ww.SG_title && ww.SG_title.trim() !== '' ? ww.SG_title : ww.quiz_label;
-      const label =
-        (ww.SG_title && ww.SG_title.trim() !== ''
-          ? ww.SG_title
-          : ww.quiz_label) +
-        ' (' +
-        ww.SG_highest_posible_score +
-        ')';
-      const index = writtenHeaders.indexOf(label);
-      studentsMap.get(ww.SG_studentID).writtenWorks[index] = ww.SG_quarterScore;
+      const index = writtenHeaders.findIndex(
+        (header) =>
+          header.desc ===
+            (ww.SG_title && ww.SG_title.trim() !== ''
+              ? ww.SG_title
+              : ww.quiz_label) &&
+          Number(header.high_score) === Number(ww.SG_highest_posible_score),
+      );
+
+      if (index !== -1) {
+        studentsMap.get(ww.SG_studentID).writtenWorks[index] =
+          ww.SG_quarterScore;
+      }
     }
 
+    // for (const pt of combineData.performanceTask) {
+    //   if (!studentsMap.has(pt.SG_studentID)) {
+    //     initStudent(pt.SG_studentID, pt.name, pt.SG_sex);
+    //   }
+    //   // const label =
+    //   //   pt.SG_title && pt.SG_title.trim() !== '' ? pt.SG_title : pt.quiz_label;
+    //   const label =
+    //     (pt.SG_title && pt.SG_title.trim() !== ''
+    //       ? pt.SG_title
+    //       : pt.quiz_label) +
+    //     ' (' +
+    //     pt.SG_highest_posible_score +
+    //     ')';
+    //   const index = performanceHeaders.indexOf(label);
+    //   studentsMap.get(pt.SG_studentID).performanceTasks[index] =
+    //     pt.SG_quarterScore;
+    // }
     for (const pt of combineData.performanceTask) {
       if (!studentsMap.has(pt.SG_studentID)) {
         initStudent(pt.SG_studentID, pt.name, pt.SG_sex);
       }
-      // const label =
-      //   pt.SG_title && pt.SG_title.trim() !== '' ? pt.SG_title : pt.quiz_label;
-      const label =
-        (pt.SG_title && pt.SG_title.trim() !== ''
-          ? pt.SG_title
-          : pt.quiz_label) +
-        ' (' +
-        pt.SG_highest_posible_score +
-        ')';
-      const index = performanceHeaders.indexOf(label);
-      studentsMap.get(pt.SG_studentID).performanceTasks[index] =
-        pt.SG_quarterScore;
+
+      const index = performanceHeaders.findIndex(
+        (header) =>
+          header.desc ===
+            (pt.SG_title && pt.SG_title.trim() !== ''
+              ? pt.SG_title
+              : pt.quiz_label) &&
+          Number(header.high_score) === Number(pt.SG_highest_posible_score),
+      );
+
+      if (index !== -1) {
+        studentsMap.get(pt.SG_studentID).performanceTasks[index] =
+          pt.SG_quarterScore;
+      }
     }
 
+    // for (const qa of combineData.quarterlyAssessment) {
+    //   if (!studentsMap.has(qa.SG_studentID)) {
+    //     initStudent(qa.SG_studentID, qa.name, qa.SG_sex);
+    //   }
+    //   // const label =
+    //   //   qa.SG_title && qa.SG_title.trim() !== '' ? qa.SG_title : qa.quiz_label;
+    //   const label =
+    //     (qa.SG_title && qa.SG_title.trim() !== ''
+    //       ? qa.SG_title
+    //       : qa.quiz_label) +
+    //     ' (' +
+    //     qa.SG_highest_posible_score +
+    //     ')';
+    //   const index = quarterlyHeaders.indexOf(label);
+    //   studentsMap.get(qa.SG_studentID).quarterlyAssessment[index] =
+    //     qa.SG_quarterScore;
+    // }
     for (const qa of combineData.quarterlyAssessment) {
       if (!studentsMap.has(qa.SG_studentID)) {
         initStudent(qa.SG_studentID, qa.name, qa.SG_sex);
       }
-      // const label =
-      //   qa.SG_title && qa.SG_title.trim() !== '' ? qa.SG_title : qa.quiz_label;
-      const label =
-        (qa.SG_title && qa.SG_title.trim() !== ''
-          ? qa.SG_title
-          : qa.quiz_label) +
-        ' (' +
-        qa.SG_highest_posible_score +
-        ')';
-      const index = quarterlyHeaders.indexOf(label);
-      studentsMap.get(qa.SG_studentID).quarterlyAssessment[index] =
-        qa.SG_quarterScore;
-    }
 
+      const index = quarterlyHeaders.findIndex(
+        (header) =>
+          header.desc ===
+            (qa.SG_title && qa.SG_title.trim() !== ''
+              ? qa.SG_title
+              : qa.quiz_label) &&
+          Number(header.high_score) === Number(qa.SG_highest_posible_score),
+      );
+
+      if (index !== -1) {
+        studentsMap.get(qa.SG_studentID).quarterlyAssessment[index] =
+          qa.SG_quarterScore;
+      }
+    }
+    console.log(combineData.generateGrade);
     // Grades
     for (const g of combineData.generateGrade) {
       const student = studentsMap.get(Number(g.studentID));
@@ -3537,6 +3999,17 @@ export class PdfGeneratorService {
       }
     }
 
+    let studentMale = [];
+    let studentFemale = [];
+    for (let i = 0; i < students.length; i++) {
+      if (students[i].sex == 'Male') {
+        studentMale.push(students[i]);
+      } else {
+        studentFemale.push(students[i]);
+      }
+    }
+    console.log(studentMale);
+
     let schoolYear = await this.dataSource.manager
       .createQueryBuilder(SchoolYear, 'SY')
       .select([
@@ -3556,15 +4029,6 @@ export class PdfGeneratorService {
       .where('rs.id = :roomID', { roomID })
       .getOne();
 
-    let studentMale = [];
-    let studentFemale = [];
-    for (let i = 0; i < students.length; i++) {
-      if (students[i].sex == 'Male') {
-        studentMale.push(students[i]);
-      } else {
-        studentFemale.push(students[i]);
-      }
-    }
     let curDate = new Date();
     let edukasyon = join(
       process.cwd(),
@@ -3593,9 +4057,13 @@ export class PdfGeneratorService {
         roomData,
         sub_subject:
           sub_subject == 1
-            ? 'Music'
+            ? schoolYear.syType == 0
+              ? 'Music'
+              : 'Music & Arts'
             : sub_subject == 2
-              ? 'Art'
+              ? schoolYear.syType == 0
+                ? 'Art'
+                : 'P.E. & Health'
               : sub_subject == 3
                 ? 'Physical Education'
                 : sub_subject == 4
@@ -3603,7 +4071,7 @@ export class PdfGeneratorService {
                   : '',
         curDate: this.formatDate(curDate),
         t_cols:
-          3 +
+          4 +
           writtenHeaders.length +
           performanceHeaders.length +
           performanceHeaders.length,
@@ -3703,7 +4171,10 @@ export class PdfGeneratorService {
         count_male,
         count_female,
         total_student: Number(count_female) + Number(count_male),
-        teacherName: rawData_male[0].teacherName,
+        teacherName:
+          rawData_male?.[0]?.teacherName ||
+          rawData_female?.[0]?.teacherName ||
+          '',
         schoolHead: getDeped[0].name,
         superIntendent: getDeped[1].name,
       },

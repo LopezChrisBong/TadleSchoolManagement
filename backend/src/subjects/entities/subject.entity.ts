@@ -26,6 +26,9 @@ export class Subject {
   @Column({ type: 'longtext', nullable: true })
   sub_subject: string;
 
+  @Column({ type: 'longtext', nullable: true })
+  sub_subject_term: string;
+
   @Column({ type: 'varchar', nullable: true })
   grade_level: string;
 

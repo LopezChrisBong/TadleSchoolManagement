@@ -429,23 +429,60 @@
                   </tr>
                 </thead>
                 <tbody>
-                  {{#for 0 10 1}}
+                        {{#ifCond junior true}}
+                  {{#studentData}}
+                  {{#juniorHigh}}
                     <tr>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td>3</td>
-                      <td></td>
-                      <td></td>
-                    </tr>
-                  {{/for}}
+                  {{#ifCond subject 'General Average'}}
+                  <td align="right" colspan="{{this.conspan}}" class="strong">{{subject}}:</td>
+                  <td></td>
+                  <td align="center"><b>{{finalGrade}}</b></td>
+                  <td align="center">{{remarks}}</td>
+                  {{else}}
+                  <td align="left" colspan="{{this.conspan}}">{{subject}}</td>
+                  <td align="center">{{this.[1st Term]}}</td>
+                  <td align="center">{{this.[2nd Term]}}</td>
+                  <td align="center">{{this.[3rd Term]}}</td>
+                  {{#if finalGrade}}
+                  <td>3</td>
+                  {{else}}
+                  <td></td>
+                  {{/if}}
+                  <td align="center"><b>{{finalGrade}}</b></td>
+                  <td align="center">{{remarks}}</td>
+                  {{/ifCond}}
+                  </tr>
+                  {{/juniorHigh}}
+                  {{/studentData}}
+                  {{else}}
+
+                  {{#studentData}}
+                  {{#seniorHigh}}
                   <tr>
+                  {{#ifCond subject 'General Average'}}
+                  <td align="right" colspan="{{this.conspan}}" class="strong">{{subject}}:</td>
+                  <td></td>
+                  <td align="center"><b>{{finalGrade}}</b></td>
+                  <td align="center">{{remarks}}</td>
+                  {{else}}
+                  <td align="left" colspan="{{this.conspan}}">{{subject}}</td>
+                  <td align="center">{{this.[1st Term]}}</td>
+                  <td align="center">{{this.[2nd Term]}}</td>
+                  <td align="center">{{this.[3rd Term]}}</td>
+                  <td>3</td>
+                  <td align="center"><b>{{finalGrade}}</b></td>
+                  <td align="center">{{remarks}}</td>
+                  {{/ifCond}}
+                  </tr>
+                  {{/seniorHigh}}
+                  {{/studentData}}
+                  {{/ifCond}}
+                  {{!-- <tr>
                     <td colspan='4' style='font-weight: bold;'>General Average</td>
                     <td>3</td>
                     <td></td>
                     <td></td>
-                  </tr>
+                  </tr> --}}
                 </tbody>
               </table>
 
@@ -550,7 +587,7 @@
                       Term 1
                     </div>
                     <div style='width:100%; text-align:start'>
-                      asdasdadasda
+                    
                     </div>
                   </div>
                 </td>
@@ -565,7 +602,7 @@
                       Term 2
                     </div>
                     <div style='width:100%; text-align:start'>
-                      asdasdadasda
+                    
                     </div>
                   </div>
                 </td>
@@ -580,7 +617,7 @@
                       Term 3
                     </div>
                     <div style='width:100%; text-align:start'>
-                      asdasdadasda
+                    
                     </div>
                   </div>
                 </td>
@@ -652,7 +689,7 @@
               <div>Eligible for Admission to Grade: ___________________</div>
               <div style='display: flex;justify-content:end'>
                 <div style='text-align: center;width:40%;margin-top:20px'>
-                  <div style='border-bottom: 1px solid black;'></div>
+                  <div style='border-bottom: 1px solid black;'>{{studentInfo.teacherName}}</div>
                   <div>Adviser</div>
                 </div>
               </div>
@@ -661,7 +698,7 @@
                 <div style='width:40%;'>
                   <div style='margin-bottom:20px'>Approved:</div>
                   <div style='text-align: center;'>
-                    <div style='border-bottom: 1px solid black;'></div>
+                    <div style='border-bottom: 1px solid black;'>{{studentInfo.teacherName}}</div>
                     <div>Adviser</div>
                   </div>
                 </div>
@@ -685,7 +722,7 @@
                 >
                   <div style='width:40%;'>
                     <div style='text-align: center;'>
-                      <div style='border-bottom: 1px solid black;'></div>
+                      <div style='border-bottom: 1px solid black;'>{{principal.name}}</div>
                       <div>School Head</div>
                     </div>
                   </div>

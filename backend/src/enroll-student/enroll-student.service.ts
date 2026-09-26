@@ -1437,10 +1437,12 @@ export class EnrollStudentService {
         'risk.*',
         'es.lrnNo as lrn',
         "IF (!ISNULL(ud.mname)  AND LOWER(ud.mname) != 'n/a', concat(ud.fname, ' ',SUBSTRING(ud.mname, 1, 1) ,'. ',ud.lname) ,concat(ud.fname, ' ', ud.lname)) as adviser",
+        "IF (!ISNULL(usd.mname)  AND LOWER(usd.mname) != 'n/a', concat(usd.fname, ' ',SUBSTRING(usd.mname, 1, 1) ,'. ',usd.lname) ,concat(usd.fname, ' ', usd.lname)) as teacher",
       ])
       .leftJoin(StudentList, 'sl', 'sl.studentId = risk.studentID')
       .leftJoin(RoomsSection, 'rs', 'rs.id = sl.roomId')
       .leftJoin(UserDetail, 'ud', 'ud.id = rs.teacherId')
+      .leftJoin(UserDetail, 'usd', 'usd.id = risk.teacherID')
       .leftJoin(EnrollStudent, 'es', 'es.id = risk.studentID')
       .where('risk.school_yearID = :filter', { filter })
       .groupBy('risk.subject_title')
@@ -1929,10 +1931,12 @@ export class EnrollStudentService {
     updateEnrollStudentDto: UpdateEnrollStudentDto,
   ) {
     let status = updateEnrollStudentDto.statusEnrolled;
+    let remarks = updateEnrollStudentDto.remarks;
     console.log(id, status);
     try {
       await this.dataSource.manager.update(EnrollStudent, id, {
         statusEnrolled: status,
+        remarks: remarks,
       });
       return {
         msg: 'Updated successfully!',
