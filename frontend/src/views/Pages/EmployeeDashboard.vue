@@ -8,7 +8,13 @@
     <div v-else-if="assignedModuleID == 23 || assignedModuleID == 27">
       <PrefectDashboard />
     </div>
-    <div v-else-if="assignedModuleID == 1">
+    <div
+      v-else-if="
+        assignedModuleID == 1 ||
+        assignedModuleID == 28 ||
+        assignedModuleID == 29
+      "
+    >
       <Admin />
     </div>
     <!-- Teacher Dashboard -->

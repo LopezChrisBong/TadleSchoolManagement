@@ -284,16 +284,9 @@ export default {
       { text: '500', value: 500 },
     ],
     grade: null,
-    activeTab: { id: 1, name: 'Grade 7', active: true },
-    tab: 1,
-    tabList: [
-      { id: 1, name: 'Grade 7', active: true },
-      { id: 2, name: 'Grade 8', active: false },
-      { id: 3, name: 'Grade 9', active: false },
-      { id: 4, name: 'Grade 10', active: false },
-      { id: 5, name: 'Grade 11', active: false },
-      { id: 6, name: 'Grade 12', active: false },
-    ],
+    activeTab: {},
+    tab: null,
+    tabList: [],
     section: null,
     sectionList: [],
     coreTimeData: null,
@@ -307,6 +300,7 @@ export default {
     action: null,
     paginationData: {},
     formdata: [],
+    assignedModuleID: null,
     work_dates_menu: false,
     confirmDialog: false,
     fadeAwayMessage: {
@@ -331,6 +325,33 @@ export default {
   },
 
   mounted() {
+    this.assignedModuleID = localStorage.getItem('AssignedModID');
+    (this.activeTab =
+      this.assignedModuleID != 29
+        ? { id: 1, name: 'Grade 7', active: true }
+        : { id: 5, name: 'Grade 11', active: true }),
+      (this.tab = this.assignedModuleID != 29 ? 1 : 5),
+      (this.tabList =
+        this.assignedModuleID == 1
+          ? [
+              { id: 1, name: 'Grade 7', active: true },
+              { id: 2, name: 'Grade 8', active: false },
+              { id: 3, name: 'Grade 9', active: false },
+              { id: 4, name: 'Grade 10', active: false },
+              { id: 5, name: 'Grade 11', active: false },
+              { id: 6, name: 'Grade 12', active: false },
+            ]
+          : this.assignedModuleID == 28
+          ? [
+              { id: 1, name: 'Grade 7', active: true },
+              { id: 2, name: 'Grade 8', active: false },
+              { id: 3, name: 'Grade 9', active: false },
+              { id: 4, name: 'Grade 10', active: false },
+            ]
+          : [
+              { id: 5, name: 'Grade 11', active: true },
+              { id: 6, name: 'Grade 12', active: false },
+            ]);
     this.initialize();
     eventBus.on('closeAddScheduleDialog', () => {
       this.getClassroom(this.section);
