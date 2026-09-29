@@ -1,7 +1,11 @@
 <template>
   <v-container fluid class="dashboard pa-6">
     <v-row dense class="mb-6">
-      <v-col cols="12" md="4">
+      <v-col
+        cols="12"
+        :md="assignedModuleID == 1 ? '4' : '6'"
+        v-if="assignedModuleID == 28 || assignedModuleID == 1"
+      >
         <v-card
           class="stat-card green-card"
           elevation="0"
@@ -17,7 +21,11 @@
         </v-card>
       </v-col>
 
-      <v-col cols="12" md="4">
+      <v-col
+        cols="12"
+        :md="assignedModuleID == 1 ? '4' : '6'"
+        v-if="assignedModuleID == 29 || assignedModuleID == 1"
+      >
         <v-card
           class="stat-card blue-card"
           elevation="0"
@@ -33,7 +41,7 @@
         </v-card>
       </v-col>
 
-      <v-col cols="12" md="4">
+      <v-col cols="12" :md="assignedModuleID == 1 ? '4' : '6'">
         <v-card class="stat-card red-card" elevation="0" @click="AtRiskList()">
           <div class="stat-icon-wrap red-icon">
             <v-icon icon="mdi-alert-outline" size="26" />
@@ -43,7 +51,7 @@
             <div class="stat-label">
               At-Risk Students
               <span v-if="totalStudents" class="stat-sublabel"
-                >(of {{ totalStudents }} total)</span
+                >(of {{ totalStudents }} total) {{ assignedModuleID }}</span
               >
             </div>
           </div>
@@ -59,7 +67,10 @@
           >
             <div class="section-title">Student Management</div>
 
-            <div class="d-flex flex-wrap ga-3 align-center">
+            <div
+              class="d-flex flex-wrap ga-3 align-center"
+              v-if="assignedModuleID == 1"
+            >
               <v-select
                 v-model="selectedLevel"
                 :items="levelOptions"
@@ -172,6 +183,7 @@ export default {
       ],
       juniorCount: null,
       seniorCount: null,
+      assignedModuleID: null,
       riskCount: null,
       totalStudents: null,
       atRisk: [],
@@ -227,6 +239,15 @@ export default {
   },
   methods: {
     initialize() {
+      if (localStorage.getItem('AssignedModID') == null) {
+        localStorage.setItem(
+          'AssignedModID',
+          this.$store.state.user.user.assignedModuleID,
+        );
+        this.assignedModuleID = localStorage.getItem('AssignedModID');
+      } else {
+        this.assignedModuleID = localStorage.getItem('AssignedModID');
+      }
       this.getFacultyDashboardData();
     },
     riskColor(risk) {
@@ -290,7 +311,13 @@ export default {
     getFacultyDashboardData() {
       const filter = this.$store.getters.getFilterSelected;
       this.loading = true;
-      this.axiosCall('/enroll-student/getAdminDashboardData/' + filter, 'GET')
+      this.axiosCall(
+        '/enroll-student/getAdminDashboardData/' +
+          filter +
+          '/' +
+          this.assignedModuleID,
+        'GET',
+      )
         .then((res) => {
           if (res) {
             this.juniorCount = res.data.juniorCount;

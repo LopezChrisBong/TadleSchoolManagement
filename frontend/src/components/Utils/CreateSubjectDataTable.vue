@@ -146,6 +146,7 @@ export default {
   },
   data: () => ({
     search: '',
+    assignedModuleID: null,
     taggingData: null,
     fullname: null,
     applicantData: null,
@@ -202,15 +203,9 @@ export default {
       { text: '250', value: 250 },
       { text: '500', value: 500 },
     ],
-    activeTab: { id: 1, name: 'Junior High' },
-    tab: 1,
-    tabList: [
-      { id: 1, name: 'Junior High', active: true },
-      { id: 2, name: 'Senior High', active: false },
-      // { id: 2, name: "Junior High" },
-      // { id: 2, name: "Senior High" },
-      //   { id: 3, name: "Applicants" },
-    ],
+    activeTab: {},
+    tab: null,
+    tabList: [],
     filter: null,
     coreTimeData: null,
     designationData: null,
@@ -257,6 +252,24 @@ export default {
   }),
 
   mounted() {
+    this.assignedModuleID = localStorage.getItem('AssignedModID');
+    this.activeTab =
+      this.assignedModuleID != 29
+        ? { id: 1, name: 'Junior High' }
+        : this.assignedModuleID == 29
+        ? { id: 2, name: 'Senior High' }
+        : { id: 1, name: 'Junior High' };
+    this.tab =
+      this.assignedModuleID != 29 ? 1 : this.assignedModuleID == 29 ? 2 : 1;
+    this.tabList =
+      this.assignedModuleID == 1
+        ? [
+            { id: 1, name: 'Junior High', active: true },
+            { id: 2, name: 'Senior High', active: false },
+          ]
+        : this.assignedModuleID == 28
+        ? [{ id: 1, name: 'Junior High', active: true }]
+        : [{ id: 2, name: 'Senior High', active: true }];
     this.initialize();
     eventBus.on('closeAddSubjectDialog', () => {
       this.initialize();
@@ -334,10 +347,7 @@ export default {
     },
 
     initialize() {
-      // let filter = this.$store.getters.getFilterSelected;
-      // alert(this.tabList[0].name);
       this.loading = true;
-      // alert(filter);
       this.axiosCall(
         '/subjects/getSubject/active/' + this.activeTab.name,
         'GET',

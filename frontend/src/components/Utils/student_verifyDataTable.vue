@@ -16,7 +16,13 @@
             > -->
             <v-autocomplete
               v-model="selectedGrade"
-              :items="gradeOptions"
+              :items="
+                assignedModuleID == 1
+                  ? gradeOptions
+                  : assignedModuleID == 28
+                  ? gradeOptionsJS
+                  : gradeOptionSH
+              "
               label="Grade Level"
               variant="outlined"
               density="compact"
@@ -177,6 +183,8 @@ export default {
       'Grade 11',
       'Grade 12',
     ],
+    gradeOptionsJS: ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'],
+    gradeOptionSH: ['Grade 11', 'Grade 12'],
     headers: [
       { title: 'Name', value: 'name', align: 'start' },
       {
@@ -227,6 +235,7 @@ export default {
     formdata: [],
     work_dates_menu: false,
     dialogConfirmDelete: false,
+    assignedModuleID: null,
     fadeAwayMessage: {
       show: false,
       type: 'success',
@@ -333,8 +342,12 @@ export default {
     initialize() {
       this.loading = true;
       this.filter = this.$store.getters.getFilterSelected;
+      this.assignedModuleID = localStorage.getItem('AssignedModID');
       this.axiosCall(
-        '/enroll-student/getStudentDataList/' + this.filter,
+        '/enroll-student/getStudentDataList/' +
+          this.filter +
+          '/' +
+          this.assignedModuleID,
         'GET',
       ).then((res) => {
         if (res) {

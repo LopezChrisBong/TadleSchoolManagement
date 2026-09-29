@@ -515,8 +515,10 @@ export class EnrollStudentService {
     return data;
   }
 
-  async getStudentDataList(filter: number) {
-    let data = await this.dataSource.manager
+  async getStudentDataList(filter: number, assID: number) {
+    let junior = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'];
+    let senior = ['Grade 11', 'Grade 12'];
+    let data = this.dataSource.manager
       .createQueryBuilder(EnrollStudent, 'ES')
       .select([
         "IF (!ISNULL(ES.mname)  AND LOWER(ES.mname) != 'n/a', concat(ES.fname, ' ',SUBSTRING(ES.mname, 1, 1) ,'. ',ES.lname) ,concat(ES.fname, ' ', ES.lname)) as name",
@@ -525,13 +527,16 @@ export class EnrollStudentService {
       ])
       .leftJoin(StudentList, 'sl', 'sl.studentId = ES.id')
       .leftJoin(RoomsSection, 'rs', 'rs.id = sl.roomId')
-      // .where('sl.school_yearId = :filter', { filter })
-      // .andWhere('rs.id = :roomID', { roomID })
-      // .andWhere('sl.grade_level = :gradeLevel', { gradeLevel })
-      .getRawMany();
-
-    console.log(filter, data);
-    return data;
+      .where('sl.school_yearId = :filter', { filter });
+    if (assID == 28) {
+      data.andWhere('sl.grade_level IN (:...junior)', { junior });
+    } else if (assID == 29) {
+      data.andWhere('sl.grade_level IN (:...senior)', { senior });
+    }
+    // .andWhere('rs.id = :roomID', { roomID })
+    // .andWhere('sl.grade_level = :gradeLevel', { gradeLevel })
+    let newData = data.getRawMany();
+    return newData;
   }
 
   async EnrolledStudent(curr_user: any) {
@@ -1412,7 +1417,7 @@ export class EnrollStudentService {
     };
   }
 
-  async getAdminDashboardData(filter: string) {
+  async getAdminDashboardData(filter: string, assID: number) {
     let junior = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'];
     let senior = ['Grade 11', 'Grade 12'];
     let studentEnrolled = await this.dataSource.manager.findBy(EnrollStudent, {
@@ -1431,7 +1436,7 @@ export class EnrollStudentService {
       }
     }
 
-    let atRisk = await this.dataSource.manager
+    let atRisk = this.dataSource.manager
       .createQueryBuilder(AtRiskStudentForFacultyNotification, 'risk')
       .select([
         'risk.*',
@@ -1444,17 +1449,22 @@ export class EnrollStudentService {
       .leftJoin(UserDetail, 'ud', 'ud.id = rs.teacherId')
       .leftJoin(UserDetail, 'usd', 'usd.id = risk.teacherID')
       .leftJoin(EnrollStudent, 'es', 'es.id = risk.studentID')
-      .where('risk.school_yearID = :filter', { filter })
-      .groupBy('risk.subject_title')
-      .addGroupBy('sl.studentID')
-      .orderBy('es.lname', 'ASC')
-      .getRawMany();
-    // console.log('getAdminDashboardData', atRisk);
+      .where('risk.school_yearID = :filter', { filter });
+    if (assID == 28) {
+      atRisk.andWhere('risk.grade_level IN (:...junior)', { junior });
+    } else if (assID == 29) {
+      atRisk.andWhere('risk.grade_level IN (:...senior)', { senior });
+    }
+    atRisk.groupBy('risk.subject_title');
+    atRisk.addGroupBy('sl.studentID');
+    atRisk.orderBy('es.lname', 'ASC');
+    let newData = await atRisk.getRawMany();
+    console.log('getAdminDashboardData', assID);
     return {
       juniorCount: juniorCount,
       seniorCount: seniorCount,
-      atRisk: atRisk,
-      riskCout: atRisk.length,
+      atRisk: newData,
+      riskCout: newData.length,
     };
   }
 

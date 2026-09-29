@@ -86,9 +86,12 @@ export class EnrollStudentController {
     );
   }
 
-  @Get('getAdminDashboardData/:filter')
-  getAdminDashboardData(@Param('filter') filter: string) {
-    return this.enrollStudentService.getAdminDashboardData(filter);
+  @Get('getAdminDashboardData/:filter/:assID')
+  getAdminDashboardData(
+    @Param('filter') filter: string,
+    @Param('assID') assID: string,
+  ) {
+    return this.enrollStudentService.getAdminDashboardData(filter, +assID);
   }
 
   @Get('getAllSubjectThatAtRisk/:filter/:id')
@@ -218,9 +221,12 @@ export class EnrollStudentController {
     return this.enrollStudentService.getTotalEnrolledStudent(+filter, +status);
   }
 
-  @Get('getStudentDataList/:filter')
-  getStudentDataList(@Param('filter') filter: string) {
-    return this.enrollStudentService.getStudentDataList(+filter);
+  @Get('getStudentDataList/:filter/:assID')
+  getStudentDataList(
+    @Param('filter') filter: string,
+    @Param('assID') assID: string,
+  ) {
+    return this.enrollStudentService.getStudentDataList(+filter, +assID);
   }
 
   @Get('FacultySchedule/:filter')
