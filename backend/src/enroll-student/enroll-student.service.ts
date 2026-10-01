@@ -1417,21 +1417,23 @@ export class EnrollStudentService {
     };
   }
 
-  async getAdminDashboardData(filter: string, assID: number) {
+  async getAdminDashboardData(filter: number, assID: number) {
     let junior = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'];
     let senior = ['Grade 11', 'Grade 12'];
-    let studentEnrolled = await this.dataSource.manager.findBy(EnrollStudent, {
-      statusEnrolled: 1,
-      school_yearId: filter,
-    });
-
+    let studentEnrolled = await this.dataSource.manager
+      .createQueryBuilder(EnrollStudent, 'ES')
+      .select(['sl.grade_level'])
+      .leftJoin(StudentList, 'sl', 'sl.studentId = ES.id')
+      .where('sl.school_yearId = :filter', { filter })
+      .andWhere('ES.statusEnrolled = 1')
+      .getRawMany();
     let juniorCount = 0;
     let seniorCount = 0;
 
     for (let i = 0; i < studentEnrolled.length; i++) {
-      if (junior.includes(studentEnrolled[i].grade_level)) {
+      if (junior.includes(studentEnrolled[i].sl_grade_level)) {
         juniorCount += 1;
-      } else if (senior.includes(studentEnrolled[i].grade_level)) {
+      } else if (senior.includes(studentEnrolled[i].sl_grade_level)) {
         seniorCount += 1;
       }
     }
@@ -1459,12 +1461,37 @@ export class EnrollStudentService {
     atRisk.addGroupBy('sl.studentID');
     atRisk.orderBy('es.lname', 'ASC');
     let newData = await atRisk.getRawMany();
-    console.log('getAdminDashboardData', assID);
+
+    let lardo = this.dataSource.manager
+      .createQueryBuilder(LardoStudentNotification, 'lardo')
+      .select([
+        'lardo.*',
+        'es.lrnNo as lrn',
+        "IF (!ISNULL(ud.mname)  AND LOWER(ud.mname) != 'n/a', concat(ud.fname, ' ',SUBSTRING(ud.mname, 1, 1) ,'. ',ud.lname) ,concat(ud.fname, ' ', ud.lname)) as adviser",
+        "IF (!ISNULL(usd.mname)  AND LOWER(usd.mname) != 'n/a', concat(usd.fname, ' ',SUBSTRING(usd.mname, 1, 1) ,'. ',usd.lname) ,concat(usd.fname, ' ', usd.lname)) as teacher",
+      ])
+      .leftJoin(StudentList, 'sl', 'sl.studentId = lardo.studentID')
+      .leftJoin(RoomsSection, 'rs', 'rs.id = sl.roomId')
+      .leftJoin(UserDetail, 'ud', 'ud.id = rs.teacherId')
+      .leftJoin(UserDetail, 'usd', 'usd.id = lardo.teacherID')
+      .leftJoin(EnrollStudent, 'es', 'es.id = lardo.studentID')
+      .where('lardo.school_yearID = :filter', { filter });
+    if (assID == 28) {
+      lardo.andWhere('lardo.grade_level IN (:...junior)', { junior });
+    } else if (assID == 29) {
+      lardo.andWhere('lardo.grade_level IN (:...senior)', { senior });
+    }
+    lardo.orderBy('lardo.created_at', 'DESC');
+    lardo.groupBy('lardo.studentID');
+    let newLardo = await lardo.getRawMany();
+    console.log('newLardo', newLardo);
     return {
       juniorCount: juniorCount,
       seniorCount: seniorCount,
       atRisk: newData,
-      riskCout: newData.length,
+      lardo: newLardo,
+      riskCount: newData.length,
+      lardoCount: newLardo.length,
     };
   }
 
