@@ -15,6 +15,7 @@ import {
   DepEdPersonnel,
   EnrollStudent,
   ESig,
+  LardoStudentNotification,
   ParentAcknowledgement,
   ParentRecord,
   RoomsSection,
@@ -4301,7 +4302,9 @@ export class PdfGeneratorService {
     }
   }
 
-  async getAllAtRiskStudents(filter: number) {
+  async getAllAtRiskStudents(filter: number, assID: number) {
+    let junior = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'];
+    let senior = ['Grade 11', 'Grade 12'];
     let atRisk = await this.dataSource.manager
       .createQueryBuilder(AtRiskStudentForFacultyNotification, 'risk')
       .select([
@@ -4313,12 +4316,17 @@ export class PdfGeneratorService {
       .leftJoin(RoomsSection, 'rs', 'rs.id = sl.roomId')
       .leftJoin(UserDetail, 'ud', 'ud.id = rs.teacherId')
       .leftJoin(EnrollStudent, 'es', 'es.id = risk.studentID')
-      .where('risk.school_yearID = :filter', { filter })
-      .groupBy('risk.subject_title')
-      .addGroupBy('sl.studentID')
-      .orderBy('es.fname', 'ASC')
-      .getRawMany();
-    console.log(atRisk);
+      .where('risk.school_yearID = :filter', { filter });
+    if (assID == 28) {
+      atRisk.andWhere('risk.grade_level IN (:...junior)', { junior });
+    } else if (assID == 29) {
+      atRisk.andWhere('risk.grade_level IN (:...senior)', { senior });
+    }
+    atRisk.groupBy('risk.subject_title');
+    atRisk.addGroupBy('sl.studentID');
+    atRisk.orderBy('es.fname', 'ASC');
+    let newAtRisk = await atRisk.getRawMany();
+    console.log(newAtRisk);
 
     let getDeped = await this.dataSource.manager
       .createQueryBuilder(DepEdPersonnel, 'dep')
@@ -4339,7 +4347,8 @@ export class PdfGeneratorService {
         footer_img: this.base64_encode(footerImg, 'headerfooter'),
         schoolHead: getDeped[0].name,
         superIntendent: getDeped[1].name,
-        atRisk,
+        atRisk: newAtRisk,
+        num: 1,
       },
     ];
     try {
@@ -4350,6 +4359,83 @@ export class PdfGeneratorService {
       const page = await browser.newPage();
       // compile(template_name, data)
       const content = await this.compile('at-risk-student-list', data);
+      await page.setContent(content);
+
+      const buffer = await page.pdf({
+        format: 'legal',
+        margin: {
+          top: '0.20in',
+          left: '0.50in',
+          bottom: '0.20in',
+          right: '0.50in',
+        },
+        landscape: false,
+        printBackground: true,
+      });
+      await browser.close();
+      return buffer;
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  async getAllLardoStudents(filter: number, assID: number) {
+    let junior = ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'];
+    let senior = ['Grade 11', 'Grade 12'];
+    let atRisk = await this.dataSource.manager
+      .createQueryBuilder(LardoStudentNotification, 'risk')
+      .select([
+        'risk.*',
+        'es.lrnNo as lrn',
+        "IF (!ISNULL(ud.mname)  AND LOWER(ud.mname) != 'n/a', concat(ud.fname, ' ',SUBSTRING(ud.mname, 1, 1) ,'. ',ud.lname) ,concat(ud.fname, ' ', ud.lname)) as adviser",
+      ])
+      .leftJoin(StudentList, 'sl', 'sl.studentId = risk.studentID')
+      .leftJoin(RoomsSection, 'rs', 'rs.id = sl.roomId')
+      .leftJoin(UserDetail, 'ud', 'ud.id = rs.teacherId')
+      .leftJoin(EnrollStudent, 'es', 'es.id = risk.studentID')
+      .where('risk.school_yearID = :filter', { filter });
+    if (assID == 28) {
+      atRisk.andWhere('risk.grade_level IN (:...junior)', { junior });
+    } else if (assID == 29) {
+      atRisk.andWhere('risk.grade_level IN (:...senior)', { senior });
+    }
+    atRisk.groupBy('risk.subject_title');
+    atRisk.addGroupBy('sl.studentID');
+    atRisk.orderBy('es.fname', 'ASC');
+    let lardo = await atRisk.getRawMany();
+    console.log(lardo, filter, assID);
+
+    let getDeped = await this.dataSource.manager
+      .createQueryBuilder(DepEdPersonnel, 'dep')
+      .getMany();
+
+    let headerImg = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/header.png',
+    );
+    let footerImg = join(
+      process.cwd(),
+      process.env.FILE_PATH + 'static/img/footer.png',
+    );
+
+    const data = [
+      {
+        header_img: this.base64_encode(headerImg, 'headerfooter'),
+        footer_img: this.base64_encode(footerImg, 'headerfooter'),
+        schoolHead: getDeped[0].name,
+        superIntendent: getDeped[1].name,
+        atRisk: lardo,
+        num: 2,
+      },
+    ];
+    try {
+      const browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      });
+      const page = await browser.newPage();
+      // compile(template_name, data)
+      const content = await this.compile('lardo-student-list', data);
       await page.setContent(content);
 
       const buffer = await page.pdf({

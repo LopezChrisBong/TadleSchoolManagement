@@ -91,7 +91,7 @@ export class EnrollStudentController {
     @Param('filter') filter: string,
     @Param('assID') assID: string,
   ) {
-    return this.enrollStudentService.getAdminDashboardData(filter, +assID);
+    return this.enrollStudentService.getAdminDashboardData(+filter, +assID);
   }
 
   @Get('getAllSubjectThatAtRisk/:filter/:id')

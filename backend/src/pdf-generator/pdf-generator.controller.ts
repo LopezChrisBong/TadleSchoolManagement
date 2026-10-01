@@ -385,12 +385,39 @@ export class PdfGeneratorController {
     res.end(buffer);
   }
 
-  @Get('/getAllAtRiskStudents/:filter')
+  @Get('/getAllAtRiskStudents/:filter/:assID')
   async getAllAtRiskStudents(
     @Res() res,
     @Param('filter') filter: number,
+    @Param('assID') assID: number,
   ): Promise<void> {
-    const buffer = await this.pdfGeneratorService.getAllAtRiskStudents(filter);
+    const buffer = await this.pdfGeneratorService.getAllAtRiskStudents(
+      filter,
+      assID,
+    );
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'inline; filename=example.pdf',
+      'Content-Length': buffer.length,
+
+      // prevent cache
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      Pragma: 'no-cache',
+      Expires: 0,
+    });
+
+    res.end(buffer);
+  }
+  @Get('/getAllLardoStudents/:filter/:assID')
+  async getAllLardoStudents(
+    @Res() res,
+    @Param('filter') filter: number,
+    @Param('assID') assID: number,
+  ): Promise<void> {
+    const buffer = await this.pdfGeneratorService.getAllLardoStudents(
+      filter,
+      assID,
+    );
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': 'inline; filename=example.pdf',

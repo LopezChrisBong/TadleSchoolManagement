@@ -1,609 +1,531 @@
 <template>
-  <v-container fluid class="pa-6 dashboard-bg">
-    <!-- HEADER -->
-    <div class="d-flex align-center justify-space-between flex-wrap ga-4 mb-6">
-      <div>
-        <div class="text-overline text-medium-emphasis mb-1">
-          Advisor Dashboard
-        </div>
-        <div class="text-h5 font-weight-bold text-slate">Class Overview</div>
+  <v-container fluid class="dash pa-4 pa-md-6">
+    <!-- Header -->
+    <header class="page-head">
+      <h1 class="page-title">Class overview</h1>
+      <p class="page-sub">
+        Grades, dropout risk and behavior reports for your advisory classes.
+      </p>
+    </header>
+
+    <!-- Overview strip -->
+    <section class="overview" aria-label="Class totals">
+      <div v-for="s in stats" :key="s.key" class="overview-cell">
+        <span class="cell-icon" :style="{ '--tone': s.color }">
+          <v-icon :icon="s.icon" size="20" />
+        </span>
+        <span class="cell-body">
+          <span class="cell-label">{{ s.label }}</span>
+          <span class="cell-value">
+            {{ s.value || 0 }}
+            <small v-if="s.ofTotal && studentCount" class="cell-of">
+              of {{ studentCount }}
+            </small>
+          </span>
+          <span v-if="s.ofTotal && studentCount" class="cell-bar">
+            <span
+              :style="{ width: percent(s.value) + '%', background: s.color }"
+            />
+          </span>
+        </span>
       </div>
-    </div>
+    </section>
 
-    <!-- STATS CARDS -->
-    <v-row class="mb-6" dense>
-      <v-col cols="12" md="4">
-        <v-card class="pa-4 stat-card" rounded="lg" border elevation="0">
-          <div class="stat-icon-wrap blue-icon">
-            <v-icon icon="mdi-account-group-outline" size="22" />
-          </div>
-          <div>
-            <div class="text-h6 font-weight-bold text-slate">
-              {{ studentCount ? studentCount : 0 }}
-            </div>
-            <div class="text-caption text-medium-emphasis">Total Students</div>
-          </div>
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" md="4">
-        <v-card class="pa-4 stat-card" rounded="lg" border elevation="0">
-          <div class="stat-icon-wrap red-icon">
-            <v-icon icon="mdi-alert-outline" size="22" />
-          </div>
-          <div>
-            <div class="text-h6 font-weight-bold text-slate">
-              {{ atRiskCount ? atRiskCount : 0 }}
-            </div>
-            <div class="text-caption text-medium-emphasis">
-              At-Risk Student/s
-            </div>
-          </div>
-        </v-card>
-      </v-col>
-
-      <v-col cols="12" md="4">
-        <v-card class="pa-4 stat-card" rounded="lg" border elevation="0">
-          <div class="stat-icon-wrap orange-icon">
-            <v-icon icon="mdi-clipboard-alert-outline" size="22" />
-          </div>
-          <div>
-            <div class="text-h6 font-weight-bold text-slate">
-              {{ lardoCount ? lardoCount : 0 }}
-            </div>
-            <div class="text-caption text-medium-emphasis">LARDO Student/s</div>
-          </div>
-        </v-card>
-      </v-col>
-    </v-row>
-
-    <!-- CHARTS -->
-    <v-row class="mb-6" dense>
+    <!-- Charts -->
+    <v-row dense class="mb-2">
       <v-col cols="12" md="7">
-        <v-card class="pa-4" rounded="lg" border elevation="0">
-          <div class="section-eyebrow mb-1">
-            <v-icon icon="mdi-chart-bar" size="16" class="me-1" />
-            OVERVIEW
-          </div>
-          <v-card-title class="font-weight-bold px-0 pt-0 text-slate">
-            Student Overview
-          </v-card-title>
+        <v-card class="panel" elevation="0">
+          <h2 class="panel-title">Student overview</h2>
+          <p class="panel-sub">Total students compared with flagged students</p>
           <div class="chart-wrap">
             <Bar
               v-if="hasOverviewData"
               :data="overviewChartData"
               :options="barOptions"
             />
-            <v-empty-state
-              v-else
-              icon="mdi-chart-bar"
-              title="No data yet"
-              text="Stats will appear once students are enrolled."
-              class="empty-chart-state"
-            />
+            <div v-else class="empty">
+              <v-icon icon="mdi-chart-bar" size="34" />
+              <strong>No data yet</strong>
+              <span>Stats appear once students are enrolled.</span>
+            </div>
           </div>
         </v-card>
       </v-col>
 
       <v-col cols="12" md="5">
-        <v-card class="pa-4" rounded="lg" border elevation="0">
-          <div class="section-eyebrow mb-1">
-            <v-icon icon="mdi-chart-donut" size="16" class="me-1" />
-            BREAKDOWN
-          </div>
-          <v-card-title class="font-weight-bold px-0 pt-0 text-slate">
-            Risk Level Breakdown
-          </v-card-title>
+        <v-card class="panel" elevation="0">
+          <h2 class="panel-title">Risk levels</h2>
+          <p class="panel-sub">At-risk students grouped by grade range</p>
           <div class="chart-wrap">
             <Doughnut
               v-if="hasRiskData"
               :data="riskChartData"
               :options="doughnutOptions"
             />
-            <v-empty-state
-              v-else
-              icon="mdi-check-circle-outline"
-              title="Nothing to chart"
-              text="No at-risk students currently."
-              class="empty-chart-state"
-            />
+            <div v-else class="empty">
+              <v-icon icon="mdi-check-circle-outline" size="34" />
+              <strong>Nothing to chart</strong>
+              <span>No at-risk students right now.</span>
+            </div>
           </div>
         </v-card>
       </v-col>
     </v-row>
 
-    <v-row dense>
-      <!-- LEFT / MAIN COLUMN -->
-      <v-col cols="12" md="12">
-        <!-- AT RISK TABLE -->
-        <v-card class="mb-6 pa-4" rounded="lg" border elevation="0">
-          <v-card-title
-            class="font-weight-bold d-flex align-center flex-wrap ga-3 px-0 pt-0 text-slate"
+    <!-- At-risk table -->
+    <v-card class="panel" elevation="0">
+      <div class="panel-head">
+        <div>
+          <h2 class="panel-title">Students at risk of failing</h2>
+          <p class="panel-sub">
+            {{ atRiskStudents.length }}
+            {{ atRiskStudents.length === 1 ? 'student' : 'students' }} with a
+            grade of 80 or below
+          </p>
+        </div>
+        <v-text-field
+          v-model="search"
+          density="compact"
+          placeholder="Search name or LRN"
+          prepend-inner-icon="mdi-magnify"
+          variant="outlined"
+          hide-details
+          clearable
+          single-line
+          class="search-field"
+        />
+      </div>
+
+      <v-data-table
+        :headers="headers"
+        :items="atRiskStudents"
+        :search="search"
+        density="comfortable"
+        hover
+        class="tbl"
+      >
+        <template v-slot:[`item.name`]="{ item }">
+          <div class="person">
+            <v-avatar size="30" color="primary" variant="tonal" class="avatar">
+              {{ initials(item.name) }}
+            </v-avatar>
+            <span class="person-name">{{ item.name }}</span>
+          </div>
+        </template>
+
+        <template v-slot:[`item.grade`]="{ item }">
+          <v-chip
+            size="small"
+            variant="tonal"
+            :color="riskInfo(item.transmuted_grade).color"
+            class="grade-chip"
           >
+            {{ item.transmuted_grade ?? '—' }}
+            <span class="grade-label">
+              {{ riskInfo(item.transmuted_grade).label }}
+            </span>
+          </v-chip>
+        </template>
+
+        <template v-slot:[`item.remarks`]="{ item }">
+          <v-chip
+            size="small"
+            variant="tonal"
+            :color="riskInfo(item.transmuted_grade).color"
+            class="wrap-chip"
+          >
+            {{ item.remarks }}
+          </v-chip>
+        </template>
+
+        <template v-slot:[`item.action_taken`]="{ item }">
+          <button
+            v-if="item.action_taken"
+            type="button"
+            class="action-pill action-pill--done"
+            @click="openActionDialog(item, 'at_risk')"
+          >
+            <v-icon icon="mdi-check-circle" size="16" class="me-1" />
+            <span class="action-pill-text">{{ item.action_taken }}</span>
             <v-icon
-              icon="mdi-school-outline"
-              size="20"
-              class="me-2 text-red-lighten-1"
+              icon="mdi-pencil-outline"
+              size="14"
+              class="ms-1 pill-edit"
             />
-            Students at Risk of Grade Failure
-            <v-spacer />
-            <v-text-field
-              v-model="search"
-              density="compact"
-              placeholder="Search"
-              prepend-inner-icon="mdi-magnify"
-              variant="outlined"
-              hide-details
-              clearable
-              style="max-width: 220px"
-            />
-          </v-card-title>
-
-          <v-data-table
-            :headers="headers"
-            :items="atRiskStudents"
-            :search="search"
-            density="comfortable"
-            class="risk-table"
+          </button>
+          <button
+            v-else
+            type="button"
+            class="action-pill action-pill--empty"
+            @click="openActionDialog(item, 'at_risk')"
           >
-            <template v-slot:[`item.transmuted_grade`]="{ item }">
-              <v-chip
-                :color="riskInfo(item.transmuted_grade).color"
-                size="small"
-                variant="flat"
-              >
-                <span class="text-white">{{
-                  riskInfo(item.transmuted_grade).label
-                }}</span>
-              </v-chip>
-            </template>
-            <template v-slot:[`item.grade`]="{ item }">
-              {{ item.transmuted_grade }}
-            </template>
+            <v-icon icon="mdi-plus" size="16" class="me-1" />
+            Log action taken
+          </button>
+        </template>
 
-            <template v-slot:[`item.remarks`]="{ item }">
-              <v-btn
-                size="small"
-                :color="riskInfo(item.transmuted_grade).color"
-                variant="flat"
-              >
-                <span class="text-white" style="font-size: 10px">
-                  {{ item.remarks }}
-                </span>
-              </v-btn>
-            </template>
-
-            <template v-slot:[`item.action_taken`]="{ item }">
-              <div class="action-taken-cell">
-                <button
-                  v-if="item.action_taken"
-                  type="button"
-                  class="action-pill action-pill--done"
-                  @click="openActionDialog(item, 'at_risk')"
-                >
-                  <v-icon icon="mdi-check-circle" size="16" class="me-1" />
-                  <span class="action-pill-text">{{ item.action_taken }}</span>
-                  <v-icon
-                    icon="mdi-pencil-outline"
-                    size="14"
-                    class="ms-1 action-pill-edit"
-                  />
-                </button>
-                <button
-                  v-else
-                  type="button"
-                  class="action-pill action-pill--empty"
-                  @click="openActionDialog(item, 'at_risk')"
-                >
-                  <v-icon icon="mdi-plus" size="16" class="me-1" />
-                  Log action taken
-                </button>
-              </div>
-            </template>
-
-            <template v-slot:[`item.actions`]="{ item }">
-              <div class="d-flex justify-end">
-                <v-btn
-                  size="small"
-                  variant="flat"
-                  color="pink"
-                  prepend-icon="mdi-eye-outline"
-                  @click="openAtRiskData(item)"
-                >
-                  View
-                </v-btn>
-              </div>
-            </template>
-
-            <template v-slot:no-data>
-              <v-empty-state
-                icon="mdi-check-circle-outline"
-                title="No at-risk students found"
-                text="Everyone's currently on track."
-              />
-            </template>
-          </v-data-table>
-        </v-card>
-
-        <!-- LARDO TABLE -->
-        <v-card class="mb-6 pa-4" rounded="lg" border elevation="0">
-          <v-card-title
-            class="font-weight-bold d-flex align-center flex-wrap ga-3 px-0 pt-0 text-slate"
+        <template v-slot:[`item.actions`]="{ item }">
+          <v-btn
+            size="small"
+            variant="tonal"
+            color="primary"
+            prepend-icon="mdi-eye-outline"
+            @click="openAtRiskData(item)"
           >
+            View
+          </v-btn>
+        </template>
+
+        <template v-slot:no-data>
+          <div class="empty">
+            <v-icon icon="mdi-check-circle-outline" size="34" />
+            <strong>No at-risk students</strong>
+            <span>Everyone is currently on track.</span>
+          </div>
+        </template>
+      </v-data-table>
+    </v-card>
+
+    <!-- LARDO table -->
+    <v-card class="panel" elevation="0">
+      <div class="panel-head">
+        <div>
+          <h2 class="panel-title">Learners at risk of dropping out (LARDO)</h2>
+          <p class="panel-sub">
+            {{ lardoStudents.length }}
+            {{ lardoStudents.length === 1 ? 'learner' : 'learners' }} flagged
+            from attendance tracking
+          </p>
+        </div>
+        <v-text-field
+          v-model="searchLardo"
+          density="compact"
+          placeholder="Search name or LRN"
+          prepend-inner-icon="mdi-magnify"
+          variant="outlined"
+          hide-details
+          clearable
+          single-line
+          class="search-field"
+        />
+      </div>
+
+      <v-data-table
+        :headers="headers1"
+        :items="lardoStudents"
+        :search="searchLardo"
+        density="comfortable"
+        hover
+        class="tbl"
+      >
+        <template v-slot:[`item.name`]="{ item }">
+          <div class="person">
+            <v-avatar size="30" color="primary" variant="tonal" class="avatar">
+              {{ initials(item.name) }}
+            </v-avatar>
+            <span class="person-name">{{ item.name }}</span>
+          </div>
+        </template>
+
+        <template v-slot:[`item.remarks`]="{ item }">
+          <v-chip
+            size="small"
+            variant="tonal"
+            :color="severityOf(item.remarks).color"
+            :prepend-icon="severityOf(item.remarks).icon"
+          >
+            {{ severityOf(item.remarks).label }}
+          </v-chip>
+        </template>
+
+        <template v-slot:[`item.recommendation`]="{ item }">
+          <v-chip
+            size="small"
+            variant="tonal"
+            color="warning"
+            class="wrap-chip"
+          >
+            {{ item.recommendation }}
+          </v-chip>
+        </template>
+
+        <template v-slot:[`item.action_taken`]="{ item }">
+          <button
+            v-if="item.action_taken"
+            type="button"
+            class="action-pill action-pill--done"
+            @click="openActionDialog(item, 'lardo')"
+          >
+            <v-icon icon="mdi-check-circle" size="16" class="me-1" />
+            <span class="action-pill-text">{{ item.action_taken }}</span>
             <v-icon
-              icon="mdi-clipboard-alert-outline"
-              size="20"
-              class="me-2 text-orange-darken-1"
+              icon="mdi-pencil-outline"
+              size="14"
+              class="ms-1 pill-edit"
             />
-            Learner's At-Risk of Dropping Out (LARDO)
-            <v-spacer />
-            <v-text-field
-              v-model="search"
-              density="compact"
-              placeholder="Search"
-              prepend-inner-icon="mdi-magnify"
-              variant="outlined"
-              hide-details
-              clearable
-              style="max-width: 220px"
-            />
-          </v-card-title>
-
-          <v-data-table
-            :headers="headers1"
-            :items="lardoStudents"
-            :search="search"
-            density="comfortable"
-            class="risk-table"
+          </button>
+          <button
+            v-else
+            type="button"
+            class="action-pill action-pill--empty"
+            @click="openActionDialog(item, 'lardo')"
           >
-            <template v-slot:[`item.name`]="{ item }">
-              <div class="d-flex align-center justify-center ga-2">
-                <span class="font-weight-medium" style="font-size: 10px">{{
-                  item.name
-                }}</span>
-              </div>
-            </template>
+            <v-icon icon="mdi-plus" size="16" class="me-1" />
+            Log action taken
+          </button>
+        </template>
 
-            <template v-slot:[`item.remarks`]="{ item }">
-              <div class="d-flex justify-end">
-                <span class="text-black" style="font-size: 10px">
-                  {{ item.remarks }}
-                </span>
-              </div>
-            </template>
-
-            <template v-slot:[`item.action_taken`]="{ item }">
-              <div class="action-taken-cell">
-                <button
-                  v-if="item.action_taken"
-                  type="button"
-                  class="action-pill action-pill--done"
-                  @click="openActionDialog(item, 'lardo')"
-                >
-                  <v-icon icon="mdi-check-circle" size="16" class="me-1" />
-                  <span class="action-pill-text">{{ item.action_taken }}</span>
-                  <v-icon
-                    icon="mdi-pencil-outline"
-                    size="14"
-                    class="ms-1 action-pill-edit"
-                  />
-                </button>
-                <button
-                  v-else
-                  type="button"
-                  class="action-pill action-pill--empty"
-                  @click="openActionDialog(item, 'lardo')"
-                >
-                  <v-icon icon="mdi-plus" size="16" class="me-1" />
-                  Log action taken
-                </button>
-              </div>
-            </template>
-
-            <template v-slot:[`item.actions`]="{ item }">
-              <div class="d-flex justify-end">
-                <v-btn
-                  size="small"
-                  variant="flat"
-                  color="pink"
-                  prepend-icon="mdi-eye-outline"
-                  @click="openLardoDialog(item)"
-                >
-                  View
-                </v-btn>
-              </div>
-            </template>
-
-            <template v-slot:no-data>
-              <v-empty-state
-                icon="mdi-check-circle-outline"
-                title="No at-risk students found"
-                text="Everyone's currently on track."
-              />
-            </template>
-          </v-data-table>
-        </v-card>
-
-        <!-- LARDO Details Dialog -->
-        <v-dialog v-model="lardoDialog" max-width="480">
-          <v-card rounded="lg" v-if="selectedLardoStudent">
-            <v-card-title class="d-flex align-center px-5 pt-5 pb-2">
-              <v-icon
-                icon="mdi-clipboard-alert-outline"
-                size="22"
-                class="me-2 text-orange-darken-1"
-              />
-              <span class="font-weight-bold">At-Risk Report</span>
-              <v-spacer />
-              <v-btn
-                icon="mdi-close"
-                variant="text"
-                size="small"
-                @click="lardoDialog = false"
-              />
-            </v-card-title>
-
-            <v-divider />
-
-            <v-card-text class="px-5 py-4">
-              <div class="mb-3">
-                <div class="text-caption text-medium-emphasis">Student</div>
-                <div class="text-body-1 font-weight-medium">
-                  {{ selectedLardoStudent.name }}
-                </div>
-              </div>
-
-              <div class="mb-3">
-                <div class="text-caption text-medium-emphasis">LRN</div>
-                <div class="text-body-2">{{ selectedLardoStudent.lrn }}</div>
-              </div>
-
-              <div class="mb-3">
-                <div class="text-caption text-medium-emphasis">Subject</div>
-                <div class="text-body-2">
-                  {{ selectedLardoStudent.subject_title }}
-                </div>
-              </div>
-
-              <div class="mb-3">
-                <div class="text-caption text-medium-emphasis">Remarks</div>
-                <div class="text-body-2">
-                  {{ selectedLardoStudent.remarks }}
-                </div>
-              </div>
-
-              <div>
-                <div class="text-caption text-medium-emphasis">
-                  Recommendation
-                </div>
-                <v-chip
-                  color="warning"
-                  variant="tonal"
-                  size="small"
-                  class="mt-1"
-                >
-                  {{ selectedLardoStudent.recommendation }}
-                </v-chip>
-              </div>
-            </v-card-text>
-
-            <v-divider />
-
-            <v-card-actions class="px-5 py-3">
-              <v-spacer />
-              <v-btn
-                variant="flat"
-                color="primary"
-                @click="lardoDialog = false"
-              >
-                Close
-              </v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-dialog>
-      </v-col>
-
-      <!-- SECONDARY COLUMN -->
-      <v-col cols="12" md="12">
-        <!-- MISBEHAVIOR -->
-        <v-card class="mb-6 pa-4" rounded="lg" border elevation="0">
-          <v-card-title
-            class="font-weight-bold px-0 pt-0 text-slate d-flex align-center"
+        <template v-slot:[`item.actions`]="{ item }">
+          <v-btn
+            size="small"
+            variant="tonal"
+            color="primary"
+            prepend-icon="mdi-eye-outline"
+            @click="openLardoDialog(item)"
           >
-            <v-icon
-              icon="mdi-account-alert-outline"
-              size="20"
-              class="me-2 text-amber-darken-2"
-            />
-            Student Misbehavior Reports
-          </v-card-title>
+            View
+          </v-btn>
+        </template>
 
-          <v-list density="compact" class="px-0">
-            <v-list-item
-              v-for="(m, i) in paginatedMisbehave"
-              :key="i"
-              class="border-bottom py-2 px-0"
-            >
-              <div class="d-flex justify-space-between align-center">
-                <v-list-item-title>{{ m.name }}</v-list-item-title>
-                <v-chip
-                  size="x-small"
-                  :color="misbehaviorStatus(m.status).color"
-                  variant="flat"
-                  class="ml-2"
-                >
-                  {{ misbehaviorStatus(m.status).label }}
-                </v-chip>
-              </div>
-            </v-list-item>
+        <template v-slot:no-data>
+          <div class="empty">
+            <v-icon icon="mdi-check-circle-outline" size="34" />
+            <strong>No LARDO learners</strong>
+            <span>New alerts appear here as attendance is recorded.</span>
+          </div>
+        </template>
+      </v-data-table>
+    </v-card>
 
-            <v-list-item
-              v-if="paginatedMisbehave && !paginatedMisbehave.length"
-              class="px-0"
-            >
-              <v-empty-state
-                icon="mdi-emoticon-happy-outline"
-                title="No misbehavior reports"
-                text="Nothing flagged for this period."
-                density="compact"
-              />
-            </v-list-item>
-          </v-list>
+    <!-- Misbehavior -->
+    <v-card class="panel" elevation="0">
+      <h2 class="panel-title">Student misbehavior reports</h2>
+      <p class="panel-sub">
+        {{ misbehaveList.length }}
+        {{ misbehaveList.length === 1 ? 'report' : 'reports' }}
+      </p>
 
+      <ul v-if="paginatedMisbehave.length" class="mis-list">
+        <li v-for="(m, i) in paginatedMisbehave" :key="i" class="mis-row">
+          <v-avatar size="30" color="primary" variant="tonal" class="avatar">
+            {{ initials(m.name) }}
+          </v-avatar>
+          <span class="person-name mis-name">{{ m.name }}</span>
+          <v-chip
+            size="small"
+            variant="tonal"
+            :color="misbehaviorStatus(m.status).color"
+          >
+            {{ misbehaviorStatus(m.status).label }}
+          </v-chip>
+        </li>
+      </ul>
+
+      <div v-else class="empty">
+        <v-icon icon="mdi-emoticon-happy-outline" size="34" />
+        <strong>No misbehavior reports</strong>
+        <span>Nothing flagged for this period.</span>
+      </div>
+
+      <div v-if="misPageCount > 1" class="d-flex justify-center pt-4">
+        <v-pagination
+          v-model="misPage"
+          :length="misPageCount"
+          total-visible="5"
+          density="compact"
+        />
+      </div>
+    </v-card>
+
+    <!-- Dialog: LARDO details -->
+    <v-dialog v-model="lardoDialog" max-width="520">
+      <v-card v-if="selectedLardoStudent" class="dlg" elevation="0">
+        <div
+          class="dlg-band"
+          :style="{ '--tone': severityOf(selectedLardoStudent.remarks).hex }"
+        />
+        <div class="dlg-head">
+          <v-avatar size="44" color="primary" variant="tonal">
+            {{ initials(selectedLardoStudent.name) }}
+          </v-avatar>
+          <div class="dlg-who">
+            <div class="dlg-name">{{ selectedLardoStudent.name }}</div>
+            <div class="dlg-sub">LRN {{ selectedLardoStudent.lrn }}</div>
+          </div>
+          <v-chip
+            size="small"
+            variant="tonal"
+            :color="severityOf(selectedLardoStudent.remarks).color"
+            :prepend-icon="severityOf(selectedLardoStudent.remarks).icon"
+          >
+            {{ severityOf(selectedLardoStudent.remarks).label }}
+          </v-chip>
+        </div>
+        <v-divider />
+        <v-card-text class="dlg-body">
+          <div class="fact">
+            <div class="fact-label">Subject</div>
+            <div class="fact-value">
+              {{ selectedLardoStudent.subject_title }}
+            </div>
+          </div>
           <div
-            class="d-flex justify-center pt-4"
-            v-if="misbehaveList && misbehaveList.length"
+            class="note"
+            :style="{ '--tone': severityOf(selectedLardoStudent.remarks).hex }"
           >
-            <v-pagination
-              v-model="misPage"
-              :length="misPageCount"
-              total-visible="5"
-              density="compact"
-            />
+            <div class="note-title">What happened</div>
+            <p>{{ stripLabel(selectedLardoStudent.remarks) }}</p>
           </div>
-        </v-card>
-      </v-col>
-    </v-row>
+          <div
+            v-if="selectedLardoStudent.recommendation"
+            class="note note-reco"
+          >
+            <div class="note-title">Recommended action</div>
+            <p>{{ selectedLardoStudent.recommendation }}</p>
+          </div>
+          <div v-if="selectedLardoStudent.action_taken" class="note note-done">
+            <div class="note-title">Action taken</div>
+            <p>{{ selectedLardoStudent.action_taken }}</p>
+          </div>
+        </v-card-text>
+        <v-divider />
+        <v-card-actions class="pa-3">
+          <v-spacer />
+          <v-btn variant="flat" color="primary" @click="lardoDialog = false">
+            Close
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
 
     <!-- Dialog: Parent-Teacher Conference + Intensive Intervention -->
-    <v-dialog v-model="conferenceDialog" max-width="500">
-      <v-card>
-        <v-card-title class="bg-red-darken-1 text-white">
-          <v-icon start icon="mdi-alert-octagon-outline"></v-icon>
-          Intensive Intervention Required
-        </v-card-title>
-        <v-card-text class="pt-4">
-          <p class="mb-2">
-            <strong>{{ selectedData?.[0]?.student_name }}</strong> has multiple
-            failing subjects and requires immediate attention.
+    <v-dialog v-model="conferenceDialog" max-width="540">
+      <v-card class="dlg" elevation="0">
+        <div class="dlg-band" style="--tone: #c0392b" />
+        <div class="dlg-head">
+          <v-avatar size="44" color="error" variant="tonal">
+            <v-icon icon="mdi-alert-octagon-outline" />
+          </v-avatar>
+          <div class="dlg-who">
+            <div class="dlg-name">Intensive intervention required</div>
+            <div class="dlg-sub">{{ selectedData?.[0]?.student_name }}</div>
+          </div>
+        </div>
+        <v-divider />
+        <v-card-text class="dlg-body">
+          <p class="dlg-lead">
+            Multiple failing subjects. Review each one below.
           </p>
 
-          <v-card
+          <div v-if="!selectedData" class="empty">
+            <v-progress-circular indeterminate size="24" width="2" />
+          </div>
+
+          <div
             v-for="subject in selectedData"
             :key="subject.id"
-            variant="outlined"
-            class="mb-3"
+            class="subject"
           >
-            <v-card-text class="py-2">
-              <div class="text-subtitle-2 font-weight-bold mb-1">
-                {{ subject.subject_title }}
-              </div>
-              <v-list density="compact">
-                <v-list-item>
-                  <template v-slot:prepend>
-                    <v-icon icon="mdi-chart-line"></v-icon>
-                  </template>
-                  <v-list-item-title>
-                    Grade: {{ subject.transmuted_grade }}
-                  </v-list-item-title>
-                </v-list-item>
-                <v-list-item>
-                  <template v-slot:prepend>
-                    <v-icon icon="mdi-clipboard-text-outline"></v-icon>
-                  </template>
-                  <v-list-item-title>
-                    Recommendation: {{ subject.remarks }}
-                  </v-list-item-title>
-                </v-list-item>
-                <v-list-item>
-                  <template v-slot:prepend>
-                    <v-icon icon="mdi-google-classroom"></v-icon>
-                  </template>
-                  <v-list-item-title>
-                    {{ subject.grade_level }} - {{ subject.room_name }}
-                  </v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-card-text>
-          </v-card>
+            <div class="subject-head">
+              <span class="subject-title">{{ subject.subject_title }}</span>
+              <v-chip
+                size="small"
+                variant="tonal"
+                :color="riskInfo(subject.transmuted_grade).color"
+                class="grade-chip"
+              >
+                {{ subject.transmuted_grade }}
+              </v-chip>
+            </div>
+            <div class="subject-meta">
+              {{ subject.grade_level }}, {{ subject.room_name }}
+            </div>
+            <div class="subject-reco">{{ subject.remarks }}</div>
+          </div>
 
           <v-alert
             v-if="selectedData?.length"
             type="error"
             variant="tonal"
-            class="mt-3"
             density="compact"
           >
-            A parent-teacher conference should be scheduled immediately.
+            Schedule a parent-teacher conference as soon as possible.
           </v-alert>
         </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn variant="text" @click="conferenceDialog = false">Close</v-btn>
+        <v-divider />
+        <v-card-actions class="pa-3">
+          <v-spacer />
+          <v-btn
+            variant="flat"
+            color="primary"
+            @click="conferenceDialog = false"
+          >
+            Close
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Dialog: Other remarks (Peer Tutoring / Mandatory Remediation) -->
     <v-dialog v-model="interventionDialog" max-width="500">
-      <v-card>
-        <v-card-title class="bg-amber-darken-1 text-white">
-          <v-icon start icon="mdi-information-outline"></v-icon>
-          Intervention Details
-        </v-card-title>
-        <v-card-text class="pt-4">
-          <p class="mb-2">
-            <strong>{{ selectedItem?.name }}</strong> is at risk and needs the
-            following support.
-          </p>
-          <v-list density="compact">
-            <v-list-item>
-              <template v-slot:prepend
-                ><v-icon icon="mdi-school-outline"></v-icon
-              ></template>
-              <v-list-item-title
-                >LRN: {{ selectedItem?.lrn }}</v-list-item-title
-              >
-            </v-list-item>
-            <v-list-item>
-              <template v-slot:prepend
-                ><v-icon icon="mdi-file-outline"></v-icon
-              ></template>
-              <v-list-item-title
-                >Subject: {{ selectedItem?.subject_title }}</v-list-item-title
-              >
-            </v-list-item>
-            <v-list-item>
-              <template v-slot:prepend
-                ><v-icon icon="mdi-chart-line"></v-icon
-              ></template>
-              <v-list-item-title
-                >Grade: {{ selectedItem?.transmuted_grade }}</v-list-item-title
-              >
-            </v-list-item>
-
-            <v-list-item>
-              <template v-slot:prepend
-                ><v-icon icon="mdi-clipboard-text-outline"></v-icon
-              ></template>
-              <v-list-item-title
-                >Recommendation: {{ selectedItem?.remarks }}</v-list-item-title
-              >
-            </v-list-item>
-          </v-list>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn variant="text" @click="interventionDialog = false"
-            >Close</v-btn
+      <v-card v-if="selectedItem" class="dlg" elevation="0">
+        <div class="dlg-band" :style="{ '--tone': '#d97706' }" />
+        <div class="dlg-head">
+          <v-avatar size="44" color="primary" variant="tonal">
+            {{ initials(selectedItem.name) }}
+          </v-avatar>
+          <div class="dlg-who">
+            <div class="dlg-name">{{ selectedItem.name }}</div>
+            <div class="dlg-sub">LRN {{ selectedItem.lrn }}</div>
+          </div>
+          <v-chip
+            size="small"
+            variant="tonal"
+            :color="riskInfo(selectedItem.transmuted_grade).color"
+            class="grade-chip"
           >
+            {{ selectedItem.transmuted_grade }}
+          </v-chip>
+        </div>
+        <v-divider />
+        <v-card-text class="dlg-body">
+          <div class="fact">
+            <div class="fact-label">Subject</div>
+            <div class="fact-value">{{ selectedItem.subject_title }}</div>
+          </div>
+          <div class="note note-reco">
+            <div class="note-title">Recommended support</div>
+            <p>{{ selectedItem.remarks }}</p>
+          </div>
+        </v-card-text>
+        <v-divider />
+        <v-card-actions class="pa-3">
+          <v-spacer />
+          <v-btn
+            variant="flat"
+            color="primary"
+            @click="interventionDialog = false"
+          >
+            Close
+          </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
 
     <!-- Dialog: Record / edit Action Taken (shared by both tables) -->
-    <v-dialog v-model="actionDialog" max-width="460" persistent>
-      <v-card rounded="lg" v-if="actionDialogItem">
-        <v-card-title class="d-flex align-center px-5 pt-5 pb-2">
-          <v-icon
-            icon="mdi-clipboard-check-outline"
-            size="20"
-            class="me-2 text-primary"
-          />
-          <span class="font-weight-bold">
-            {{ actionDialogItem.action_taken ? 'Edit' : 'Log' }} Action Taken
-          </span>
-          <v-spacer />
+    <v-dialog v-model="actionDialog" max-width="480" persistent>
+      <v-card v-if="actionDialogItem" class="dlg" elevation="0">
+        <div class="dlg-band" style="--tone: #2b5fa8" />
+        <div class="dlg-head">
+          <v-avatar size="44" color="primary" variant="tonal">
+            {{ initials(actionDialogItem.name) }}
+          </v-avatar>
+          <div class="dlg-who">
+            <div class="dlg-name">
+              {{ actionDialogItem.action_taken ? 'Edit' : 'Log' }} action taken
+            </div>
+            <div class="dlg-sub">{{ actionDialogItem.name }}</div>
+          </div>
           <v-btn
             icon="mdi-close"
             variant="text"
@@ -611,36 +533,25 @@
             :disabled="savingAction"
             @click="closeActionDialog"
           />
-        </v-card-title>
-
+        </div>
         <v-divider />
-
-        <v-card-text class="px-5 py-4">
-          <div class="mb-3">
-            <div class="text-caption text-medium-emphasis">Student</div>
-            <div class="text-body-1 font-weight-medium">
-              {{ actionDialogItem.name }}
-            </div>
-          </div>
-
+        <v-card-text class="dlg-body">
           <div
-            class="mb-4"
             v-if="
               actionDialogType === 'at_risk'
                 ? actionDialogItem.remarks
                 : actionDialogItem.recommendation
             "
+            class="note note-reco"
           >
-            <div class="text-caption text-medium-emphasis">
-              Recommended intervention
-            </div>
-            <v-chip color="primary" variant="tonal" size="small" class="mt-1">
+            <div class="note-title">Recommended intervention</div>
+            <p>
               {{
                 actionDialogType === 'at_risk'
                   ? actionDialogItem.remarks
                   : actionDialogItem.recommendation
               }}
-            </v-chip>
+            </p>
           </div>
 
           <v-textarea
@@ -655,14 +566,13 @@
             :error-messages="actionError"
             :disabled="savingAction"
             autofocus
+            hide-details="auto"
             @update:model-value="actionError = ''"
             @keydown.enter.ctrl="confirmSaveAction"
           />
         </v-card-text>
-
         <v-divider />
-
-        <v-card-actions class="px-5 py-3">
+        <v-card-actions class="pa-3">
           <v-btn
             v-if="actionDialogItem.action_taken"
             variant="text"
@@ -692,7 +602,6 @@
       </v-card>
     </v-dialog>
 
-    <!-- Feedback for saving/clearing an action -->
     <v-snackbar
       v-model="snackbar.show"
       :color="snackbar.color"
@@ -711,6 +620,7 @@
     </v-snackbar>
   </v-container>
 </template>
+
 <script>
 import { Bar, Doughnut } from 'vue-chartjs';
 import {
@@ -743,11 +653,10 @@ export default {
       interventionDialog: false,
       selectedItem: null,
       selectedData: null,
-      page: 1,
-      itemsPerPage: 10,
       misPage: 1,
       misItemsPerPage: 10,
       search: '',
+      searchLardo: '',
       roomList: [],
       atRiskCount: null,
       studentCount: null,
@@ -768,85 +677,20 @@ export default {
       snackbar: { show: false, text: '', color: 'success' },
 
       headers: [
-        { title: 'LRN', key: 'lrn', align: 'start', width: '200' },
-        { title: 'Student Name', key: 'name', width: '200' },
-        { title: 'Grade', key: 'grade', width: '100' },
-        {
-          title: 'Recommendataion',
-          key: 'remarks',
-          align: 'center',
-          width: '200',
-        },
-        {
-          title: 'Action Taken',
-          key: 'action_taken',
-          align: 'start',
-          width: '240',
-        },
-        {
-          title: 'Action',
-          key: 'actions',
-          align: 'end',
-          width: '200',
-        },
+        { title: 'LRN', key: 'lrn', align: 'start' },
+        { title: 'Student', key: 'name' },
+        { title: 'Grade', key: 'grade' },
+        { title: 'Recommendation', key: 'remarks' },
+        { title: 'Action taken', key: 'action_taken', sortable: false },
+        { title: '', key: 'actions', align: 'end', sortable: false },
       ],
-
       headers1: [
-        { title: 'LRN', key: 'lrn', align: 'start', width: '200' },
-        { title: 'Student Name', key: 'name', align: 'center', width: '200' },
-        { title: 'Action', key: 'remarks', align: 'center', width: '200' },
-        {
-          title: 'Recommendation',
-          key: 'recommendation',
-          align: 'end',
-          width: '200',
-        },
-        {
-          title: 'Action Taken',
-          key: 'action_taken',
-          align: 'start',
-          width: '240',
-        },
-        // { title: 'Grade', key: 'grade' },
-        { title: 'Action', key: 'actions', align: 'end' },
-      ],
-      students: [
-        {
-          lrn: '1885338',
-          name: 'John Dela Cruz',
-          risk: 'Low',
-          reason: 'Low Scores',
-          remedial: true,
-        },
-        {
-          lrn: '1885339',
-          name: 'Mia Santiago',
-          risk: 'Moderate',
-          reason: 'Frequent Absences',
-          remedial: false,
-        },
-        {
-          lrn: '1885340',
-          name: 'Alex Reyes',
-          risk: 'High',
-          reason: 'Low Scores',
-          remedial: true,
-        },
-      ],
-
-      remedials: ['Ferdinand Lim – 3:30 PM', 'Mia Santiago – 4:30 PM'],
-
-      reminders: ['Submit class report on time'],
-
-      alerts: [
-        'LARDO Alert: Louis skipped 5 days',
-        'At-Risk: Mia low scores in English',
-      ],
-
-      notifications: [
-        'Alex reported to Prefect',
-        'Louis flagged as LARDO',
-        'Counseling session tomorrow',
+        { title: 'LRN', key: 'lrn', align: 'start' },
+        { title: 'Student', key: 'name' },
+        { title: 'Alert', key: 'remarks' },
+        { title: 'Recommendation', key: 'recommendation' },
+        { title: 'Action taken', key: 'action_taken', sortable: false },
+        { title: '', key: 'actions', align: 'end', sortable: false },
       ],
 
       barOptions: {
@@ -873,33 +717,48 @@ export default {
     },
   },
   computed: {
-    paginatedAlerts() {
-      const list = this.alertStudents || [];
-      const start = (this.page - 1) * this.itemsPerPage;
-      const end = start + this.itemsPerPage;
-      return list.slice(start, end);
-    },
-    pageCount() {
-      if (!this.alertStudents || !this.itemsPerPage) return 1;
-      return Math.ceil(this.alertStudents.length / this.itemsPerPage);
+    stats() {
+      return [
+        {
+          key: 'students',
+          label: 'Total students',
+          value: this.studentCount,
+          icon: 'mdi-account-group-outline',
+          color: '#2b5fa8',
+        },
+        {
+          key: 'risk',
+          label: 'At-risk students',
+          value: this.atRiskCount,
+          icon: 'mdi-alert-outline',
+          color: '#c0392b',
+          ofTotal: true,
+        },
+        {
+          key: 'lardo',
+          label: 'LARDO students',
+          value: this.lardoCount,
+          icon: 'mdi-clipboard-alert-outline',
+          color: '#b45309',
+          ofTotal: true,
+        },
+      ];
     },
     paginatedMisbehave() {
       const list = this.misbehaveList || [];
       const start = (this.misPage - 1) * this.misItemsPerPage;
-      const end = start + this.misItemsPerPage;
-      return list.slice(start, end);
+      return list.slice(start, start + this.misItemsPerPage);
     },
     misPageCount() {
       if (!this.misbehaveList || !this.misItemsPerPage) return 1;
       return Math.ceil(this.misbehaveList.length / this.misItemsPerPage);
     },
-
     hasOverviewData() {
       return !!(this.studentCount || this.atRiskCount || this.lardoCount);
     },
     overviewChartData() {
       return {
-        labels: ['Total Students', 'At-Risk', 'LARDO'],
+        labels: ['Total students', 'At risk', 'LARDO'],
         datasets: [
           {
             label: 'Students',
@@ -908,16 +767,15 @@ export default {
               this.atRiskCount || 0,
               this.lardoCount || 0,
             ],
-            backgroundColor: ['#1565c0', '#c62828', '#ef6c00'],
+            backgroundColor: ['#2b5fa8', '#c0392b', '#b45309'],
             borderRadius: 6,
             maxBarThickness: 60,
           },
         ],
       };
     },
-
-    // Buckets atRiskStudents by the same riskInfo() thresholds used in the table,
-    // so the chart and the table can never disagree.
+    // Buckets atRiskStudents by the same riskInfo() thresholds used in the
+    // table, so the chart and the table can never disagree.
     riskCounts() {
       const counts = { High: 0, Moderate: 0, Passable: 0, Good: 0, 'N/A': 0 };
       (this.atRiskStudents || []).forEach((s) => {
@@ -930,23 +788,21 @@ export default {
       return (this.atRiskStudents || []).length > 0;
     },
     riskChartData() {
-      const c = this.riskCounts;
-      const entries = Object.entries(c).filter(([, v]) => v > 0);
+      const colorMap = {
+        High: '#d63b3b',
+        Moderate: '#e08a00',
+        Passable: '#f2c200',
+        Good: '#2e9e5b',
+        'N/A': '#9aa0a6',
+      };
+      const entries = Object.entries(this.riskCounts).filter(([, v]) => v > 0);
       return {
         labels: entries.map(([label]) => label),
         datasets: [
           {
             data: entries.map(([, v]) => v),
-            backgroundColor: entries.map(([label]) => {
-              const colorMap = {
-                High: '#e53935',
-                Moderate: '#fb8c00',
-                Passable: '#ffb300',
-                Good: '#43a047',
-                'N/A': '#9e9e9e',
-              };
-              return colorMap[label];
-            }),
+            backgroundColor: entries.map(([label]) => colorMap[label]),
+            borderWidth: 0,
           },
         ],
       };
@@ -956,6 +812,50 @@ export default {
     initialize() {
       this.getFacultyDashboardData();
     },
+    percent(n) {
+      if (!this.studentCount || !n) return 0;
+      return Math.min(100, Math.round((n / this.studentCount) * 100));
+    },
+    initials(name) {
+      return (
+        String(name || '?')
+          .split(/\s+/)
+          .filter(Boolean)
+          .slice(0, 2)
+          .map((p) => p[0].toUpperCase())
+          .join('') || '?'
+      );
+    },
+    stripLabel(remarks) {
+      const r = remarks || '';
+      const i = r.indexOf(':');
+      return i > -1 ? r.slice(i + 1).trim() : r;
+    },
+    severityOf(remarks) {
+      const r = remarks || '';
+      if (r.startsWith('CRITICAL')) {
+        return {
+          label: 'Critical',
+          color: 'red',
+          hex: '#c0392b',
+          icon: 'mdi-alert-octagon-outline',
+        };
+      }
+      if (r.startsWith('EARLY WARNING')) {
+        return {
+          label: 'Early warning',
+          color: 'orange',
+          hex: '#d97706',
+          icon: 'mdi-alert-outline',
+        };
+      }
+      return {
+        label: 'Notice',
+        color: 'blue',
+        hex: '#2b5fa8',
+        icon: 'mdi-information-outline',
+      };
+    },
     openLardoDialog(item) {
       this.selectedLardoStudent = item;
       this.lardoDialog = true;
@@ -964,6 +864,7 @@ export default {
       if (
         item.remarks === 'Parent-Teacher Conference + Intensive Intervention'
       ) {
+        this.selectedData = null;
         this.conferenceDialog = true;
         this.getAllSubjectThatAtRisk(item.id);
       } else {
@@ -976,7 +877,7 @@ export default {
       this.conferenceDialog = false;
     },
     getAllSubjectThatAtRisk(id) {
-      let filter = this.$store.getters.getFilterSelected;
+      const filter = this.$store.getters.getFilterSelected;
       this.axiosCall(
         '/enroll-student/getAllSubjectThatAtRisk/' + filter + '/' + id,
         'GET',
@@ -1015,16 +916,14 @@ export default {
     },
     misbehaviorStatus(status) {
       const map = {
-        0: { label: 'Adviser Review', color: 'yellow-darken-2' },
-        1: { label: 'Prefect Review', color: 'orange' },
-        2: { label: 'Parent Review', color: 'red' },
+        0: { label: 'Adviser review', color: 'amber-darken-2' },
+        1: { label: 'Prefect review', color: 'orange' },
+        2: { label: 'Parent review', color: 'red' },
       };
       return map[status] || { label: 'Resolved', color: 'green' };
     },
 
     // Opens the shared "Action Taken" dialog for a row from either table.
-    // `type` is 'at_risk' or 'lardo' so we know which recommendation field
-    // to show and which payload shape to send when saving.
     openActionDialog(item, type) {
       this.actionDialogItem = item;
       this.actionDialogType = type;
@@ -1042,18 +941,15 @@ export default {
     },
     confirmSaveAction() {
       if (!this.actionInput || !this.actionInput.trim()) {
-        this.actionError = 'Please describe the action taken before saving';
+        this.actionError = 'Describe the action taken before saving';
         return;
       }
-
       this.persistAction(this.actionInput.trim());
     },
     clearAction() {
       this.persistAction('');
     },
 
-    // Saves the teacher's "Action Taken" entry for a row in either table.
-    // `type` is 'at_risk' or 'lardo' so the backend can tell which record to update.
     // NOTE: adjust the endpoint/payload shape to match your actual API.
     persistAction(value) {
       const item = this.actionDialogItem;
@@ -1063,15 +959,14 @@ export default {
       const previous = item.action_taken;
       item.action_taken = value;
 
-      let oldData = {
+      const oldData = {
         id: item.id,
         type,
         action_taken: item.action_taken,
         recommendation: type === 'lardo' ? item.recommendation : item.remarks,
       };
-      let data = {
-        data: JSON.stringify(oldData),
-      };
+      const data = { data: JSON.stringify(oldData) };
+
       this.savingAction = true;
       this.axiosCall(
         '/enroll-student/updateActionTaken/' + item.atriskID,
@@ -1096,7 +991,7 @@ export default {
           item.action_taken = previous;
           this.snackbar = {
             show: true,
-            text: 'Could not save — please try again',
+            text: 'Could not save. Please try again.',
             color: 'error',
           };
         })
@@ -1106,8 +1001,8 @@ export default {
     },
 
     getFacultyDashboardData() {
-      let filter = this.$store.getters.getFilterSelected;
-      let assignedModuleID = localStorage.getItem('AssignedModID');
+      const filter = this.$store.getters.getFilterSelected;
+      const assignedModuleID = localStorage.getItem('AssignedModID');
       this.axiosCall(
         '/enroll-student/getFacultyDashboardData/' +
           filter +
@@ -1120,12 +1015,10 @@ export default {
           this.studentCount = res.data.studentCount;
           this.atRiskCount = res.data.atRiskCount;
           this.lardoCount = res.data.lardoCount;
-          this.atRiskStudents = res.data.atRiskStudents;
-          this.misbehaveList = res.data.misbehaveList;
-          this.alertStudents = res.data.alertStudents;
-          this.lardoStudents = res.data.lardoStudents;
-
-          console.log('getFacultyDashboardData', res.data);
+          this.atRiskStudents = res.data.atRiskStudents ?? [];
+          this.misbehaveList = res.data.misbehaveList ?? [];
+          this.alertStudents = res.data.alertStudents ?? [];
+          this.lardoStudents = res.data.lardoStudents ?? [];
         }
       });
     },
@@ -1134,140 +1027,385 @@ export default {
 </script>
 
 <style scoped>
-.dashboard-bg {
-  background: #f8fafc;
+.dash {
+  --line: rgba(var(--v-border-color), var(--v-border-opacity));
+  --muted: rgba(var(--v-theme-on-surface), 0.62);
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
-.text-slate {
-  color: #1e293b;
-}
-
-.section-eyebrow {
-  font-size: 11px;
+.page-title {
+  font-size: 24px;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  color: #94a3b8;
-  display: flex;
-  align-items: center;
+  line-height: 1.25;
+}
+.page-sub {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: var(--muted);
 }
 
-.stat-card {
+/* ---------- Overview strip ---------- */
+.overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  background: rgb(var(--v-theme-surface));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.overview-cell {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 14px;
-  border-color: #e2e8f0 !important;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  padding: 18px 20px;
+  border-right: 1px solid var(--line);
+}
+.overview-cell:last-child {
+  border-right: 0;
+}
+.cell-icon {
+  --tone: #666;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 14%, transparent);
+}
+.cell-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.cell-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+.cell-value {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+.cell-of {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+}
+.cell-bar {
+  display: block;
+  height: 4px;
+  margin-top: 8px;
+  border-radius: 4px;
+  background: rgba(var(--v-theme-on-surface), 0.08);
+  overflow: hidden;
+}
+.cell-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
 }
 
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+/* ---------- Panels ---------- */
+.panel {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px;
+}
+.panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.panel-title {
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 1.3;
+}
+.panel-sub {
+  margin: 2px 0 12px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.panel-head .panel-sub {
+  margin-bottom: 0;
+}
+.search-field {
+  min-width: 220px;
+  max-width: 280px;
+}
+.chart-wrap {
+  position: relative;
+  height: 250px;
 }
 
-.stat-icon-wrap {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+/* ---------- Tables ---------- */
+.tbl {
+  background: transparent;
+}
+.tbl :deep(thead th) {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--muted) !important;
+  background: rgba(var(--v-theme-on-surface), 0.03) !important;
+  white-space: nowrap;
+}
+.tbl :deep(tbody td) {
+  font-size: 13.5px;
+}
+.tbl :deep(tbody tr:last-child td) {
+  border-bottom: 0;
+}
+
+.person {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  gap: 10px;
+}
+.avatar {
+  font-size: 12px;
+  font-weight: 600;
+}
+.person-name {
+  font-weight: 550;
+  white-space: nowrap;
+}
+.grade-chip {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+.grade-label {
+  margin-left: 6px;
+  font-weight: 450;
+  opacity: 0.8;
+}
+.wrap-chip {
+  height: auto !important;
+  min-height: 24px;
+  padding-block: 4px;
+}
+.wrap-chip :deep(.v-chip__content) {
+  white-space: normal;
+  line-height: 1.3;
 }
 
-.blue-icon {
-  background: #dbeafe;
-  color: #1d4ed8;
-}
-.red-icon {
-  background: #fee2e2;
-  color: #dc2626;
-}
-.orange-icon {
-  background: #ffedd5;
-  color: #ea580c;
-}
-
-.border-bottom {
-  border-bottom: 1px solid #eef2f6;
-}
-
-.risk-table :deep(thead th) {
-  font-weight: 600 !important;
-  font-size: 12px !important;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  color: #fdfeff !important;
-  opacity: 1;
-}
-
-.risk-table :deep(tbody tr:hover) {
-  background: #f8fafc;
-}
-
-.action-taken-cell {
-  min-width: 200px;
-  padding: 6px 0;
-}
-
-/* "Action Taken" pill — a single click target that both displays the saved
-   note and opens the edit dialog, instead of an always-open text field. */
+/* Action pill: shows the saved note and opens the edit dialog */
 .action-pill {
   display: inline-flex;
   align-items: center;
-  max-width: 100%;
-  border-radius: 8px;
+  max-width: 260px;
   padding: 6px 10px;
+  border: 1px solid transparent;
+  border-radius: 8px;
   font-size: 12px;
   line-height: 1.3;
-  border: 1px solid transparent;
+  text-align: left;
   cursor: pointer;
   transition: background 0.12s ease, border-color 0.12s ease;
-  text-align: left;
 }
-
+.action-pill:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 2px;
+}
 .action-pill--empty {
-  color: #64748b;
-  background: #f1f5f9;
-  border-color: #e2e8f0;
+  color: var(--muted);
   font-weight: 500;
+  background: rgba(var(--v-theme-on-surface), 0.05);
+  border-color: var(--line);
 }
 .action-pill--empty:hover {
-  background: #e2e8f0;
-  color: #334155;
+  background: rgba(var(--v-theme-on-surface), 0.1);
 }
-
 .action-pill--done {
-  color: #166534;
-  background: #f0fdf4;
-  border-color: #bbf7d0;
+  color: rgb(var(--v-theme-success));
+  background: color-mix(in srgb, rgb(var(--v-theme-success)) 10%, transparent);
+  border-color: color-mix(
+    in srgb,
+    rgb(var(--v-theme-success)) 30%,
+    transparent
+  );
 }
 .action-pill--done:hover {
-  background: #dcfce7;
-  border-color: #86efac;
+  background: color-mix(in srgb, rgb(var(--v-theme-success)) 18%, transparent);
 }
-
 .action-pill-text {
-  max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
-.action-pill-edit {
+.pill-edit {
   opacity: 0;
   transition: opacity 0.12s ease;
 }
-.action-pill--done:hover .action-pill-edit {
+.action-pill--done:hover .pill-edit,
+.action-pill--done:focus-visible .pill-edit {
   opacity: 1;
 }
 
-.chart-wrap {
-  height: 240px;
-  position: relative;
+.empty {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 32px 12px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+.empty strong {
+  font-size: 14px;
+  color: rgb(var(--v-theme-on-surface));
 }
 
-.empty-chart-state {
-  height: 100%;
+/* ---------- Misbehavior ---------- */
+.mis-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.mis-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.mis-row:last-child {
+  border-bottom: 0;
+}
+.mis-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Dialogs ---------- */
+.dlg {
+  border-radius: 14px;
+  overflow: hidden;
+}
+.dlg-band {
+  --tone: #2b5fa8;
+  height: 5px;
+  background: var(--tone);
+}
+.dlg-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+}
+.dlg-who {
+  flex: 1;
+  min-width: 0;
+}
+.dlg-name {
+  font-size: 17px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+.dlg-sub {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.dlg-body {
+  padding: 18px 20px !important;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dlg-lead {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+.fact-label {
+  font-size: 12px;
+  color: var(--muted);
+}
+.fact-value {
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 550;
+}
+
+.note {
+  --tone: #2b5fa8;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border-left: 4px solid var(--tone);
+  background: color-mix(in srgb, var(--tone) 9%, transparent);
+}
+.note-reco {
+  --tone: #2f7d5b;
+}
+.note-done {
+  --tone: #6b7685;
+}
+.note-title {
+  margin-bottom: 4px;
+  font-size: 12.5px;
+  font-weight: 650;
+}
+.note p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.subject {
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+.subject-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.subject-title {
+  font-weight: 650;
+  font-size: 14px;
+}
+.subject-meta {
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+.subject-reco {
+  margin-top: 8px;
+  font-size: 13.5px;
+}
+
+@media (max-width: 600px) {
+  .overview-cell {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .overview-cell:last-child {
+    border-bottom: 0;
+  }
+  .search-field {
+    max-width: none;
+    flex: 1 1 100%;
+  }
 }
 </style>
