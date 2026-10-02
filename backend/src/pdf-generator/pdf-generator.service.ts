@@ -3657,7 +3657,7 @@ export class PdfGeneratorService {
       .createQueryBuilder(Subject, 's')
       .where('s.id = :subjectID', { subjectID })
       .getOne();
-    let grade = await this.roomsSectionService.getGeneratedGrade(
+    const grade = await this.roomsSectionService.getGeneratedGrade(
       roomID,
       school_yearID,
       quarter,
@@ -3665,16 +3665,19 @@ export class PdfGeneratorService {
       subjectID,
       sub_subject ? JSON.stringify(sub_subject) : 'noData',
     );
+
     //  let generateGrade = grade.slice(-2);
-    let generateGrade;
-    if (sub_subject == 1) {
-      generateGrade = grade.slice(0, 2);
-    } else if (sub_subject == 2) {
-      generateGrade = grade.slice(2, 4);
-    } else if (sub_subject == 3) {
-      generateGrade = grade.slice(4, 6);
-    } else if (sub_subject == 4) {
-      generateGrade = grade.slice(6, 8);
+    let generateGrade: any[] = [];
+    if (Array.isArray(grade)) {
+      if (sub_subject == 1) {
+        generateGrade = grade.slice(0, 2);
+      } else if (sub_subject == 2) {
+        generateGrade = grade.slice(2, 4);
+      } else if (sub_subject == 3) {
+        generateGrade = grade.slice(4, 6);
+      } else if (sub_subject == 4) {
+        generateGrade = grade.slice(6, 8);
+      }
     }
 
     let combineData = Object.assign(

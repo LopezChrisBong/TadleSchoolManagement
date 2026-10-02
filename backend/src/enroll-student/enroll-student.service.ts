@@ -1083,14 +1083,15 @@ export class EnrollStudentService {
         .andWhere('risk.transmuted_grade < 80')
         .andWhere(
           `
-    risk.id = (
-      SELECT MAX(r2.id)
-      FROM at_risk_student_notification r2
-      WHERE r2.studentID = risk.studentID
-        AND r2.school_yearID = :filter
-        AND r2.transmuted_grade < 80
-    )
-  `,
+        risk.id = (
+          SELECT MAX(r2.id)
+          FROM at_risk_student_notification r2
+          WHERE r2.studentID = risk.studentID
+            AND r2.school_yearID = risk.school_yearID
+            AND r2.subject_title = risk.subject_title
+            AND r2.transmuted_grade < 80
+        )
+        `,
         )
         .getRawMany();
     }

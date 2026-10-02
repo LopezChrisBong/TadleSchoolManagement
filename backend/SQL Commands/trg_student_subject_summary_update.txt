@@ -1,0 +1,138 @@
+DROP TRIGGER IF EXISTS trg_student_subject_summary_update;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_student_subject_summary_update
+AFTER UPDATE ON student_subject_summary
+FOR EACH ROW
+BEGIN
+
+    /*
+     * Only execute when total_grade changes.
+     */
+    IF NOT (OLD.total_grade <=> NEW.total_grade) THEN
+
+        CALL sp_check_early_warning(
+            NEW.studentID,
+            NEW.subjectID,
+            NEW.school_yearID,
+            NEW.quarter
+        );
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+
+
+part 2
+DELIMITER $$
+
+CREATE TRIGGER trg_student_subject_summary_update
+AFTER UPDATE ON student_subject_summary
+FOR EACH ROW
+BEGIN
+
+    /*
+     * Only run when total_grade changes.
+     */
+    IF NOT (OLD.total_grade <=> NEW.total_grade) THEN
+
+        /*
+         * If the new status is no longer At-Risk,
+         * remove the old notifications immediately.
+         */
+        IF NEW.status <> 'At-Risk' OR NEW.status IS NULL THEN
+
+            DELETE FROM at_risk_student_for_faculty_notification
+            WHERE studentID = NEW.studentID
+              AND school_yearID = NEW.school_yearID
+              AND subject_title = (
+                  SELECT subject_title
+                  FROM subject
+                  WHERE id = NEW.subjectID
+                  LIMIT 1
+              );
+
+            DELETE FROM at_risk_student_notification
+            WHERE studentID = NEW.studentID
+              AND school_yearID = NEW.school_yearID
+              AND subject_title = (
+                  SELECT subject_title
+                  FROM subject
+                  WHERE id = NEW.subjectID
+                  LIMIT 1
+              );
+
+            DELETE FROM notification
+            WHERE studentID = NEW.studentID
+              AND subjectID = NEW.subjectID
+              AND school_yearID = NEW.school_yearID
+              AND TRIM(quarter) = TRIM(NEW.quarter);
+
+        END IF;
+
+    END IF;
+
+END$$
+
+DELIMITER ;
+
+
+part 3:
+DROP TRIGGER IF EXISTS trg_student_subject_summary_update;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_student_subject_summary_update
+AFTER UPDATE ON student_subject_summary
+FOR EACH ROW
+BEGIN
+
+    /*
+     * Only execute when total_grade changes.
+     */
+    IF NOT (OLD.total_grade <=> NEW.total_grade) THEN
+
+        /*
+         * If the student is no longer At-Risk,
+         * remove the previous notifications.
+         */
+        IF NEW.status <> 'At-Risk'
+           OR NEW.status IS NULL THEN
+
+            DELETE FROM at_risk_student_for_faculty_notification
+            WHERE studentID = NEW.studentID
+              AND school_yearID = NEW.school_yearID
+              AND subject_title = (
+                  SELECT subject_title
+                  FROM subject
+                  WHERE id = NEW.subjectID
+                  LIMIT 1
+              );
+
+            DELETE FROM at_risk_student_notification
+            WHERE studentID = NEW.studentID
+              AND school_yearID = NEW.school_yearID
+              AND subject_title = (
+                  SELECT subject_title
+                  FROM subject
+                  WHERE id = NEW.subjectID
+                  LIMIT 1
+              );
+
+            DELETE FROM notification
+            WHERE studentID = NEW.studentID
+              AND subjectID = NEW.subjectID
+              AND school_yearID = NEW.school_yearID
+              AND TRIM(quarter) = TRIM(NEW.quarter);
+
+        END IF;
+
+    END IF;
+
+END$$
+
+DELIMITER ;

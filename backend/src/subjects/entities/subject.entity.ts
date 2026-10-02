@@ -50,6 +50,12 @@ export class Subject {
   @Column({ type: 'int', nullable: true })
   strandID: number;
 
+  @Column({ type: 'int', nullable: true })
+  trackID: number;
+
+  @Column({ type: 'int', nullable: true })
+  electiveNumber: number;
+
   @Column({ type: 'boolean', default: false })
   isDelete: boolean;
 

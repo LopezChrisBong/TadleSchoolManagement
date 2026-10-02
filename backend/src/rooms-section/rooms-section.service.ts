@@ -116,14 +116,19 @@ export class RoomsSectionService {
               IF(
                 !ISNULL(es.mname) AND LOWER(es.mname) != 'n/a',
                 CONCAT(
+                  es.lname,
+                  ', ',
                   es.fname,
                   ' ',
                   SUBSTRING(es.mname, 1, 1),
-                  '. ',
-                  es.lname
+                  '.'
                 ),
-                CONCAT(es.fname, ' ', es.lname)
-              ) as name
+                CONCAT(
+                  es.lname,
+                  ', ',
+                  es.fname
+                )
+              ) AS name
             `,
             ])
             .leftJoin(ParentRecord, 'pr', 'es.id = pr.studentID')
@@ -671,7 +676,7 @@ export class RoomsSectionService {
         'SG.title as SG_title',
         'ES.sex as SG_sex',
         "CONCAT('Quiz ', ROW_NUMBER() OVER(PARTITION BY SG.studentID, SG.subjectID, SG.type ORDER BY SG.created_at ASC)) as quiz_label",
-        "IF (!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a', CONCAT(ES.fname, ' ', SUBSTRING(ES.mname, 1, 1), '. ', ES.lname), CONCAT(ES.fname, ' ', ES.lname)) as name",
+        "IF(!ISNULL(ES.mname) AND LOWER(ES.mname) != 'n/a',CONCAT( ES.lname,', ', ES.fname,' ',SUBSTRING(ES.mname, 1, 1),'.'), CONCAT(ES.lname,', ',ES.fname)) AS name",
       ])
       .from(StudentGrade, 'SG')
       .leftJoin(EnrollStudent, 'ES', 'ES.id = SG.studentID')
