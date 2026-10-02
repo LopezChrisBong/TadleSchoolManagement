@@ -23,7 +23,10 @@
           <v-divider></v-divider>
           <v-card-text style="max-height: 700px" class="my-4">
             <v-row>
-              <v-col cols="12" :md="grade_level == 'Senior High' ? '6' : '12'">
+              <v-col
+                cols="12"
+                :md="syType == 0 && grade_level == 'Senior High' ? '6' : '12'"
+              >
                 <v-text-field
                   v-model="subject_title"
                   label="Subject Title"
@@ -41,7 +44,11 @@
                   readonly
                 ></v-autocomplete>
               </v-col> -->
-              <v-col cols="12" md="6" v-if="grade_level == 'Senior High'">
+              <v-col
+                cols="12"
+                md="6"
+                v-if="syType == 0 && grade_level == 'Senior High'"
+              >
                 <v-autocomplete
                   v-model="semester"
                   :items="['First Semester', 'Second Semester']"
@@ -67,6 +74,47 @@
                   variant="outlined"
                   density="compact"
                 ></v-autocomplete>
+              </v-col>
+              <v-col
+                cols="12"
+                md="6"
+                v-if="
+                  syType == 1 &&
+                  indicator == 'ELECTIVE' &&
+                  grade_level == 'Senior High'
+                "
+              >
+                <v-autocomplete
+                  v-model="track"
+                  :rules="[formRules.required]"
+                  variant="outlined"
+                  density="comfortable"
+                  label="Track"
+                  class="rounded-lg"
+                  item-title="tracks_name"
+                  item-value="id"
+                  color="#93CB5B"
+                  :items="trackList"
+                >
+                </v-autocomplete>
+              </v-col>
+              <v-col
+                cols="12"
+                md="6"
+                v-if="
+                  syType == 1 &&
+                  indicator == 'ELECTIVE' &&
+                  grade_level == 'Senior High'
+                "
+              >
+                <v-text-field
+                  v-model="electiveNumber"
+                  label="Elective Number"
+                  type="number"
+                  density="comfortable"
+                  variant="outlined"
+                  class="mx-2"
+                ></v-text-field>
               </v-col>
               <v-col cols="12" md="4">
                 <v-text-field
@@ -254,6 +302,9 @@ export default {
   },
   data() {
     return {
+      trackList: [],
+      electiveNumber: null,
+      track: null,
       syType: null,
       isSpecialized: false,
       writenWorks: null,
@@ -336,6 +387,7 @@ export default {
       this.syType = this.$store.getters.getSyType;
       this.loadYearSelection();
       this.getAllStrand();
+      this.getAllTracks();
     },
     loadYearSelection() {
       let d = new Date();
@@ -348,6 +400,16 @@ export default {
       eventBus.emit('closeAddSubjectDialog', false);
       this.subSubjectList = [];
       this.dialog = false;
+    },
+    getAllTracks() {
+      this.axiosCall('/rooms-section/getAlltracks/Data/tracks', 'GET').then(
+        (res) => {
+          if (res) {
+            this.trackList = res.data;
+            console.log('Track List', this.trackList);
+          }
+        },
+      );
     },
     editItem() {
       const newId = this.subSubjectList.length
@@ -386,6 +448,8 @@ export default {
             senior_level: this.senior_level,
             isSpecialized: this.indicator == 'SPECIALIZED' ? 1 : 0,
             strandID: this.strandID,
+            trackID: this.track,
+            electiveNumber: this.electiveNumber,
           };
           console.log(data);
           this.axiosCall('/subjects', 'POST', data).then((res) => {
@@ -430,6 +494,8 @@ export default {
             senior_level: this.senior_level,
             isSpecialized: this.isSpecialized,
             strandID: this.strandID,
+            trackID: this.track,
+            electiveNumber: this.electiveNumber,
           };
           console.log(data);
           this.axiosCall('/subjects/' + this.updateID, 'PATCH', data).then(

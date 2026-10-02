@@ -133,7 +133,7 @@
 </template>
 
 <script>
-import eventBus from "@/eventBus";
+import eventBus from '@/eventBus';
 export default {
   components: {},
   props: {
@@ -148,12 +148,12 @@ export default {
       adviserList: [],
       adviser: null,
       applicantNumber: null,
-      juniorList: ["Grade 7", "Grade 8", "Grade 9", "Grade 10"],
-      seniorList: ["Grade 11", "Grade 12"],
+      juniorList: ['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10'],
+      seniorList: ['Grade 11', 'Grade 12'],
       seniorJunior: null,
       grade_level: null,
       subject_title: null,
-      seniorJuniorList: ["Junior High", "Senior High"],
+      seniorJuniorList: ['Junior High', 'Senior High'],
       unit_departmentlist: [],
       dateFrom: null,
       dateTo: null,
@@ -186,9 +186,9 @@ export default {
 
       fadeAwayMessage: {
         show: false,
-        type: "success",
-        header: "Successfully Added!",
-        message: "",
+        type: 'success',
+        header: 'Successfully Added!',
+        message: '',
         top: 10,
       },
     };
@@ -240,7 +240,7 @@ export default {
     },
 
     closeD() {
-      eventBus.emit("closeAddClassroom", false);
+      eventBus.emit('closeAddClassroom', false);
       this.dialog = false;
       this.confirmSubmissionDialog = false;
       this.confirmSubmit.type = null;
@@ -250,15 +250,15 @@ export default {
 
     checkConflict(type) {
       if (this.$refs.AddClassroom.validate()) {
-        if (type == "ADD") {
+        if (type == 'ADD') {
           if (this.room_section == null) {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
-            this.fadeAwayMessage.message = "Please fill all fields";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
+            this.fadeAwayMessage.message = 'Please fill all fields';
           } else {
             let data;
-            if (this.grade == "Grade 11" || this.grade == "Grade 12") {
+            if (this.grade == 'Grade 11' || this.grade == 'Grade 12') {
               data = {
                 room_section: this.room_section,
                 grade_level: this.grade,
@@ -273,35 +273,35 @@ export default {
               };
             }
             // console.log(data);
-            this.axiosCall("/rooms-section", "POST", data).then((res) => {
+            this.axiosCall('/rooms-section', 'POST', data).then((res) => {
               console.log(res.data);
               // alert("Successfully Added");
 
               if (res.data.status == 201) {
                 this.fadeAwayMessage.show = true;
-                this.fadeAwayMessage.type = "success";
-                this.fadeAwayMessage.header = "System Message";
-                this.fadeAwayMessage.message = "Successfully Added Subject!";
+                this.fadeAwayMessage.type = 'success';
+                this.fadeAwayMessage.header = 'System Message';
+                this.fadeAwayMessage.message = 'Successfully Added Subject!';
                 this.closeD();
                 // location.reload();
               } else if (res.data.status == 400) {
                 this.fadeAwayMessage.show = true;
-                this.fadeAwayMessage.type = "error";
-                this.fadeAwayMessage.header = "System Message";
+                this.fadeAwayMessage.type = 'error';
+                this.fadeAwayMessage.header = 'System Message';
                 this.fadeAwayMessage.message = res.data.msg;
               }
             });
           }
-        } else if (type == "UPDATE") {
+        } else if (type == 'UPDATE') {
           // alert("UPDATED");
           if (this.room_section == null) {
             this.fadeAwayMessage.show = true;
-            this.fadeAwayMessage.type = "error";
-            this.fadeAwayMessage.header = "System Message";
-            this.fadeAwayMessage.message = "Please fill all fields";
+            this.fadeAwayMessage.type = 'error';
+            this.fadeAwayMessage.header = 'System Message';
+            this.fadeAwayMessage.message = 'Please fill all fields';
           } else {
             let data;
-            if (this.grade == "Grade 11" || this.grade == "Grade 12") {
+            if (this.grade == 'Grade 11' || this.grade == 'Grade 12') {
               data = {
                 room_section: this.room_section,
                 grade_level: this.grade,
@@ -316,22 +316,22 @@ export default {
               };
             }
             this.axiosCall(
-              "/rooms-section/" + this.updateID,
-              "PATCH",
+              '/rooms-section/' + this.updateID,
+              'PATCH',
               data,
             ).then((res) => {
               console.log(res.data);
               if (res.data.status == 201) {
                 this.fadeAwayMessage.show = true;
-                this.fadeAwayMessage.type = "success";
-                this.fadeAwayMessage.header = "System Message";
-                this.fadeAwayMessage.message = "Successfully updated!!";
+                this.fadeAwayMessage.type = 'success';
+                this.fadeAwayMessage.header = 'System Message';
+                this.fadeAwayMessage.message = 'Successfully updated!!';
                 this.closeD();
                 location.reload();
               } else if (res.data.status == 400) {
                 this.fadeAwayMessage.show = true;
-                this.fadeAwayMessage.type = "error";
-                this.fadeAwayMessage.header = "System Message";
+                this.fadeAwayMessage.type = 'error';
+                this.fadeAwayMessage.header = 'System Message';
                 this.fadeAwayMessage.message = res.data.msg;
               }
             });
@@ -341,7 +341,7 @@ export default {
     },
 
     getAllStrand() {
-      this.axiosCall("/rooms-section/AllStrand/Data/strand", "GET").then(
+      this.axiosCall('/rooms-section/AllStrand/Data/strand', 'GET').then(
         (res) => {
           if (res) {
             let data = [];
@@ -355,7 +355,7 @@ export default {
               data.push(arr);
             }
             this.strandList = data;
-            console.log("All Strand", res.data);
+            console.log('All Strand', res.data);
           }
         },
       );
@@ -363,11 +363,27 @@ export default {
 
     getRoleTeachers() {
       this.axiosCall(
-        "/user-details/getAdvisoryNotAssigned/" + this.grade,
-        "GET",
+        '/user-details/getAdvisoryNotAssigned/' + this.grade,
+        'GET',
       ).then((res) => {
-        console.log("Teacher Role", res.data);
-        this.adviserList = res.data;
+        console.log('Teacher Role', res.data);
+
+        this.adviserList = res.data.filter((teacher) => {
+          let subModules = [];
+
+          try {
+            subModules = JSON.parse(teacher.user_subModules || '[]');
+          } catch (error) {
+            subModules = [];
+          }
+
+          return (
+            Number(teacher.user_assignedModuleID) === 21 ||
+            subModules.map(Number).includes(21)
+          );
+        });
+
+        console.log('Filtered Adviser List', this.adviserList);
       });
     },
   },

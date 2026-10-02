@@ -253,7 +253,58 @@ export class UserDetailsService {
         .getRawMany();
       return data;
     }
-    console.log('Naa dria');
+    console.log('Naa dria', conflict);
+
+    let data = await this.dataSource.manager
+      .createQueryBuilder(UserDetail, 'UD')
+      .select([
+        "IF (!ISNULL(UD.mname) AND LOWER(UD.mname) != 'n/a', concat(UD.fname, ' ',SUBSTRING(UD.mname, 1, 1) ,'. ',UD.lname) ,concat(UD.fname, ' ', UD.lname)) as name",
+        'UD.id as id',
+        'UD.fname as fname',
+        'UD.mname as mname',
+        'UD.lname as lname',
+      ])
+      .leftJoinAndMapOne('UD.user', Users, 'user', 'UD.userID = user.id')
+      .leftJoinAndMapOne(
+        'UD.user',
+        TeacherGradeLevel,
+        'tg',
+        'UD.id = tg.teachersId',
+      )
+      .leftJoinAndMapOne('UD.user', RoomsSection, 'rs', 'UD.id = rs.teacherId')
+      // .where('user.isValidated = 1')
+      .where('tg.grade_level = ' + conflict + '')
+      .andWhere('user.isAdminApproved = 1')
+      .andWhere('user.user_roleID = 2')
+      .getRawMany();
+    return data;
+  }
+
+  async TeachingRoleV2(grade: string, curr_user: any) {
+    let conflict =
+      grade == 'Grade 1'
+        ? 1
+        : grade == 'Grade 2'
+          ? 2
+          : grade == 'Grade 3'
+            ? 3
+            : grade == 'Grade 4'
+              ? 4
+              : grade == 'Grade 5'
+                ? 5
+                : grade == 'Grade 6'
+                  ? 6
+                  : grade == 'Grade 7'
+                    ? 7
+                    : grade == 'Grade 8'
+                      ? 8
+                      : grade == 'Grade 9'
+                        ? 9
+                        : grade == 'Grade 10'
+                          ? 10
+                          : grade == 'Grade 11'
+                            ? 11
+                            : 12;
 
     let data = await this.dataSource.manager
       .createQueryBuilder(UserDetail, 'UD')

@@ -43,6 +43,8 @@ export class SubjectsService {
         semester: createSubjectDto.semester,
         strandID: createSubjectDto.strandID,
         isSpecialized: createSubjectDto.isSpecialized,
+        trackID: createSubjectDto.trackID,
+        electiveNumber: createSubjectDto.electiveNumber,
       });
 
       await this.dataSource.manager.save(data);
@@ -369,6 +371,8 @@ export class SubjectsService {
         senior_level: updateSubjectDto.senior_level,
         isSpecialized: updateSubjectDto.isSpecialized,
         strandID: updateSubjectDto.strandID,
+        trackID: updateSubjectDto.trackID,
+        electiveNumber: updateSubjectDto.electiveNumber,
       });
       return {
         msg: 'Updated successfully!',

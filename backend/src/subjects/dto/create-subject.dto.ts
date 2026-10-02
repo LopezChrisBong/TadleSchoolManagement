@@ -49,4 +49,10 @@ export class CreateSubjectDto {
 
   @ApiProperty()
   strandID: number;
+
+  @ApiProperty()
+  trackID: number;
+
+  @ApiProperty()
+  electiveNumber: number;
 }

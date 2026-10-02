@@ -127,7 +127,7 @@
                       :items="subSubjectList"
                       item-value="id"
                       item-title="description"
-                      :disabled="subSubjectList != [] ? false : true"
+                      :disabled="subSubjectList.length === 0"
                       chips
                       variant="outlined"
                       density="compact"
@@ -268,13 +268,14 @@
                         </div>
                       </template>
                       <template v-slot:[`item.records`]="{ item }">
-                        <div v-if="scoresNeeded(item) == 'Passed'">
-                          <v-icon size="28" color="green"
-                            >mdi-check-circle</v-icon
-                          >
+                        <div v-if="scoresNeeded(item) === 'Passed'">
+                          <v-icon size="28" color="green">
+                            mdi-check-circle
+                          </v-icon>
                         </div>
+
                         <div
-                          v-else
+                          v-else-if="scoresNeeded(item)"
                           v-html="scoresNeeded(item)"
                           class="text-caption"
                         ></div>
@@ -856,6 +857,22 @@ export default {
       handler(data) {
         this.dialog = true;
         this.initialize();
+        // if (data.id) {
+        //   data.grade_level == 'Grade 11' ||
+        //   (data.grade_level == 'Grade 12' && this.syType == 0)
+        //     ? (this.semester = '1st Semester')
+        //     : data.grade_level == 'Grade 11' ||
+        //       (data.grade_level == 'Grade 12' && this.syType == 1)
+        //     ? (this.semester = 'Senior High')
+        //     : (this.semester = 'Junior High');
+        //   this.subSubjectList =
+        //     data.sub_subject != null && this.syType == 0
+        //       ? JSON.parse(data.sub_subject)
+        //       : JSON.parse(data.sub_subject_term);
+
+        //   this.sub_subject =
+        //     data.sub_subject != null ? this.subSubjectList[0].id : null;
+        // }
         if (data.id) {
           data.grade_level == 'Grade 11' ||
           (data.grade_level == 'Grade 12' && this.syType == 0)
@@ -864,13 +881,36 @@ export default {
               (data.grade_level == 'Grade 12' && this.syType == 1)
             ? (this.semester = 'Senior High')
             : (this.semester = 'Junior High');
-          this.subSubjectList =
-            data.sub_subject != null && this.syType == 0
-              ? JSON.parse(data.sub_subject)
-              : JSON.parse(data.sub_subject_term);
 
-          this.sub_subject =
-            data.sub_subject != null ? this.subSubjectList[0].id : null;
+          // Determine which sub-subject data to use
+          const subSubjectData =
+            data.sub_subject != null && this.syType == 0
+              ? data.sub_subject
+              : data.sub_subject_term;
+
+          // Always initialize as an array
+          this.subSubjectList = [];
+
+          if (subSubjectData) {
+            try {
+              const parsed = JSON.parse(subSubjectData);
+
+              // Make sure the parsed value is actually an array
+              if (Array.isArray(parsed)) {
+                this.subSubjectList = parsed;
+              }
+            } catch (error) {
+              console.error('Invalid sub-subject JSON:', subSubjectData, error);
+              this.subSubjectList = [];
+            }
+          }
+
+          // Only access [0] if an item actually exists
+          if (this.subSubjectList.length > 0) {
+            this.sub_subject = this.subSubjectList[0]?.id ?? null;
+          } else {
+            this.sub_subject = null;
+          }
         }
         this.checkConflict();
       },
@@ -1378,18 +1418,57 @@ export default {
       });
     },
     scoresNeeded(rec) {
-      const record = this.decisionData.find((d) => d.studentID === rec.id);
-      let remaining = 62 - record?.initial_grade;
-      let weight = this.data.writen_works / 100;
-      let highest = this.dinominator;
+      const record = this.decisionData.find(
+        (d) => String(d.studentID) === String(rec.id),
+      );
 
-      let grade = (remaining / weight) * (highest / 100);
+      if (!record) {
+        return '';
+      }
+
+      const initialGrade = Number(record.initial_grade);
+      const highest = Number(this.dinominator);
+
+      // Your written works weight
+      let weight = Number(this.data.writen_works);
+
+      // Handle either 30 or 0.30
+      if (weight > 1) {
+        weight = weight / 100;
+      }
+
+      if (
+        !Number.isFinite(initialGrade) ||
+        !Number.isFinite(highest) ||
+        !Number.isFinite(weight) ||
+        highest <= 0 ||
+        weight <= 0
+      ) {
+        return '';
+      }
+
+      // Target initial grade
+      const targetGrade = 62;
+
+      const remaining = targetGrade - initialGrade;
 
       if (remaining <= 0) {
         return 'Passed';
       }
+
+      // Required raw score
+      const requiredScore = (remaining / weight) * (highest / 100);
+
+      // Do not display a score higher than the maximum possible score
+      const scoreNeeded = Math.ceil(requiredScore);
+
+      if (scoreNeeded > highest) {
+        return `Student is below 75<br>
+      Even a perfect score (${highest} / ${highest}) is not enough to reach 75.`;
+      }
+
       return `Student is below 75<br>
-        Suggested score needed: ${grade.toFixed(0)} / ${this.dinominator}`;
+    Suggested score needed: ${scoreNeeded} / ${highest}`;
     },
     openStudentsQuiz() {
       window.open(

@@ -102,6 +102,13 @@ export class UserDetailsController {
     return this.userDetailsService.TeachingRole(grade, curr_user);
   }
 
+  @Get('getAllVerifiedUser/TeachingRoleV2/:grade')
+  TeachingRoleV2(@Param('grade') grade: string, @Headers() headers) {
+    var head_str = headers.authorization;
+    const curr_user = currentUser(head_str);
+    return this.userDetailsService.TeachingRoleV2(grade, curr_user);
+  }
+
   @Get('getAdviser/RoomAdvisory/:id/:grade')
   TeachingRoleAdvisory(
     @Param('id') id: number,

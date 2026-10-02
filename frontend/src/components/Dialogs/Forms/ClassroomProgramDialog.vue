@@ -438,7 +438,7 @@ export default {
 
     getRoleTeachers() {
       this.axiosCall(
-        '/user-details/getAllVerifiedUser/TeachingRole/' + this.grade,
+        '/user-details/getAllVerifiedUser/TeachingRoleV2/' + this.grade,
         'GET',
       ).then((res) => {
         console.log('Teacher Role1', res.data);
